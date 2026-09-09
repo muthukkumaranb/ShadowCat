@@ -48,7 +48,7 @@ render_html("""
         Telemetry Evidence & Forensic Attribution
     </h2>
     <div style="font-size: 0.84rem; color: #9AA7BD; margin-top: 4px;">
-        Correlated flow evidence, deletion-tested feature attribution, and operational novelty detection.
+        Correlated flow evidence and feature attribution rankings.
     </div>
 </div>
 """)
@@ -63,8 +63,7 @@ mock_badge_flw = get_mock_badge_html("flagged_flows")
 with col_att:
     render_html(f"""
     <div class="card-title">
-        <span>Feature Attribution {mock_badge_att}</span>
-        <span class="badge">[Protocol: Deletion-Tested Attribution]</span>
+        <span title="Protocol: Deletion-Tested Attribution" style="cursor: help;">Feature Attribution {mock_badge_att} <span style="font-size: 0.72rem; color: #64748B; font-weight: 400;">&#9432;</span></span>
     </div>
     """)
     st.plotly_chart(create_attribution_chart(attributions), use_container_width=True, config={"displayModeBar": False})

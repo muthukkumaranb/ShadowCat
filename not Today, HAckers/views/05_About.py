@@ -24,123 +24,41 @@ data = get_demo_data()
 render_header(data)
 
 render_html("""
-<div style="margin-bottom: 20px;">
-    <h2 style="font-size: 1.4rem; font-weight: 800; color: #FFFFFF; margin: 0;">
-        About SHADOWCAT
-    </h2>
-    <div style="font-size: 0.84rem; color: #94A3B8; margin-top: 4px;">
-        Autonomous pre-emptive cyber threat forecasting engine for air-gapped enterprise defense.
+<div style="margin-bottom: 18px;">
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+        <h2 style="font-size: 1.35rem; font-weight: 800; color: #FFFFFF; margin: 0;">
+            About SHADOWCAT
+        </h2>
+        <span style="background: rgba(56, 189, 248, 0.12); border: 1px solid #38BDF8; color: #38BDF8; font-size: 0.72rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; padding: 2px 8px; border-radius: 4px;">
+            v1.0
+        </span>
+    </div>
+    <div style="font-size: 0.84rem; color: #94A3B8; line-height: 1.5;">
+        Autonomous pre-emptive cyber threat forecasting engine for air-gapped enterprise network defense.
+    </div>
+    <div style="display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap;">
+        <span style="background: rgba(47, 184, 114, 0.12); border: 1px solid #2FB872; color: #2FB872; font-size: 0.70rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; padding: 3px 8px; border-radius: 4px;">
+            AIR-GAPPED
+        </span>
+        <span style="background: rgba(56, 189, 248, 0.12); border: 1px solid #38BDF8; color: #38BDF8; font-size: 0.70rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; padding: 3px 8px; border-radius: 4px;">
+            MITRE ATT&CK ALIGNED
+        </span>
+        <span style="background: rgba(224, 152, 43, 0.12); border: 1px solid #E0982B; color: #E0982B; font-size: 0.70rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; padding: 3px 8px; border-radius: 4px;">
+            LOEO 37-FOLD EVALUATED
+        </span>
     </div>
 </div>
-""")
 
-# 1. Mission Doctrine Overview
-render_html("""
-<div class="glass-card" style="margin-bottom: 22px;">
-    <div class="card-title">
-        <span>Executive Mission & Platform Vision</span>
-    </div>
-    <div style="font-size: 0.88rem; color: #CBD5E1; line-height: 1.7;">
-        <b>SHADOWCAT</b> represents a fundamental shift in network security operations: transitioning cybersecurity from 
-        <b>reactive forensic alert triage</b> to <b>pre-emptive threat trajectory forecasting</b>.
-        By modeling network traffic kinematics and host communication graphs as a continuous dynamical system, 
-        SHADOWCAT predicts impending multi-step attack escalations up to <b>3 to 4 minutes before privilege escalation</b> occurs.
+<div style="background: rgba(56, 189, 248, 0.05); border-left: 3px solid #38BDF8; padding: 10px 14px; border-radius: 0 6px 6px 0; margin-bottom: 20px;">
+    <div style="font-size: 0.80rem; color: #E8EDF5; line-height: 1.5; font-style: italic;">
+        "Demonstrated on the single infiltration case study (n = 1). Not a general lateral-movement forecasting capability."
     </div>
 </div>
-""")
 
-# 2. Paradigm Shift: Reactive Detection vs Pre-Emptive Forecasting
-render_html("""
-<div class="glass-card" style="margin-bottom: 22px;">
-    <div class="card-title">
-        <span>Paradigm Shift: Reactive Detection vs Pre-Emptive Forecasting</span>
-    </div>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-        <div style="background: rgba(255, 23, 68, 0.08); border: 1px solid rgba(255, 23, 68, 0.25); border-radius: 14px; padding: 20px;">
-            <div style="font-weight: 800; color: #FF5252; font-size: 1.1rem; margin-bottom: 10px;">
-                Conventional IDS / IPS
-            </div>
-            <ul style="font-size: 0.84rem; color: #CBD5E1; margin-left: -15px; line-height: 1.7;">
-                <li><b>Posture:</b> Reactive (alerts fired post-compromise).</li>
-                <li><b>Lead Time:</b> <b>0 minutes</b> (Zero pre-emptive response window).</li>
-                <li><b>Detection:</b> Static signatures & single-point packet anomalies.</li>
-                <li><b>SOC Impact:</b> High alert fatigue during active damage phase.</li>
-            </ul>
-        </div>
-        <div style="background: rgba(0, 229, 255, 0.08); border: 1px solid rgba(0, 229, 255, 0.3); border-radius: 14px; padding: 20px;">
-            <div style="font-weight: 800; color: #00E5FF; font-size: 1.1rem; margin-bottom: 10px;">
-                SHADOWCAT Forecasting Engine
-            </div>
-            <ul style="font-size: 0.84rem; color: #FFFFFF; margin-left: -15px; line-height: 1.7;">
-                <li><b>Posture:</b> Pre-emptive (forecasts trajectory before breach).</li>
-                <li><b>Lead Time:</b> <b>~3–4 minutes</b> pre-emptive intervention window.</li>
-                <li><b>Detection:</b> Temporal dynamics + host graph topology.</li>
-                <li><b>SOC Impact:</b> Automated rate-limiting & proactive host quarantine.</li>
-            </ul>
-        </div>
-    </div>
+<div style="font-size: 0.76rem; font-weight: 700; color: #64708A; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 14px; margin-bottom: 6px;">
+    Core Operational Capabilities & Validation Protocol
 </div>
 """)
-
-# 3. Key Operational Advantages
-render_html("""
-<div class="card-title" style="margin-bottom: 12px;">
-    <span>Core Operational Capabilities</span>
-</div>
-""")
-
-col_c1, col_c2, col_c3 = st.columns(3)
-
-with col_c1:
-    render_html("""
-    <div class="glass-card" style="min-height: 160px; display: flex; flex-direction: column; justify-content: space-between;">
-        <div>
-            <div style="font-size: 0.98rem; font-weight: 800; color: #00E5FF; margin-bottom: 6px;">
-                Multi-Horizon Rollout
-            </div>
-            <div style="font-size: 0.8rem; color: #94A3B8; line-height: 1.55;">
-                Autoregressive state transition modeling forecasts cyber attack stages across horizons K=1..4 with calibrated lead times.
-            </div>
-        </div>
-        <div style="font-size: 0.74rem; color: #00E5FF; font-weight: 700; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px;">
-            Horizons: t+1 → t+4
-        </div>
-    </div>
-    """)
-
-with col_c2:
-    render_html("""
-    <div class="glass-card" style="min-height: 160px; display: flex; flex-direction: column; justify-content: space-between;">
-        <div>
-            <div style="font-size: 0.98rem; font-weight: 800; color: #FFB300; margin-bottom: 6px;">
-                Compounding Uncertainty
-            </div>
-            <div style="font-size: 0.8rem; color: #94A3B8; line-height: 1.55;">
-                Epistemic uncertainty quantification explicitly reflects compounding drift over future rollout steps to guide analyst escalation.
-            </div>
-        </div>
-        <div style="font-size: 0.74rem; color: #FFB300; font-weight: 700; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px;">
-            Calibrated Variance Bounds
-        </div>
-    </div>
-    """)
-
-with col_c3:
-    render_html("""
-    <div class="glass-card" style="min-height: 160px; display: flex; flex-direction: column; justify-content: space-between;">
-        <div>
-            <div style="font-size: 0.98rem; font-weight: 800; color: #00E676; margin-bottom: 6px;">
-                Air-Gapped Operation
-            </div>
-            <div style="font-size: 0.8rem; color: #94A3B8; line-height: 1.55;">
-                Zero cloud reliance, zero external telemetry egress. Engineered for strict mission-critical offline SOC deployments.
-            </div>
-        </div>
-        <div style="font-size: 0.74rem; color: #00E676; font-weight: 700; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px;">
-            100% On-Premise Execution
-        </div>
-    </div>
-    """)
 
 # 4. Validation Methodology & Protocol Details (Task 4 & Task 8)
 with st.expander("Validation methodology & protocol details", expanded=False):
@@ -159,6 +77,37 @@ with st.expander("Validation methodology & protocol details", expanded=False):
         </div>
         """)
 
+    # Dual-Level Telemetry Fusion Architecture (PS Section 1 Mandate)
+    render_html("""
+    <div class="glass-card" style="padding: 14px 18px; margin-bottom: 18px; border-left: 3px solid #38BDF8;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span style="font-size: 0.82rem; font-weight: 700; color: #E8EDF5; letter-spacing: 0.04em;">
+                DUAL-LEVEL TELEMETRY FUSION ARCHITECTURE (PS Section 1 Mandate)
+            </span>
+            <span style="font-size: 0.72rem; color: #2FB872; font-weight: 600; font-family: 'JetBrains Mono', monospace;">
+                ✓ ACTIVE
+            </span>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; font-size: 0.76rem; color: #9AA7BD; margin-top: 8px;">
+            <div>
+                <b style="color: #E8EDF5;">Level 1: Flow Aggregates (NetFlow)</b><br>
+                Bidirectional byte/pkt ratios, TCP flag bitmasks (SYN/ACK/FIN/RST), flow duration, port distributions.
+            </div>
+            <div>
+                <b style="color: #E8EDF5;">Level 2: Packet Dynamics (PCAP)</b><br>
+                TTL variance, TCP window sizes, micro-timing inter-arrival jitter, packet payload entropy.
+            </div>
+            <div>
+                <b style="color: #38BDF8;">Unified Cyber State S(t)</b><br>
+                Fused tensor representation feeding the World Model transition dynamics P(S_{t+1} | S_t).
+            </div>
+        </div>
+        <div style="font-size: 0.74rem; color: #9AA7BD; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px;">
+            Local offline Scapy extraction: derives both packet micro-timing and aggregated flow features without cloud API dependencies.
+        </div>
+    </div>
+    """)
+
     render_html("""
     <div style="margin-bottom: 16px;">
         <div style="font-size: 0.92rem; font-weight: 800; color: #00E5FF; margin-bottom: 4px;">
@@ -171,46 +120,7 @@ with st.expander("Validation methodology & protocol details", expanded=False):
     </div>
     """)
 
-    # Metric Context & Calibration (dynamically retrieved from data_provider)
-    metrics = val.get("metrics", {})
-    precision_val = metrics.get("precision", 0.842)
-    recall_val = metrics.get("recall", 0.791)
-    f1_val = metrics.get("f1_score", 0.816)
-    pr_auc_val = metrics.get("pr_auc", 0.835)
-    fpr_val = metrics.get("fpr", 0.048)
 
-    render_html(f"""
-    <div class="card-title" style="margin-bottom: 10px;">
-        <span>Metric Calibration & Confidence Intervals {mock_badge_val}</span>
-    </div>
-    <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 20px;">
-        <div class="glass-card" style="padding: 12px; text-align: center;">
-            <div style="font-size: 0.72rem; color: #94A3B8; font-weight: 700;">PRECISION</div>
-            <div style="font-size: 1.2rem; font-weight: 800; color: #00E5FF; margin: 2px 0;">{precision_val * 100:.1f}%</div>
-            <div style="font-size: 0.7rem; color: #94A3B8;">High precision (95% CI)</div>
-        </div>
-        <div class="glass-card" style="padding: 12px; text-align: center;">
-            <div style="font-size: 0.72rem; color: #94A3B8; font-weight: 700;">RECALL</div>
-            <div style="font-size: 1.2rem; font-weight: 800; color: #00E5FF; margin: 2px 0;">{recall_val * 100:.1f}%</div>
-            <div style="font-size: 0.7rem; color: #94A3B8;">80% multi-stage recall</div>
-        </div>
-        <div class="glass-card" style="padding: 12px; text-align: center;">
-            <div style="font-size: 0.72rem; color: #94A3B8; font-weight: 700;">F1-SCORE</div>
-            <div style="font-size: 1.2rem; font-weight: 800; color: #00E5FF; margin: 2px 0;">{f1_val:.3f}</div>
-            <div style="font-size: 0.7rem; color: #94A3B8;">Balanced on skewed data</div>
-        </div>
-        <div class="glass-card" style="padding: 12px; text-align: center;">
-            <div style="font-size: 0.72rem; color: #94A3B8; font-weight: 700;">PR-AUC</div>
-            <div style="font-size: 1.2rem; font-weight: 800; color: #00E5FF; margin: 2px 0;">{pr_auc_val:.3f}</div>
-            <div style="font-size: 0.7rem; color: #94A3B8;">Precision-Recall area</div>
-        </div>
-        <div class="glass-card" style="padding: 12px; text-align: center;">
-            <div style="font-size: 0.72rem; color: #94A3B8; font-weight: 700;">FPR</div>
-            <div style="font-size: 1.2rem; font-weight: 800; color: #00E5FF; margin: 2px 0;">{fpr_val * 100:.1f}%</div>
-            <div style="font-size: 0.7rem; color: #94A3B8;">&lt; 5% false alarm rate</div>
-        </div>
-    </div>
-    """)
 
     col_loeo, col_leak = st.columns([1.2, 1.8])
 

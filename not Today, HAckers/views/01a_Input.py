@@ -42,34 +42,6 @@ render_html("""
 </div>
 """)
 
-# Architecture Callout: Dual-Level Telemetry Requirement (PS Section 1)
-render_html("""
-<div class="glass-card" style="padding: 14px 18px; margin-bottom: 20px; border-left: 3px solid #38BDF8;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-        <span style="font-size: 0.82rem; font-weight: 700; color: #E8EDF5; letter-spacing: 0.04em;">
-            DUAL-LEVEL TELEMETRY FUSION ARCHITECTURE (PS Section 1 Mandate)
-        </span>
-        <span style="font-size: 0.72rem; color: #2FB872; font-weight: 600; font-family: 'JetBrains Mono', monospace;">
-            ✓ ACTIVE
-        </span>
-    </div>
-    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; font-size: 0.76rem; color: #9AA7BD; margin-top: 8px;">
-        <div>
-            <b style="color: #E8EDF5;">Level 1: Flow Aggregates (NetFlow)</b><br>
-            Bidirectional byte/pkt ratios, TCP flag bitmasks (SYN/ACK/FIN/RST), flow duration, port distributions.
-        </div>
-        <div>
-            <b style="color: #E8EDF5;">Level 2: Packet Dynamics (PCAP)</b><br>
-            TTL variance, TCP window sizes, micro-timing inter-arrival jitter, packet payload entropy.
-        </div>
-        <div>
-            <b style="color: #38BDF8;">Unified Cyber State S(t)</b><br>
-            Fused tensor representation feeding the World Model transition dynamics P(S_{t+1} | S_t).
-        </div>
-    </div>
-</div>
-""")
-
 # Ingestion Source Tabs
 tab_benchmark, tab_custom = st.tabs(["Pre-Loaded Benchmark Episodes (Multi-Dataset)", "Custom Sensor Telemetry (PCAP / Flow)"])
 
@@ -143,7 +115,6 @@ with tab_custom:
     )
 
     if custom_mode == "Raw Packet Capture (.pcap, .pcapng)":
-        st.caption("Local offline Scapy extraction: derives both packet micro-timing and aggregated flow features without cloud API dependencies.")
         pcap_file = st.file_uploader(
             "Upload Network Packet Capture (.pcap, .pcapng)",
             type=["pcap", "pcapng"],

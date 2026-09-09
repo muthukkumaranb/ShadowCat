@@ -52,18 +52,6 @@ PAGES = [
         "unique_headers": ["Model Performance vs Baselines", "Horizon Stability Benchmarks"],
     },
     {
-        "name": "Executive Overview",
-        "file": "views/00_Home.py",
-        "requires_mock_badge": True,
-        "unique_headers": ["Paradigm Shift", "System Launchpad"],
-    },
-    {
-        "name": "Architecture & UCS",
-        "file": "views/00b_Architecture.py",
-        "requires_mock_badge": True,
-        "unique_headers": ["Model Architecture & Ingestion Telemetry", "Three-Tier Architectural Flow"],
-    },
-    {
         "name": "Platform Specifications",
         "file": "views/05_About.py",
         "requires_mock_badge": True,
@@ -199,7 +187,7 @@ def main():
     print("\n" + "=" * 70)
     all_passed = all(r["passed"] for r in results)
     if all_passed:
-        print("ALL 7 PAGES PASSED ALL REGRESSION AND GOVERNANCE CHECKS.")
+        print("ALL 5 PAGES PASSED ALL REGRESSION AND GOVERNANCE CHECKS.")
     else:
         print("SOME PAGES FAILED. SEE DETAILS ABOVE.")
     print("=" * 70)

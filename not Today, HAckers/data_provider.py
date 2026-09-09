@@ -207,10 +207,58 @@ def get_host_risk_graph(episode_id: str = None, k_step: int = 2) -> dict:
     # Authoritative graph rollout data
     UI_NODE_ROLES = {
         "10.0.2.15": "Workstation (Patient Zero)",
-        "10.0.2.18": "Internal File Share",
+        "10.0.3.50": "Internal File Share",
         "10.0.4.10": "SSH Jump Host",
         "10.0.4.21": "Internal Auth Cluster",
         "10.0.5.1": "Domain Controller (Critical Asset)",
+    }
+
+    HOST_TELEMETRY = {
+        "10.0.2.15": {
+            "role": "Workstation (Patient Zero)",
+            "criticality_tier": "Tier 3 (User Endpoint)",
+            "criticality_level": 3,
+            "subnet": "10.0.2.0/24 (User Endpoint Tier)",
+            "active_ports": "TCP/22 (SSH Outbound), TCP/445 (SMB Outbound), TCP/5355 (LLMNR)",
+            "driving_indicators": "Sustained high SYN packet bursts, anomalous subprocess socket spawning, credential memory read attempts.",
+            "containment_stance": "Illustrative analyst guidance — not a system recommendation: Isolate endpoint network adapter and revoke active Kerberos session tickets."
+        },
+        "10.0.3.50": {
+            "role": "Internal File Share",
+            "criticality_tier": "Tier 3 (Storage Share)",
+            "criticality_level": 3,
+            "subnet": "10.0.3.0/24 (Enterprise Storage Tier)",
+            "active_ports": "TCP/445 (SMB/CIFS), TCP/139 (NetBIOS Session), TCP/2049 (NFS)",
+            "driving_indicators": "Rapid sequential SMB directory enumeration, mass file metadata queries, volume shadow copy inspect probes.",
+            "containment_stance": "Illustrative analyst guidance — not a system recommendation: Enable strict SMB signing, enforce share ACL restrictions, and audit shadow copy access."
+        },
+        "10.0.4.10": {
+            "role": "SSH Jump Host",
+            "criticality_tier": "Tier 2 (Management Gateway)",
+            "criticality_level": 2,
+            "subnet": "10.0.4.0/24 (DMZ Management Tier)",
+            "active_ports": "TCP/22 (OpenSSH Ingress), TCP/88 (Kerberos Client), TCP/514 (Syslog)",
+            "driving_indicators": "Repeated SSH authentication failure bursts (18 attempts/min), brute-force credential spray, privileged session forwarding.",
+            "containment_stance": "Illustrative analyst guidance — not a system recommendation: Terminate active jump host sessions, restrict SSH ingress to bastion management CIDRs."
+        },
+        "10.0.4.21": {
+            "role": "Internal Auth Cluster",
+            "criticality_tier": "Tier 2 (Auth Infrastructure)",
+            "criticality_level": 2,
+            "subnet": "10.0.4.0/24 (DMZ Management Tier)",
+            "active_ports": "TCP/88 (Kerberos KDC), TCP/389 (LDAP Auth), TCP/636 (LDAPS), TCP/3268 (GC)",
+            "driving_indicators": "Anomalous Kerberos Ticket Granting Service (TGS) request spike from jump host, unusual RC4 ticket encryption negotiation.",
+            "containment_stance": "Illustrative analyst guidance — not a system recommendation: Enforce AES-256 Kerberos ticket encryption and rotate service account credentials."
+        },
+        "10.0.5.1": {
+            "role": "Domain Controller (Critical Asset)",
+            "criticality_tier": "Tier 1 (Critical Asset)",
+            "criticality_level": 1,
+            "subnet": "10.0.5.0/24 (Core Identity Tier)",
+            "active_ports": "TCP/389 (Active Directory LDAP), TCP/88 (Kerberos TGT), RPC/135 (DCSync Endpoint)",
+            "driving_indicators": "Privileged directory replication request (DCSync pattern), high-volume directory object queries from internal auth nodes.",
+            "containment_stance": "Illustrative analyst guidance — not a system recommendation: Apply pre-emptive access control filters on directory replication RPC endpoints."
+        },
     }
 
     ROLLOUT_DATA = {
@@ -227,7 +275,7 @@ def get_host_risk_graph(episode_id: str = None, k_step: int = 2) -> dict:
                 "10.0.2.15": {"risk": 0.85, "uncertainty": 0.02},
                 "10.0.4.10": {"risk": 0.38, "uncertainty": 0.03},
                 "10.0.4.21": {"risk": 0.12, "uncertainty": 0.02},
-                "10.0.2.18": {"risk": 0.08, "uncertainty": 0.02},
+                "10.0.3.50": {"risk": 0.08, "uncertainty": 0.02},
                 "10.0.5.1":  {"risk": 0.05, "uncertainty": 0.01},
             }
         },
@@ -241,13 +289,13 @@ def get_host_risk_graph(episode_id: str = None, k_step: int = 2) -> dict:
             "summary": "SSH brute-force activity intensifies against jump host 10.0.4.10.",
             "active_edges": [
                 ("10.0.2.15", "10.0.4.10", "Port 22/TCP [High Rate]"),
-                ("10.0.2.15", "10.0.2.18", "Port 445/SMB [Probe]")
+                ("10.0.2.15", "10.0.3.50", "Port 445/SMB [Probe]")
             ],
             "host_risks": {
                 "10.0.2.15": {"risk": 0.92, "uncertainty": 0.04},
                 "10.0.4.10": {"risk": 0.54, "uncertainty": 0.06},
                 "10.0.4.21": {"risk": 0.18, "uncertainty": 0.05},
-                "10.0.2.18": {"risk": 0.14, "uncertainty": 0.04},
+                "10.0.3.50": {"risk": 0.14, "uncertainty": 0.04},
                 "10.0.5.1":  {"risk": 0.08, "uncertainty": 0.03},
             }
         },
@@ -268,7 +316,7 @@ def get_host_risk_graph(episode_id: str = None, k_step: int = 2) -> dict:
                 "10.0.2.15": {"risk": 0.94, "uncertainty": 0.05},
                 "10.0.4.21": {"risk": 0.46, "uncertainty": 0.09},
                 "10.0.5.1":  {"risk": 0.19, "uncertainty": 0.07},
-                "10.0.2.18": {"risk": 0.15, "uncertainty": 0.06},
+                "10.0.3.50": {"risk": 0.15, "uncertainty": 0.06},
             }
         },
         3: {
@@ -288,7 +336,7 @@ def get_host_risk_graph(episode_id: str = None, k_step: int = 2) -> dict:
                 "10.0.5.1":  {"risk": 0.67, "uncertainty": 0.17},
                 "10.0.4.10": {"risk": 0.88, "uncertainty": 0.12},
                 "10.0.2.15": {"risk": 0.95, "uncertainty": 0.08},
-                "10.0.2.18": {"risk": 0.18, "uncertainty": 0.11},
+                "10.0.3.50": {"risk": 0.18, "uncertainty": 0.11},
             }
         },
         4: {
@@ -301,14 +349,14 @@ def get_host_risk_graph(episode_id: str = None, k_step: int = 2) -> dict:
             "summary": "Privileged persistence on Domain Controller; replication traffic initiated.",
             "active_edges": [
                 ("10.0.4.21", "10.0.5.1", "DCSync Replication"),
-                ("10.0.5.1", "10.0.2.18", "Volume Shadow Copy")
+                ("10.0.5.1", "10.0.3.50", "Volume Shadow Copy")
             ],
             "host_risks": {
                 "10.0.5.1":  {"risk": 0.86, "uncertainty": 0.27},
                 "10.0.4.21": {"risk": 0.82, "uncertainty": 0.22},
                 "10.0.4.10": {"risk": 0.91, "uncertainty": 0.18},
                 "10.0.2.15": {"risk": 0.96, "uncertainty": 0.12},
-                "10.0.2.18": {"risk": 0.42, "uncertainty": 0.24},
+                "10.0.3.50": {"risk": 0.42, "uncertainty": 0.24},
             }
         }
     }
@@ -316,8 +364,10 @@ def get_host_risk_graph(episode_id: str = None, k_step: int = 2) -> dict:
     return {
         "episode_id": episode_id or "EPISODE-INFIL-01",
         "node_roles": UI_NODE_ROLES,
+        "host_telemetry": HOST_TELEMETRY,
         "rollout_steps": ROLLOUT_DATA,
         "active_k_step": k_step,
+        "disclaimer": "Demonstrated on the single infiltration case study (n = 1). Not a general lateral-movement forecasting capability.",
         "is_mock": is_using_mock_data("host_risk_graph"),
     }
 

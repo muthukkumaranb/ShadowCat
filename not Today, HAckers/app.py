@@ -10,7 +10,7 @@ importlib.reload(styles)
 from styles import apply_custom_css, render_sidebar
 from data_provider import get_demo_data
 
-# Configure navigation hierarchy: Operations (Front Door) and System Specs & Audit
+# Configure navigation hierarchy: Operations (Front Door) and Platform Specs & Audit
 pages = {
     "Operations": [
         st.Page("views/01_Forecast.py", title="Threat Forecast", default=True, url_path="Forecast"),
@@ -18,9 +18,7 @@ pages = {
         st.Page("views/01a_Input.py", title="Telemetry Ingestion", url_path="Input"),
         st.Page("views/03_Validation.py", title="Validation & Benchmarks", url_path="Validation"),
     ],
-    "System Specs & Audit": [
-        st.Page("views/00_Home.py", title="Executive Overview", url_path="Home"),
-        st.Page("views/00b_Architecture.py", title="Architecture & UCS", url_path="Architecture"),
+    "Platform Specs & Audit": [
         st.Page("views/05_About.py", title="Platform Specifications", url_path="About"),
     ],
 }

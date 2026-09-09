@@ -148,9 +148,19 @@ Returns host topology graph, communication edges, and host risk predictions $h_v
   "episode_id": "EPISODE-INFIL-01",
   "node_roles": {
     "10.0.2.15": "Workstation (Patient Zero)",
+    "10.0.3.50": "Internal File Share",
     "10.0.4.10": "SSH Jump Host",
     "10.0.4.21": "Internal Auth Cluster",
     "10.0.5.1": "Domain Controller (Critical Asset)"
+  },
+  "host_telemetry": {
+    "10.0.4.10": {
+      "role": "SSH Jump Host",
+      "subnet": "10.0.4.0/24 (DMZ Management Tier)",
+      "active_ports": "TCP/22 (OpenSSH Ingress), TCP/88 (Kerberos Client), TCP/514 (Syslog)",
+      "driving_indicators": "Repeated SSH authentication failure bursts (18 attempts/min), brute-force credential spray, privileged session forwarding.",
+      "containment_stance": "Illustrative analyst guidance — not a system recommendation: Terminate active jump host sessions, restrict SSH ingress to bastion management CIDRs."
+    }
   },
   "rollout_steps": {
     "2": {
@@ -169,11 +179,13 @@ Returns host topology graph, communication edges, and host risk predictions $h_v
         "10.0.4.10": {"risk": 0.76, "uncertainty": 0.09},
         "10.0.2.15": {"risk": 0.94, "uncertainty": 0.05},
         "10.0.4.21": {"risk": 0.46, "uncertainty": 0.09},
+        "10.0.3.50": {"risk": 0.15, "uncertainty": 0.06},
         "10.0.5.1":  {"risk": 0.19, "uncertainty": 0.07}
       }
     }
   },
   "active_k_step": 2,
+  "disclaimer": "Demonstrated on the single infiltration case study (n = 1). Not a general lateral-movement forecasting capability.",
   "is_mock": false
 }
 ```

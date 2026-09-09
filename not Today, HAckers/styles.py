@@ -32,14 +32,11 @@ COLORS = {
 
 CUSTOM_CSS = f"""
 <style>
-    /* Google Fonts local fallback */
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
-
-    /* Global Base Reset - Navy SOC */
+    /* Offline / Air-Gapped Base Reset - System Font Stack */
     html, body, [class*="css"] {{
         background-color: #0a0e17 !important;
         color: #e8edf5 !important;
-        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
     }}
 
     /* Main Container Padding */
@@ -438,19 +435,39 @@ CUSTOM_CSS = f"""
         border-top: 1px solid #22304a !important;
     }}
 
-    /* Active / Selected Nav Item: Sky Blue #38bdf8 Accent */
-    div[data-testid="stSidebarNav"] a[aria-current="page"] {{
-        color: #38bdf8 !important;
-        background: rgba(56, 189, 248, 0.08) !important;
-        border-left: 2px solid #38bdf8 !important;
+    /* Primary Cockpit Page (Threat Forecast): Prominent Accent & Left Border */
+    div[data-testid="stSidebarNav"] a[href*="Forecast" i],
+    div[data-testid="stSidebarNav"] a[href*="forecast" i],
+    div[data-testid="stSidebarNavItems"] ul:first-of-type li:first-child a {{
         font-weight: 600 !important;
+        border-left: 2px solid rgba(56, 189, 248, 0.4) !important;
+        color: #c5d5ec !important;
     }}
 
-    div[data-testid="stSidebarNav"] a:not([aria-current="page"]) {{
+    div[data-testid="stSidebarNav"] a[href*="Forecast" i][aria-current="page"],
+    div[data-testid="stSidebarNav"] a[href*="forecast" i][aria-current="page"],
+    div[data-testid="stSidebarNavItems"] ul:first-of-type li:first-child a[aria-current="page"] {{
+        color: #38bdf8 !important;
+        background: rgba(56, 189, 248, 0.12) !important;
+        border-left: 3px solid #38bdf8 !important;
+        font-weight: 700 !important;
+    }}
+
+    /* Other Operations Pages (Evidence, Telemetry, Validation): Plain List Items */
+    div[data-testid="stSidebarNav"] a:not([href*="Forecast" i]):not([href*="forecast" i]) {{
         color: #9aa7bd !important;
+        border-left: 3px solid transparent !important;
+        font-weight: 400 !important;
     }}
 
-    div[data-testid="stSidebarNav"] a:not([aria-current="page"]):hover {{
+    div[data-testid="stSidebarNav"] a:not([href*="Forecast" i]):not([href*="forecast" i])[aria-current="page"] {{
+        color: #e8edf5 !important;
+        background: rgba(255, 255, 255, 0.05) !important;
+        border-left: 3px solid transparent !important;
+        font-weight: 500 !important;
+    }}
+
+    div[data-testid="stSidebarNav"] a:not([href*="Forecast" i]):not([href*="forecast" i]):not([aria-current="page"]):hover {{
         background: #131b2c !important;
         color: #e8edf5 !important;
     }}

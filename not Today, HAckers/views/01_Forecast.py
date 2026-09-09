@@ -43,26 +43,60 @@ mitre = get_mitre_data()
 # Render persistent header
 render_header({"analysis": analysis})
 
-# Orientation Affordance: Mission Briefing for Evaluators
-with st.expander("Operational Briefing for Evaluators (Click to expand)", expanded=False):
-    render_html("""
-    <div style="font-size: 0.78rem; color: #9AA7BD; line-height: 1.5; padding: 4px 2px;">
-        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
-            <div>
-                <b style="color: #E8EDF5;">1. World Model Paradigm</b><br>
-                Learns state transition dynamics P(S_{t+1} | S_t) to simulate attack rollout K steps ahead, rather than classifying isolated packets post-compromise.
-            </div>
-            <div>
-                <b style="color: #E8EDF5;">2. Dual-Level Telemetry (PS Sec 1)</b><br>
-                Fuses macroscopic NetFlow/IPFIX aggregates with microscopic PCAP packet dynamics (TTL variance, TCP window, micro-timing).
-            </div>
-            <div>
-                <b style="color: #38BDF8;">3. Pre-Emptive Advantage</b><br>
-                Projects lateral escalation at horizon t+3 with ~3.5 min lead time, providing actionable warning before compromise completes.
-            </div>
-        </div>
+# 0. Active Predicted Threat Alert Banner (High-Visibility Operational Cockpit Strip)
+focal_idx = 2  # Active projected focal stage (Lateral Movement at t+3)
+raw_steps = forecast.get("raw_steps", [])
+if len(raw_steps) > focal_idx:
+    focal_step = raw_steps[focal_idx]
+elif raw_steps:
+    focal_step = raw_steps[0]
+else:
+    focal_step = {}
+
+pred_stage = focal_step.get("stage", "Lateral Movement")
+pred_horizon = f"{focal_step.get('horizon', 't+3')} ({focal_step.get('time_ahead', '3 min')})"
+pred_prob = focal_step.get("probability", 0.67)
+pred_lead_time = "~3.5 min"
+
+# Color/severity thresholds: Critical >70%, Elevated >35%, Normal <=35%
+if pred_prob > 0.70:
+    severity_label = "CRITICAL"
+    banner_bg = "rgba(229, 72, 77, 0.16)"
+    banner_border = "#E5484D"
+    badge_bg = "#E5484D"
+    badge_text = "#FFFFFF"
+    accent_color = "#FF453A"
+elif pred_prob > 0.35:
+    severity_label = "ELEVATED"
+    banner_bg = "rgba(224, 152, 43, 0.14)"
+    banner_border = "#E0982B"
+    badge_bg = "#E0982B"
+    badge_text = "#0A0E17"
+    accent_color = "#FF9F0A"
+else:
+    severity_label = "NORMAL"
+    banner_bg = "rgba(47, 184, 114, 0.12)"
+    banner_border = "#2FB872"
+    badge_bg = "#2FB872"
+    badge_text = "#0A0E17"
+    accent_color = "#30D158"
+
+render_html(f"""
+<div style="background: {banner_bg}; border: 1px solid {banner_border}; border-left: 5px solid {banner_border}; border-radius: 8px; padding: 12px 18px; margin-top: 8px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; box-shadow: 0 4px 16px rgba(0,0,0,0.3);">
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+        <span style="background: {badge_bg}; color: {badge_text}; font-size: 0.70rem; font-weight: 800; padding: 3px 8px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.08em; text-transform: uppercase;">
+            {severity_label}
+        </span>
+        <span style="font-size: 0.94rem; font-weight: 700; color: #FFFFFF; letter-spacing: 0.01em;">
+            Active forecast &mdash; <span style="color: {accent_color}; font-weight: 800;">{pred_stage}</span> predicted at <span style="color: #38BDF8; font-family: 'JetBrains Mono', monospace;">{pred_horizon}</span> &middot; <span style="color: {accent_color}; font-family: 'JetBrains Mono', monospace;">{pred_prob:.0%} probability</span> &middot; <span style="color: #E8EDF5; font-family: 'JetBrains Mono', monospace;">{pred_lead_time} pre-emptive window</span>
+        </span>
     </div>
-    """)
+    <div style="display: flex; align-items: center; gap: 8px; font-size: 0.72rem; color: #9AA7BD; font-family: 'JetBrains Mono', monospace;">
+        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: {accent_color}; box-shadow: 0 0 8px {accent_color};"></span>
+        <span style="letter-spacing: 0.04em;">REAL-TIME FORECAST</span>
+    </div>
+</div>
+""")
 
 # 1. High-Density Borderless KPI Row (Divided by hairlines #1c2740)
 mock_badge_traj = get_mock_badge_html("forecast_trajectory")
@@ -147,7 +181,7 @@ render_html(f"""
         <span class="badge">{forecast['source_branch']} · {forecast['protocol']}</span>
     </div>
     <div style="font-size: 0.80rem; color: #9AA7BD;">
-        Forward trajectory simulation across horizons <code>t+1 → t+4</code> with compounding epistemic uncertainty bounds. Click any marker to inspect.
+        Click any marker to inspect.
     </div>
 </div>
 """)
@@ -245,7 +279,7 @@ render_html("""
     <div style="background: #131b2c; border: 1px solid #38BDF8; border-radius: 8px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center;">
         <div>
             <div style="font-weight: 700; color: #E8EDF5; font-size: 0.92rem;">SHADOWCAT World Model</div>
-            <div style="font-size: 0.74rem; color: #9AA7BD; margin-top: 2px;">Forecasts state trajectory before lateral compromise</div>
+            <div style="font-size: 0.74rem; color: #9AA7BD; margin-top: 2px;">Pre-lateral trajectory forecasting</div>
         </div>
         <div style="text-align: right;">
             <div style="font-size: 1.35rem; font-weight: 800; color: #38BDF8; font-family: 'JetBrains Mono', monospace;">+3.5 min</div>
@@ -256,7 +290,7 @@ render_html("""
     <div style="background: #131b2c; border: 1px solid #22304a; border-radius: 8px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center;">
         <div>
             <div style="font-weight: 700; color: #E8EDF5; font-size: 0.92rem;">Lagged Autoregressive</div>
-            <div style="font-size: 0.74rem; color: #9AA7BD; margin-top: 2px;">Extrapolates history without graph state topology</div>
+            <div style="font-size: 0.74rem; color: #9AA7BD; margin-top: 2px;">History extrapolation without topology</div>
         </div>
         <div style="text-align: right;">
             <div style="font-size: 1.35rem; font-weight: 800; color: #E0982B; font-family: 'JetBrains Mono', monospace;">+1.2 min</div>
@@ -267,7 +301,7 @@ render_html("""
     <div style="background: #131b2c; border: 1px solid #22304a; border-radius: 8px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center;">
         <div>
             <div style="font-weight: 700; color: #E8EDF5; font-size: 0.92rem;">Conventional Static IDS</div>
-            <div style="font-size: 0.74rem; color: #9AA7BD; margin-top: 2px;">Reactive detection; alert triggered post-compromise</div>
+            <div style="font-size: 0.74rem; color: #9AA7BD; margin-top: 2px;">Reactive post-compromise detection</div>
         </div>
         <div style="text-align: right;">
             <div style="font-size: 1.35rem; font-weight: 800; color: #E5484D; font-family: 'JetBrains Mono', monospace;">0.0 min</div>
