@@ -8,21 +8,26 @@ import importlib
 import styles
 importlib.reload(styles)
 from styles import apply_custom_css, render_sidebar
-from mock_data import get_demo_data
+from data_provider import get_demo_data
 
-# Configure navigation hierarchy: Forecast is default landing page (Task 1 & Task 8)
-pages = [
-    st.Page("views/01_Forecast.py", title="Forecast", icon="🎯", default=True, url_path="Forecast"),
-    st.Page("views/02_Evidence.py", title="Evidence", icon="🔍", url_path="Evidence"),
-    st.Page("views/03_Validation.py", title="Validation", icon="📊", url_path="Validation"),
-    st.Page("views/04_Model_Info.py", title="Model Info", icon="🧠", url_path="Model_Info"),
-    st.Page("views/05_About.py", title="About", icon="ℹ️", url_path="About"),
-]
+# Configure navigation hierarchy: Operations (Front Door) and System Specs & Audit
+pages = {
+    "Operations": [
+        st.Page("views/01_Forecast.py", title="Threat Forecast", default=True, url_path="Forecast"),
+        st.Page("views/02_Evidence.py", title="Evidence & Attribution", url_path="Evidence"),
+        st.Page("views/01a_Input.py", title="Telemetry Ingestion", url_path="Input"),
+        st.Page("views/03_Validation.py", title="Validation & Benchmarks", url_path="Validation"),
+    ],
+    "System Specs & Audit": [
+        st.Page("views/00_Home.py", title="Executive Overview", url_path="Home"),
+        st.Page("views/00b_Architecture.py", title="Architecture & UCS", url_path="Architecture"),
+        st.Page("views/05_About.py", title="Platform Specifications", url_path="About"),
+    ],
+}
 
 # Set base page configuration
 st.set_page_config(
-    page_title="SHADOWCAT",
-    page_icon="🛡️",
+    page_title="SHADOWCAT — SOC Cockpit",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -39,4 +44,3 @@ render_sidebar(data)
 # Run navigation
 pg = st.navigation(pages)
 pg.run()
-

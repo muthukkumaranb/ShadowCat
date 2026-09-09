@@ -63,13 +63,10 @@ def render_temporal_evidence(data: dict):
 
     # Explicit unvalidated framing disclaimer banner
     render_html("""
-    <div style="background: rgba(234, 179, 8, 0.05); border: 1px dashed rgba(234, 179, 8, 0.3); border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; display: flex; gap: 10px; align-items: flex-start;">
-        <span style="font-size: 1rem; line-height: 1;">⚠️</span>
+    <div style="background: rgba(234, 179, 8, 0.05); border: 1px dashed rgba(234, 179, 8, 0.3); border-radius: 8px; padding: 10px 14px; margin-bottom: 14px;">
         <div style="font-size: 0.78rem; color: #CBD5E1; line-height: 1.45;">
-            <b style="color: #FACC15;">Model internals — not a validated attribution method.</b>
-            Raw sequence-encoder pooling weights across historical context windows (14% → 31% → 55%).
-            These values reflect internal hidden-state attention distribution only; validated causal forecast explanation
-            must come from deletion-tested feature attribution (see below).
+            <b style="color: #FACC15;">Model internals:</b>
+            Internal attention weights — not a validated explanation method. See feature attribution below for validated results.
         </div>
     </div>
     """)

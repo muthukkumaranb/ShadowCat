@@ -25,8 +25,9 @@ FORBIDDEN_PATTERNS = [
 
 RECOMMENDED_RE = re.compile(r"Recommended:", re.IGNORECASE)
 ALLOWED_GUIDANCE = "Illustrative analyst guidance"
+MOCK_IMPORT_RE = re.compile(r"^\s*(from\s+mock_data\s+import|import\s+mock_data)\b")
 
-FRONTEND_TARGETS = ["components", "views", "app.py", "mock_data.py", "styles.py"]
+FRONTEND_TARGETS = ["components", "views", "app.py", "mock_data.py", "data_provider.py", "styles.py"]
 WORKSPACE_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
@@ -34,6 +35,9 @@ def verify_file(filepath: str) -> list[str]:
     violations = []
     with open(filepath, "r", encoding="utf-8", errors="ignore") as fp:
         lines = fp.readlines()
+
+    norm_path = os.path.normpath(filepath)
+    is_allowed_mock_importer = norm_path.endswith("data_provider.py") or norm_path.endswith("mock_data.py")
 
     for idx, line in enumerate(lines, 1):
         # 1. Check forbidden regex patterns
@@ -49,6 +53,13 @@ def verify_file(filepath: str) -> list[str]:
                     f"{filepath}:{idx}: Bare 'Recommended:' found without required guidance framing.\n"
                     f"    Offending line: {line.strip()}"
                 )
+
+        # 3. Check direct import of mock_data outside data_provider.py
+        if not is_allowed_mock_importer and MOCK_IMPORT_RE.search(line):
+            violations.append(
+                f"{filepath}:{idx}: Unauthorized direct import of mock_data (must import from data_provider).\n"
+                f"    Offending line: {line.strip()}"
+            )
 
     return violations
 

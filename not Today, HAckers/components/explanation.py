@@ -55,85 +55,87 @@ def create_attribution_chart(explanation_data):
 
 def render_attack_stepper(mitre_data, current_step_idx=2):
     """
-    Renders an executive horizontal MITRE ATT&CK killchain pipeline using st.columns(4).
+    Renders an executive horizontal MITRE ATT&CK killchain pipeline as a single continuous track.
     Clearly demarcates confirmed past behavior from the predicted future threat stage.
     """
-    cols = st.columns(len(mitre_data))
+    segments_html = []
     for i, item in enumerate(mitre_data):
-        with cols[i]:
-            if i < current_step_idx:
-                render_html(f"""
-                <div class="mitre-card-observed">
-                    <div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                            <span style="font-size: 0.72rem; font-weight: 700; color: #00E676; text-transform: uppercase; letter-spacing: 0.06em;">
-                                ✓ OBSERVED
-                            </span>
-                            <span style="font-size: 0.72rem; color: #94A3B8; font-family: 'JetBrains Mono', monospace;">
-                                {item['id']}
-                            </span>
-                        </div>
-                        <div style="font-size: 1.08rem; font-weight: 800; color: #FFFFFF; margin-bottom: 4px;">
-                            {item['stage']}
-                        </div>
-                        <div style="font-size: 0.78rem; color: #94A3B8; line-height: 1.4;">
-                            {item['description']}
-                        </div>
-                    </div>
-                    <div style="font-size: 0.72rem; color: #00E676; font-weight: 600; margin-top: 10px; border-top: 1px solid rgba(0, 230, 118, 0.25); padding-top: 6px;">
-                        Active
-                    </div>
+        border_right = "border-right: 1px solid #22304a;" if i < len(mitre_data) - 1 else ""
+        if i < current_step_idx:
+            segment = f"""
+            <div style="flex: 1; padding: 14px 16px; {border_right} border-top: 3px solid #2fb872; background: #131b2c;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <span style="font-size: 0.68rem; font-weight: 700; color: #2fb872; text-transform: uppercase; letter-spacing: 0.05em;">
+                        ✓ OBSERVED
+                    </span>
+                    <span style="font-size: 0.70rem; color: #9aa7bd; font-family: 'JetBrains Mono', monospace;">
+                        {item['id']}
+                    </span>
                 </div>
-                """)
-            elif i == current_step_idx:
-                render_html(f"""
-                <div class="mitre-card-predicted">
-                    <div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                            <span style="font-size: 0.75rem; font-weight: 800; color: #FF1744; text-transform: uppercase; letter-spacing: 0.08em; display: inline-flex; align-items: center; gap: 6px;">
-                                <span style="width: 7px; height: 7px; border-radius: 50%; background: #FF1744; display: inline-block;"></span>
-                                PREDICTED THREAT
-                            </span>
-                            <span style="font-size: 0.72rem; color: #FFD54F; font-weight: 700; font-family: 'JetBrains Mono', monospace;">
-                                {item['id']} · t+3
-                            </span>
-                        </div>
-                        <div style="font-size: 1.15rem; font-weight: 800; color: #FFFFFF; margin-bottom: 4px;">
-                            {item['stage']}
-                        </div>
-                        <div style="font-size: 0.8rem; color: #FFFFFF; line-height: 1.4; font-weight: 500;">
-                            {item['description']}
-                        </div>
-                    </div>
-                    <div style="background: rgba(255, 23, 68, 0.25); border: 1px solid #FF1744; border-radius: 8px; padding: 5px 8px; font-size: 0.76rem; color: #FFD54F; font-weight: 800; margin-top: 10px; text-align: center; letter-spacing: 0.02em;">
-                        P = 67% · Lead Time ~3 min
-                    </div>
+                <div style="font-size: 0.95rem; font-weight: 700; color: #e8edf5; margin-bottom: 3px;">
+                    {item['stage']}
                 </div>
-                """)
-            else:
-                render_html(f"""
-                <div class="mitre-card-downstream">
-                    <div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                            <span style="font-size: 0.72rem; font-weight: 600; color: #64748B; text-transform: uppercase; letter-spacing: 0.04em;">
-                                ○ DOWNSTREAM
-                            </span>
-                            <span style="font-size: 0.72rem; color: #64748B; font-family: 'JetBrains Mono', monospace;">
-                                {item['id']}
-                            </span>
-                        </div>
-                        <div style="font-size: 1.08rem; font-weight: 700; color: #94A3B8; margin-bottom: 4px;">
-                            {item['stage']}
-                        </div>
-                        <div style="font-size: 0.78rem; color: #64748B; line-height: 1.4;">
-                            {item['description']}
-                        </div>
-                    </div>
-                    <div style="font-size: 0.72rem; color: #64748B; margin-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.06); padding-top: 6px;">
-                        Horizon t+4
-                    </div>
+                <div style="font-size: 0.74rem; color: #9aa7bd; line-height: 1.3;">
+                    {item['description']}
                 </div>
-                """)
+                <div style="font-size: 0.68rem; color: #2fb872; font-weight: 600; margin-top: 6px;">
+                    Historical Sequence
+                </div>
+            </div>
+            """
+        elif i == current_step_idx:
+            segment = f"""
+            <div style="flex: 1.15; padding: 14px 16px; {border_right} border-top: 3px solid #e5484d; background: rgba(229, 72, 77, 0.08);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <span style="font-size: 0.70rem; font-weight: 800; color: #e5484d; text-transform: uppercase; letter-spacing: 0.06em; display: inline-flex; align-items: center; gap: 5px;">
+                        <span style="width: 6px; height: 6px; border-radius: 50%; background: #e5484d; display: inline-block;"></span>
+                        PREDICTED THREAT
+                    </span>
+                    <span style="font-size: 0.72rem; color: #38bdf8; font-weight: 700; font-family: 'JetBrains Mono', monospace;">
+                        {item['id']} · t+3
+                    </span>
+                </div>
+                <div style="font-size: 1.05rem; font-weight: 800; color: #ffffff; margin-bottom: 3px;">
+                    {item['stage']}
+                </div>
+                <div style="font-size: 0.76rem; color: #e8edf5; line-height: 1.3; font-weight: 500;">
+                    {item['description']}
+                </div>
+                <div style="display: inline-block; background: rgba(229, 72, 77, 0.2); border: 1px solid #e5484d; border-radius: 4px; padding: 2px 6px; font-size: 0.70rem; color: #ffffff; font-weight: 700; margin-top: 6px; font-family: 'JetBrains Mono', monospace;">
+                    P = 67% · Lead Time ~3.5 min
+                </div>
+            </div>
+            """
+        else:
+            segment = f"""
+            <div style="flex: 1; padding: 14px 16px; {border_right} border-top: 3px solid #22304a; background: #0e1422; opacity: 0.75;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <span style="font-size: 0.68rem; font-weight: 600; color: #64708a; text-transform: uppercase; letter-spacing: 0.04em;">
+                        ○ DOWNSTREAM
+                    </span>
+                    <span style="font-size: 0.70rem; color: #64708a; font-family: 'JetBrains Mono', monospace;">
+                        {item['id']}
+                    </span>
+                </div>
+                <div style="font-size: 0.95rem; font-weight: 600; color: #9aa7bd; margin-bottom: 3px;">
+                    {item['stage']}
+                </div>
+                <div style="font-size: 0.74rem; color: #64708a; line-height: 1.3;">
+                    {item['description']}
+                </div>
+                <div style="font-size: 0.68rem; color: #64708a; margin-top: 6px;">
+                    Horizon t+4 (Rollout)
+                </div>
+            </div>
+            """
+        segments_html.append(segment)
+
+    all_segments = "".join(segments_html)
+    render_html(f"""
+    <div style="display: flex; border: 1px solid #22304a; border-radius: 8px; overflow: hidden; margin-top: 4px; margin-bottom: 18px;">
+        {all_segments}
+    </div>
+    """)
 
 
 def render_explanation_section(data):
@@ -146,7 +148,6 @@ def render_explanation_section(data):
     render_html("""
     <div class="card-title" style="margin-top: 18px; margin-bottom: 12px;">
         <span>MITRE ATT&CK Progression</span>
-        <span class="badge">Killchain Pipeline</span>
     </div>
     """)
     render_attack_stepper(mitre, current_step_idx=2)
@@ -160,7 +161,6 @@ def render_explanation_section(data):
         render_html("""
         <div class="card-title">
             <span>Key Feature Attribution</span>
-            <span class="badge">Top Weights</span>
         </div>
         """)
         fig = create_attribution_chart(explanation)
@@ -170,7 +170,6 @@ def render_explanation_section(data):
         render_html(f"""
         <div class="card-title">
             <span>Dual-Signal Evaluation</span>
-            <span class="badge">Signature vs Novelty</span>
         </div>
         <div class="glass-card" style="height: 240px; display: flex; flex-direction: column; justify-content: space-between;">
             <div>

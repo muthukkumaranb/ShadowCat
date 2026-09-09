@@ -87,9 +87,9 @@ def render_input_panel():
                 </div>
                 """)
             with c_btn:
-                if st.button("▶ Run Infiltration Episode (Video Mode)", use_container_width=True, type="primary"):
+                if st.button("Run Infiltration Episode (Video Mode)", use_container_width=True, type="primary"):
                     st.session_state["demo_running"] = True
-                    st.toast("Bundled sample loaded: CSE-CIC-IDS2018 Infiltration episode active.", icon="⚡")
+                    st.toast("Bundled sample loaded: CSE-CIC-IDS2018 Infiltration episode active.")
 
         elif mode == "Upload PCAP (.pcap, .pcapng)":
             pcap_file = st.file_uploader(

@@ -9,113 +9,112 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import streamlit as st
 import plotly.graph_objects as go
-from mock_data import get_demo_data
+from data_provider import (
+    get_analysis_metadata,
+    get_attributions,
+    get_novelty_score,
+    get_flagged_flows,
+    is_using_mock_data,
+    get_mock_badge_html,
+)
 from styles import apply_custom_css, render_sidebar, COLORS, render_html, render_footer
 from components.header import render_header
 from components.explanation import create_attribution_chart
+import components.evidence
+import importlib
+importlib.reload(components.evidence)
 from components.evidence import render_evidence_table
 from components.temporal_evidence import render_temporal_evidence
 
 st.set_page_config(
     page_title="SHADOWCAT — Evidence",
-    page_icon="🔍",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 apply_custom_css()
-data = get_demo_data()
-render_header(data)
+
+# Retrieve typed telemetry data
+analysis = get_analysis_metadata()
+attributions = get_attributions()
+state = get_novelty_score()
+flagged_flows = get_flagged_flows()
+
+render_header({"analysis": analysis})
 
 render_html("""
 <div style="margin-bottom: 18px;">
     <h2 style="font-size: 1.4rem; font-weight: 800; color: #FFFFFF; margin: 0;">
         Telemetry Evidence & Forensic Attribution
     </h2>
-    <div style="font-size: 0.84rem; color: #94A3B8; margin-top: 4px;">
-        Correlated flow evidence, deletion-tested feature attribution, and operational baseline comparisons.
+    <div style="font-size: 0.84rem; color: #9AA7BD; margin-top: 4px;">
+        Correlated flow evidence, deletion-tested feature attribution, and operational novelty detection.
     </div>
 </div>
 """)
 
-# 1. Feature Attribution, Baseline Comparison, and Live Dual-Signal Evaluation
-col_att, col_base, col_sig = st.columns([1.35, 0.85, 1.15])
+# 1. Feature Attribution and Live Dual-Signal Evaluation (Two-Column Layout)
+col_att, col_sig = st.columns([1.55, 1.45])
+
+mock_badge_att = get_mock_badge_html("attributions")
+mock_badge_nov = get_mock_badge_html("novelty_score")
+mock_badge_flw = get_mock_badge_html("flagged_flows")
 
 with col_att:
-    render_html("""
+    render_html(f"""
     <div class="card-title">
-        <span>Feature Attribution</span>
+        <span>Feature Attribution {mock_badge_att}</span>
         <span class="badge">[Protocol: Deletion-Tested Attribution]</span>
     </div>
     """)
-    st.plotly_chart(create_attribution_chart(data["explanation"]), use_container_width=True, config={"displayModeBar": False})
-
-with col_base:
-    render_html("""
-    <div class="card-title">
-        <span>Baseline PR-AUC Comparison</span>
-        <span class="badge">[Protocol: Chronological Split]</span>
-    </div>
-    """)
-
-    base_fig = go.Figure()
-    base_fig.add_trace(go.Bar(
-        x=["Forecasting Engine", "Lagged Baseline", "Standard Baseline"],
-        y=[data["baseline"]["world_model"], data["baseline"]["lagged_logistic_regression"], data["baseline"]["logistic_regression"]],
-        marker=dict(
-            color=["#00E5FF", "#FFB300", "#64748B"],
-            line=dict(color="rgba(255, 255, 255, 0.2)", width=1)
-        ),
-        text=[f"<b>{data['baseline']['world_model']:.2f}</b>", f"<b>{data['baseline']['lagged_logistic_regression']:.2f}</b>", f"<b>{data['baseline']['logistic_regression']:.2f}</b>"],
-        textposition="outside",
-        textfont=dict(color="#FFFFFF", size=11, family="'JetBrains Mono', monospace")
-    ))
-    base_fig.update_layout(
-        paper_bgcolor="rgba(15, 23, 42, 0.8)",
-        plot_bgcolor="rgba(15, 23, 42, 0.8)",
-        margin=dict(l=25, r=20, t=30, b=30),
-        height=240,
-        yaxis=dict(range=[0, 0.88], tickformat=".2f", gridcolor="rgba(255,255,255,0.05)", title=dict(text="PR-AUC", font=dict(color="#94A3B8", size=10))),
-        xaxis=dict(tickfont=dict(color="#FFFFFF", size=10, family="'Plus Jakarta Sans', sans-serif"))
-    )
-    st.plotly_chart(base_fig, use_container_width=True, config={"displayModeBar": False})
+    st.plotly_chart(create_attribution_chart(attributions), use_container_width=True, config={"displayModeBar": False})
 
 with col_sig:
-    state = data["current_state"]
     render_html(f"""
     <div class="card-title">
-        <span>Dual-Signal Evaluation</span>
-        <span class="badge">[Operational Telemetry]</span>
+        <span>Dual-Signal Evaluation {mock_badge_nov}</span>
     </div>
     <div class="glass-card" style="height: 240px; display: flex; flex-direction: column; justify-content: space-between; padding: 18px 20px;">
         <div>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                 <span class="metric-label" style="margin: 0;">Novelty Score</span>
-                <span style="background: rgba(0, 230, 118, 0.12); border: 1px solid #00E676; color: #00E676; padding: 2px 8px; border-radius: 6px; font-weight: 700; font-size: 0.78rem;">
+                <span style="background: rgba(47, 184, 114, 0.12); border: 1px solid #2FB872; color: #2FB872; padding: 2px 8px; border-radius: 6px; font-weight: 700; font-size: 0.78rem;">
                     {state['novelty_score']:.2f} / 1.0 · Normal Baseline
                 </span>
             </div>
-            <div style="font-size: 1.12rem; font-weight: 800; color: #FFFFFF; line-height: 1.25; margin-top: 2px;">
+            <div style="font-size: 1.10rem; font-weight: 800; color: #FFFFFF; line-height: 1.25; margin-top: 2px;">
                 Known Attack Escalation
             </div>
-            <div style="font-size: 0.78rem; color: #CBD5E1; margin-top: 10px; line-height: 1.55;">
-                • <b style="color: #FF5252;">Risk (67%):</b> Lateral pivot predicted at horizon <b>t+3</b>.<br>
-                • <b style="color: #00E676;">Novelty ({state['novelty_score']:.2f}):</b> Known credential spray pattern (within normal envelope).
+            <div style="font-size: 0.78rem; color: #E8EDF5; margin-top: 10px; line-height: 1.55;">
+                • <b style="color: #E5484D;">Risk (67%):</b> Lateral pivot predicted at horizon <b>t+3</b>.<br>
+                • <b style="color: #2FB872;">Novelty ({state['novelty_score']:.2f}):</b> Known credential spray pattern (within normal envelope).
             </div>
         </div>
-        <div style="border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 0.72rem; color: #94A3B8;">
-            <span>Separates familiar attack trajectories from unfamiliar baseline drift.</span>
-            <span style="color: #64748B; font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;">[Model Info]</span>
+        <div style="border-top: 1px solid #22304A; padding-top: 8px; font-size: 0.72rem; color: #9AA7BD;">
+            Separates familiar attack trajectories from unfamiliar baseline drift.
         </div>
     </div>
     """)
 
 # 2. Temporal Context & Attention Distribution (Model Internals Only)
-render_temporal_evidence(data)
+render_temporal_evidence({"analysis": analysis, "forecast": []})
 
-# 3. Correlated Flagged Network Telemetry Flows
-render_evidence_table(data)
+# 3. Correlated Flagged Network Telemetry Flows (Single unified card header with mock badge)
+render_evidence_table({"flagged_flows": flagged_flows}, mock_badge_html=mock_badge_flw)
 
-# Persistent Executive Footer
+# 4. Dynamic Illustrative Analyst Guidance Callout (Strict compliance preserved)
+high_risk = [f for f in flagged_flows if f.get("risk") == "High"]
+top_flow = high_risk[0] if high_risk else (flagged_flows[0] if flagged_flows else {})
+target_socket = f"{top_flow.get('destination', '10.0.4.21')}:{top_flow.get('dport', 22)}"
+indicator = top_flow.get("reason", "SYN burst")
+
+render_html(f"""
+<div style="background: rgba(56, 189, 248, 0.05); border: 1px solid #22304A; border-left: 3px solid #38BDF8; border-radius: 8px; padding: 12px 16px; margin-top: 12px; margin-bottom: 20px;">
+    <div style="font-size: 0.80rem; color: #E8EDF5; line-height: 1.5;">
+        <b style="color: #38BDF8;">Illustrative analyst guidance — not a system recommendation:</b>
+        Evaluate ingress rate-limiting and host isolation for socket <b>{target_socket}</b> triggered by {indicator.lower()}.
+    </div>
+</div>
+""")
+
 render_footer()
-

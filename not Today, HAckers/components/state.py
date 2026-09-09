@@ -14,7 +14,6 @@ def render_current_state(data):
     <div class="glass-card">
         <div class="card-title">
             <span>Observed Network State &nbsp;<code style="color: #00E5FF; font-size: 0.95rem;">{state['state_id']}</code></span>
-            <span class="badge">Window (t)</span>
         </div>
         <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: stretch;">
             <div style="flex: 2.2; min-width: 280px; border-right: 1px solid rgba(255, 255, 255, 0.08); padding-right: 24px;">
