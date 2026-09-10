@@ -51,11 +51,11 @@ def render_temporal_evidence(data: dict):
     <div style="margin-top: 24px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
         <div class="card-title" style="margin: 0;">
             <span>Temporal Context & Window Attention</span>
-            <span class="badge" style="background: rgba(56, 189, 248, 0.12); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.35); cursor: help;" title="Internal attention weights — exploratory model internals, not a certified explanation method. See feature attribution below for deletion-tested attribution.">
+            <span class="badge" style="background: #222222; color: #8A8A8A; border: 1px solid #333333; cursor: help;" title="Internal attention weights — exploratory model internals, not a certified explanation method. See feature attribution below for deletion-tested attribution.">
                 [Model Internals · Exploratory]
             </span>
         </div>
-        <span style="font-size: 0.72rem; color: #94A3B8; font-family: 'JetBrains Mono', monospace;">
+        <span style="font-size: 0.72rem; color: #8A8A8A; font-family: 'JetBrains Mono', monospace;">
             S(t-2) → S(t-1) → S(t)
         </span>
     </div>
@@ -64,8 +64,8 @@ def render_temporal_evidence(data: dict):
     cols = st.columns(3)
     for col, win in zip(cols, history):
         is_current = "Current" in win["window"]
-        border_color = "rgba(0, 229, 255, 0.4)" if is_current else "rgba(255, 255, 255, 0.08)"
-        bg_card = "rgba(0, 229, 255, 0.03)" if is_current else "rgba(15, 23, 42, 0.6)"
+        border_color = "#FFFFFF" if is_current else "#262626"
+        bg_card = "#181818" if is_current else "#141414"
 
         with col:
             render_html(f"""
@@ -73,23 +73,23 @@ def render_temporal_evidence(data: dict):
                 <div>
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                         <span style="font-size: 0.88rem; font-weight: 700; color: #FFFFFF;">{win['window']}</span>
-                        <span style="font-size: 0.72rem; color: #94A3B8; font-family: 'JetBrains Mono', monospace;">{win['time_range']}</span>
+                        <span style="font-size: 0.72rem; color: #8A8A8A; font-family: 'JetBrains Mono', monospace;">{win['time_range']}</span>
                     </div>
-                    <div style="font-size: 0.78rem; color: #CBD5E1; line-height: 1.45; margin-bottom: 10px;">
+                    <div style="font-size: 0.78rem; color: #8A8A8A; line-height: 1.45; margin-bottom: 10px;">
                         {win['behavior']}
                     </div>
                 </div>
-                <div style="border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 10px;">
+                <div style="border-top: 1px solid #262626; padding-top: 10px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                         <span class="metric-label" style="margin: 0; font-size: 0.70rem;">Attention Weight (Internal)</span>
-                        <span style="font-size: 0.82rem; font-weight: 800; color: #FACC15; font-family: 'JetBrains Mono', monospace;">
+                        <span style="font-size: 0.82rem; font-weight: 800; color: #FFFFFF; font-family: 'JetBrains Mono', monospace;">
                             {win['weight_pct']}
                         </span>
                     </div>
                     <div style="background: rgba(255, 255, 255, 0.08); border-radius: 4px; height: 5px; width: 100%; overflow: hidden;">
-                        <div style="background: #FACC15; height: 100%; width: {win['weight_pct']}; border-radius: 4px;"></div>
+                        <div style="background: #FFFFFF; height: 100%; width: {win['weight_pct']}; border-radius: 4px;"></div>
                     </div>
-                    <div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 0.68rem; color: #64748B;">
+                    <div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 0.68rem; color: #8A8A8A;">
                         <span>Flows: {win['flows']:,}</span>
                         <span>Pkts: {win['packets']:,}</span>
                     </div>

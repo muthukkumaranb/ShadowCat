@@ -55,7 +55,7 @@ def create_forecast_chart(forecast_data):
         mode="lines",
         line=dict(width=0),
         fill="tonexty",
-        fillcolor="rgba(56, 189, 248, 0.12)",
+        fillcolor="rgba(255, 255, 255, 0.06)",
         hoverinfo="skip",
         name="Compounding Uncertainty (±σ)",
         showlegend=False
@@ -69,36 +69,36 @@ def create_forecast_chart(forecast_data):
         lead_times
     ))
 
-    # 3. Main Luminous Trajectory Spline (Sky Blue Accent)
+    # 3. Main Luminous Trajectory Spline (Clean High-Contrast White)
     fig.add_trace(go.Scatter(
         x=x_labels,
         y=probs,
         mode="lines+markers+text",
         name="Forecasted Risk P(Attack)",
         showlegend=False,
-        line=dict(color="#38BDF8", width=4.0, shape="spline", smoothing=0.85),
+        line=dict(color="#ffffff", width=3.5, shape="spline", smoothing=0.85),
         marker=dict(
             size=[11, 13, 14, 18, 16],
-            color=["#2FB872", "#38BDF8", "#E0982B", "#E5484D", "#E5484D"],
-            line=dict(color="#FFFFFF", width=2.0)
+            color=["#2FB872", "#e0e0e0", "#E0982B", "#E5484D", "#E5484D"],
+            line=dict(color="#0d0d0d", width=2.0)
         ),
         text=[f"<b>{p*100:.0f}%</b>" for p in probs],
         textposition="top left",
-        textfont=dict(color="#E8EDF5", size=12, family="'JetBrains Mono', monospace"),
+        textfont=dict(color="#ffffff", size=12, family="'JetBrains Mono', monospace"),
         customdata=custom_tuples,
         hovertemplate=(
             "<b>%{x}</b><br>"
             "<b>Predicted Stage:</b> %{customdata[0]}<br>"
-            "<b>Attack Risk Probability:</b> <span style='color:#38BDF8; font-weight:700;'>%{y:.1%}</span><br>"
+            "<b>Attack Risk Probability:</b> <span style='color:#ffffff; font-weight:700;'>%{y:.1%}</span><br>"
             "<b>Epistemic Bounds:</b> %{customdata[1]} %{customdata[2]}<br>"
             "<b>Pre-Emptive Lead Time:</b> %{customdata[3]}<extra></extra>"
         )
     ))
 
     # Reference Threshold Guidelines
-    fig.add_hline(y=0.25, line_dash="dot", line_color="#64708A", line_width=1.0,
+    fig.add_hline(y=0.25, line_dash="dot", line_color="#333333", line_width=1.0,
                   annotation_text="Caution (25%)", annotation_position="bottom right",
-                  annotation_font=dict(color="#9AA7BD", size=9))
+                  annotation_font=dict(color="#8a8a8a", size=9))
     fig.add_hline(y=0.50, line_dash="dash", line_color="#E0982B", line_width=1.2,
                   annotation_text="Elevated (50%)", annotation_position="top right",
                   annotation_font=dict(color="#E0982B", size=9))
@@ -107,25 +107,25 @@ def create_forecast_chart(forecast_data):
                   annotation_font=dict(color="#E5484D", size=9))
 
     fig.update_layout(
-        paper_bgcolor="#131b2c",
-        plot_bgcolor="#131b2c",
+        paper_bgcolor="#141414",
+        plot_bgcolor="#141414",
         margin=dict(l=35, r=25, t=30, b=35),
         height=360,
         hovermode="x unified",
         showlegend=False,
         xaxis=dict(
-            gridcolor="#22304a",
-            zerolinecolor="#22304a",
-            tickfont=dict(color="#E8EDF5", size=11, family="'Plus Jakarta Sans', sans-serif"),
+            gridcolor="#222222",
+            zerolinecolor="#222222",
+            tickfont=dict(color="#ffffff", size=11, family="'Plus Jakarta Sans', sans-serif"),
             showgrid=True,
         ),
         yaxis=dict(
-            gridcolor="#22304a",
-            zerolinecolor="#22304a",
-            tickfont=dict(color="#9AA7BD", size=11),
+            gridcolor="#222222",
+            zerolinecolor="#222222",
+            tickfont=dict(color="#8a8a8a", size=11),
             range=[0, 1.05],
             tickformat=".0%",
-            title=dict(text="Threat Probability", font=dict(color="#9AA7BD", size=11)),
+            title=dict(text="Threat Probability", font=dict(color="#8a8a8a", size=11)),
             showgrid=True,
         )
     )

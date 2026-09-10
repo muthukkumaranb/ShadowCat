@@ -35,14 +35,14 @@ def render_evidence_table(data, limit=None, *args, **kwargs):
     df = pd.DataFrame(display_rows)
 
     def style_forensics(val):
-        return "color: #FF8A80; font-weight: 700; background-color: rgba(255, 23, 68, 0.12);"
+        return "color: #E5484D; font-weight: 700; background-color: rgba(229, 72, 77, 0.12);"
 
     def style_risk(val):
         if val == "High":
-            return "color: #FF5252; font-weight: 800;"
+            return "color: #E5484D; font-weight: 800;"
         elif val == "Medium":
-            return "color: #FFD54F; font-weight: 700;"
-        return "color: #00E676; font-weight: 600;"
+            return "color: #E0982B; font-weight: 700;"
+        return "color: #2FB872; font-weight: 600;"
 
     styled_df = (
         df.style
@@ -66,7 +66,7 @@ def render_evidence_table(data, limit=None, *args, **kwargs):
     )
 
     render_html("""
-    <div style="font-size: 0.76rem; color: #64748B; margin-top: 6px; margin-bottom: 14px;">
+    <div style="font-size: 0.76rem; color: #8A8A8A; margin-top: 6px; margin-bottom: 14px;">
         Flagged flows correlate with authentication spikes and connection resets on port 22.
     </div>
     """)

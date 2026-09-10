@@ -46,7 +46,7 @@ render_html("""
     <h2 style="font-size: 1.4rem; font-weight: 800; color: #FFFFFF; margin: 0;">
         Telemetry Evidence & Forensic Attribution
     </h2>
-    <div style="font-size: 0.84rem; color: #9AA7BD; margin-top: 4px;">
+    <div style="font-size: 0.84rem; color: #8A8A8A; margin-top: 4px;">
         Correlated flow evidence and feature attribution rankings.
     </div>
 </div>
@@ -58,7 +58,7 @@ col_att, col_sig = st.columns([1.55, 1.45])
 with col_att:
     render_html("""
     <div class="card-title">
-        <span title="Protocol: Deletion-Tested Attribution" style="cursor: help;">Feature Attribution <span style="font-size: 0.72rem; color: #64748B; font-weight: 400;">&#9432;</span></span>
+        <span title="Protocol: Deletion-Tested Attribution" style="cursor: help;">Feature Attribution <span style="font-size: 0.72rem; color: #8A8A8A; font-weight: 400;">&#9432;</span></span>
     </div>
     """)
     st.plotly_chart(create_attribution_chart(attributions), use_container_width=True, config={"displayModeBar": False})
@@ -88,12 +88,12 @@ with col_sig:
             <div style="font-size: 1.10rem; font-weight: 800; color: #FFFFFF; line-height: 1.25; margin-top: 2px;">
                 Known Attack Escalation
             </div>
-            <div style="font-size: 0.78rem; color: #E8EDF5; margin-top: 10px; line-height: 1.55;">
+            <div style="font-size: 0.78rem; color: #FFFFFF; margin-top: 10px; line-height: 1.55;">
                 • <b style="color: #E5484D;">Predicted Threat:</b> Lateral pivot projected at horizon <b>t+3</b>.<br>
                 • <b style="color: #2FB872;">Baseline Novelty:</b> Known credential spray pattern (within normal envelope).
             </div>
         </div>
-        <div style="border-top: 1px solid #22304A; padding-top: 8px; font-size: 0.72rem; color: #9AA7BD;">
+        <div style="border-top: 1px solid #262626; padding-top: 8px; font-size: 0.72rem; color: #8A8A8A;">
             Separates familiar attack trajectories from unfamiliar baseline drift.
         </div>
     </div>
@@ -112,9 +112,9 @@ target_socket = f"{top_flow.get('destination', '10.0.4.21')}:{top_flow.get('dpor
 indicator = top_flow.get("reason", "SYN burst")
 
 render_html(f"""
-<div style="background: rgba(56, 189, 248, 0.05); border: 1px solid #22304A; border-left: 3px solid #38BDF8; border-radius: 8px; padding: 12px 16px; margin-top: 12px; margin-bottom: 20px;">
-    <div style="font-size: 0.80rem; color: #E8EDF5; line-height: 1.5;">
-        <b style="color: #38BDF8;">Containment Guidance:</b>
+<div style="background: #141414; border: 1px solid #262626; border-left: 3px solid #E0982B; border-radius: 8px; padding: 12px 16px; margin-top: 12px; margin-bottom: 20px;">
+    <div style="font-size: 0.80rem; color: #FFFFFF; line-height: 1.5;">
+        <b style="color: #E0982B;">Containment Guidance:</b>
         Evaluate ingress rate-limiting and host isolation for socket <b>{target_socket}</b> triggered by {indicator.lower()}.
     </div>
 </div>
