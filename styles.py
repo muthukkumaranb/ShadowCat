@@ -518,11 +518,11 @@ def render_sidebar(data=None):
 
 
 def render_footer():
-    """Renders the persistent executive SHADOWCAT footer."""
+    """Renders the persistent executive SHADOWCAT footer with single global disclaimer."""
     render_html("""
-    <div style="margin-top: 36px; padding: 14px 18px; border-top: 1px solid #22304a; display: flex; justify-content: space-between; align-items: center; font-size: 0.76rem; color: #64708a;">
+    <div style="margin-top: 36px; padding: 14px 18px; border-top: 1px solid #22304a; display: flex; justify-content: space-between; align-items: center; font-size: 0.74rem; color: #64708a; flex-wrap: wrap; gap: 8px;">
         <div>
-            <b style="color: #9aa7bd;">SHADOWCAT v1.0</b> &nbsp;·&nbsp; Autonomous Cyber Threat Forecasting Engine
+            <b style="color: #9aa7bd;">SHADOWCAT v1.0</b> &nbsp;·&nbsp; Autonomous Cyber Threat Forecasting Engine &nbsp;·&nbsp; <span style="color: #94a3b8; font-style: italic;">Illustrative analyst guidance — not a system recommendation.</span>
         </div>
         <div>
             <span style="color: #2fb872; font-weight: 600;">● Active (Air-Gapped)</span>

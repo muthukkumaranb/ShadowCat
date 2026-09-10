@@ -46,8 +46,9 @@ def test_attack_graph_apptest_rendering():
     assert n1_caption in rendered_text, "Mandatory n=1 caption missing!"
     print("[PASS] Mandatory n=1 caption present and intact.")
 
-    assert "MOCK" in rendered_text, "MOCK badge missing from Threat Forecast!"
-    print("[PASS] Provenance MOCK badges present and intact.")
+    assert "badge-mock" not in rendered_text, "Deprecated MOCK badge still rendered in Threat Forecast!"
+    assert "Running on benchmark data" in rendered_text or "BENCHMARK MODE" in rendered_text, "Sticky benchmark banner missing from Threat Forecast!"
+    print("[PASS] Benchmark governance header verified; individual [MOCK] badges successfully deprecated.")
 
     for ip in ["10.0.2.15", "10.0.3.50", "10.0.4.10", "10.0.4.21", "10.0.5.1"]:
         assert ip in rendered_text, f"Host IP {ip} missing from rendered output!"
@@ -118,7 +119,7 @@ def test_attack_graph_svg_rendering_features():
     # Task 4: Compact in-canvas legend
     assert "canvas-legend" in svg_html, "Canvas legend container missing!"
     assert "Graph Encoding" in svg_html, "Legend title missing!"
-    assert "Critical (>70%)" in svg_html, "Legend risk threshold missing!"
+    assert "Critical (>70%)" in svg_html or "Critical (&gt;70%)" in svg_html, "Legend risk threshold missing!"
     assert "Node Size:" in svg_html and "Asset Criticality" in svg_html, "Legend criticality label missing!"
     assert "Active Rollout Path" in svg_html, "Legend path label missing!"
     print("[PASS] Task 4 verified: Compact in-canvas legend displays risk colors, criticality sizing, and path styles.")

@@ -8,17 +8,32 @@ import plotly.graph_objects as go
 from styles import COLORS, render_html
 
 
+import math
+
+
+def _clean_prob(val, default=0.0):
+    if val is None:
+        return default
+    try:
+        f = float(val)
+        if math.isnan(f):
+            return default
+        return max(0.0, min(1.0, f))
+    except (TypeError, ValueError):
+        return default
+
+
 def create_forecast_chart(forecast_data):
     """
     Creates an executive-grade Plotly chart showing the attack risk probability trajectory
     with growing epistemic uncertainty bands across forecast horizons K=1..4.
     """
     x_labels = ["Now (t)", "t+1 (1 min)", "t+2 (2 min)", "t+3 (3 min)", "t+4 (4 min)"]
-    probs = [0.06] + [step["probability"] for step in forecast_data]
-    lower_bounds = [0.06] + [step["lower_bound"] for step in forecast_data]
-    upper_bounds = [0.06] + [step["upper_bound"] for step in forecast_data]
-    uncertainties = [0.00] + [step["uncertainty"] for step in forecast_data]
-    stages = ["Observation Window"] + [step["stage"] for step in forecast_data]
+    probs = [0.06] + [_clean_prob(step.get("probability")) for step in forecast_data]
+    lower_bounds = [0.06] + [_clean_prob(step.get("lower_bound")) for step in forecast_data]
+    upper_bounds = [0.06] + [_clean_prob(step.get("upper_bound"), default=1.0) for step in forecast_data]
+    uncertainties = [0.00] + [_clean_prob(step.get("uncertainty")) for step in forecast_data]
+    stages = ["Observation Window"] + [str(step.get("stage", "Unknown")) for step in forecast_data]
 
     fig = go.Figure()
 
@@ -43,7 +58,15 @@ def create_forecast_chart(forecast_data):
         fillcolor="rgba(56, 189, 248, 0.12)",
         hoverinfo="skip",
         name="Compounding Uncertainty (±σ)",
-        showlegend=True
+        showlegend=False
+    ))
+
+    lead_times = ["Baseline"] + [str(step.get("lead_time", "—")) for step in forecast_data]
+    custom_tuples = list(zip(
+        stages,
+        [f"±{u*100:.0f}%" for u in uncertainties],
+        [f"[{l*100:.0f}% – {u*100:.0f}%]" for l, u in zip(lower_bounds, upper_bounds)],
+        lead_times
     ))
 
     # 3. Main Luminous Trajectory Spline (Sky Blue Accent)
@@ -52,6 +75,7 @@ def create_forecast_chart(forecast_data):
         y=probs,
         mode="lines+markers+text",
         name="Forecasted Risk P(Attack)",
+        showlegend=False,
         line=dict(color="#38BDF8", width=4.0, shape="spline", smoothing=0.85),
         marker=dict(
             size=[11, 13, 14, 18, 16],
@@ -61,13 +85,13 @@ def create_forecast_chart(forecast_data):
         text=[f"<b>{p*100:.0f}%</b>" for p in probs],
         textposition="top left",
         textfont=dict(color="#E8EDF5", size=12, family="'JetBrains Mono', monospace"),
-        customdata=list(zip(stages, [f"±{u*100:.0f}%" for u in uncertainties], [f"[{l*100:.0f}% – {u*100:.0f}%]" for l, u in zip(lower_bounds, upper_bounds)])),
+        customdata=custom_tuples,
         hovertemplate=(
-            "<b>Horizon:</b> %{x}<br>"
+            "<b>%{x}</b><br>"
             "<b>Predicted Stage:</b> %{customdata[0]}<br>"
             "<b>Attack Risk Probability:</b> <span style='color:#38BDF8; font-weight:700;'>%{y:.1%}</span><br>"
-            "<b>Epistemic Variance:</b> %{customdata[1]} %{customdata[2]}<br>"
-            "<extra></extra>"
+            "<b>Epistemic Bounds:</b> %{customdata[1]} %{customdata[2]}<br>"
+            "<b>Pre-Emptive Lead Time:</b> %{customdata[3]}<extra></extra>"
         )
     ))
 
@@ -81,27 +105,6 @@ def create_forecast_chart(forecast_data):
     fig.add_hline(y=0.75, line_dash="dot", line_color="#E5484D", line_width=1.2,
                   annotation_text="Critical (75%)", annotation_position="top right",
                   annotation_font=dict(color="#E5484D", size=9))
-
-    # High-Visibility Pre-emptive Intervention Window Annotation
-    fig.add_annotation(
-        x="t+3 (3 min)",
-        y=0.67,
-        text="<b>LATERAL ESCALATION: 67%</b><br>"
-             "<span style='color: #38BDF8; font-weight: 700;'>Horizon t+3</span><br>"
-             "<span style='color: #9AA7BD; font-size: 11px;'>Lead Time: ~3.5 min</span>",
-        showarrow=True,
-        arrowhead=2,
-        arrowsize=1.0,
-        arrowwidth=2.0,
-        arrowcolor="#38BDF8",
-        ax=-60,
-        ay=-45,
-        bordercolor="#22304A",
-        borderwidth=1.5,
-        borderpad=6,
-        bgcolor="#182338",
-        font=dict(color="#E8EDF5", size=11, family="'Plus Jakarta Sans', sans-serif")
-    )
 
     fig.update_layout(
         paper_bgcolor="#131b2c",

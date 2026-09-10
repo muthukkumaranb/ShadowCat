@@ -7,18 +7,15 @@ import pandas as pd
 from styles import COLORS, render_html
 
 
-def render_evidence_table(data, limit=None, mock_badge_html="", *args, **kwargs):
+def render_evidence_table(data, limit=None, *args, **kwargs):
     """Renders the flagged network flows driving the forecast with clean executive formatting."""
-    if not mock_badge_html and "mock_badge_html" in kwargs:
-        mock_badge_html = kwargs["mock_badge_html"]
     flows = data["flagged_flows"]
     if limit:
         flows = flows[:limit]
 
-    badge_str = f" {mock_badge_html}" if mock_badge_html else ""
     render_html(f"""
     <div class="card-title" style="margin-top: 20px; margin-bottom: 12px;">
-        <span>Correlated Network Flow Evidence{badge_str}</span>
+        <span>Correlated Network Flow Evidence</span>
         <span class="badge">{len(flows)} High-Risk Flows</span>
     </div>
     """)
@@ -32,7 +29,6 @@ def render_evidence_table(data, limit=None, mock_badge_html="", *args, **kwargs)
             "Proto": f["protocol"],
             "Forensic Indicator": f["reason"],
             "Risk Tier": f["risk"],
-            "Packets": f"{f['pkts']:,}",
             "Volume": f"{f['bytes']:,} B",
         })
 
@@ -65,7 +61,6 @@ def render_evidence_table(data, limit=None, mock_badge_html="", *args, **kwargs)
             "Proto": st.column_config.TextColumn("Proto", width="small"),
             "Forensic Indicator": st.column_config.TextColumn("Indicator", width="large"),
             "Risk Tier": st.column_config.TextColumn("Risk", width="small"),
-            "Packets": st.column_config.TextColumn("Pkts", width="small"),
             "Volume": st.column_config.TextColumn("Volume", width="small"),
         }
     )

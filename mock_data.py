@@ -98,7 +98,7 @@ DEMO_DATA = {
         "confidence": 0.67,
         "lead_time": "~3–4 min",
         "operational_impact": "Compromise of SSH jump host leading to internal segment penetration and persistence.",
-        "illustrative_guidance": "Illustrative analyst guidance — not a system recommendation: Evaluate pre-emptive rate limiting on port 22 and step-up auth for 10.0.4.0/24.",
+        "illustrative_guidance": "Evaluate pre-emptive rate limiting on port 22 and step-up auth for 10.0.4.0/24.",
     },
 
     "mitre": [

@@ -22,10 +22,11 @@ def create_attribution_chart(explanation_data):
             color="#00E5FF",
             line=dict(color="rgba(255, 255, 255, 0.2)", width=1)
         ),
-        text=[f"<b>{c*100:.0f}%</b> &nbsp;({d})" for c, d in zip(contributions, deltas)],
+        text=[f"<b>{c*100:.0f}%</b>" for c in contributions],
+        customdata=deltas,
         textposition="outside",
         textfont=dict(color="#FFFFFF", size=11, family="'JetBrains Mono', monospace"),
-        hovertemplate="<b>%{y}</b><br>Attribution Weight: %{x:.1%}<extra></extra>"
+        hovertemplate="<b>%{y}</b><br>Attribution Weight: %{x:.1%}<br>Signal Deviation: %{customdata}<extra></extra>"
     ))
 
     fig.update_layout(
@@ -56,7 +57,7 @@ def create_attribution_chart(explanation_data):
 def render_attack_stepper(mitre_data, current_step_idx=2):
     """
     Renders an executive horizontal MITRE ATT&CK killchain pipeline as a single continuous track.
-    Clearly demarcates confirmed past behavior from the predicted future threat stage.
+    Compact by default with click-to-expand details per Task 10.
     """
     segments_html = []
     for i, item in enumerate(mitre_data):
@@ -75,12 +76,17 @@ def render_attack_stepper(mitre_data, current_step_idx=2):
                 <div style="font-size: 0.95rem; font-weight: 700; color: #e8edf5; margin-bottom: 3px;">
                     {item['stage']}
                 </div>
-                <div style="font-size: 0.74rem; color: #9aa7bd; line-height: 1.3;">
-                    {item['description']}
+                <div style="font-size: 0.68rem; color: #2fb872; font-weight: 600; margin-top: 2px;">
+                    Historical Stage
                 </div>
-                <div style="font-size: 0.68rem; color: #2fb872; font-weight: 600; margin-top: 6px;">
-                    Historical Sequence
-                </div>
+                <details style="margin-top: 6px; cursor: pointer;">
+                    <summary style="font-size: 0.70rem; color: #2fb872; font-weight: 600; outline: none; user-select: none;">
+                        Details
+                    </summary>
+                    <div style="font-size: 0.74rem; color: #9aa7bd; line-height: 1.35; margin-top: 4px; padding-top: 4px; border-top: 1px dashed rgba(255, 255, 255, 0.1);">
+                        {item['description']}
+                    </div>
+                </details>
             </div>
             """
         elif i == current_step_idx:
@@ -98,12 +104,17 @@ def render_attack_stepper(mitre_data, current_step_idx=2):
                 <div style="font-size: 1.05rem; font-weight: 800; color: #ffffff; margin-bottom: 3px;">
                     {item['stage']}
                 </div>
-                <div style="font-size: 0.76rem; color: #e8edf5; line-height: 1.3; font-weight: 500;">
-                    {item['description']}
+                <div style="display: inline-block; background: rgba(229, 72, 77, 0.2); border: 1px solid #e5484d; border-radius: 4px; padding: 2px 6px; font-size: 0.70rem; color: #ffffff; font-weight: 700; margin-top: 2px; font-family: 'JetBrains Mono', monospace;">
+                    Elevated Risk · Horizon t+3
                 </div>
-                <div style="display: inline-block; background: rgba(229, 72, 77, 0.2); border: 1px solid #e5484d; border-radius: 4px; padding: 2px 6px; font-size: 0.70rem; color: #ffffff; font-weight: 700; margin-top: 6px; font-family: 'JetBrains Mono', monospace;">
-                    P = 67% · Lead Time ~3.5 min
-                </div>
+                <details style="margin-top: 6px; cursor: pointer;">
+                    <summary style="font-size: 0.70rem; color: #38bdf8; font-weight: 600; outline: none; user-select: none;">
+                        Details
+                    </summary>
+                    <div style="font-size: 0.74rem; color: #e8edf5; line-height: 1.35; margin-top: 4px; padding-top: 4px; border-top: 1px dashed rgba(255, 255, 255, 0.1);">
+                        {item['description']}
+                    </div>
+                </details>
             </div>
             """
         else:
@@ -120,12 +131,17 @@ def render_attack_stepper(mitre_data, current_step_idx=2):
                 <div style="font-size: 0.95rem; font-weight: 600; color: #9aa7bd; margin-bottom: 3px;">
                     {item['stage']}
                 </div>
-                <div style="font-size: 0.74rem; color: #64708a; line-height: 1.3;">
-                    {item['description']}
-                </div>
-                <div style="font-size: 0.68rem; color: #64708a; margin-top: 6px;">
+                <div style="font-size: 0.68rem; color: #64708a; margin-top: 2px;">
                     Horizon t+4 (Rollout)
                 </div>
+                <details style="margin-top: 6px; cursor: pointer;">
+                    <summary style="font-size: 0.70rem; color: #64708a; font-weight: 600; outline: none; user-select: none;">
+                        Details
+                    </summary>
+                    <div style="font-size: 0.74rem; color: #64708a; line-height: 1.35; margin-top: 4px; padding-top: 4px; border-top: 1px dashed rgba(255, 255, 255, 0.1);">
+                        {item['description']}
+                    </div>
+                </details>
             </div>
             """
         segments_html.append(segment)
@@ -183,8 +199,8 @@ def render_explanation_section(data):
                     Known Attack Escalation
                 </div>
                 <div style="font-size: 0.8rem; color: #CBD5E1; margin-top: 8px; line-height: 1.6;">
-                    • <b>Risk (67%):</b> Lateral pivot predicted at horizon <b>t+3</b>.<br>
-                    • <b>Novelty (0.23):</b> Known credential spray pattern (within normal envelope).
+                    • <b>Predicted Threat:</b> Lateral pivot predicted at horizon <b>t+3</b>.<br>
+                    • <b>Baseline Novelty:</b> Known credential spray pattern (within normal envelope).
                 </div>
             </div>
             <div style="border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 8px; font-size: 0.74rem; color: #64748B;">

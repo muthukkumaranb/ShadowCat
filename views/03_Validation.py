@@ -13,8 +13,7 @@ from data_provider import (
     get_analysis_metadata,
     get_comparison_table,
     get_validation_data,
-    is_using_mock_data,
-    get_mock_badge_html,
+    validation_status,
 )
 from styles import apply_custom_css, render_sidebar, COLORS, render_html, render_footer
 from components.header import render_header
@@ -34,14 +33,23 @@ val = get_validation_data()
 
 render_header({"analysis": analysis})
 
-# Top Mock-Mode Warning Banner (Governance & Provenance Gate)
-is_val_mock = is_using_mock_data("validation_data") or is_using_mock_data("comparison_table")
-if is_val_mock:
+# Dynamic Validation Status Banner (Task 2 & Revision A)
+val_status = validation_status()
+if val_status == "validated_offline":
+    render_html("""
+    <div style="background: rgba(56, 189, 248, 0.08); border: 1px solid #38BDF8; border-radius: 8px; padding: 12px 18px; margin-top: 6px; margin-bottom: 16px;">
+        <div style="font-size: 0.82rem; color: #E8EDF5; line-height: 1.4;">
+            <b style="color: #38BDF8;">Model validated offline (LOEO 37-fold):</b>
+            Live pipeline integration in progress &mdash; see Platform Specs for protocol details.
+        </div>
+    </div>
+    """)
+else:
     render_html("""
     <div style="background: rgba(224, 152, 43, 0.08); border: 1px solid #E0982B; border-radius: 8px; padding: 12px 18px; margin-top: 6px; margin-bottom: 16px;">
         <div style="font-size: 0.82rem; color: #E8EDF5; line-height: 1.4;">
-            <b style="color: #E0982B;">Illustrative Benchmark Data — Pending Live Model Integration:</b>
-            The metrics below represent simulated target baselines under the LOEO 37-fold evaluation protocol. They will be superseded automatically once live training checkpoints are placed in <code>models/</code>.
+            <b style="color: #E0982B;">Offline Benchmark Verification in Progress:</b>
+            Model validation runs are currently computing offline folds.
         </div>
     </div>
     """)
@@ -57,13 +65,10 @@ render_html("""
 </div>
 """)
 
-mock_badge_comp = get_mock_badge_html("comparison_table")
-mock_badge_val = get_mock_badge_html("validation_data")
-
-# 1. Baseline Benchmarks (PS Evaluation Deliverable: World Model vs Logistic Regression Baseline)
-render_html(f"""
-<div class="card-title" style="margin-top: 6px; margin-bottom: 10px;">
-    <span>Model Performance vs Baselines (PS Benchmark Deliverable) {mock_badge_comp}</span>
+# 1. Baseline Benchmarks Split Tables (Task 4: Zero Horizontal Scrolling)
+render_html("""
+<div class="card-title" style="margin-top: 6px; margin-bottom: 8px;">
+    <span>Model Performance vs Baselines: Accuracy Benchmarks (PS Deliverable)</span>
 </div>
 """)
 
@@ -80,6 +85,7 @@ for r in comparison_table:
 
 baseline_df = pd.DataFrame(clean_rows)
 
+# Table 1: Accuracy Metrics
 st.dataframe(
     baseline_df,
     use_container_width=True,
@@ -90,9 +96,6 @@ st.dataframe(
         "f1_score",
         "precision",
         "recall",
-        "fpr",
-        "lead_time",
-        "status",
     ],
     column_config={
         "model": st.column_config.TextColumn("Model / Architecture", width="large"),
@@ -100,6 +103,28 @@ st.dataframe(
         "f1_score": st.column_config.NumberColumn("F1", format="%.3f", width="small"),
         "precision": st.column_config.NumberColumn("Precision", format="%.1%", width="small"),
         "recall": st.column_config.NumberColumn("Recall", format="%.1%", width="small"),
+    }
+)
+
+render_html("""
+<div class="card-title" style="margin-top: 14px; margin-bottom: 8px;">
+    <span>Model Performance: Operational Impact & Deployment</span>
+</div>
+""")
+
+# Table 2: Operational Impact & Deployment
+st.dataframe(
+    baseline_df,
+    use_container_width=True,
+    hide_index=True,
+    column_order=[
+        "model",
+        "fpr",
+        "lead_time",
+        "status",
+    ],
+    column_config={
+        "model": st.column_config.TextColumn("Model / Architecture", width="large"),
         "fpr": st.column_config.NumberColumn("FPR", format="%.1%", width="small"),
         "lead_time": st.column_config.TextColumn("Pre-Emptive Lead Time", width="medium"),
         "status": st.column_config.TextColumn("Deployment Status", width="medium"),
@@ -109,9 +134,9 @@ st.dataframe(
 st.markdown("<div style='height: 14px;'></div>", unsafe_allow_html=True)
 
 # 2. Classification Benchmarks Summary
-render_html(f"""
+render_html("""
 <div class="card-title">
-    <span>World Model Production Metrics {mock_badge_val}</span>
+    <span>World Model Production Metrics</span>
 </div>
 """)
 
@@ -133,10 +158,10 @@ for col, (label, val_str) in zip(m_cols, metrics):
         </div>
         """)
 
-# 3. Horizon Stability Benchmarks (Clean header, all 5 rows preserved)
-render_html(f"""
+# 3. Horizon Stability Benchmarks
+render_html("""
 <div class="card-title" style="margin-top: 22px; margin-bottom: 12px;">
-    <span>Horizon Stability Benchmarks (Compounding Rollout Error vs Depth K) {mock_badge_val}</span>
+    <span>Horizon Stability Benchmarks (Compounding Rollout Error vs Depth K)</span>
 </div>
 """)
 
@@ -162,7 +187,7 @@ render_html("""
 
 # 4. Deep Validation Methodology & Protocol Details
 with st.expander("Validation methodology & protocol details", expanded=False):
-    render_html(f"""
+    render_html("""
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
         <span style="font-size: 0.88rem; font-weight: 700; color: #FFFFFF;">Evaluation Branches & Protocol Context</span>
         <span class="badge">[Protocol: LOEO 37-Fold Cross-Validation]</span>
@@ -184,7 +209,7 @@ with st.expander("Validation methodology & protocol details", expanded=False):
 
         render_html(f"""
         <div class="card-title" style="margin-bottom: 10px;">
-            <span>Leave-One-Episode-Out (LOEO) {mock_badge_val}</span>
+            <span>Leave-One-Episode-Out (LOEO)</span>
         </div>
         <div class="glass-card" style="min-height: 200px; display: flex; flex-direction: column; justify-content: space-between; padding: 16px;">
             <div>

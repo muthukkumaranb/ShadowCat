@@ -19,7 +19,6 @@ ADVANCED VISUAL & INTERACTIVE UPGRADES:
 
 GOVERNANCE COMPLIANCE:
 - Mandatory n=1 caption preserved verbatim.
-- Granular [MOCK] badges preserved via get_mock_badge_html.
 - 100% Offline / Air-Gapped compliant (0 CDN calls, zero external scripts).
 """
 
@@ -28,7 +27,7 @@ import math
 import streamlit as st
 import streamlit.components.v1 as components
 from styles import render_html, COLORS
-from data_provider import get_host_risk_graph, is_using_mock_data, get_mock_badge_html
+from data_provider import get_host_risk_graph, is_using_mock_data
 
 # Spatial layout coordinates and asset criticality metadata (Reference 5-host baseline)
 DEFAULT_NODE_METADATA = {
@@ -159,8 +158,6 @@ BASE_TOPOLOGY_EDGES = [
 
 def render_attack_graph_panel():
     """Renders the advanced visual attack graph and ranked host risk leaderboard."""
-    mock_badge = get_mock_badge_html("host_risk_graph")
-
     # Injected CSS to prevent any button text truncation in narrow columns
     st.markdown("""
     <style>
@@ -177,10 +174,10 @@ def render_attack_graph_panel():
     </style>
     """, unsafe_allow_html=True)
 
-    render_html(f"""
+    render_html("""
     <div style="margin-top: 26px; margin-bottom: 12px;">
         <div class="card-title">
-            <span>Dynamic Enterprise Attack Graph & Lateral Rollout {mock_badge}</span>
+            <span>Dynamic Enterprise Attack Graph & Lateral Rollout</span>
         </div>
         <div style="font-size: 0.80rem; color: #9AA7BD;">
             Multi-step lateral rollout across hosts.
@@ -245,7 +242,7 @@ def render_attack_graph_panel():
         render_html(f"""
         <div class="glass-card" style="padding: 10px 14px; margin-top: 6px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                <span class="metric-label" style="margin: 0; font-size: 0.70rem;">Rollout Uncertainty {mock_badge}</span>
+                <span class="metric-label" style="margin: 0; font-size: 0.70rem;">Rollout Uncertainty</span>
                 <span style="font-size: 0.82rem; font-weight: 800; color: {step_info['uncertainty_color']}; font-family: 'JetBrains Mono', monospace;">
                     {step_info['uncertainty_label']}
                 </span>
@@ -284,9 +281,9 @@ def render_attack_graph_panel():
         """)
 
     with col_hosts:
-        render_html(f"""
+        render_html("""
         <div style="font-size: 0.82rem; font-weight: 700; color: #E8EDF5; margin-bottom: 8px;">
-            Host Threat Distribution {mock_badge}
+            Host Threat Distribution
         </div>
         """)
 
@@ -356,7 +353,7 @@ def render_attack_graph_panel():
             "criticality_tier": "Tier 3 (Standard)",
             "active_ports": "TCP/445, TCP/22",
             "driving_indicators": "Network socket activity detected during current observation window.",
-            "containment_stance": "Illustrative analyst guidance — not a system recommendation: Audit incoming connections.",
+            "containment_stance": "Audit incoming connections.",
         })
 
         # Calculate multi-horizon trajectory progression for selected host across t -> t+4
@@ -402,7 +399,6 @@ def render_attack_graph_panel():
                     <span style="font-size: 0.88rem; font-weight: 700; color: #E8EDF5; font-family: 'JetBrains Mono', monospace;">
                         HOST TELEMETRY INSPECTOR: {selected_host_id}
                     </span>
-                    {mock_badge}
                     <span style="font-size: 0.74rem; color: #9AA7BD; margin-left: 8px;">
                         [{sh_role}]
                     </span>
@@ -720,28 +716,29 @@ def _build_attack_graph_svg(graph_data: dict, active_k: int, selected_host: str,
                 position: absolute;
                 top: 14px;
                 left: 16px;
-                background: rgba(13, 20, 36, 0.88);
+                background: rgba(13, 20, 36, 0.92);
                 backdrop-filter: blur(8px);
                 border: 1px solid #22304a;
                 border-radius: 6px;
-                padding: 8px 12px;
+                padding: 6px 10px;
                 font-size: 0.68rem;
                 color: #C5D1E0;
                 line-height: 1.4;
                 z-index: 10;
                 box-shadow: 0 4px 14px rgba(0,0,0,0.5);
-                pointer-events: none;
+                pointer-events: auto;
             }}
             .legend-title {{
                 font-weight: 800;
                 color: #E8EDF5;
                 font-size: 0.70rem;
-                margin-bottom: 4px;
+                margin-bottom: 2px;
                 display: flex;
                 align-items: center;
                 gap: 6px;
                 letter-spacing: 0.04em;
                 text-transform: uppercase;
+                cursor: pointer;
             }}
             .legend-row {{
                 display: flex;
@@ -798,22 +795,26 @@ def _build_attack_graph_svg(graph_data: dict, active_k: int, selected_host: str,
     </head>
     <body>
         <div id="canvas-container">
-            <!-- Compact Legend (Task 4) -->
-            <div class="canvas-legend">
-                <div class="legend-title">Graph Encoding</div>
-                <div class="legend-row">
-                    <span class="color-dot" style="background:#FF453A;"></span> Critical (>70%)
-                    <span class="color-dot" style="background:#FF9F0A; margin-left:4px;"></span> Elevated (>35%)
-                    <span class="color-dot" style="background:#30D158; margin-left:4px;"></span> Normal
+            <!-- Compact Collapsible Legend (Task 8) -->
+            <details class="canvas-legend">
+                <summary class="legend-title">
+                    <span>ⓘ Graph Encoding Key</span>
+                </summary>
+                <div style="margin-top:4px; border-top:1px dashed #22304a; padding-top:4px;">
+                    <div class="legend-row">
+                        <span class="color-dot" style="background:#FF453A;"></span> Critical (&gt;70%)
+                        <span class="color-dot" style="background:#FF9F0A; margin-left:4px;"></span> Elevated (&gt;35%)
+                        <span class="color-dot" style="background:#30D158; margin-left:4px;"></span> Normal
+                    </div>
+                    <div class="legend-row">
+                        <span style="font-weight:700; color:#38BDF8;">Node Size:</span> Asset Criticality (DC=38px, GW=30px, EP=24px)
+                    </div>
+                    <div class="legend-row">
+                        <span class="path-dash-sample"></span> Active Rollout Path &nbsp;
+                        <span class="path-solid-sample"></span> Enterprise Topology
+                    </div>
                 </div>
-                <div class="legend-row">
-                    <span style="font-weight:700; color:#38BDF8;">Node Size:</span> Asset Criticality (DC=38px, GW=30px, EP=24px)
-                </div>
-                <div class="legend-row">
-                    <span class="path-dash-sample"></span> Active Rollout Path &nbsp;
-                    <span class="path-solid-sample"></span> Enterprise Topology
-                </div>
-            </div>
+            </details>
 
             <!-- Floating Tooltip -->
             <div id="graph-tooltip"></div>

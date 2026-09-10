@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """
 SHADOWCAT - Comprehensive Multi-Page Regression & Governance Audit
-Tests all 7 sidebar views against strict pass/fail criteria:
+Tests all 5 primary views against strict pass/fail criteria:
   (a) Zero unhandled exceptions / tracebacks
-  (b) Zero placeholder / debug strings ('empty', 'traceback', 'todo', etc.)
-  (c) Proper mock-data governance (badges or illustrative banner)
+  (b) Zero placeholder / debug strings ('traceback', 'nameerror', 'keyerror', etc.)
+  (c) Proper mock-data governance (sticky banner, offline validation banner, ZERO per-widget badges)
   (d) Header uniqueness and layout integrity
+  (e) Zero emojis in rendered output
+  (f) Revision G compliance: Assert ZERO call sites of get_mock_badge_html() outside header.py
 """
 
 import os
@@ -19,13 +21,11 @@ sys.path.insert(0, str(ROOT))
 if sys.platform == "win32":
     sys.stdout.reconfigure(encoding="utf-8")
 
-import data_provider
-
 PAGES = [
     {
         "name": "Threat Forecast",
         "file": "views/01_Forecast.py",
-        "requires_mock_badge": True,
+        "requires_banner": True,
         "unique_headers": [
             "Attack Risk Trajectory & Epistemic Uncertainty",
             "Dynamic Enterprise Attack Graph & Lateral Rollout",
@@ -35,32 +35,78 @@ PAGES = [
     {
         "name": "Evidence & Attribution",
         "file": "views/02_Evidence.py",
-        "requires_mock_badge": True,
-        "unique_headers": ["Correlated Network Flow Evidence", "Telemetry Evidence & Forensic Attribution"],
+        "requires_banner": True,
+        "unique_headers": [
+            "Correlated Network Flow Evidence",
+            "Telemetry Evidence & Forensic Attribution"
+        ],
     },
     {
         "name": "Telemetry Ingestion",
         "file": "views/01a_Input.py",
-        "requires_mock_badge": False,
-        "unique_headers": ["Telemetry Ingestion & Dataset Replay"],
+        "requires_banner": True,
+        "unique_headers": [
+            "Telemetry Ingestion & Dataset Replay"
+        ],
     },
     {
         "name": "Validation & Benchmarks",
         "file": "views/03_Validation.py",
-        "requires_mock_badge": True,
         "requires_banner": True,
-        "unique_headers": ["Model Performance vs Baselines", "Horizon Stability Benchmarks"],
+        "unique_headers": [
+            "Model Performance vs Baselines",
+            "Horizon Stability Benchmarks"
+        ],
     },
     {
         "name": "Platform Specifications",
         "file": "views/05_About.py",
-        "requires_mock_badge": True,
         "requires_banner": True,
-        "unique_headers": ["About SHADOWCAT", "Core Operational Capabilities"],
+        "unique_headers": [
+            "Platform Specifications",
+            "Core Operational Capabilities"
+        ],
     },
 ]
 
 FORBIDDEN_DEBUG_STRINGS = ["traceback", "nameerror", "keyerror", "typeerror", "syntaxerror"]
+
+def check_revision_g_badge_call_sites() -> tuple[bool, list[str]]:
+    """
+    Revision G: Assert zero call sites of get_mock_badge_html() outside header.py across
+    all views, components, and primary application files.
+    """
+    violations = []
+    targets = ["views", "components", "app.py", "styles.py"]
+
+    for t in targets:
+        target_path = ROOT / t
+        if target_path.is_file():
+            files = [target_path]
+        elif target_path.is_dir():
+            files = list(target_path.rglob("*.py"))
+        else:
+            continue
+
+        for f in files:
+            # Skip header.py as allowed by Revision G specification
+            if f.name == "header.py":
+                continue
+
+            content = f.read_text(encoding="utf-8", errors="ignore")
+            for idx, line in enumerate(content.splitlines(), start=1):
+                stripped = line.strip()
+                # Ignore comments
+                if stripped.startswith("#"):
+                    continue
+                if "get_mock_badge_html(" in line:
+                    violations.append(
+                        f"{f.relative_to(ROOT)}:{idx}: Unauthorized call site of get_mock_badge_html(): {stripped}"
+                    )
+
+    passed = (len(violations) == 0)
+    return passed, violations
+
 
 def audit_page(page_info: dict) -> dict:
     page_name = page_info["name"]
@@ -72,6 +118,7 @@ def audit_page(page_info: dict) -> dict:
         "no_debug_strings": False,
         "mock_governed": False,
         "layout_clean": False,
+        "zero_emojis": False,
         "passed": False,
         "errors": []
     }
@@ -108,21 +155,24 @@ def audit_page(page_info: dict) -> dict:
         if not any("forbidden" in e or "contains literal 'empty'" in e for e in result["errors"]):
             result["no_debug_strings"] = True
 
-        # (c) Mock governance check
-        has_badge = "badge-mock" in full_html
-        has_banner = "Illustrative Benchmark Data" in full_html
+        # (c) Mock governance & badge deprecation check
+        has_per_widget_badge = "badge-mock" in full_html
+        if has_per_widget_badge:
+            result["errors"].append("Deprecated per-widget [MOCK] badge found in rendered HTML")
+
+        has_header_banner = (
+            "Running on benchmark data" in full_html
+            or "BENCHMARK MODE" in full_html
+            or "● LIVE" in full_html
+            or "Model validated offline" in full_html
+        )
 
         if page_info.get("requires_banner"):
-            if not has_banner:
-                result["errors"].append("Missing required mock warning banner")
-        if page_info.get("requires_mock_badge"):
-            if not has_badge:
-                result["errors"].append("Missing required [MOCK] badges")
-
-        if page_info.get("requires_mock_badge") or page_info.get("requires_banner"):
-            result["mock_governed"] = (has_badge or has_banner)
+            if not has_header_banner:
+                result["errors"].append("Missing required sticky benchmark or offline validation banner")
+            result["mock_governed"] = (not has_per_widget_badge) and has_header_banner
         else:
-            result["mock_governed"] = True
+            result["mock_governed"] = (not has_per_widget_badge)
 
         # (d) Unique headers check
         for header in page_info.get("unique_headers", []):
@@ -145,7 +195,7 @@ def audit_page(page_info: dict) -> dict:
             cat = unicodedata.category(ch)
             if cat in ('So', 'Sk') or 0x1F000 <= cp <= 0x1FFFF or 0x2600 <= cp <= 0x27BF or 0xFE00 <= cp <= 0xFE0F:
                 rendered_emojis.append(ch)
-        
+
         result["zero_emojis"] = len(rendered_emojis) == 0
         if rendered_emojis:
             result["errors"].append(f"Found {len(rendered_emojis)} forbidden emoji(s) in rendered output: {set(rendered_emojis)}")
@@ -169,6 +219,18 @@ def main():
     print("SHADOWCAT - Comprehensive Multi-Page Regression & Governance Audit")
     print("=" * 70)
 
+    # 1. Revision G Gate: Assert zero call sites of get_mock_badge_html() outside header.py
+    print("\n--- Revision G Code Inspection: Assert 0 Call Sites of get_mock_badge_html() ---")
+    call_sites_ok, call_site_violations = check_revision_g_badge_call_sites()
+    if call_sites_ok:
+        print("[PASS] Revision G Verified: Exactly ZERO call sites of get_mock_badge_html() outside header.py.")
+    else:
+        print(f"[FAIL] Revision G Violation: Found {len(call_site_violations)} forbidden call sites:")
+        for v in call_site_violations:
+            print(f"   • {v}")
+
+    # 2. Page-by-page audit
+    print("\n--- Multi-Page Rendering & Governance Audit ---")
     results = []
     for page in PAGES:
         res = audit_page(page)
@@ -185,11 +247,11 @@ def main():
                 print(f"     ⚠️  {err}")
 
     print("\n" + "=" * 70)
-    all_passed = all(r["passed"] for r in results)
+    all_passed = call_sites_ok and all(r["passed"] for r in results)
     if all_passed:
-        print("ALL 5 PAGES PASSED ALL REGRESSION AND GOVERNANCE CHECKS.")
+        print("ALL 5 PAGES AND REVISION G GOVERNANCE CHECKS PASSED.")
     else:
-        print("SOME PAGES FAILED. SEE DETAILS ABOVE.")
+        print("SOME CHECKS FAILED. SEE DETAILS ABOVE.")
     print("=" * 70)
 
     if not all_passed:

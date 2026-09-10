@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+import math
 import streamlit as st
 import plotly.graph_objects as go
 from data_provider import (
@@ -14,8 +15,6 @@ from data_provider import (
     get_forecast_trajectory,
     get_novelty_score,
     get_mitre_data,
-    is_using_mock_data,
-    get_mock_badge_html,
 )
 from styles import apply_custom_css, render_sidebar, COLORS, render_html, render_footer
 from components.header import render_header
@@ -55,8 +54,15 @@ else:
 
 pred_stage = focal_step.get("stage", "Lateral Movement")
 pred_horizon = f"{focal_step.get('horizon', 't+3')} ({focal_step.get('time_ahead', '3 min')})"
-pred_prob = focal_step.get("probability", 0.67)
-pred_lead_time = "~3.5 min"
+pred_prob_raw = focal_step.get("probability", 0.67)
+try:
+    pred_prob = float(pred_prob_raw) if pred_prob_raw is not None else 0.0
+    if math.isnan(pred_prob):
+        pred_prob = 0.0
+except (TypeError, ValueError):
+    pred_prob = 0.0
+pred_prob = max(0.0, min(1.0, pred_prob))
+pred_lead_time = focal_step.get("lead_time", "+3.5 min")
 
 # Color/severity thresholds: Critical >70%, Elevated >35%, Normal <=35%
 if pred_prob > 0.70:
@@ -99,9 +105,6 @@ render_html(f"""
 """)
 
 # 1. High-Density Borderless KPI Row (Divided by hairlines #1c2740)
-mock_badge_traj = get_mock_badge_html("forecast_trajectory")
-mock_badge_nov = get_mock_badge_html("novelty_score")
-
 render_html(f"""
 <div style="display: flex; border: 1px solid #22304a; border-radius: 8px; background: #131b2c; margin-top: 10px; margin-bottom: 14px;">
     <div style="flex: 1; padding: 14px 18px; border-right: 1px solid #22304a;">
@@ -109,7 +112,7 @@ render_html(f"""
             Pre-Emptive Lead Time
         </div>
         <div style="font-size: 1.65rem; font-weight: 800; color: #38BDF8; font-family: 'JetBrains Mono', monospace; margin: 2px 0;">
-            +3.5 min
+            {pred_lead_time}
         </div>
         <div style="font-size: 0.70rem; color: #2FB872; font-weight: 600;">
             Active pre-breach window
@@ -117,13 +120,13 @@ render_html(f"""
     </div>
     <div style="flex: 1; padding: 14px 18px; border-right: 1px solid #22304a;">
         <div style="font-size: 0.68rem; font-weight: 700; color: #9AA7BD; text-transform: uppercase; letter-spacing: 0.05em;">
-            Projected Threat Risk {mock_badge_traj}
+            Projected Threat Risk
         </div>
         <div style="font-size: 1.65rem; font-weight: 800; color: #E5484D; font-family: 'JetBrains Mono', monospace; margin: 2px 0;">
-            67%
+            {pred_prob:.0%}
         </div>
         <div style="font-size: 0.70rem; color: #E0982B; font-weight: 600;">
-            Escalation at Horizon t+3 (±18%)
+            Escalation at Horizon {focal_step.get('horizon', 't+3')} (±{focal_step.get('uncertainty', 0.18)*100:.0f}%)
         </div>
     </div>
     <div style="flex: 1; padding: 14px 18px; border-right: 1px solid #22304a;">
@@ -142,10 +145,10 @@ render_html(f"""
             Predicted ATT&CK Stage
         </div>
         <div style="font-size: 1.35rem; font-weight: 800; color: #FFFFFF; margin: 4px 0;">
-            Lateral Movement
+            {pred_stage}
         </div>
         <div style="font-size: 0.70rem; color: #38BDF8; font-family: 'JetBrains Mono', monospace;">
-            TA0008 · Subnet 10.0.4.0/24
+            {focal_step.get('tactic_id', 'TA0008')} · Subnet 10.0.4.0/24
         </div>
     </div>
 </div>
@@ -166,9 +169,8 @@ render_html(f"""
     <div style="display: flex; align-items: center; gap: 8px;">
         <span style="font-size: 0.74rem; color: #9AA7BD;">Novelty Drift:</span>
         <span style="background: rgba(47, 184, 114, 0.12); border: 1px solid #2FB872; color: #2FB872; padding: 1px 7px; border-radius: 4px; font-size: 0.72rem; font-weight: 700; font-family: 'JetBrains Mono', monospace;">
-            {current_state['novelty_score']:.2f} (In Envelope)
+            Nominal (In Envelope)
         </span>
-        {mock_badge_nov}
     </div>
 </div>
 """)
@@ -177,11 +179,11 @@ render_html(f"""
 render_html(f"""
 <div style="margin-bottom: 10px;">
     <div class="card-title">
-        <span>Attack Risk Trajectory & Epistemic Uncertainty {mock_badge_traj}</span>
+        <span>Attack Risk Trajectory & Epistemic Uncertainty</span>
         <span class="badge">{forecast['source_branch']} · {forecast['protocol']}</span>
     </div>
-    <div style="font-size: 0.80rem; color: #9AA7BD;">
-        Click any marker to inspect.
+    <div style="font-size: 0.78rem; color: #9AA7BD;">
+        Multi-step forward trajectory simulation across horizons t+1 &rarr; t+4 with compounding uncertainty bounds.
     </div>
 </div>
 """)
@@ -218,12 +220,54 @@ selected_label = st.radio(
     label_visibility="collapsed",
     key="horizon_radio_selector"
 )
+render_html("""
+<div style="font-size: 0.72rem; color: #64708A; margin-top: 4px; margin-bottom: 8px;">
+    <i>Interactive rollout capped at t+4 &mdash; reliability drops to exploratory beyond this point (see Validation &rarr; Horizon Stability for H=5 benchmark bound).</i>
+</div>
+""")
+
 selected_idx = step_options.index(selected_label)
 st.session_state["selected_horizon_idx"] = selected_idx
 sel = forecast["raw_steps"][selected_idx]
 
-# 6. Horizon Metrics (Bordered high-density row)
-risk_color = "#2FB872" if sel['probability'] < 0.25 else "#E0982B" if sel['probability'] < 0.50 else "#E5484D"
+# 6. Horizon Metrics (Bordered high-density row with edge case sanitization)
+sel_prob_raw = sel.get("probability", 0.0)
+try:
+    sel_prob = float(sel_prob_raw) if sel_prob_raw is not None else 0.0
+    if math.isnan(sel_prob):
+        sel_prob = 0.0
+except (TypeError, ValueError):
+    sel_prob = 0.0
+sel_prob = max(0.0, min(1.0, sel_prob))
+
+sel_unc_raw = sel.get("uncertainty", 0.0)
+try:
+    sel_unc = float(sel_unc_raw) if sel_unc_raw is not None else 0.0
+    if math.isnan(sel_unc):
+        sel_unc = 0.0
+except (TypeError, ValueError):
+    sel_unc = 0.0
+sel_unc = max(0.0, min(1.0, sel_unc))
+
+sel_lb_raw = sel.get("lower_bound", 0.0)
+try:
+    sel_lb = float(sel_lb_raw) if sel_lb_raw is not None else 0.0
+    if math.isnan(sel_lb):
+        sel_lb = 0.0
+except (TypeError, ValueError):
+    sel_lb = 0.0
+sel_lb = max(0.0, min(1.0, sel_lb))
+
+sel_ub_raw = sel.get("upper_bound", 1.0)
+try:
+    sel_ub = float(sel_ub_raw) if sel_ub_raw is not None else 1.0
+    if math.isnan(sel_ub):
+        sel_ub = 1.0
+except (TypeError, ValueError):
+    sel_ub = 1.0
+sel_ub = max(0.0, min(1.0, sel_ub))
+
+risk_color = "#2FB872" if sel_prob < 0.25 else "#E0982B" if sel_prob < 0.50 else "#E5484D"
 error_mult = [1.0, 1.8, 3.0, 4.5][selected_idx]
 reliability = "Automated Alerting" if selected_idx <= 1 else "Analyst Escalation" if selected_idx == 2 else "Exploratory Trend"
 
@@ -236,13 +280,13 @@ render_html(f"""
     </div>
     <div style="flex: 1; padding: 12px 16px; border-right: 1px solid #22304a;">
         <div class="metric-label">Threat Risk</div>
-        <div style="font-size: 1.45rem; font-weight: 800; color: {risk_color}; font-family: 'JetBrains Mono', monospace;">{sel['probability']:.0%}</div>
+        <div style="font-size: 1.45rem; font-weight: 800; color: {risk_color}; font-family: 'JetBrains Mono', monospace;">{sel_prob:.0%}</div>
         <div style="font-size: 0.74rem; color: #9AA7BD;">Stage: <b style="color: #E8EDF5;">{sel['stage']}</b></div>
     </div>
     <div style="flex: 1; padding: 12px 16px; border-right: 1px solid #22304a;">
         <div class="metric-label">Epistemic Variance</div>
-        <div style="font-size: 1.45rem; font-weight: 800; color: #E0982B; font-family: 'JetBrains Mono', monospace;">±{sel['uncertainty']*100:.0f}%</div>
-        <div style="font-size: 0.74rem; color: #9AA7BD;">Bounds: <b style="color: #E8EDF5;">[{sel['lower_bound']:.0%} – {sel['upper_bound']:.0%}]</b></div>
+        <div style="font-size: 1.45rem; font-weight: 800; color: #E0982B; font-family: 'JetBrains Mono', monospace;">±{sel_unc*100:.0f}%</div>
+        <div style="font-size: 0.74rem; color: #9AA7BD;">Bounds: <b style="color: #E8EDF5;">[{sel_lb:.0%} – {sel_ub:.0%}]</b></div>
     </div>
     <div style="flex: 1; padding: 12px 16px;">
         <div class="metric-label">Drift Multiplier</div>
@@ -253,10 +297,10 @@ render_html(f"""
 """)
 
 # 7. Continuous MITRE ATT&CK Killchain Pipeline
-render_html(f"""
+render_html("""
 <div style="margin-top: 18px; margin-bottom: 8px;">
     <div class="card-title">
-        <span>MITRE ATT&CK Killchain Progression {get_mock_badge_html('mitre_data')}</span>
+        <span>MITRE ATT&CK Killchain Progression</span>
     </div>
 </div>
 """)
@@ -266,10 +310,10 @@ render_attack_stepper(mitre, current_step_idx=2)
 render_attack_graph_panel()
 
 # 9. Response Lead Time vs Baselines
-render_html(f"""
+render_html("""
 <div style="margin-top: 26px; margin-bottom: 10px;">
     <div class="card-title">
-        <span>Pre-Emptive Response Lead Time vs Baselines {mock_badge_traj}</span>
+        <span>Pre-Emptive Response Lead Time vs Baselines</span>
     </div>
 </div>
 """)

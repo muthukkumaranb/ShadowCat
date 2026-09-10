@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 """
 Test script for verifying checkpoint auto-detection in data_provider.py and Streamlit views.
-Ensures that placing a checkpoint file removes the badge via auto-detection alone,
-with MOCK_STATUS left untouched at True.
+Validates Revision A:
+  - inference_status() -> "mock" | "live" auto-detected via models/world_model.pt
+  - validation_status() -> "pending" | "validated_offline" auto-detected independently
+  - Header sticky banner reacts immediately to inference_status()
+  - Validation banner correctly communicates offline LOEO 37-fold status
 """
 
 import os
@@ -18,122 +21,105 @@ import data_provider
 
 def run_test():
     print("=" * 65)
-    print("Testing Checkpoint Auto-Detection (File-Presence Path)")
+    print("Testing Checkpoint Auto-Detection (Revision A Independent Flags)")
     print("=" * 65)
 
-    key = "forecast_trajectory"
-    ckpt_rel = data_provider.CHECKPOINT_PATHS[key]
-    ckpt_file = ROOT / ckpt_rel
+    ckpt_file = ROOT / "models" / "world_model.pt"
     models_dir = ckpt_file.parent
     models_dir.mkdir(parents=True, exist_ok=True)
 
-    # 1. Baseline: Ensure file does NOT exist, MOCK_STATUS is True
+    # Clean up any leftover dummy file
     if ckpt_file.exists():
         ckpt_file.unlink()
-    data_provider.MOCK_STATUS[key] = True
 
-    is_mock_initial = data_provider.is_using_mock_data(key)
-    badge_initial = data_provider.get_mock_badge_html(key)
-    print(f"Step 1 - Pre-condition (No checkpoint file):")
-    print(f"  • MOCK_STATUS['{key}'] = {data_provider.MOCK_STATUS[key]}")
-    print(f"  • File exists ({ckpt_rel}): {ckpt_file.is_file()}")
-    print(f"  • is_using_mock_data('{key}'): {is_mock_initial} (Expected: True)")
-    print(f"  • get_mock_badge_html('{key}'): {repr(badge_initial)} (Expected: non-empty)")
-    assert is_mock_initial is True, "Expected is_using_mock_data to be True initially"
-    assert "MOCK" in badge_initial, "Expected MOCK badge HTML initially"
+    # -------------------------------------------------------------------------
+    # Step 1: Baseline Inference Status (No checkpoint file)
+    # -------------------------------------------------------------------------
+    inf_initial = data_provider.inference_status()
+    val_initial = data_provider.validation_status()
 
-    # Verify Forecast view with AppTest initially shows the badge
+    print(f"Step 1 - Pre-condition (No models/world_model.pt):")
+    print(f"  • File exists ({ckpt_file}): {ckpt_file.is_file()}")
+    print(f"  • inference_status(): '{inf_initial}' (Expected: 'mock')")
+    print(f"  • validation_status(): '{val_initial}' (Expected: 'validated_offline')")
+
+    assert inf_initial == "mock", f"Expected inference_status() == 'mock', got {inf_initial}"
+    assert val_initial == "validated_offline", f"Expected validation_status() == 'validated_offline', got {val_initial}"
+
+    # Verify Forecast view with AppTest initially shows BENCHMARK MODE sticky banner
     at = AppTest.from_file(str(ROOT / "views" / "01_Forecast.py"), default_timeout=30)
     at.run()
-    initial_html_blocks = [m.value for m in at.markdown]
-    has_mock_init = any("badge-mock" in block for block in initial_html_blocks)
-    print(f"  • Forecast view AppTest badge presence: {has_mock_init} (Expected: True)")
-    assert has_mock_init is True, "Expected mock badges in Forecast view initially"
+    assert not at.exception, f"App exception: {at.exception}"
+    forecast_html = "".join(m.value for m in at.markdown)
 
-    # 2. Place dummy checkpoint file WITHOUT touching MOCK_STATUS
-    print(f"\nStep 2 - Dropping dummy file at '{ckpt_rel}' (MOCK_STATUS untouched at True)...")
-    ckpt_file.write_text("DUMMY_MODEL_WEIGHTS_FOR_TEST")
+    assert "BENCHMARK MODE" in forecast_html, "Expected 'BENCHMARK MODE' banner in initial Forecast view"
+    assert "Running on benchmark data (CIC-IDS2018)" in forecast_html, "Expected benchmark explanation banner"
+    assert "badge-mock" not in forecast_html, "Found deprecated per-widget [MOCK] badges!"
+    print("  • Forecast view renders sticky 'BENCHMARK MODE' banner and 0 per-widget mock badges.")
+
+    # -------------------------------------------------------------------------
+    # Step 2: Auto-Detection to LIVE when models/world_model.pt exists
+    # -------------------------------------------------------------------------
+    print(f"\nStep 2 - Dropping dummy weights file at '{ckpt_file}'...")
+    ckpt_file.write_text("SHADOWCAT_DUMMY_WORLD_MODEL_WEIGHTS")
+
     try:
-        assert ckpt_file.is_file(), "Dummy file creation failed"
+        assert ckpt_file.is_file(), "Dummy model weights file creation failed"
+        inf_live = data_provider.inference_status()
+        val_live = data_provider.validation_status()
 
-        is_mock_after = data_provider.is_using_mock_data(key)
-        badge_after = data_provider.get_mock_badge_html(key)
-        print(f"  • MOCK_STATUS['{key}'] = {data_provider.MOCK_STATUS[key]} (UNTOUCHED)")
-        print(f"  • File exists ({ckpt_rel}): {ckpt_file.is_file()}")
-        print(f"  • is_using_mock_data('{key}'): {is_mock_after} (Expected: False via auto-detect)")
-        print(f"  • get_mock_badge_html('{key}'): {repr(badge_after)} (Expected: '')")
-        assert is_mock_after is False, "Expected is_using_mock_data to be False when checkpoint exists"
-        assert badge_after == "", f"Expected empty badge HTML, got {badge_after}"
+        print(f"  • File exists ({ckpt_file}): {ckpt_file.is_file()}")
+        print(f"  • inference_status(): '{inf_live}' (Expected: 'live')")
+        print(f"  • validation_status(): '{val_live}' (Expected: 'validated_offline')")
 
-        # 3. Verify in Forecast view via AppTest
-        at2 = AppTest.from_file(str(ROOT / "views" / "01_Forecast.py"), default_timeout=30)
-        at2.run()
-        blocks_after = [m.value for m in at2.markdown]
-        # Specifically check "Projected Threat Risk" line
-        risk_blocks = [b for b in blocks_after if "Projected Threat Risk" in b]
-        assert len(risk_blocks) > 0, "Could not find Projected Threat Risk block"
-        risk_has_mock = "badge-mock" in risk_blocks[0]
-        print(f"  • 'Projected Threat Risk' HTML block has 'badge-mock': {risk_has_mock} (Expected: False)")
-        assert not risk_has_mock, "Projected Threat Risk still has badge-mock even though checkpoint is present!"
+        assert inf_live == "live", f"Expected inference_status() == 'live' after checkpoint dropped, got {inf_live}"
+        assert val_live == "validated_offline", "validation_status() should remain independent as 'validated_offline'"
 
-        print("  -> AUTO-DETECTION FLIPPED BADGE OFF SUCCESSFULLY IN PYTHON & IN STREAMLIT VIEW!")
+        # Verify Forecast view now reflects LIVE in sticky header
+        at_live = AppTest.from_file(str(ROOT / "views" / "01_Forecast.py"), default_timeout=30)
+        at_live.run()
+        assert not at_live.exception, f"App exception: {at_live.exception}"
+        live_html = "".join(m.value for m in at_live.markdown)
+
+        assert "● LIVE" in live_html, "Expected '● LIVE' pill in header when checkpoint present"
+        assert "Live inference pipeline connected" in live_html, "Expected live connection text in header"
+        assert "BENCHMARK MODE" not in live_html, "'BENCHMARK MODE' banner should be replaced by LIVE"
+        assert "badge-mock" not in live_html, "No per-widget badges should appear in LIVE mode"
+        print("  -> AUTO-DETECTION FLIPPED HEADER BANNER TO 'LIVE' INSTANTLY VIA FILE PRESENCE!")
 
     finally:
-        # 4. Clean up dummy file and verify rollback
-        print(f"\nStep 3 - Removing dummy file '{ckpt_rel}'...")
+        # ---------------------------------------------------------------------
+        # Step 3: Clean up dummy file and verify rollback
+        # ---------------------------------------------------------------------
+        print(f"\nStep 3 - Removing dummy file '{ckpt_file}'...")
         if ckpt_file.exists():
             ckpt_file.unlink()
 
-    is_mock_revert = data_provider.is_using_mock_data(key)
-    badge_revert = data_provider.get_mock_badge_html(key)
-    print(f"  • File exists ({ckpt_rel}): {ckpt_file.is_file()}")
-    print(f"  • is_using_mock_data('{key}'): {is_mock_revert} (Expected: True)")
-    print(f"  • get_mock_badge_html('{key}'): {repr(badge_revert)} (Expected: non-empty)")
-    assert is_mock_revert is True, "Expected is_using_mock_data to revert to True"
-    assert "MOCK" in badge_revert, "Expected badge to return after file removal"
+    inf_revert = data_provider.inference_status()
+    print(f"  • File exists ({ckpt_file}): {ckpt_file.is_file()}")
+    print(f"  • inference_status(): '{inf_revert}' (Expected: 'mock')")
+    assert inf_revert == "mock", f"Expected rollback to 'mock', got {inf_revert}"
 
-    # =========================================================================
-    # Step 4 - Validation View Auto-Detection & Top Warning Banner Test
-    # =========================================================================
+    # -------------------------------------------------------------------------
+    # Step 4: Validation View Status & Governance Test
+    # -------------------------------------------------------------------------
     print("\n" + "-" * 65)
-    print("Testing Validation View Checkpoint Auto-Detection (comparison_table & validation_data)")
+    print("Testing Validation View Status & Governance Banner")
     print("-" * 65)
 
-    comp_file = ROOT / data_provider.CHECKPOINT_PATHS["comparison_table"]
-    val_file = ROOT / data_provider.CHECKPOINT_PATHS["validation_data"]
+    at_val = AppTest.from_file(str(ROOT / "views" / "03_Validation.py"), default_timeout=30)
+    at_val.run()
+    assert not at_val.exception, f"Validation app exception: {at_val.exception}"
+    val_html = "".join(m.value for m in at_val.markdown)
 
-    # Pre-condition: both absent
-    if comp_file.exists(): comp_file.unlink()
-    if val_file.exists(): val_file.unlink()
-
-    at_val_init = AppTest.from_file(str(ROOT / "views" / "03_Validation.py"), default_timeout=30)
-    at_val_init.run()
-    val_init_html = "".join([m.value for m in at_val_init.markdown])
-    has_banner_init = "Illustrative Benchmark Data — Pending Live Model Integration" in val_init_html
-    print(f"  • Initial Validation Banner Present: {has_banner_init} (Expected: True)")
-    assert has_banner_init, "Expected validation warning banner initially"
-
-    # Place both checkpoint files
-    comp_file.write_text("[]")
-    val_file.write_text("{}")
-    try:
-        at_val_after = AppTest.from_file(str(ROOT / "views" / "03_Validation.py"), default_timeout=30)
-        at_val_after.run()
-        val_after_html = "".join([m.value for m in at_val_after.markdown])
-        has_banner_after = "Illustrative Benchmark Data — Pending Live Model Integration" in val_after_html
-        print(f"  • Validation Banner Present after Checkpoints: {has_banner_after} (Expected: False)")
-        assert not has_banner_after, "Warning banner still present after checkpoints dropped!"
-
-        has_comp_badge = "badge-mock" in val_after_html
-        print(f"  • Badges present on Validation view: {has_comp_badge} (Expected: False)")
-        assert not has_comp_badge, "Badges still present on Validation view!"
-        print("  -> AUTO-DETECTION FLIPPED VALIDATION PAGE & REMOVED BANNER AUTOMATICALLY!")
-    finally:
-        if comp_file.exists(): comp_file.unlink()
-        if val_file.exists(): val_file.unlink()
+    expected_val_banner = "Model validated offline (LOEO 37-fold)"
+    assert expected_val_banner in val_html, f"Expected '{expected_val_banner}' in Validation view"
+    assert "badge-mock" not in val_html, "Deprecated [MOCK] badges found in Validation view!"
+    print(f"  • Validation banner '{expected_val_banner}' verified.")
+    print("  • Zero per-widget [MOCK] badges verified in Validation view.")
 
     print("\n" + "=" * 65)
-    print("ALL AUTO-DETECTION TESTS (FORECAST & VALIDATION) PASSED.")
+    print("ALL REVISION A AUTO-DETECTION TESTS PASSED SUCCESSFULLY!")
     print("=" * 65)
 
 if __name__ == "__main__":

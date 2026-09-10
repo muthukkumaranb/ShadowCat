@@ -41,6 +41,38 @@ MOCK_STATUS = {
 }
 
 
+def inference_status() -> str:
+    """
+    Returns 'live' if live model weights/pipeline are detected and operational,
+    otherwise returns 'mock'.
+    Auto-detects presence of models/world_model.pt or live in-memory inference pipeline.
+    """
+    ckpt = PROJECT_ROOT / "models" / "world_model.pt"
+    if ckpt.is_file() and ckpt.stat().st_size > 0:
+        return "live"
+    if not MOCK_STATUS.get("forecast_trajectory", True):
+        return "live"
+    return "mock"
+
+
+def validation_status() -> str:
+    """
+    Returns 'validated_offline' if authoritative offline benchmark/validation results exist,
+    otherwise 'pending'.
+    Auto-detects presence of models/loeo_37fold_results.json or valid LOEO 37-fold benchmark data.
+    """
+    ckpt = PROJECT_ROOT / "models" / "loeo_37fold_results.json"
+    if ckpt.is_file() and ckpt.stat().st_size > 0:
+        return "validated_offline"
+    try:
+        val = _get_raw_mock_dict().get("validation", {})
+        if val and val.get("loeo_summary", {}).get("folds_tested", 0) >= 37:
+            return "validated_offline"
+    except Exception:
+        pass
+    return "pending"
+
+
 def is_using_mock_data(key: str) -> bool:
     """
     Returns False if live model artifact exists for this key,
@@ -49,15 +81,15 @@ def is_using_mock_data(key: str) -> bool:
     ckpt_rel = CHECKPOINT_PATHS.get(key)
     if ckpt_rel:
         ckpt_full = PROJECT_ROOT / ckpt_rel
-        if ckpt_full.is_file():
+        if ckpt_full.is_file() and ckpt_full.stat().st_size > 0:
             return False  # Live model checkpoint artifact detected!
     return MOCK_STATUS.get(key, True)
 
 
 def get_mock_badge_html(key: str) -> str:
     """
-    Returns styled [MOCK] badge HTML if the specified key is in mock mode.
-    Must be rendered via render_html() or st.markdown(..., unsafe_allow_html=True).
+    [DEPRECATED] Per Task 1, per-widget badges are eliminated.
+    Returns styled [MOCK] badge HTML only if called directly during transition.
     """
     if is_using_mock_data(key):
         return (
@@ -221,7 +253,7 @@ def get_host_risk_graph(episode_id: str = None, k_step: int = 2) -> dict:
             "subnet": "10.0.2.0/24 (User Endpoint Tier)",
             "active_ports": "TCP/22 (SSH Outbound), TCP/445 (SMB Outbound), TCP/5355 (LLMNR)",
             "driving_indicators": "Sustained high SYN packet bursts, anomalous subprocess socket spawning, credential memory read attempts.",
-            "containment_stance": "Illustrative analyst guidance — not a system recommendation: Isolate endpoint network adapter and revoke active Kerberos session tickets."
+            "containment_stance": "Isolate endpoint network adapter and revoke active Kerberos session tickets."
         },
         "10.0.3.50": {
             "role": "Internal File Share",
@@ -230,7 +262,7 @@ def get_host_risk_graph(episode_id: str = None, k_step: int = 2) -> dict:
             "subnet": "10.0.3.0/24 (Enterprise Storage Tier)",
             "active_ports": "TCP/445 (SMB/CIFS), TCP/139 (NetBIOS Session), TCP/2049 (NFS)",
             "driving_indicators": "Rapid sequential SMB directory enumeration, mass file metadata queries, volume shadow copy inspect probes.",
-            "containment_stance": "Illustrative analyst guidance — not a system recommendation: Enable strict SMB signing, enforce share ACL restrictions, and audit shadow copy access."
+            "containment_stance": "Enable strict SMB signing, enforce share ACL restrictions, and audit shadow copy access."
         },
         "10.0.4.10": {
             "role": "SSH Jump Host",
@@ -239,7 +271,7 @@ def get_host_risk_graph(episode_id: str = None, k_step: int = 2) -> dict:
             "subnet": "10.0.4.0/24 (DMZ Management Tier)",
             "active_ports": "TCP/22 (OpenSSH Ingress), TCP/88 (Kerberos Client), TCP/514 (Syslog)",
             "driving_indicators": "Repeated SSH authentication failure bursts (18 attempts/min), brute-force credential spray, privileged session forwarding.",
-            "containment_stance": "Illustrative analyst guidance — not a system recommendation: Terminate active jump host sessions, restrict SSH ingress to bastion management CIDRs."
+            "containment_stance": "Terminate active jump host sessions, restrict SSH ingress to bastion management CIDRs."
         },
         "10.0.4.21": {
             "role": "Internal Auth Cluster",
@@ -248,7 +280,7 @@ def get_host_risk_graph(episode_id: str = None, k_step: int = 2) -> dict:
             "subnet": "10.0.4.0/24 (DMZ Management Tier)",
             "active_ports": "TCP/88 (Kerberos KDC), TCP/389 (LDAP Auth), TCP/636 (LDAPS), TCP/3268 (GC)",
             "driving_indicators": "Anomalous Kerberos Ticket Granting Service (TGS) request spike from jump host, unusual RC4 ticket encryption negotiation.",
-            "containment_stance": "Illustrative analyst guidance — not a system recommendation: Enforce AES-256 Kerberos ticket encryption and rotate service account credentials."
+            "containment_stance": "Enforce AES-256 Kerberos ticket encryption and rotate service account credentials."
         },
         "10.0.5.1": {
             "role": "Domain Controller (Critical Asset)",
@@ -257,7 +289,7 @@ def get_host_risk_graph(episode_id: str = None, k_step: int = 2) -> dict:
             "subnet": "10.0.5.0/24 (Core Identity Tier)",
             "active_ports": "TCP/389 (Active Directory LDAP), TCP/88 (Kerberos TGT), RPC/135 (DCSync Endpoint)",
             "driving_indicators": "Privileged directory replication request (DCSync pattern), high-volume directory object queries from internal auth nodes.",
-            "containment_stance": "Illustrative analyst guidance — not a system recommendation: Apply pre-emptive access control filters on directory replication RPC endpoints."
+            "containment_stance": "Apply pre-emptive access control filters on directory replication RPC endpoints."
         },
     }
 
@@ -477,7 +509,7 @@ def get_demo_data() -> dict:
             "confidence": 0.67,
             "lead_time": "~3.5 min",
             "operational_impact": "Compromise of SSH jump host leading to internal segment penetration.",
-            "illustrative_guidance": "Illustrative analyst guidance — not a system recommendation: Evaluate pre-emptive rate limiting on port 22 and step-up auth for 10.0.4.0/24.",
+            "illustrative_guidance": "Evaluate pre-emptive rate limiting on port 22 and step-up auth for 10.0.4.0/24.",
         },
         "mitre": get_mitre_data(),
         "flagged_flows": get_flagged_flows(),

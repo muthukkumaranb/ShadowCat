@@ -51,23 +51,13 @@ def render_temporal_evidence(data: dict):
     <div style="margin-top: 24px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
         <div class="card-title" style="margin: 0;">
             <span>Temporal Context & Window Attention</span>
-            <span class="badge" style="background: rgba(234, 179, 8, 0.12); color: #FACC15; border: 1px solid rgba(234, 179, 8, 0.35);">
-                [Model Internals · Unvalidated]
+            <span class="badge" style="background: rgba(56, 189, 248, 0.12); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.35); cursor: help;" title="Internal attention weights — exploratory model internals, not a certified explanation method. See feature attribution below for deletion-tested attribution.">
+                [Model Internals · Exploratory]
             </span>
         </div>
         <span style="font-size: 0.72rem; color: #94A3B8; font-family: 'JetBrains Mono', monospace;">
             S(t-2) → S(t-1) → S(t)
         </span>
-    </div>
-    """)
-
-    # Explicit unvalidated framing disclaimer banner
-    render_html("""
-    <div style="background: rgba(234, 179, 8, 0.05); border: 1px dashed rgba(234, 179, 8, 0.3); border-radius: 8px; padding: 10px 14px; margin-bottom: 14px;">
-        <div style="font-size: 0.78rem; color: #CBD5E1; line-height: 1.45;">
-            <b style="color: #FACC15;">Model internals:</b>
-            Internal attention weights — not a validated explanation method. See feature attribution below for validated results.
-        </div>
     </div>
     """)
 
