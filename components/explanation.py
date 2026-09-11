@@ -61,6 +61,9 @@ def render_attack_stepper(mitre_data, current_step_idx=2):
     """
     segments_html = []
     for i, item in enumerate(mitre_data):
+        item_id = item.get("id", item.get("tactic_id", f"TA000{i+1}"))
+        item_stage = item.get("stage", "Unknown Stage")
+        item_desc = item.get("description", "No detailed description available.")
         border_right = "border-right: 1px solid #22304a;" if i < len(mitre_data) - 1 else ""
         if i < current_step_idx:
             segment = f"""
@@ -70,11 +73,11 @@ def render_attack_stepper(mitre_data, current_step_idx=2):
                         ✓ OBSERVED
                     </span>
                     <span style="font-size: 0.70rem; color: #9aa7bd; font-family: 'JetBrains Mono', monospace;">
-                        {item['id']}
+                        {item_id}
                     </span>
                 </div>
                 <div style="font-size: 0.95rem; font-weight: 700; color: #e8edf5; margin-bottom: 3px;">
-                    {item['stage']}
+                    {item_stage}
                 </div>
                 <div style="font-size: 0.68rem; color: #2fb872; font-weight: 600; margin-top: 2px;">
                     Historical Stage
@@ -84,7 +87,7 @@ def render_attack_stepper(mitre_data, current_step_idx=2):
                         Details
                     </summary>
                     <div style="font-size: 0.74rem; color: #9aa7bd; line-height: 1.35; margin-top: 4px; padding-top: 4px; border-top: 1px dashed rgba(255, 255, 255, 0.1);">
-                        {item['description']}
+                        {item_desc}
                     </div>
                 </details>
             </div>
@@ -98,11 +101,11 @@ def render_attack_stepper(mitre_data, current_step_idx=2):
                         PREDICTED THREAT
                     </span>
                     <span style="font-size: 0.72rem; color: #38bdf8; font-weight: 700; font-family: 'JetBrains Mono', monospace;">
-                        {item['id']} · t+3
+                        {item_id} · t+3
                     </span>
                 </div>
                 <div style="font-size: 1.05rem; font-weight: 800; color: #ffffff; margin-bottom: 3px;">
-                    {item['stage']}
+                    {item_stage}
                 </div>
                 <div style="display: inline-block; background: rgba(229, 72, 77, 0.2); border: 1px solid #e5484d; border-radius: 4px; padding: 2px 6px; font-size: 0.70rem; color: #ffffff; font-weight: 700; margin-top: 2px; font-family: 'JetBrains Mono', monospace;">
                     Elevated Risk · Horizon t+3
@@ -112,7 +115,7 @@ def render_attack_stepper(mitre_data, current_step_idx=2):
                         Details
                     </summary>
                     <div style="font-size: 0.74rem; color: #e8edf5; line-height: 1.35; margin-top: 4px; padding-top: 4px; border-top: 1px dashed rgba(255, 255, 255, 0.1);">
-                        {item['description']}
+                        {item_desc}
                     </div>
                 </details>
             </div>
@@ -125,11 +128,11 @@ def render_attack_stepper(mitre_data, current_step_idx=2):
                         ○ DOWNSTREAM
                     </span>
                     <span style="font-size: 0.70rem; color: #64708a; font-family: 'JetBrains Mono', monospace;">
-                        {item['id']}
+                        {item_id}
                     </span>
                 </div>
                 <div style="font-size: 0.95rem; font-weight: 600; color: #9aa7bd; margin-bottom: 3px;">
-                    {item['stage']}
+                    {item_stage}
                 </div>
                 <div style="font-size: 0.68rem; color: #64708a; margin-top: 2px;">
                     Horizon t+4 (Rollout)
@@ -139,7 +142,7 @@ def render_attack_stepper(mitre_data, current_step_idx=2):
                         Details
                     </summary>
                     <div style="font-size: 0.74rem; color: #64708a; line-height: 1.35; margin-top: 4px; padding-top: 4px; border-top: 1px dashed rgba(255, 255, 255, 0.1);">
-                        {item['description']}
+                        {item_desc}
                     </div>
                 </details>
             </div>

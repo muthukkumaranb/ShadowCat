@@ -1,0 +1,42 @@
+[
+  {
+    "stage": "Reconnaissance",
+    "id": "TA0043",
+    "tactic_id": "TA0043",
+    "description": "Port scanning and service enumeration (ports 22, 80, 443)",
+    "confidence": 0.89,
+    "status": "Historical"
+  },
+  {
+    "stage": "Initial Access",
+    "id": "TA0001",
+    "tactic_id": "TA0001",
+    "description": "Boundary authentication probing and credential spray against DMZ jump host",
+    "confidence": 0.78,
+    "status": "Active (Current)"
+  },
+  {
+    "stage": "Credential Access",
+    "id": "TA0006",
+    "tactic_id": "TA0006",
+    "description": "SSH credential brute-force and Kerberos ticket request anomaly",
+    "confidence": 0.67,
+    "status": "Forecast (t+1)"
+  },
+  {
+    "stage": "Lateral Movement",
+    "id": "TA0008",
+    "tactic_id": "TA0008",
+    "description": "Anticipated internal jump host session pivot to Auth Cluster (10.0.4.21)",
+    "confidence": 0.54,
+    "status": "Forecast (t+2)"
+  },
+  {
+    "stage": "Impact",
+    "id": "TA0040",
+    "tactic_id": "TA0040",
+    "description": "Domain controller replication traffic / service compromise risk",
+    "confidence": 0.38,
+    "status": "Forecast (t+4)"
+  }
+]
