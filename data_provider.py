@@ -338,7 +338,7 @@ def get_host_risk_graph(episode_id: str = None, k_step: int = 2) -> dict:
             "uncertainty_sigma": 0.05,
             "uncertainty_label": "±5% (Autoregressive Step 1)",
             "uncertainty_tier": "Low Epistemic Drift",
-            "uncertainty_color": "#38BDF8",
+            "uncertainty_color": "#8A8A8A",
             "summary": "SSH brute-force activity intensifies against jump host 10.0.4.10.",
             "active_edges": [
                 ("10.0.2.15", "10.0.4.10", "Port 22/TCP [High Rate]"),
@@ -358,7 +358,7 @@ def get_host_risk_graph(episode_id: str = None, k_step: int = 2) -> dict:
             "uncertainty_sigma": 0.09,
             "uncertainty_label": "±9% (Autoregressive Step 2)",
             "uncertainty_tier": "Controlled Epistemic Drift",
-            "uncertainty_color": "#38BDF8",
+            "uncertainty_color": "#8A8A8A",
             "summary": "Anticipated credential extraction on 10.0.4.10; reconnaissance directed at Auth Cluster.",
             "active_edges": [
                 ("10.0.2.15", "10.0.4.10", "Compromised"),

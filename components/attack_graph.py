@@ -179,7 +179,7 @@ def render_attack_graph_panel():
         <div class="card-title">
             <span>Dynamic Enterprise Attack Graph & Lateral Rollout</span>
         </div>
-        <div style="font-size: 0.80rem; color: #9AA7BD;">
+        <div style="font-size: 0.80rem; color: #8A8A8A;">
             Multi-step lateral rollout across hosts.
         </div>
     </div>
@@ -195,8 +195,8 @@ def render_attack_graph_panel():
 
     # Mandatory n=1 caption (dynamically rendered from graph_data payload)
     render_html(f"""
-    <div style="background: rgba(56, 189, 248, 0.05); border-left: 3px solid #38BDF8; padding: 8px 14px; border-radius: 0 6px 6px 0; margin-bottom: 14px;">
-        <span style="font-size: 0.78rem; color: #E8EDF5; font-style: italic;">
+    <div style="background: #141414; border: 1px solid #262626; border-left: 3px solid #8A8A8A; padding: 8px 14px; border-radius: 4px; margin-bottom: 14px;">
+        <span style="font-size: 0.78rem; color: #FFFFFF; font-style: italic;">
             "{disclaimer_text}"
         </span>
     </div>
@@ -250,7 +250,7 @@ def render_attack_graph_panel():
             <div style="background: rgba(255, 255, 255, 0.08); border-radius: 4px; height: 5px; width: 100%; overflow: hidden; margin-bottom: 4px;">
                 <div style="background: {step_info['uncertainty_color']}; height: 100%; width: {bar_pct}%; border-radius: 4px; transition: width 0.3s ease;"></div>
             </div>
-            <div style="font-size: 0.68rem; color: #9AA7BD;">
+            <div style="font-size: 0.68rem; color: #8A8A8A;">
                 <span>{step_info['uncertainty_tier']}</span>
             </div>
         </div>
@@ -272,17 +272,17 @@ def render_attack_graph_panel():
         # Status summary below canvas
         blast_info = ""
         if focused_host_id:
-            blast_info = f"<span style='color: #38BDF8; font-weight: 700;'>[Blast Radius Filter Active on {focused_host_id}]</span> "
+            blast_info = f"<span style='color: #FFFFFF; font-weight: 700;'>[Blast Radius Filter Active on {focused_host_id}]</span> "
 
         render_html(f"""
-        <div style="font-size: 0.76rem; color: #9AA7BD; margin-top: 4px;">
+        <div style="font-size: 0.76rem; color: #8A8A8A; margin-top: 4px;">
             {blast_info}<b>{step_info['label']}:</b> {step_info['summary']}
         </div>
         """)
 
     with col_hosts:
         render_html("""
-        <div style="font-size: 0.82rem; font-weight: 700; color: #E8EDF5; margin-bottom: 8px;">
+        <div style="font-size: 0.82rem; font-weight: 700; color: #FFFFFF; margin-bottom: 8px;">
             Host Threat Distribution
         </div>
         """)
@@ -301,8 +301,8 @@ def render_attack_graph_panel():
 
             status_color = "#FF453A" if r > 0.70 else "#FF9F0A" if r > 0.35 else "#30D158"
             border_left = f"4px solid {status_color}"
-            bg_card = "#1A2538" if is_active_sel else "#131b2c"
-            border_card = "#38BDF8" if (is_active_sel or is_focused) else "#22304a"
+            bg_card = "#1C1C1C" if is_active_sel else "#141414"
+            border_card = "#FFFFFF" if (is_active_sel or is_focused) else "#262626"
             u_bar_width = min(100, int(r * 100))
 
             # Host card metrics header
@@ -310,18 +310,18 @@ def render_attack_graph_panel():
             <div style="background: {bg_card}; border: 1px solid {border_card}; border-left: {border_left}; border-radius: 6px; padding: 7px 10px; margin-bottom: 4px;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
-                        <span style="font-size: 0.78rem; font-weight: 700; color: #E8EDF5; font-family: 'JetBrains Mono', monospace;">
+                        <span style="font-size: 0.78rem; font-weight: 700; color: #FFFFFF; font-family: 'JetBrains Mono', monospace;">
                             #{rank_idx} {host_ip}
                         </span>
-                        <span style="font-size: 0.65rem; color: #38BDF8; background: rgba(56, 189, 248, 0.12); padding: 1px 5px; border-radius: 3px; margin-left: 6px; font-weight: 600;">
+                        <span style="font-size: 0.65rem; color: #8A8A8A; background: #222222; border: 1px solid #333333; padding: 1px 5px; border-radius: 3px; margin-left: 6px; font-weight: 600;">
                             {crit_tier.split('(')[0].strip()}
                         </span>
                     </div>
                     <span style="font-size: 0.78rem; font-weight: 800; color: {status_color}; font-family: 'JetBrains Mono', monospace;">
-                        {r:.0%} <span style="font-size: 0.65rem; color: #64708A; font-weight: 400;">±{u*100:.0f}%</span>
+                        {r:.0%} <span style="font-size: 0.65rem; color: #8A8A8A; font-weight: 400;">±{u*100:.0f}%</span>
                     </span>
                 </div>
-                <div style="font-size: 0.68rem; color: #9AA7BD; margin-top: 1px;">
+                <div style="font-size: 0.68rem; color: #8A8A8A; margin-top: 1px;">
                     {role}
                 </div>
                 <div style="margin-top: 4px; background: rgba(255, 255, 255, 0.05); border-radius: 2px; height: 3px; width: 100%; overflow: hidden;">
@@ -366,18 +366,18 @@ def render_attack_graph_panel():
             h_u = h_hr["uncertainty"]
             h_color = "#FF453A" if h_r > 0.70 else "#FF9F0A" if h_r > 0.35 else "#30D158"
             is_active_step = (h_idx == k_step)
-            cell_bg = "rgba(56, 189, 248, 0.12)" if is_active_step else "rgba(255, 255, 255, 0.03)"
-            cell_border = "1px solid #38BDF8" if is_active_step else "1px solid #22304a"
+            cell_bg = "rgba(255, 255, 255, 0.08)" if is_active_step else "#111111"
+            cell_border = "1px solid #FFFFFF" if is_active_step else "1px solid #262626"
 
             traj_cells.append(f"""
             <div style="flex: 1; background: {cell_bg}; border: {cell_border}; border-radius: 6px; padding: 6px 8px; text-align: center;">
-                <div style="font-size: 0.68rem; color: {'#38BDF8' if is_active_step else '#9AA7BD'}; font-weight: 700; font-family: 'JetBrains Mono', monospace;">
+                <div style="font-size: 0.68rem; color: {'#FFFFFF' if is_active_step else '#8A8A8A'}; font-weight: 700; font-family: 'JetBrains Mono', monospace;">
                     {h_code} {'(Active)' if is_active_step else ''}
                 </div>
                 <div style="font-size: 0.88rem; font-weight: 800; color: {h_color}; font-family: 'JetBrains Mono', monospace; margin: 2px 0;">
                     {h_r:.0%}
                 </div>
-                <div style="font-size: 0.62rem; color: #64708A;">
+                <div style="font-size: 0.62rem; color: #8A8A8A;">
                     ±{h_u*100:.0f}%
                 </div>
                 <div style="margin-top: 4px; background: rgba(255, 255, 255, 0.08); border-radius: 2px; height: 3px; width: 100%; overflow: hidden;">
@@ -393,48 +393,48 @@ def render_attack_graph_panel():
         """
 
         render_html(f"""
-        <div style="background: #131b2c; border: 1px solid #22304a; border-radius: 8px; padding: 14px 18px; margin-top: 14px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #22304a; padding-bottom: 8px; margin-bottom: 8px;">
+        <div style="background: #141414; border: 1px solid #262626; border-radius: 8px; padding: 14px 18px; margin-top: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #262626; padding-bottom: 8px; margin-bottom: 8px;">
                 <div>
-                    <span style="font-size: 0.88rem; font-weight: 700; color: #E8EDF5; font-family: 'JetBrains Mono', monospace;">
+                    <span style="font-size: 0.88rem; font-weight: 700; color: #FFFFFF; font-family: 'JetBrains Mono', monospace;">
                         HOST TELEMETRY INSPECTOR: {selected_host_id}
                     </span>
-                    <span style="font-size: 0.74rem; color: #9AA7BD; margin-left: 8px;">
+                    <span style="font-size: 0.74rem; color: #8A8A8A; margin-left: 8px;">
                         [{sh_role}]
                     </span>
-                    <span style="font-size: 0.68rem; color: #38BDF8; background: rgba(56, 189, 248, 0.12); padding: 1px 6px; border-radius: 3px; margin-left: 8px; font-weight: 600;">
+                    <span style="font-size: 0.68rem; color: #8A8A8A; background: #222222; border: 1px solid #333333; padding: 1px 6px; border-radius: 3px; margin-left: 8px; font-weight: 600;">
                         {t_info.get('criticality_tier', 'Standard')}
                     </span>
-                    <span style="font-size: 0.70rem; color: #64708A; margin-left: 8px; font-family: 'JetBrains Mono', monospace;">
+                    <span style="font-size: 0.70rem; color: #8A8A8A; margin-left: 8px; font-family: 'JetBrains Mono', monospace;">
                         {t_info['subnet']}
                     </span>
                 </div>
-                <div style="font-size: 0.82rem; font-weight: 800; color: #38BDF8; font-family: 'JetBrains Mono', monospace;">
+                <div style="font-size: 0.82rem; font-weight: 800; color: #FFFFFF; font-family: 'JetBrains Mono', monospace;">
                     Horizon h_v({step_info['horizon_code']}): {sh_hr['risk']:.0%} (±{sh_hr['uncertainty']*100:.0f}%)
                 </div>
             </div>
 
-            <div style="font-size: 0.72rem; color: #9AA7BD; margin-bottom: 4px; font-weight: 600;">
+            <div style="font-size: 0.72rem; color: #8A8A8A; margin-bottom: 4px; font-weight: 600;">
                 Forward Risk Trajectory Progression (t → t+4):
             </div>
             {traj_strip_html}
 
-            <div style="font-size: 0.75rem; color: #C5D1E0; line-height: 1.5; display: grid; grid-template-columns: 1fr; gap: 6px;">
+            <div style="font-size: 0.75rem; color: #8A8A8A; line-height: 1.5; display: grid; grid-template-columns: 1fr; gap: 6px;">
                 <div>
-                    <span style="color: #38BDF8; font-weight: 600;">Active Sockets & Ports:</span>
-                    <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: #E8EDF5; margin-left: 6px;">
+                    <span style="color: #FFFFFF; font-weight: 600;">Active Sockets & Ports:</span>
+                    <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: #FFFFFF; margin-left: 6px;">
                         {t_info['active_ports']}
                     </span>
                 </div>
                 <div>
-                    <span style="color: #38BDF8; font-weight: 600;">Driving Flow Indicators:</span>
-                    <span style="color: #E8EDF5; margin-left: 6px;">
+                    <span style="color: #FFFFFF; font-weight: 600;">Driving Flow Indicators:</span>
+                    <span style="color: #FFFFFF; margin-left: 6px;">
                         {t_info['driving_indicators']}
                     </span>
                 </div>
-                <div style="margin-top: 4px; padding-top: 6px; border-top: 1px dashed rgba(255, 255, 255, 0.08);">
+                <div style="margin-top: 4px; padding-top: 6px; border-top: 1px dashed #262626;">
                     <span style="color: #E0982B; font-weight: 600;">Containment Stance:</span>
-                    <span style="color: #9AA7BD; margin-left: 6px;">
+                    <span style="color: #8A8A8A; margin-left: 6px;">
                         {t_info['containment_stance']}
                     </span>
                 </div>
@@ -529,7 +529,7 @@ def _build_attack_graph_svg(graph_data: dict, active_k: int, selected_host: str,
             edge_svg = f"""
             <g class="edge-group {dim_class}" data-u="{u}" data-v="{v}">
                 <line x1="{sx:.1f}" y1="{sy:.1f}" x2="{ex:.1f}" y2="{ey:.1f}"
-                      stroke="#2E4057" stroke-width="1.8" marker-end="url(#arrow-inactive)"/>
+                      stroke="#2A2A2A" stroke-width="1.8" marker-end="url(#arrow-inactive)"/>
             </g>
             """
         edge_svg_elements.append(edge_svg)
@@ -583,11 +583,11 @@ def _build_attack_graph_svg(graph_data: dict, active_k: int, selected_host: str,
         focus_halo = ""
         if is_focused:
             focus_halo = f"""
-            <circle cx="{cx}" cy="{cy}" r="{r + 8}" fill="none" stroke="#38BDF8" stroke-width="3" stroke-dasharray="6 4" class="focus-pulse-ring"/>
+            <circle cx="{cx}" cy="{cy}" r="{r + 8}" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-dasharray="6 4" class="focus-pulse-ring"/>
             """
 
         node_border_width = 4 if is_selected else 2.5
-        node_border_stroke = "#38BDF8" if is_selected else border_color
+        node_border_stroke = "#FFFFFF" if is_selected else border_color
 
         # Host metadata formatted for JSON tooltip dataset
         t_data = HOST_TELEMETRY.get(node_ip, {})
@@ -633,8 +633,8 @@ def _build_attack_graph_svg(graph_data: dict, active_k: int, selected_host: str,
                 font-family: 'JetBrains Mono', Consolas, -apple-system, sans-serif;
             }}
             body {{
-                background-color: #131b2c;
-                color: #E8EDF5;
+                background-color: #0D0D0D;
+                color: #FFFFFF;
                 overflow: hidden;
                 width: 100%;
                 height: 100%;
@@ -644,9 +644,9 @@ def _build_attack_graph_svg(graph_data: dict, active_k: int, selected_host: str,
                 position: relative;
                 width: 100%;
                 height: 500px;
-                border: 1px solid #22304a;
+                border: 1px solid #262626;
                 border-radius: 8px;
-                background: radial-gradient(circle at 50% 50%, #162035 0%, #0d1424 100%);
+                background: #0D0D0D;
                 overflow: hidden;
             }}
             svg {{
@@ -688,10 +688,10 @@ def _build_attack_graph_svg(graph_data: dict, active_k: int, selected_host: str,
                 font-size: 11px;
                 font-weight: 700;
                 letter-spacing: 0.02em;
-                text-shadow: 0 1px 4px rgba(0,0,0,0.9), 0 0 3px #0A0E17;
+                text-shadow: 0 1px 4px rgba(0,0,0,0.9), 0 0 3px #000000;
             }}
             .node-role-label {{
-                fill: #9AA7BD;
+                fill: #8A8A8A;
                 font-size: 10px;
                 font-weight: 500;
                 text-shadow: 0 1px 3px rgba(0,0,0,0.9);
@@ -708,7 +708,7 @@ def _build_attack_graph_svg(graph_data: dict, active_k: int, selected_host: str,
                 filter: grayscale(85%) blur(0.4px) !important;
             }}
             .focused-node circle.node-circle {{
-                filter: drop-shadow(0 0 12px #38BDF8) !important;
+                filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.7)) !important;
             }}
 
             /* In-Canvas Compact Legend */
@@ -716,13 +716,13 @@ def _build_attack_graph_svg(graph_data: dict, active_k: int, selected_host: str,
                 position: absolute;
                 top: 14px;
                 left: 16px;
-                background: rgba(13, 20, 36, 0.92);
+                background: rgba(18, 18, 18, 0.95);
                 backdrop-filter: blur(8px);
-                border: 1px solid #22304a;
+                border: 1px solid #262626;
                 border-radius: 6px;
                 padding: 6px 10px;
                 font-size: 0.68rem;
-                color: #C5D1E0;
+                color: #8A8A8A;
                 line-height: 1.4;
                 z-index: 10;
                 box-shadow: 0 4px 14px rgba(0,0,0,0.5);
@@ -730,7 +730,7 @@ def _build_attack_graph_svg(graph_data: dict, active_k: int, selected_host: str,
             }}
             .legend-title {{
                 font-weight: 800;
-                color: #E8EDF5;
+                color: #FFFFFF;
                 font-size: 0.70rem;
                 margin-bottom: 2px;
                 display: flex;
@@ -761,7 +761,7 @@ def _build_attack_graph_svg(graph_data: dict, active_k: int, selected_host: str,
             .path-solid-sample {{
                 width: 18px;
                 height: 2px;
-                background: #2E4057;
+                background: #2A2A2A;
                 display: inline-block;
             }}
 
@@ -769,11 +769,11 @@ def _build_attack_graph_svg(graph_data: dict, active_k: int, selected_host: str,
             #graph-tooltip {{
                 position: absolute;
                 display: none;
-                background: rgba(10, 14, 23, 0.95);
-                border: 1px solid #38BDF8;
+                background: rgba(18, 18, 18, 0.96);
+                border: 1px solid #333333;
                 border-radius: 6px;
                 padding: 8px 12px;
-                color: #E8EDF5;
+                color: #FFFFFF;
                 font-size: 0.72rem;
                 line-height: 1.4;
                 z-index: 100;
@@ -783,12 +783,12 @@ def _build_attack_graph_svg(graph_data: dict, active_k: int, selected_host: str,
             }}
             .tt-ip {{
                 font-weight: 800;
-                color: #38BDF8;
+                color: #FFFFFF;
                 font-size: 0.80rem;
             }}
             .tt-crit {{
                 font-size: 0.65rem;
-                color: #FFD54F;
+                color: #E0982B;
                 margin-bottom: 4px;
             }}
         </style>
@@ -800,14 +800,14 @@ def _build_attack_graph_svg(graph_data: dict, active_k: int, selected_host: str,
                 <summary class="legend-title">
                     <span>ⓘ Graph Encoding Key</span>
                 </summary>
-                <div style="margin-top:4px; border-top:1px dashed #22304a; padding-top:4px;">
+                <div style="margin-top:4px; border-top:1px dashed #262626; padding-top:4px;">
                     <div class="legend-row">
                         <span class="color-dot" style="background:#FF453A;"></span> Critical (&gt;70%)
                         <span class="color-dot" style="background:#FF9F0A; margin-left:4px;"></span> Elevated (&gt;35%)
                         <span class="color-dot" style="background:#30D158; margin-left:4px;"></span> Normal
                     </div>
                     <div class="legend-row">
-                        <span style="font-weight:700; color:#38BDF8;">Node Size:</span> Asset Criticality (DC=38px, GW=30px, EP=24px)
+                        <span style="font-weight:700; color:#FFFFFF;">Node Size:</span> Asset Criticality (DC=38px, GW=30px, EP=24px)
                     </div>
                     <div class="legend-row">
                         <span class="path-dash-sample"></span> Active Rollout Path &nbsp;
@@ -827,7 +827,7 @@ def _build_attack_graph_svg(graph_data: dict, active_k: int, selected_host: str,
                     </marker>
                     <!-- Inactive Muted Slate Arrowhead Marker -->
                     <marker id="arrow-inactive" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-                        <path d="M 1 2 L 8 5 L 1 8 z" fill="#2E4057" />
+                        <path d="M 1 2 L 8 5 L 1 8 z" fill="#2A2A2A" />
                     </marker>
                     <!-- Laser Glow Filter -->
                     <filter id="glow-filter" x="-20%" y="-20%" width="140%" height="140%">
@@ -868,11 +868,11 @@ def _build_attack_graph_svg(graph_data: dict, active_k: int, selected_host: str,
 
                     tooltip.innerHTML = `
                         <div class="tt-ip">${{ip}}</div>
-                        <div style="font-size:0.70rem; color:#9AA7BD;">${{role}}</div>
+                        <div style="font-size:0.70rem; color:#8A8A8A;">${{role}}</div>
                         <div class="tt-crit">${{crit}}</div>
-                        <div style="margin-top:3px; border-top:1px dashed #22304a; padding-top:3px;">
+                        <div style="margin-top:3px; border-top:1px dashed #262626; padding-top:3px;">
                             <b>Rollout Risk:</b> <span style="color:#FF453A; font-weight:800;">${{risk}}</span> (${{unc}}) [${{status}}]<br>
-                            <b>Active Ports:</b> <span style="font-size:0.65rem; color:#A6B7CC;">${{ports}}</span>
+                            <b>Active Ports:</b> <span style="font-size:0.65rem; color:#8A8A8A;">${{ports}}</span>
                         </div>
                     `;
                     tooltip.style.display = 'block';

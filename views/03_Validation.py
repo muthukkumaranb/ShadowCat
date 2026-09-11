@@ -15,7 +15,12 @@ from data_provider import (
     get_validation_data,
     validation_status,
 )
+import importlib
+import styles
+importlib.reload(styles)
 from styles import apply_custom_css, render_sidebar, COLORS, render_html, render_footer
+import components.header
+importlib.reload(components.header)
 from components.header import render_header
 
 st.set_page_config(
@@ -37,17 +42,17 @@ render_header({"analysis": analysis})
 val_status = validation_status()
 if val_status == "validated_offline":
     render_html("""
-    <div style="background: rgba(56, 189, 248, 0.08); border: 1px solid #38BDF8; border-radius: 8px; padding: 12px 18px; margin-top: 6px; margin-bottom: 16px;">
-        <div style="font-size: 0.82rem; color: #E8EDF5; line-height: 1.4;">
-            <b style="color: #38BDF8;">Model validated offline (LOEO 37-fold):</b>
+    <div style="background: #141414; border: 1px solid #262626; border-left: 3px solid #FFFFFF; border-radius: 8px; padding: 12px 18px; margin-top: 6px; margin-bottom: 16px;">
+        <div style="font-size: 0.82rem; color: #FFFFFF; line-height: 1.4;">
+            <b style="color: #FFFFFF;">Model validated offline (LOEO 37-fold):</b>
             Live pipeline integration in progress &mdash; see Platform Specs for protocol details.
         </div>
     </div>
     """)
 else:
     render_html("""
-    <div style="background: rgba(224, 152, 43, 0.08); border: 1px solid #E0982B; border-radius: 8px; padding: 12px 18px; margin-top: 6px; margin-bottom: 16px;">
-        <div style="font-size: 0.82rem; color: #E8EDF5; line-height: 1.4;">
+    <div style="background: #141414; border: 1px solid #262626; border-left: 3px solid #E0982B; border-radius: 8px; padding: 12px 18px; margin-top: 6px; margin-bottom: 16px;">
+        <div style="font-size: 0.82rem; color: #FFFFFF; line-height: 1.4;">
             <b style="color: #E0982B;">Offline Benchmark Verification in Progress:</b>
             Model validation runs are currently computing offline folds.
         </div>
@@ -59,7 +64,7 @@ render_html("""
     <h2 style="font-size: 1.4rem; font-weight: 800; color: #FFFFFF; margin: 0;">
         Model Validation & Scientific Integrity
     </h2>
-    <div style="font-size: 0.84rem; color: #9AA7BD; margin-top: 4px;">
+    <div style="font-size: 0.84rem; color: #8A8A8A; margin-top: 4px;">
         Quantitative evaluation benchmarks, multi-step horizon stability, and empirical rigor audits.
     </div>
 </div>
@@ -154,7 +159,7 @@ for col, (label, val_str) in zip(m_cols, metrics):
         render_html(f"""
         <div class="glass-card" style="text-align: center; padding: 14px 10px; min-height: 85px;">
             <div class="metric-label">{label}</div>
-            <div class="metric-value-huge" style="color: #38BDF8; font-size: 1.65rem; margin-top: 4px;">{val_str}</div>
+            <div class="metric-value-huge" style="color: #FFFFFF; font-size: 1.65rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; margin-top: 4px;">{val_str}</div>
         </div>
         """)
 
@@ -180,7 +185,7 @@ st.dataframe(
 )
 
 render_html("""
-<div style="font-size: 0.76rem; color: #64748B; margin-top: 6px; margin-bottom: 22px;">
+<div style="font-size: 0.76rem; color: #8A8A8A; margin-top: 6px; margin-bottom: 22px;">
     <b>Policy:</b> Horizons K=1–2 enable automated mitigation; K=3–4 trigger tiered analyst escalation. Primary benchmark bound evaluated at H=5 under LOEO 37-Fold cross-validation.
 </div>
 """)
@@ -192,7 +197,7 @@ with st.expander("Validation methodology & protocol details", expanded=False):
         <span style="font-size: 0.88rem; font-weight: 700; color: #FFFFFF;">Evaluation Branches & Protocol Context</span>
         <span class="badge">[Protocol: LOEO 37-Fold Cross-Validation]</span>
     </div>
-    <div style="font-size: 0.80rem; color: #9AA7BD; line-height: 1.6; margin-bottom: 16px;">
+    <div style="font-size: 0.80rem; color: #8A8A8A; line-height: 1.6; margin-bottom: 16px;">
         • <b>Branch 1 (State Classifier):</b> Evaluated under strict <b>Chronological Split</b> protocol (historical training windows, forward evaluation).<br>
         • <b>Branch 2 (Continuous Dynamics Head):</b> Evaluated under <b>LOEO 37-Fold Cross-Validation</b> with primary evaluation bound at <b>H=5</b>.
     </div>
@@ -216,22 +221,22 @@ with st.expander("Validation methodology & protocol details", expanded=False):
                 <div style="font-size: 0.92rem; font-weight: 700; color: #FFFFFF; margin-bottom: 4px;">
                     {protocol_title}
                 </div>
-                <div style="font-size: 0.78rem; color: #94A3B8; line-height: 1.5; margin-bottom: 12px;">
+                <div style="font-size: 0.78rem; color: #8A8A8A; line-height: 1.5; margin-bottom: 12px;">
                     Full attack episodes withheld sequentially to prevent temporal data leakage across sequential time steps.
                 </div>
             </div>
-            <div style="display: flex; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px;">
+            <div style="display: flex; justify-content: space-between; border-top: 1px solid #262626; padding-top: 10px;">
                 <div>
                     <div class="metric-label">Cross-Folds</div>
                     <div style="font-size: 1.05rem; font-weight: 700; color: #FFFFFF;">{folds_tested} Episodes</div>
                 </div>
                 <div>
                     <div class="metric-label">Mean PR-AUC</div>
-                    <div style="font-size: 1.05rem; font-weight: 700; color: #00E5FF; font-family: 'JetBrains Mono', monospace;">{mean_pr_auc:.3f}</div>
+                    <div style="font-size: 1.05rem; font-weight: 700; color: #FFFFFF; font-family: 'JetBrains Mono', monospace;">{mean_pr_auc:.3f}</div>
                 </div>
                 <div>
                     <div class="metric-label">Variance</div>
-                    <div style="font-size: 1.05rem; font-weight: 700; color: #00E676; font-family: 'JetBrains Mono', monospace;">±{variance:.3f}</div>
+                    <div style="font-size: 1.05rem; font-weight: 700; color: #2FB872; font-family: 'JetBrains Mono', monospace;">±{variance:.3f}</div>
                 </div>
             </div>
         </div>
@@ -264,18 +269,18 @@ with st.expander("Validation methodology & protocol details", expanded=False):
     </div>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 10px;">
         <div class="glass-card" style="padding: 14px 16px;">
-            <div style="font-size: 0.92rem; font-weight: 700; color: #FFB300; margin-bottom: 6px;">
+            <div style="font-size: 0.92rem; font-weight: 700; color: #FFFFFF; margin-bottom: 6px;">
                 Schedule Artifact Immunity
             </div>
-            <div style="font-size: 0.78rem; color: #94A3B8; line-height: 1.55;">
+            <div style="font-size: 0.78rem; color: #8A8A8A; line-height: 1.55;">
                 Timestamp ablation and jitter perturbation tests confirm the model learns traffic kinematics rather than clock-based attack scripts.
             </div>
         </div>
         <div class="glass-card" style="padding: 14px 16px;">
-            <div style="font-size: 0.92rem; font-weight: 700; color: #00E676; margin-bottom: 6px;">
+            <div style="font-size: 0.92rem; font-weight: 700; color: #FFFFFF; margin-bottom: 6px;">
                 Multi-Stage Episode Validation
             </div>
-            <div style="font-size: 0.78rem; color: #94A3B8; line-height: 1.55;">
+            <div style="font-size: 0.78rem; color: #8A8A8A; line-height: 1.55;">
                 Complete multi-stage attack episodes are evaluated chronologically, ensuring host topology embeddings track stealth lateral movement.
             </div>
         </div>

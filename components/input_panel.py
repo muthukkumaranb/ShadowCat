@@ -47,20 +47,20 @@ def render_input_panel():
         with col_badge:
             if mode == "Upload CSV (Flow-Only Schema)":
                 badge_text = "[Active Pipeline: Flow-Only Features]"
-                badge_bg = "rgba(255, 179, 0, 0.12)"
-                badge_color = "#FFB300"
+                badge_bg = "rgba(224, 152, 43, 0.12)"
+                badge_color = "#E0982B"
                 pipeline_desc = "Flow-level attributes (NetFlow/IPFIX summary, durations, byte counts)."
                 st.session_state["pipeline_name"] = "Flow-Only Features"
             elif mode == "Upload PCAP (.pcap, .pcapng)":
                 badge_text = "[Active Pipeline: Full Unified Cyber State (UCS)]"
-                badge_bg = "rgba(0, 229, 255, 0.12)"
-                badge_color = "#00E5FF"
+                badge_bg = "rgba(255, 255, 255, 0.08)"
+                badge_color = "#FFFFFF"
                 pipeline_desc = "Full packet-level + flow-level extraction (TTL, TCP window size, flag bitmasks)."
                 st.session_state["pipeline_name"] = "Full Unified Cyber State (UCS)"
             else:
                 badge_text = "[Active Pipeline: Full Unified Cyber State (UCS)]"
-                badge_bg = "rgba(0, 230, 118, 0.12)"
-                badge_color = "#00E676"
+                badge_bg = "rgba(47, 184, 114, 0.12)"
+                badge_color = "#2FB872"
                 pipeline_desc = "CSE-CIC-IDS2018 Infiltration Scenario episode with full packet + flow metadata."
                 st.session_state["pipeline_name"] = "Full Unified Cyber State (UCS)"
 
@@ -70,7 +70,7 @@ def render_input_panel():
                 <div style="font-size: 0.76rem; font-weight: 700; color: {badge_color}; font-family: 'JetBrains Mono', monospace; margin-bottom: 4px;">
                     {badge_text}
                 </div>
-                <div style="font-size: 0.70rem; color: #94A3B8; line-height: 1.4;">
+                <div style="font-size: 0.70rem; color: #8A8A8A; line-height: 1.4;">
                     {pipeline_desc}
                 </div>
             </div>
@@ -81,7 +81,7 @@ def render_input_panel():
             c_left, c_btn = st.columns([2.5, 1.5])
             with c_left:
                 render_html("""
-                <div style="font-size: 0.78rem; color: #CBD5E1; margin-top: 6px; line-height: 1.5;">
+                <div style="font-size: 0.78rem; color: #8A8A8A; margin-top: 6px; line-height: 1.5;">
                     <b>Dataset:</b> CSE-CIC-IDS2018 (Scenario: Infiltration & SSH Brute Force)<br>
                     <b>Episode Length:</b> 60-second sliding windows (L=30 history lookback, K=4 forward rollout)
                 </div>

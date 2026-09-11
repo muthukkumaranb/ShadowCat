@@ -10,7 +10,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import streamlit as st
 from data_provider import get_demo_data
+import importlib
+import styles
+importlib.reload(styles)
 from styles import apply_custom_css, render_sidebar, COLORS, render_html, render_footer
+import components.header
+importlib.reload(components.header)
 from components.header import render_header
 
 st.set_page_config(
@@ -36,7 +41,7 @@ render_html("""
     <h2 style="font-size: 1.4rem; font-weight: 800; color: #FFFFFF; margin: 0;">
         Telemetry Ingestion & Dataset Replay
     </h2>
-    <div style="font-size: 0.84rem; color: #9AA7BD; margin-top: 4px;">
+    <div style="font-size: 0.84rem; color: #8A8A8A; margin-top: 4px;">
         Ingest live sensor taps, standardized multi-dataset benchmarks, or custom capture files into the Unified Cyber State (UCS) tensor.
     </div>
 </div>
@@ -84,10 +89,10 @@ with tab_benchmark:
 
     render_html(f"""
     <div class="glass-card" style="padding: 14px 18px; margin-top: 10px; margin-bottom: 14px;">
-        <div style="font-size: 0.85rem; font-weight: 700; color: #E8EDF5; margin-bottom: 6px;">
+        <div style="font-size: 0.85rem; font-weight: 700; color: #FFFFFF; margin-bottom: 6px;">
             {selected_benchmark}
         </div>
-        <div style="font-size: 0.78rem; color: #9AA7BD; line-height: 1.5;">
+        <div style="font-size: 0.78rem; color: #8A8A8A; line-height: 1.5;">
             <b>Attack Scenario:</b> {info['scenario']}<br>
             <b>Windowing Protocol:</b> {info['duration']}<br>
             <b>Feature Pipeline:</b> {info['sensors']} · <i>{info['lead_time']}</i>
