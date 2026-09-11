@@ -229,7 +229,7 @@ Returns deletion-tested feature attribution rankings.
 ```json
 [
   {"feature": "SYN packet rate", "contribution": 0.34, "category": "Flow Dynamics", "delta": "+280%"},
-  {"feature": "Connection attempt frequency", "contribution": 0.28, "category": "Graph Topology", "delta": "14 targets"},
+  {"feature": "Connection attempt frequency", "contribution": 0.28, "category": "Flow Dynamics", "delta": "14 targets"},
   {"feature": "TTL variance", "contribution": 0.21, "category": "Packet Header", "delta": "Abnormal hops"},
   {"feature": "Inter-arrival timing jitter", "contribution": 0.12, "category": "Temporal Rhythm", "delta": "Paced pulses"},
   {"feature": "Payload entropy distribution", "contribution": 0.05, "category": "Payload Stats", "delta": "Baseline"}

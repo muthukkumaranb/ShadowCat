@@ -21,6 +21,7 @@ import torch
 TEST_DIR = Path(__file__).resolve().parent
 BACKEND_DIR = TEST_DIR.parent
 WORKSPACE_DIR = BACKEND_DIR.parent
+ML1_DIR = WORKSPACE_DIR / "ml1"
 
 sys.path.insert(0, str(WORKSPACE_DIR / "data-engineering"))
 sys.path.insert(0, str(WORKSPACE_DIR))
@@ -153,6 +154,57 @@ class TestBackendPipeline(unittest.TestCase):
         for r in fc["risk"]:
             self.assertGreaterEqual(r, 0.0)
             self.assertLessEqual(r, 1.0)
+
+    def test_feature_attribution_categories_and_no_graph_topology(self):
+        """
+        Regression Guard:
+        1. Confirms get_feature_category() maps every 406 features accurately.
+        2. Confirms 'Graph Topology' never appears in any attribution output.
+        3. Confirms presence mask columns (mask_has_*) are strictly excluded.
+        4. Confirms all assigned categories belong to the allowed 4-category set.
+        """
+        import json
+        from backend.predict import get_feature_category
+
+        allowed_categories = {"Temporal Rhythm", "Flow Dynamics", "Packet Header", "Payload Stats"}
+
+        # Audit against authoritative 406-feature list
+        feature_order_file = ML1_DIR / "artifacts" / "lstm" / "inference_feature_order_v2.json"
+        if feature_order_file.exists():
+            with open(feature_order_file, "r") as f:
+                feat_data = json.load(f)
+            features = feat_data.get("features", [])
+            self.assertEqual(len(features), 406, "Expected 406 features in contract")
+
+            mask_count = 0
+            categorized_count = 0
+            for feat in features:
+                cat = get_feature_category(feat)
+                if feat.startswith("mask_has_"):
+                    self.assertIsNone(cat, f"Mask column {feat} must map to None")
+                    mask_count += 1
+                else:
+                    self.assertIsNotNone(cat, f"Feature {feat} must have a valid category")
+                    self.assertIn(cat, allowed_categories, f"Category {cat} for {feat} not in allowed set")
+                    self.assertNotEqual(cat, "Graph Topology", f"Graph Topology category forbidden for {feat}")
+                    categorized_count += 1
+
+            self.assertEqual(mask_count, 6, "Expected exactly 6 mask columns excluded")
+            self.assertEqual(categorized_count, 400, "Expected exactly 400 non-mask features categorized")
+
+        # Verify live predict output attributions
+        if self.canonical_windows is not None:
+            sample_df = self.canonical_windows.head(40).copy()
+            res = predict(sample_df, source_type="flows")
+            attributions = res.get("attributions", [])
+            self.assertGreater(len(attributions), 0, "Expected non-empty attributions list")
+
+            for attr in attributions:
+                cat = attr.get("category")
+                feat = attr.get("feature")
+                self.assertNotIn("Graph Topology", cat, f"Graph Topology found in attribution {attr}")
+                self.assertIn(cat, allowed_categories, f"Unknown category {cat} in attribution {attr}")
+                self.assertFalse(feat.lower().startswith("mask"), f"Mask feature leaked into attribution: {feat}")
 
 
 if __name__ == "__main__":

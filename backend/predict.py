@@ -37,6 +37,64 @@ from backend.models import (
 )
 
 
+def get_feature_category(feat_name: str) -> Optional[str]:
+    """
+    Deterministically maps a feature name from the 406-dimensional vector
+    to its accurate domain category.
+
+    Returns None for presence masks (mask_has_*), which must be excluded
+    from behavioral attribution rankings.
+    Allowed categories: 'Temporal Rhythm', 'Flow Dynamics', 'Packet Header', 'Payload Stats'.
+    'Graph Topology' is strictly excluded because the GNN branch was held back.
+    """
+    name_lower = feat_name.lower()
+    # 1. Exclude presence masks
+    if name_lower.startswith("mask_has_") or name_lower.startswith("mask_"):
+        return None
+    # 2. Payload Stats / Packet Length Distributions
+    if (
+        name_lower.startswith("pkt_payload_")
+        or "payload" in name_lower
+        or "pkt_len" in name_lower
+        or "pkt_size" in name_lower
+        or "seg_size" in name_lower
+    ):
+        return "Payload Stats"
+    # 3. Packet Header & TCP Controls
+    if (
+        name_lower.startswith("pkt_ttl_")
+        or name_lower.startswith("pkt_frag_")
+        or name_lower.startswith("pkt_tcp_")
+        or name_lower.startswith("pkt_port_scan_")
+        or "flag" in name_lower
+        or "header" in name_lower
+        or "init_win" in name_lower
+        or "window_size" in name_lower
+        or "act_data_pkts" in name_lower
+    ):
+        return "Packet Header"
+    # 4. Temporal Rhythm / Timing & Durations
+    if (
+        "iat" in name_lower
+        or "idle" in name_lower
+        or "active" in name_lower
+        or "duration" in name_lower
+    ):
+        return "Temporal Rhythm"
+    # 5. Flow Dynamics / Volume Counts & Rates
+    if (
+        "byte" in name_lower
+        or "packet" in name_lower
+        or "count" in name_lower
+        or "rate" in name_lower
+        or "per_sec" in name_lower
+        or "flow_" in name_lower
+        or "subflow" in name_lower
+    ):
+        return "Flow Dynamics"
+    return "Flow Dynamics"
+
+
 class ShadowcatPipeline:
     """
     Production Inference Engine caching loaded weights and scalers.
@@ -291,17 +349,24 @@ class ShadowcatPipeline:
 
         # Step 9: Feature Attribution (Top Contributing Features)
         attr_scores = np.abs(obs_state - pred_state)
-        top_indices = np.argsort(attr_scores)[::-1][:5]
         model_cols = UCSExtractor.MODEL_INPUT_COLUMNS
-        total_attr = float(np.sum(attr_scores[top_indices])) + 1e-6
 
-        categories = ["Flow Dynamics", "Graph Topology", "Packet Header", "Temporal Rhythm", "Payload Stats"]
+        # Filter out presence masks so presence flags are never ranked as behavioral drivers
+        filtered_scores = attr_scores.copy()
+        for idx, col in enumerate(model_cols):
+            if get_feature_category(col) is None:
+                filtered_scores[idx] = -1.0
+
+        sorted_indices = np.argsort(filtered_scores)[::-1]
+        top_indices = [idx for idx in sorted_indices if filtered_scores[idx] >= 0][:5]
+
+        total_attr = float(np.sum(attr_scores[top_indices])) + 1e-6
         attributions = []
-        for rank, idx in enumerate(top_indices):
+        for idx in top_indices:
             feat_name = model_cols[idx] if idx < len(model_cols) else f"Feature_{idx}"
             clean_name = feat_name.replace("_", " ").title()
             contrib = float(np.round(attr_scores[idx] / total_attr, 2))
-            cat = categories[rank % len(categories)]
+            cat = get_feature_category(feat_name) or "Flow Dynamics"
             attributions.append({
                 "feature": clean_name,
                 "contribution": contrib,
