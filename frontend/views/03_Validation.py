@@ -14,6 +14,7 @@ from data_provider import (
     get_comparison_table,
     get_validation_data,
     validation_status,
+    get_audit_chain_status,
 )
 import importlib
 import styles
@@ -286,6 +287,75 @@ with st.expander("Validation methodology & protocol details", expanded=False):
         </div>
     </div>
     """)
+
+# 5. Tamper-Evident Audit Trail (Blockchain-Inspired Cryptographic Provenance)
+audit_status = get_audit_chain_status()
+chain_valid = audit_status.get("is_valid", False)
+chain_len = audit_status.get("length", 0)
+entries = audit_status.get("entries", [])
+
+render_html("""
+<div class="card-title" style="margin-top: 22px; margin-bottom: 10px;">
+    <span>Cryptographic Provenance & Tamper-Evidence (Hash-Chain Audit Trail)</span>
+    <span class="badge">Blockchain-Inspired Forensic Ledger</span>
+</div>
+""")
+
+col_c1, col_c2, col_c3 = st.columns([1.2, 1.2, 2.0])
+with col_c1:
+    render_html(f"""
+    <div class="glass-card" style="text-align: center; padding: 14px 10px; min-height: 85px;">
+        <div class="metric-label">Ledger Status</div>
+        <div class="metric-value-huge" style="color: {'#2FB872' if chain_valid else '#E5484D'}; font-size: 1.35rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; margin-top: 6px;">
+            {'VALID (0 Mismatches)' if chain_valid else 'TAMPER DETECTED'}
+        </div>
+    </div>
+    """)
+
+with col_c2:
+    render_html(f"""
+    <div class="glass-card" style="text-align: center; padding: 14px 10px; min-height: 85px;">
+        <div class="metric-label">Chained Artifacts</div>
+        <div class="metric-value-huge" style="color: #FFFFFF; font-size: 1.35rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; margin-top: 6px;">
+            {chain_len} Blocks Sealed
+        </div>
+    </div>
+    """)
+
+with col_c3:
+    render_html("""
+    <div class="glass-card" style="padding: 12px 14px; min-height: 85px; display: flex; flex-direction: column; justify-content: center;">
+        <div style="font-size: 0.80rem; color: #FFFFFF; font-weight: 700;">
+            Cryptographic Integrity Guarantee
+        </div>
+        <div style="font-size: 0.74rem; color: #8A8A8A; margin-top: 3px; line-height: 1.4;">
+            SHA-256 recursive hash chain binds model weights, contracts, and evaluation reports. Historical tampering is provably detectable.
+        </div>
+    </div>
+    """)
+
+if entries:
+    chain_rows = []
+    for e in entries:
+        chain_rows.append({
+            "Block #": e.get("index"),
+            "Artifact Type": e.get("artifact_type"),
+            "Description": e.get("description"),
+            "Artifact SHA-256": f"{e.get('artifact_hash', '')[:16]}...",
+            "Block Hash": f"{e.get('entry_hash', '')[:16]}...",
+        })
+    st.dataframe(
+        pd.DataFrame(chain_rows),
+        use_container_width=True,
+        hide_index=True,
+        column_config={
+            "Block #": st.column_config.NumberColumn("Block", width="small"),
+            "Artifact Type": st.column_config.TextColumn("Artifact Type", width="medium"),
+            "Description": st.column_config.TextColumn("Forensic Description", width="large"),
+            "Artifact SHA-256": st.column_config.TextColumn("File SHA-256", width="medium"),
+            "Block Hash": st.column_config.TextColumn("Block Link Hash", width="medium"),
+        }
+    )
 
 # Persistent Executive Footer
 render_footer()

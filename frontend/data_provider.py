@@ -528,6 +528,29 @@ def get_mitre_data() -> list[dict]:
     return stages
 
 
+def get_audit_chain_status() -> dict:
+    """
+    Returns the status and entries of the blockchain-inspired tamper-evident audit chain.
+    Consumed by: views/03_Validation.py
+    """
+    chain_file = REPO_ROOT / "backend" / "audit_chain.json"
+    if chain_file.exists():
+        try:
+            with open(chain_file, "r", encoding="utf-8") as f:
+                chain = json.load(f)
+            from audit_chain import verify_chain
+            is_valid, issues = verify_chain(str(chain_file))
+            return {
+                "length": len(chain),
+                "is_valid": is_valid,
+                "issues": issues,
+                "entries": chain,
+            }
+        except Exception as e:
+            return {"length": 0, "is_valid": False, "issues": [str(e)], "entries": []}
+    return {"length": 0, "is_valid": False, "issues": ["audit_chain.json not found"], "entries": []}
+
+
 def get_demo_data() -> dict:
     """
     Constructs the root data dictionary strictly by invoking the typed accessor functions above.
