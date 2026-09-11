@@ -1,0 +1,48 @@
+{
+  "fused": [
+    {
+      "seed": 42,
+      "nse": 0.753876,
+      "best_val_loss": 1.865057,
+      "best_epoch": 12,
+      "stopped_epoch": 27
+    },
+    {
+      "seed": 100,
+      "nse": 0.609566,
+      "best_val_loss": 1.936862,
+      "best_epoch": 16,
+      "stopped_epoch": 31
+    },
+    {
+      "seed": 2026,
+      "nse": 0.812106,
+      "best_val_loss": 1.993546,
+      "best_epoch": 28,
+      "stopped_epoch": 43
+    }
+  ],
+  "temporal_only": [
+    {
+      "seed": 42,
+      "nse": 2.439332,
+      "best_val_loss": 1.680424,
+      "best_epoch": 10,
+      "stopped_epoch": 25
+    },
+    {
+      "seed": 100,
+      "nse": 2.157632,
+      "best_val_loss": 1.675811,
+      "best_epoch": 9,
+      "stopped_epoch": 24
+    },
+    {
+      "seed": 2026,
+      "nse": 2.402334,
+      "best_val_loss": 1.640763,
+      "best_epoch": 5,
+      "stopped_epoch": 20
+    }
+  ]
+}

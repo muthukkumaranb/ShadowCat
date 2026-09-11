@@ -1,0 +1,2 @@
+fold_id,training_started,training_completed,epochs_requested,epochs_completed,early_stopping_triggered,training_exception,diagnostic_exception,checkpoint_created,best_checkpoint_available,best_epoch,final_epoch
+0,True,True,1,1,False,,,True,True,1,1

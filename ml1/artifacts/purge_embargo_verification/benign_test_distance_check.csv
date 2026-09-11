@@ -1,0 +1,4 @@
+fold_id,benign_test_windows,nearest_train_distance_min,benign_purge_violations
+2,6,1.0,6
+10,6,1.0,6
+19,6,1.0,6

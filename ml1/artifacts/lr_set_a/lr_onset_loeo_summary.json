@@ -1,0 +1,69 @@
+{
+  "protocol": "37-fold LOEO (retrained per fold)",
+  "fold_count": 37,
+  "aggregation": "mean_across_folds and pooled predictions across held-out folds",
+  "mean_across_folds": {
+    "accuracy": 1.0,
+    "precision": 0.972972972972973,
+    "recall": 0.972972972972973,
+    "f1": 0.972972972972973,
+    "fpr": 0.0,
+    "roc_auc": null,
+    "pr_auc": null
+  },
+  "std_across_folds": {
+    "accuracy": 0.0,
+    "precision": 0.1643989873053573,
+    "recall": 0.1643989873053573,
+    "f1": 0.1643989873053573,
+    "fpr": 0.0,
+    "roc_auc": 0.0,
+    "pr_auc": 0.0
+  },
+  "per_attack_type_means": {
+    "Botnet": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "fpr": 0.0,
+      "roc_auc": NaN,
+      "pr_auc": NaN
+    },
+    "DDOS-LOIC-UDP": {
+      "accuracy": 1.0,
+      "precision": 0.9444444444444444,
+      "recall": 0.9444444444444444,
+      "f1": 0.9444444444444444,
+      "fpr": 0.0,
+      "roc_auc": NaN,
+      "pr_auc": NaN
+    },
+    "SSH-Bruteforce": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "fpr": 0.0,
+      "roc_auc": NaN,
+      "pr_auc": NaN
+    }
+  },
+  "pooled_metrics": {
+    "accuracy": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "fpr": 0.0,
+    "roc_auc": 1.0,
+    "pr_auc": 1.0,
+    "tp": 148,
+    "fp": 0,
+    "tn": 1,
+    "fn": 0
+  },
+  "target": "onset",
+  "target_col": "future_attack_label",
+  "feature_set": "Set A",
+  "feature_count": 406
+}

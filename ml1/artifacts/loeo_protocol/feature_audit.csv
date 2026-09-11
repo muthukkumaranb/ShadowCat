@@ -1,0 +1,12 @@
+feature,allowed,reason,time-derived,day-derived,episode-derived,source-derived,suspicious
+feature_set,True,Valid flow statistic,False,False,False,False,False
+feature_count,True,Valid flow statistic,False,False,False,False,False
+ordered_feature_names,True,Valid flow statistic,False,False,False,False,False
+dataset,True,Valid flow statistic,False,False,False,False,False
+protocol,True,Valid flow statistic,False,False,False,False,False
+grouping_column,True,Valid flow statistic,False,False,False,False,False
+rejected_grouping_columns,True,Valid flow statistic,False,False,False,False,False
+preprocessing,True,Valid flow statistic,False,False,False,False,False
+model,True,Valid flow statistic,False,False,False,False,False
+eligible_attack_types,True,Valid flow statistic,False,False,False,False,False
+excluded_attack_types,True,Valid flow statistic,False,False,False,False,False

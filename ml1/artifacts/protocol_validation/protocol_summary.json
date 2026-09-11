@@ -1,0 +1,36 @@
+{
+  "protocol": "37-fold LOEO eligibility validation; evaluation not executed",
+  "grouping_column": "episode_id",
+  "rejected_grouping_columns": [
+    "forecast_episode_id",
+    "source_day"
+  ],
+  "total_episode_ids": 85,
+  "split_spanning_episode_count": 2,
+  "singleton_episode_count": 51,
+  "singleton_benign_count": 29,
+  "singleton_non_benign_count": 22,
+  "eligible_attack_types": [
+    "SSH-Bruteforce",
+    "DDOS-LOIC-UDP",
+    "Botnet"
+  ],
+  "excluded_attack_types": [
+    "DDOS-HOIC",
+    "Infiltration-Compromise",
+    "Infiltration-Portscan"
+  ],
+  "eligible_attack_counts": {
+    "Botnet": 10,
+    "DDOS-LOIC-UDP": 18,
+    "SSH-Bruteforce": 9
+  },
+  "excluded_attack_counts": {
+    "DDOS-HOIC": 1,
+    "Infiltration-Compromise": 1,
+    "Infiltration-Portscan": 1
+  },
+  "validated_fold_count": 37,
+  "fold_isolation_verified": true,
+  "evaluation_executed": false
+}

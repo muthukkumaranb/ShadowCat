@@ -1,0 +1,59 @@
+# Pipeline Configuration for CSE-CIC-IDS2018 -> Unified Cyber State (S_t)
+
+paths:
+  raw_data_dir: "data/raw/CSE-CIC-IDS2018-csv"
+  intermediate_dir: "data/intermediate"
+  output_dir: "data/ucs"
+  config_dir: "configs"
+
+# Days to process
+target_files:
+  - "Wednesday-14-02-2018_TrafficForML_CICFlowMeter.csv"  # FTP-BruteForce, SSH-Bruteforce
+  - "Wednesday-21-02-2018_TrafficForML_CICFlowMeter.csv"  # DDoS HOIC, DDoS LOIC-UDP
+  - "Thursday-01-03-2018_TrafficForML_CICFlowMeter.csv"   # Infiltration (2-phase: compromise + portscan)
+  - "Friday-02-03-2018_TrafficForML_CICFlowMeter.csv"     # Botnet
+  - "Thursday-22-02-2018_TrafficForML_CICFlowMeter.csv"   # Web Attacks (XSS, SQLi, Brute Force)
+  - "Wednesday-28-02-2018_TrafficForML_CICFlowMeter.csv"  # Infiltration Day 1
+
+# Windowing parameters
+windowing:
+  interval_sec: 60  # 1-minute windows
+  timestamp_col: "timestamp_utc"
+  aggregation_stats: ["mean", "std", "sum", "min", "max"]
+
+# Future forecasting label
+forecasting:
+  horizon_windows: 5  # H = 5 windows (5 minutes lead time) — primary validated horizon
+  # H=10 and H=15 are sensitivity-analysis horizons only (see H_SWEEP_REPORT.md)
+  target_col: "label_binary"
+  future_label_col: "future_attack_label"
+
+# LSTM temporal model parameters
+lstm:
+  lookback_windows: 30  # L = 30 windows (30 minutes of temporal context)
+
+# Purge + Embargo (temporal leakage protection at split boundaries)
+# Width is computed as lookback_windows + horizon_windows = 30 + 5 = 35
+# Applied at both train→val and val→test boundaries
+purge_embargo:
+  # Width is NOT hardcoded — it is computed from lstm.lookback_windows + forecasting.horizon_windows
+  # Stored here for documentation only; code reads the component values and computes width
+  description: "Drop windows within (lookback + horizon) of each split boundary to prevent temporal leakage"
+
+# Chronological Train / Val / Test Splits (within each day or chronologically ordered windows)
+splits:
+  train_ratio: 0.70
+  val_ratio: 0.15
+  test_ratio: 0.15
+
+# Normalization parameters
+normalization:
+  method: "robust_scaler"  # (x - Q50) / (Q75 - Q25)
+  log1p_cols:
+    - "byte_count_fwd"
+    - "byte_count_bwd"
+    - "packet_count_fwd"
+    - "packet_count_bwd"
+    - "bytes_per_sec"
+    - "packets_per_sec"
+    - "duration_sec"

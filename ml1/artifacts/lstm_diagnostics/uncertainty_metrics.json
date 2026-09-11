@@ -1,0 +1,8 @@
+{
+  "train_nll_mean": 5652.724335126853,
+  "train_nll_median": 61.088280565838396,
+  "test_empirical_coverage_95": 0.9453031660692951,
+  "test_mean_interval_width": 49.27116012573242,
+  "protocol": "chronological",
+  "eval_split": "test"
+}

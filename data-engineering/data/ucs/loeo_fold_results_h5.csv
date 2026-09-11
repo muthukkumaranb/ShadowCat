@@ -1,0 +1,5 @@
+attack_type,fold,held_out_ep,held_out_day,test_total,train_total,a_f1,a_prec,a_rec,a_prauc,b_f1,b_prec,b_rec,b_prauc
+SSH-Bruteforce,0,3,14-02-2018,5,2926,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+DDOS-LOIC-UDP,9,28,21-02-2018,5,2926,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Botnet,27,91,02-03-2018,5,2922,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Botnet,30,99,02-03-2018,5,2926,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0

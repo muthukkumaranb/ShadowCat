@@ -1,0 +1,10 @@
+{
+  "script_path": "C:\\Users\\Vicky\\Documents\\SIH_2026\\SIH2026---UCS-INGESTION-PIPELINE-for-logistic-regression\\scripts\\train_lr_loeo.py",
+  "dataset": "C:\\Users\\Vicky\\Documents\\SIH_2026\\LSTM-type-model-CICIDS2018-UCS\\data\\ucs\\ucs_windows.parquet",
+  "feature_manifest": "C:\\Users\\Vicky\\Documents\\SIH_2026\\SIH2026---UCS-INGESTION-PIPELINE-for-logistic-regression\\artifacts\\lr_set_a\\set_a_features.json",
+  "loeo_manifest": "C:\\Users\\Vicky\\Documents\\SIH_2026\\LSTM-type-model-CICIDS2018-UCS\\artifacts\\lr_set_a_corrected\\lr_37fold_loeo_fold_manifest.csv",
+  "manifest_hash": "a4d334 (extracted)",
+  "fold_count": 37,
+  "generalized_purge_active": true,
+  "benign_sampling_protocol": "37-fold LOEO (retrained per fold)"
+}

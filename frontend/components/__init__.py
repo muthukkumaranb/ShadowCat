@@ -1,0 +1,3 @@
+"""
+SHADOWCAT - Components Package
+"""

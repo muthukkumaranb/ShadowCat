@@ -1,0 +1,10 @@
+{
+  "fold_count": 37,
+  "episode_eligibility_rule": "non-benign episodes with >=2 total occurrences",
+  "benign_sampling_rule": "Temporally closest pure benign windows from the same source day",
+  "ratio_rule": "1:1 ratio matching the total number of positive windows (attack + pre-onset), minimum 5 benign windows.",
+  "temporal_locality_rule": "Distance (seconds) to the bounds of the held-out episode; sorted ascending.",
+  "fallback_rule": "Next closest available day (not triggered in this dataset).",
+  "purge_embargo_configuration": "Canonical 35-window purge/embargo around chronological splits (handled in downstream pipeline)",
+  "random_seed": "Deterministic temporal sort, no random seed needed."
+}

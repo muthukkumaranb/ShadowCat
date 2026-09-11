@@ -1,0 +1,9 @@
+Model,Target,Attack Type,F1,Precision,Recall,FPR,Protocol
+Logistic Regression,Detection,Aggregate (All),0.972973,0.972973,0.972973,0.0,Corrected 37-fold LOEO
+Logistic Regression,Detection,Botnet,1.0,1.0,1.0,0.0,Corrected 37-fold LOEO
+Logistic Regression,Detection,DDOS-LOIC-UDP,1.0,1.0,1.0,0.0,Corrected 37-fold LOEO
+Logistic Regression,Detection,SSH-Bruteforce,0.888889,0.888889,0.888889,0.0,Corrected 37-fold LOEO
+Logistic Regression,Onset,Aggregate (All),0.888031,0.945946,0.878378,0.0,Corrected 37-fold LOEO
+Logistic Regression,Onset,Botnet,0.928571,1.0,0.916667,0.0,Corrected 37-fold LOEO
+Logistic Regression,Onset,DDOS-LOIC-UDP,0.904762,0.944444,0.898148,0.0,Corrected 37-fold LOEO
+Logistic Regression,Onset,SSH-Bruteforce,0.809524,0.888889,0.796296,0.0,Corrected 37-fold LOEO

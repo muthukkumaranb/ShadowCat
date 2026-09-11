@@ -1,0 +1,4 @@
+fold_id,held_out_episode_id,attack_type,test_window_count,attack_test_window_count,pre_onset_test_window_count,benign_test_window_count,original_training_window_count,post_purge_training_window_count,minimum_train_to_test_distance_minutes,maximum_train_to_test_distance_minutes,number_of_training_windows_within_35min,purge_embargo_violations
+2,02-03-2018_Botnet_2,Botnet,12,1,5,6,2775,2775,1.0,6.0,12,12
+10,14-02-2018_SSH-Bruteforce_0,SSH-Bruteforce,12,1,5,6,2775,2775,1.0,6.0,12,12
+19,21-02-2018_DDOS-LOIC-UDP_0,DDOS-LOIC-UDP,12,1,5,6,2775,2775,1.0,6.0,12,12

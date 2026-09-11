@@ -1,0 +1,23 @@
+window_size_sec: 60
+
+temporal:
+  lookback_minutes: 30
+
+baseline:
+  method: rolling
+  window_hours: 24
+  past_only: true
+  metrics:
+    traffic_zscore: bytes_in
+    connection_zscore: connection_rate
+    peer_zscore: peer_count
+
+forecast:
+  horizon_sec: 600
+
+missing_values:
+  use_mask: true
+
+split_protection:
+  purge: true
+  embargo: true

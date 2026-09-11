@@ -1,0 +1,19 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Large dataset files and processed graphs cache
+*.parquet
+*.pcap
+*.pcapng
+data/
+
+# Keep GNN checkpoints
+!gnn/checkpoints/*.pt
+
+# Environment
+.env
+validate_flows_OLD_BACKUP.py

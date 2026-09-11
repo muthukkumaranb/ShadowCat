@@ -1,0 +1,11 @@
+{
+  "total_unique_episodes": 85,
+  "eligible_episodes": 37,
+  "excluded_episodes": 48,
+  "eligible_by_attack_type": {
+    "DDOS-LOIC-UDP": 18,
+    "Botnet": 10,
+    "SSH-Bruteforce": 9
+  },
+  "final_fold_count": 37
+}

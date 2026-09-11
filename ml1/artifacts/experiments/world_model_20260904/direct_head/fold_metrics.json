@@ -1,0 +1,72 @@
+[
+  {
+    "held_out_episode": "02-03-2018",
+    "protocol": "LOEO (retrained per fold)",
+    "train_sequences": 1688,
+    "validation_sequences": 220,
+    "test_sequences": 347,
+    "best_epoch": 12,
+    "f1": 0.14084507042253522,
+    "pr_auc": 0.699677994573831,
+    "precision": 0.8823529411764706,
+    "recall": 0.07653061224489796,
+    "roc_auc": 0.6562711177186107,
+    "threshold": 0.38
+  },
+  {
+    "held_out_episode": "14-02-2018",
+    "protocol": "LOEO (retrained per fold)",
+    "train_sequences": 1550,
+    "validation_sequences": 255,
+    "test_sequences": 450,
+    "best_epoch": 12,
+    "f1": 0.6816901408450704,
+    "pr_auc": 0.6744494566604683,
+    "precision": 0.7333333333333333,
+    "recall": 0.6368421052631579,
+    "roc_auc": 0.8293927125506072,
+    "threshold": 0.38
+  },
+  {
+    "held_out_episode": "21-02-2018",
+    "protocol": "LOEO (retrained per fold)",
+    "train_sequences": 1952,
+    "validation_sequences": 255,
+    "test_sequences": 73,
+    "best_epoch": 1,
+    "f1": 0.7422680412371134,
+    "pr_auc": 0.8890664913402551,
+    "precision": 0.631578947368421,
+    "recall": 0.9,
+    "roc_auc": 0.8704545454545454,
+    "threshold": 0.38
+  },
+  {
+    "held_out_episode": "22-02-2018",
+    "protocol": "LOEO (retrained per fold)",
+    "train_sequences": 1544,
+    "validation_sequences": 255,
+    "test_sequences": 456,
+    "best_epoch": 4,
+    "f1": 0.29577464788732394,
+    "pr_auc": 0.46404005285336636,
+    "precision": 0.84,
+    "recall": 0.1794871794871795,
+    "roc_auc": 0.6098378841741673,
+    "threshold": 0.38
+  },
+  {
+    "held_out_episode": "28-02-2018",
+    "protocol": "LOEO (retrained per fold)",
+    "train_sequences": 1523,
+    "validation_sequences": 255,
+    "test_sequences": 477,
+    "best_epoch": 6,
+    "f1": 0.5224719101123596,
+    "pr_auc": 0.5973179853409648,
+    "precision": 0.384297520661157,
+    "recall": 0.8157894736842105,
+    "roc_auc": 0.8005412981489537,
+    "threshold": 0.38
+  }
+]

@@ -1,0 +1,39 @@
+{
+  "model": "LSTMGaussianWorldModel",
+  "model_config": {
+    "input_size": 32,
+    "hidden_size": 64,
+    "state_dim": 32,
+    "num_layers": 1,
+    "dropout": 0.2
+  },
+  "sequence_length": 30,
+  "feature_dim": 32,
+  "pca_components": 32,
+  "deviation_metric": "mean_absolute_error_in_pca_space",
+  "deviation_formula": "d(t) = mean(|S_actual(t) - S_predicted(t)|)",
+  "temporal_alignment": "stored_at_window_t_adapter_performs_t-1_shift",
+  "temporal_alignment_detail": "ML1 stores deviation at window t. ML2 inject_novelty_into_graphs uses window_ids[i-1] to fetch t-1 novelty. No pre-shift applied by ML1.",
+  "output_format": "per_window_json",
+  "output_dir": "C:\\Users\\Vicky\\Documents\\SIH_2026\\LSTM-type-model-CICIDS2018-UCS\\artifacts\\lstm\\ml2_export\\per_window_json",
+  "num_windows": 233,
+  "num_predictions": 233,
+  "deviation_stats": {
+    "min": 14.162308692932129,
+    "max": 20589.017578125,
+    "mean": 1025.7223827756552,
+    "std": 3334.0262693099894,
+    "nan_count": 0,
+    "inf_count": 0
+  },
+  "protocol": "LOEO 37-fold (corrected manifest)",
+  "manifest": "C:\\Users\\Vicky\\Documents\\SIH_2026\\LSTM-type-model-CICIDS2018-UCS\\artifacts\\loeo\\corrected_37fold_manifest.json",
+  "checkpoint_dir": "C:\\Users\\Vicky\\Documents\\SIH_2026\\LSTM-type-model-CICIDS2018-UCS\\artifacts\\lstm\\loeo_world_model",
+  "seed": 42,
+  "generation_timestamp": "2026-09-06T07:19:42.230114+00:00",
+  "git_hash": "6dd48b529583a4b2d9cd7b840895ca65a5550b52",
+  "python_version": "3.10.2",
+  "torch_version": "2.13.0+cpu",
+  "numpy_version": "2.2.6",
+  "pandas_version": "2.3.3"
+}

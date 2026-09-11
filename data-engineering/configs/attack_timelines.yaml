@@ -1,0 +1,83 @@
+# Ground Truth Attack Timelines & Table 2 Reference Schedule for CSE-CIC-IDS2018
+
+attack_schedules:
+  "14-02-2018":
+    day_name: "Wednesday-14-02-2018"
+    attacks:
+      - name: "FTP-BruteForce"
+        canonical_label: "FTP-BruteForce"
+        start_utc: "2018-02-14 10:30:00"
+        end_utc: "2018-02-14 12:15:00"
+        target_ports: [21]
+      - name: "SSH-Bruteforce"
+        canonical_label: "SSH-Bruteforce"
+        start_utc: "2018-02-14 02:00:00"
+        end_utc: "2018-02-14 03:35:00"
+        target_ports: [22]
+  "21-02-2018":
+    day_name: "Wednesday-21-02-2018"
+    attacks:
+      - name: "DDOS attack-HOIC"
+        canonical_label: "DDOS-HOIC"
+        start_utc: "2018-02-21 02:10:00"
+        end_utc: "2018-02-21 02:35:00"
+        target_ports: [80]
+      - name: "DDOS attack-LOIC-UDP"
+        canonical_label: "DDOS-LOIC-UDP"
+        start_utc: "2018-02-21 10:05:00"
+        end_utc: "2018-02-21 10:45:00"
+        target_ports: [80]
+  "01-03-2018":
+    day_name: "Thursday-01-03-2018"
+    attacks:
+      - name: "Infilteration-Phase1-Compromise"
+        canonical_label: "Infiltration-Compromise"
+        start_utc: "2018-03-01 02:00:00"
+        end_utc: "2018-03-01 04:30:00"
+        description: "Initial compromise via malicious download and victim-C2 connection"
+      - name: "Infilteration-Phase2-Portscan"
+        canonical_label: "Infiltration-Portscan"
+        start_utc: "2018-03-01 09:00:00"
+        end_utc: "2018-03-01 11:00:00"
+        description: "Internal network reconnaissance, lateral portscan via Nmap"
+  "02-03-2018":
+    day_name: "Friday-02-03-2018"
+    attacks:
+      - name: "Bot"
+        canonical_label: "Botnet"
+        start_utc: "2018-03-02 01:00:00"
+        end_utc: "2018-03-02 12:59:59"
+  "22-02-2018":
+    day_name: "Thursday-22-02-2018"
+    attacks:
+      - name: "Brute Force -Web"
+        canonical_label: "Web-BruteForce"
+        start_utc: "2018-02-22 10:10:00"
+        end_utc: "2018-02-22 11:25:00"
+      - name: "Brute Force -XSS"
+        canonical_label: "Web-XSS"
+        start_utc: "2018-02-22 01:50:00"
+        end_utc: "2018-02-22 02:30:00"
+      - name: "SQL Injection"
+        canonical_label: "Web-SQLi"
+        start_utc: "2018-02-22 01:50:00"
+        end_utc: "2018-02-22 11:15:00"
+  "28-02-2018":
+    day_name: "Wednesday-28-02-2018"
+    attacks:
+      - name: "Infilteration"
+        canonical_label: "Infiltration"
+        start_utc: "2018-02-28 01:40:00"
+        end_utc: "2018-02-28 12:10:00"
+
+label_normalization_map:
+  "Benign": "Benign"
+  "FTP-BruteForce": "FTP-BruteForce"
+  "SSH-Bruteforce": "SSH-Bruteforce"
+  "DDOS attack-HOIC": "DDOS-HOIC"
+  "DDOS attack-LOIC-UDP": "DDOS-LOIC-UDP"
+  "Bot": "Botnet"
+  "Brute Force -Web": "Web-BruteForce"
+  "Brute Force -XSS": "Web-XSS"
+  "SQL Injection": "Web-SQLi"
+  "Infilteration": "Infiltration"

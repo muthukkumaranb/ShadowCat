@@ -1,0 +1,5 @@
+fold_id,training_started,training_completed,epochs_requested,epochs_completed,early_stopping_triggered,training_exception,diagnostic_exception,checkpoint_created,best_checkpoint_available,best_epoch,final_epoch
+10,True,True,30,8,True,,,True,True,3,8
+11,True,True,30,8,True,,,True,True,3,8
+13,True,True,30,10,True,,,True,True,5,10
+14,True,True,30,8,True,,,True,True,3,8

@@ -1,0 +1,2427 @@
+_metadata:
+  version: v1
+  artifact_type: inference_scaler
+  description: Exact normalization parameters for live inference against the probabilistic LSTM world-model checkpoint (gaussian_next_state_best.pt).
+    Apply these transforms to raw UCS window features before feeding into the LSTM.
+  checkpoint: gaussian_next_state_best.pt
+  checkpoint_commit: 33f96bbe7d1ae95f7e18c9febce914d51484426a
+  config_snapshot: config_snapshot.yaml
+  exported_at: '2026-09-09T04:26:59.694905+00:00'
+  relationship_to_data_eng_scaler: IDENTICAL — this IS the canonical scaler_params.yaml from the data-engineering repo (data/ucs/scaler_params.yaml).
+    ML1 did NOT apply any additional normalization on top. The UCS pipeline applied log1p + RobustScaler before writing ucs_windows.parquet,
+    and those already-normalized values were fed directly into the LSTM. There is ONE source of truth, not two.
+  normalization_pipeline:
+    step_1: 'For features with is_log1p=true: x = log1p(x)'
+    step_2: 'For all 400 scaled features: x = (x - median) / scale'
+    step_3: The 6 mask columns (mask_has_*) are fixed flags (1.0 or 0.0) and are NOT scaled — pass them through unchanged.
+  total_scaled_features: 400
+  total_unscaled_mask_features: 6
+  total_lstm_input_features: 406
+  unscaled_mask_columns:
+  - mask_has_flow_timing_features
+  - mask_has_graph_topology
+  - mask_has_identity_auth
+  - mask_has_packet_level_features
+  - mask_has_tcp_flags
+  - mask_has_traffic_volume_features
+features:
+  duration_microsec_mean:
+    median: 14770387.468899522
+    scale: 7138992.385225026
+    is_log1p: false
+    q25: 11254895.533936651
+    q75: 18393887.919161677
+  duration_microsec_std:
+    median: 33804024.98359233
+    scale: 8382648.308490299
+    is_log1p: false
+    q25: 28691746.182205617
+    q75: 37074394.490695916
+  duration_microsec_sum:
+    median: 14877718166.0
+    scale: 18859479925.0
+    is_log1p: false
+    q25: 7503025962.0
+    q75: 26362505887.0
+  duration_microsec_min:
+    median: 0.0
+    scale: 9699411.73391782
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  duration_microsec_max:
+    median: 119941811.0
+    scale: 492001.0
+    is_log1p: false
+    q25: 119503457.0
+    q75: 119995458.0
+  packet_count_fwd_mean:
+    median: 1.8496654668054964
+    scale: 0.25591390619603205
+    is_log1p: true
+    q25: 1.742969305058623
+    q75: 1.998883211254655
+  packet_count_fwd_std:
+    median: 2.3424951757031387
+    scale: 1.2490326755327388
+    is_log1p: true
+    q25: 1.9855422982631725
+    q75: 3.2345749737959113
+  packet_count_fwd_sum:
+    median: 8.768885326134862
+    scale: 1.1664804466221295
+    is_log1p: true
+    q25: 8.188133414510478
+    q75: 9.354613861132608
+  packet_count_fwd_min:
+    median: 0.6931471805599453
+    scale: 0.17499251176703398
+    is_log1p: true
+    q25: 0.6931471805599453
+    q75: 0.6931471805599453
+  packet_count_fwd_max:
+    median: 4.990432586778736
+    scale: 2.435737625981531
+    is_log1p: true
+    q25: 4.189654742026425
+    q75: 6.625392368007956
+  packet_count_bwd_mean:
+    median: 1.760343272994676
+    scale: 0.5784470125360175
+    is_log1p: true
+    q25: 1.537694007575259
+    q75: 2.1161410201112765
+  packet_count_bwd_std:
+    median: 2.636959861581323
+    scale: 2.0827133839495873
+    is_log1p: true
+    q25: 2.0581638136968414
+    q75: 4.140877197646429
+  packet_count_bwd_sum:
+    median: 8.627660644442209
+    scale: 1.550486487407448
+    is_log1p: true
+    q25: 7.912789220690681
+    q75: 9.463275708098129
+  packet_count_bwd_min:
+    median: 0.0
+    scale: 0.07361067936167519
+    is_log1p: true
+    q25: 0.0
+    q75: 0.0
+  packet_count_bwd_max:
+    median: 5.476463551931511
+    scale: 2.8254261535044476
+    is_log1p: true
+    q25: 4.51085950651685
+    q75: 7.336285660021297
+  byte_count_fwd_mean:
+    median: 5.987517177797829
+    scale: 0.3533410107310653
+    is_log1p: true
+    q25: 5.832911794071294
+    q75: 6.1862528048023595
+  byte_count_fwd_std:
+    median: 6.8376845134272335
+    scale: 0.6592444842450309
+    is_log1p: true
+    q25: 6.543865103214444
+    q75: 7.203109587459475
+  byte_count_fwd_sum:
+    median: 13.05557592932522
+    scale: 1.0481883049596252
+    is_log1p: true
+    q25: 12.494490697082881
+    q75: 13.542679002042506
+  byte_count_fwd_min:
+    median: 0.0
+    scale: 0.7093062844713457
+    is_log1p: true
+    q25: 0.0
+    q75: 0.0
+  byte_count_fwd_max:
+    median: 9.578795654450447
+    scale: 1.1558727865660607
+    is_log1p: true
+    q25: 8.961879012677683
+    q75: 10.117751799243743
+  byte_count_bwd_mean:
+    median: 7.519111727229467
+    scale: 1.7143873970061332
+    is_log1p: true
+    q25: 6.804175365726358
+    q75: 8.518562762732492
+  byte_count_bwd_std:
+    median: 9.369471833910538
+    scale: 3.2180456230803784
+    is_log1p: true
+    q25: 8.014104847587703
+    q75: 11.232150470668081
+  byte_count_bwd_sum:
+    median: 14.630893512676833
+    scale: 2.4875348517742992
+    is_log1p: true
+    q25: 13.479478224571446
+    q75: 15.967013076345745
+  byte_count_bwd_min:
+    median: 0.0
+    scale: 0.2024201450587554
+    is_log1p: true
+    q25: 0.0
+    q75: 0.0
+  byte_count_bwd_max:
+    median: 12.450120178211767
+    scale: 3.705157228995617
+    is_log1p: true
+    q25: 10.837146578571375
+    q75: 14.542303807566991
+  fwd_pkt_len_max_mean:
+    median: 179.53399668325042
+    scale: 57.924424917304236
+    is_log1p: false
+    q25: 156.8197611292074
+    q75: 214.74418604651163
+  fwd_pkt_len_max_std:
+    median: 272.1948768286325
+    scale: 43.92409976275397
+    is_log1p: false
+    q25: 250.83657179827307
+    q75: 294.76067156102704
+  fwd_pkt_len_max_sum:
+    median: 207204.0
+    scale: 210271.0
+    is_log1p: false
+    q25: 114942.0
+    q75: 325213.0
+  fwd_pkt_len_max_min:
+    median: 0.0
+    scale: 32.53736938328523
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_pkt_len_max_max:
+    median: 1429.0
+    scale: 145.0
+    is_log1p: false
+    q25: 1313.0
+    q75: 1458.0
+  fwd_pkt_len_min_mean:
+    median: 13.839005235602095
+    scale: 9.580854250593946
+    is_log1p: false
+    q25: 8.812002892263196
+    q75: 18.392857142857142
+  fwd_pkt_len_min_std:
+    median: 27.228187263992115
+    scale: 15.548512074560442
+    is_log1p: false
+    q25: 20.23362193392122
+    q75: 35.78213400848166
+  fwd_pkt_len_min_sum:
+    median: 12782.0
+    scale: 16580.0
+    is_log1p: false
+    q25: 6247.0
+    q75: 22827.0
+  fwd_pkt_len_min_min:
+    median: 0.0
+    scale: 30.311324204551923
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_pkt_len_min_max:
+    median: 500.0
+    scale: 313.0
+    is_log1p: false
+    q25: 187.0
+    q75: 500.0
+  fwd_pkt_len_mean_mean:
+    median: 48.41298649934967
+    scale: 11.456261630497906
+    is_log1p: false
+    q25: 43.752211207903564
+    q75: 55.20847283840147
+  fwd_pkt_len_mean_std:
+    median: 55.15499561371804
+    scale: 15.516638427954021
+    is_log1p: false
+    q25: 48.31528350156942
+    q75: 63.83192192952344
+  fwd_pkt_len_mean_sum:
+    median: 54805.8067543839
+    scale: 52784.171114190496
+    is_log1p: false
+    q25: 32269.6809609828
+    q75: 85053.8520751733
+  fwd_pkt_len_mean_min:
+    median: 0.0
+    scale: 30.495326818877626
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_pkt_len_mean_max:
+    median: 500.0
+    scale: 103.77439024390003
+    is_log1p: false
+    q25: 472.75
+    q75: 576.5243902439
+  fwd_pkt_len_std_mean:
+    median: 54.90976048757774
+    scale: 19.20385399081472
+    is_log1p: false
+    q25: 47.01058907950116
+    q75: 66.21444307031588
+  fwd_pkt_len_std_std:
+    median: 88.22037645610554
+    scale: 14.82842947881538
+    is_log1p: false
+    q25: 81.10561766717218
+    q75: 95.93404714598756
+  fwd_pkt_len_std_sum:
+    median: 64814.4142799869
+    scale: 67835.5780800799
+    is_log1p: false
+    q25: 35902.1864996664
+    q75: 103737.7645797463
+  fwd_pkt_len_std_min:
+    median: 0.0
+    scale: 0.8702731993438356
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_pkt_len_std_max:
+    median: 533.0686634947
+    scale: 164.22369845599997
+    is_log1p: false
+    q25: 464.821381944
+    q75: 629.0450804
+  bwd_pkt_len_max_mean:
+    median: 358.29610829103217
+    scale: 97.58088981631761
+    is_log1p: false
+    q25: 310.8237885462555
+    q75: 408.4046783625731
+  bwd_pkt_len_max_std:
+    median: 514.3948698047183
+    scale: 61.54448813796654
+    is_log1p: false
+    q25: 480.65890779699083
+    q75: 542.2033959349574
+  bwd_pkt_len_max_sum:
+    median: 411073.0
+    scale: 431946.0
+    is_log1p: false
+    q25: 224732.0
+    q75: 656678.0
+  bwd_pkt_len_max_min:
+    median: 0.0
+    scale: 21.84247689436595
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_pkt_len_max_max:
+    median: 1460.0
+    scale: 835.116944882259
+    is_log1p: false
+    q25: 1460.0
+    q75: 1460.0
+  bwd_pkt_len_min_mean:
+    median: 28.064656882189606
+    scale: 24.035054582565195
+    is_log1p: false
+    q25: 14.859220092531395
+    q75: 38.89427467509659
+  bwd_pkt_len_min_std:
+    median: 51.80113393703489
+    scale: 17.0913579245926
+    is_log1p: false
+    q25: 40.44868889863425
+    q75: 57.54004682322685
+  bwd_pkt_len_min_sum:
+    median: 28362.0
+    scale: 40207.0
+    is_log1p: false
+    q25: 12448.0
+    q75: 52655.0
+  bwd_pkt_len_min_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_pkt_len_min_max:
+    median: 305.0
+    scale: 53.0
+    is_log1p: false
+    q25: 252.0
+    q75: 305.0
+  bwd_pkt_len_mean_mean:
+    median: 112.75753822934502
+    scale: 41.364727276669996
+    is_log1p: false
+    q25: 92.82806018577405
+    q75: 134.19278746244404
+  bwd_pkt_len_mean_std:
+    median: 161.4939912797566
+    scale: 61.159863821089715
+    is_log1p: false
+    q25: 126.11317981111168
+    q75: 187.2730436322014
+  bwd_pkt_len_mean_sum:
+    median: 130144.3271569129
+    scale: 144329.8165039922
+    is_log1p: false
+    q25: 68669.48611028
+    q75: 212999.3026142722
+  bwd_pkt_len_mean_min:
+    median: 0.0
+    scale: 5.8369047720331295
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_pkt_len_mean_max:
+    median: 1324.0150943396
+    scale: 404.8099258543998
+    is_log1p: false
+    q25: 1029.131579
+    q75: 1433.9415048544
+  bwd_pkt_len_std_mean:
+    median: 126.72226677271348
+    scale: 35.902687230354076
+    is_log1p: false
+    q25: 109.24234950242715
+    q75: 145.14503673278122
+  bwd_pkt_len_std_std:
+    median: 204.03428173095756
+    scale: 37.067280006682324
+    is_log1p: false
+    q25: 184.35744434088815
+    q75: 221.42472434757047
+  bwd_pkt_len_std_sum:
+    median: 147023.74049892472
+    scale: 156343.4085176383
+    is_log1p: false
+    q25: 78556.23035492
+    q75: 234899.6388725583
+  bwd_pkt_len_std_min:
+    median: 0.0
+    scale: 10.748561898938934
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_pkt_len_std_max:
+    median: 730.364292665
+    scale: 44.46504133119993
+    is_log1p: false
+    q25: 707.2990174
+    q75: 751.7640587312
+  bytes_per_sec_mean:
+    median: 12.325148253719442
+    scale: 1.0527205737905323
+    is_log1p: true
+    q25: 11.719066586101878
+    q75: 12.77178715989241
+  bytes_per_sec_std:
+    median: 14.730111520915875
+    scale: 1.3748413865953797
+    is_log1p: true
+    q25: 13.82347708686755
+    q75: 15.19831847346293
+  bytes_per_sec_sum:
+    median: 19.458802065003372
+    scale: 1.4233742025322549
+    is_log1p: true
+    q25: 18.61089666103339
+    q75: 20.034270863565645
+  bytes_per_sec_min:
+    median: 0.0
+    scale: 0.44260078663086533
+    is_log1p: true
+    q25: 0.0
+    q75: 0.0
+  bytes_per_sec_max:
+    median: 18.15931599280497
+    scale: 1.0546491442248858
+    is_log1p: true
+    q25: 17.249497794707484
+    q75: 18.30414693893237
+  packets_per_sec_mean:
+    median: 10.311824338139969
+    scale: 0.965723124762194
+    is_log1p: true
+    q25: 9.806196176845233
+    q75: 10.771919301607427
+  packets_per_sec_std:
+    median: 12.184671355693085
+    scale: 0.6525581999185821
+    is_log1p: true
+    q25: 11.83295045410612
+    q75: 12.485508654024702
+  packets_per_sec_sum:
+    median: 17.330687272390477
+    scale: 1.2595154326583966
+    is_log1p: true
+    q25: 16.682259619875644
+    q75: 17.94177505253404
+  packets_per_sec_min:
+    median: 0.026284346962465607
+    scale: 0.003932582271847448
+    is_log1p: true
+    q25: 0.022352134930025743
+    q75: 0.02628471720187319
+  packets_per_sec_max:
+    median: 14.914123179965662
+    scale: 0.40546494144156675
+    is_log1p: true
+    q25: 14.508658238524095
+    q75: 14.914123179965662
+  flow_iat_mean_mean:
+    median: 2696365.4151573987
+    scale: 6268370.310227085
+    is_log1p: false
+    q25: 1216109.0205339286
+    q75: 7484479.330761014
+  flow_iat_mean_std:
+    median: 10101321.551882256
+    scale: 13877619.906000363
+    is_log1p: false
+    q25: 6206013.203411596
+    q75: 20083633.10941196
+  flow_iat_mean_sum:
+    median: 1883540840.337866
+    scale: 8767618261.205675
+    is_log1p: false
+    q25: 962329273.4935184
+    q75: 9729947534.699194
+  flow_iat_mean_min:
+    median: 0.0
+    scale: 1434692.8730537256
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  flow_iat_mean_max:
+    median: 59632657.0
+    scale: 32159687.5
+    is_log1p: false
+    q25: 56320949.5
+    q75: 88480637.0
+  flow_iat_std_mean:
+    median: 1070809.1180028885
+    scale: 544960.0733947436
+    is_log1p: false
+    q25: 809149.2858782959
+    q75: 1354109.3592730395
+  flow_iat_std_std:
+    median: 3426323.092092183
+    scale: 1225171.671482
+    is_log1p: false
+    q25: 2844137.1297335136
+    q75: 4069308.8012155136
+  flow_iat_std_sum:
+    median: 1092928804.330738
+    scale: 1138175898.5735173
+    is_log1p: false
+    q25: 601763190.2170796
+    q75: 1739939088.790597
+  flow_iat_std_min:
+    median: 0.0
+    scale: 905295.7434285717
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  flow_iat_std_max:
+    median: 29059640.5799909
+    scale: 23809086.460503303
+    is_log1p: false
+    q25: 24355161.0140448
+    q75: 48164247.4745481
+  flow_iat_max_mean:
+    median: 6239791.223328591
+    scale: 5786269.396905689
+    is_log1p: false
+    q25: 4701933.346907994
+    q75: 10488202.743813682
+  flow_iat_max_std:
+    median: 15761976.181475395
+    scale: 9893813.520459572
+    is_log1p: false
+    q25: 13246934.366942557
+    q75: 23140747.88740213
+  flow_iat_max_sum:
+    median: 6023645744.0
+    scale: 11798554533.0
+    is_log1p: false
+    q25: 2984678058.0
+    q75: 14783232591.0
+  flow_iat_max_min:
+    median: 0.0
+    scale: 3383490.121754949
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  flow_iat_max_max:
+    median: 86623095.0
+    scale: 42910201.0
+    is_log1p: false
+    q25: 59939043.0
+    q75: 102849244.0
+  flow_iat_min_mean:
+    median: 2000200.5
+    scale: 5426294.606003703
+    is_log1p: false
+    q25: 741944.6086021506
+    q75: 6168239.214605853
+  flow_iat_min_std:
+    median: 9648012.292794783
+    scale: 14832177.716811202
+    is_log1p: false
+    q25: 5448035.144087012
+    q75: 20280212.860898215
+  flow_iat_min_sum:
+    median: 1558365163.0
+    scale: 8592888748.0
+    is_log1p: false
+    q25: 427098686.0
+    q75: 9019987434.0
+  flow_iat_min_min:
+    median: 0.0
+    scale: 320518.4045924145
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  flow_iat_min_max:
+    median: 59630939.0
+    scale: 32160008.0
+    is_log1p: false
+    q25: 56320629.0
+    q75: 88480637.0
+  fwd_iat_tot_mean:
+    median: 14344357.891472869
+    scale: 7364265.334928144
+    is_log1p: false
+    q25: 10700964.53050109
+    q75: 18065229.865429234
+  fwd_iat_tot_std:
+    median: 33771646.88991685
+    scale: 8461261.703742411
+    is_log1p: false
+    q25: 28603068.923829194
+    q75: 37064330.627571605
+  fwd_iat_tot_sum:
+    median: 14326311913.0
+    scale: 18607361255.0
+    is_log1p: false
+    q25: 7111672187.0
+    q75: 25719033442.0
+  fwd_iat_tot_min:
+    median: 0.0
+    scale: 9630356.652479416
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_iat_tot_max:
+    median: 119951842.0
+    scale: 664011.0
+    is_log1p: false
+    q25: 119335989.0
+    q75: 120000000.0
+  fwd_iat_mean_mean:
+    median: 3024629.9979068325
+    scale: 6089894.282083182
+    is_log1p: false
+    q25: 1608032.3682244797
+    q75: 7697926.650307661
+  fwd_iat_mean_std:
+    median: 10208174.1324998
+    scale: 13449432.054237794
+    is_log1p: false
+    q25: 6655182.693559232
+    q75: 20104614.747797027
+  fwd_iat_mean_sum:
+    median: 2303709646.1926126
+    scale: 8877210067.624557
+    is_log1p: false
+    q25: 1261499670.4494538
+    q75: 10138709738.07401
+  fwd_iat_mean_min:
+    median: 0.0
+    scale: 1435483.442402015
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_iat_mean_max:
+    median: 60002619.0
+    scale: 32218111.5
+    is_log1p: false
+    q25: 56321167.5
+    q75: 88539279.0
+  fwd_iat_std_mean:
+    median: 1153090.3708223768
+    scale: 745115.0352126445
+    is_log1p: false
+    q25: 791344.6053292226
+    q75: 1536459.6405418671
+  fwd_iat_std_std:
+    median: 4046562.8529372597
+    scale: 1490170.0496322792
+    is_log1p: false
+    q25: 3272009.265394166
+    q75: 4762179.315026445
+  fwd_iat_std_sum:
+    median: 1136493828.5492263
+    scale: 1331166550.434196
+    is_log1p: false
+    q25: 589852421.7617637
+    q75: 1921018972.1959598
+  fwd_iat_std_min:
+    median: 0.0
+    scale: 907655.2842831934
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_iat_std_max:
+    median: 34500000.0
+    scale: 11452609.905731503
+    is_log1p: false
+    q25: 26933448.401733
+    q75: 38386058.3074645
+  fwd_iat_max_mean:
+    median: 5875747.820324006
+    scale: 5855913.201824949
+    is_log1p: false
+    q25: 4319390.272037915
+    q75: 10175303.473862864
+  fwd_iat_max_std:
+    median: 15594101.308910659
+    scale: 9833770.072886111
+    is_log1p: false
+    q25: 13103767.99477039
+    q75: 22937538.067656502
+  fwd_iat_max_sum:
+    median: 5579951457.0
+    scale: 11535069902.0
+    is_log1p: false
+    q25: 2737739721.0
+    q75: 14272809623.0
+  fwd_iat_max_min:
+    median: 0.0
+    scale: 3383530.53813621
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_iat_max_max:
+    median: 83874856.0
+    scale: 37309349.0
+    is_log1p: false
+    q25: 59937114.0
+    q75: 97246463.0
+  fwd_iat_min_mean:
+    median: 2065019.0698630137
+    scale: 5416745.356078869
+    is_log1p: false
+    q25: 797607.7519101123
+    q75: 6214353.107988981
+  fwd_iat_min_std:
+    median: 9818059.275086183
+    scale: 14585218.021725537
+    is_log1p: false
+    q25: 5717597.368023587
+    q75: 20302815.389749125
+  fwd_iat_min_sum:
+    median: 1617978336.0
+    scale: 8603894302.0
+    is_log1p: false
+    q25: 505913041.0
+    q75: 9109807343.0
+  fwd_iat_min_min:
+    median: 0.0
+    scale: 322407.83184375934
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_iat_min_max:
+    median: 60002619.0
+    scale: 32218233.0
+    is_log1p: false
+    q25: 56321046.0
+    q75: 88539279.0
+  bwd_iat_tot_mean:
+    median: 7862148.8892215565
+    scale: 7090846.746932759
+    is_log1p: false
+    q25: 3965689.3291666666
+    q75: 11056536.076099426
+  bwd_iat_tot_std:
+    median: 25905147.78753222
+    scale: 13798824.210151996
+    is_log1p: false
+    q25: 17274440.823327575
+    q75: 31073265.03347957
+  bwd_iat_tot_sum:
+    median: 8054182649.0
+    scale: 11089977995.0
+    is_log1p: false
+    q25: 3583218747.0
+    q75: 14673196742.0
+  bwd_iat_tot_min:
+    median: 0.0
+    scale: 34573.186203863705
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_iat_tot_max:
+    median: 119657755.0
+    scale: 1103161.0
+    is_log1p: false
+    q25: 118855888.0
+    q75: 119959049.0
+  bwd_iat_mean_mean:
+    median: 731612.4880016111
+    scale: 485580.81351263594
+    is_log1p: false
+    q25: 487096.9432829547
+    q75: 972677.7567955906
+  bwd_iat_mean_std:
+    median: 2692221.46577173
+    scale: 1854363.2576975394
+    is_log1p: false
+    q25: 1970051.6029997524
+    q75: 3824414.860697292
+  bwd_iat_mean_sum:
+    median: 807935653.9513675
+    scale: 808511543.6161677
+    is_log1p: false
+    q25: 451680381.6220244
+    q75: 1260191925.238192
+  bwd_iat_mean_min:
+    median: 0.0
+    scale: 16199.196083900713
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_iat_mean_max:
+    median: 51652466.0
+    scale: 30681488.0
+    is_log1p: false
+    q25: 29500000.0
+    q75: 60181488.0
+  bwd_iat_std_mean:
+    median: 847966.9601072037
+    scale: 681486.6011100418
+    is_log1p: false
+    q25: 501776.1120907885
+    q75: 1183262.7132008304
+  bwd_iat_std_std:
+    median: 3051452.1463707853
+    scale: 1878585.7346328937
+    is_log1p: false
+    q25: 2004919.582212466
+    q75: 3883505.3168453597
+  bwd_iat_std_sum:
+    median: 912826047.163643
+    scale: 1165446045.9404817
+    is_log1p: false
+    q25: 449919206.28233725
+    q75: 1615365252.2228189
+  bwd_iat_std_min:
+    median: 0.0
+    scale: 11603.884184990098
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_iat_std_max:
+    median: 25906655.0863901
+    scale: 11084422.2575409
+    is_log1p: false
+    q25: 23615577.7424591
+    q75: 34700000.0
+  bwd_iat_max_mean:
+    median: 2530494.6716510905
+    scale: 2115411.4029014464
+    is_log1p: false
+    q25: 1437965.500395257
+    q75: 3553376.9032967035
+  bwd_iat_max_std:
+    median: 9290536.748040615
+    scale: 5392317.266096869
+    is_log1p: false
+    q25: 6308916.346329422
+    q75: 11701233.61242629
+  bwd_iat_max_sum:
+    median: 2740811040.0
+    scale: 3431104419.0
+    is_log1p: false
+    q25: 1338481366.0
+    q75: 4769585785.0
+  bwd_iat_max_min:
+    median: 0.0
+    scale: 30086.10496316611
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_iat_max_max:
+    median: 60014225.0
+    scale: 15843341.0
+    is_log1p: false
+    q25: 59056659.0
+    q75: 74900000.0
+  bwd_iat_min_mean:
+    median: 139370.46486790333
+    scale: 180098.24073581246
+    is_log1p: false
+    q25: 74330.05886736215
+    q75: 254428.29960317462
+  bwd_iat_min_std:
+    median: 1848664.7435842142
+    scale: 2185854.6928867395
+    is_log1p: false
+    q25: 915577.8191077816
+    q75: 3101432.511994521
+  bwd_iat_min_sum:
+    median: 176783617.0
+    scale: 212853421.0
+    is_log1p: false
+    q25: 87909895.0
+    q75: 300763316.0
+  bwd_iat_min_min:
+    median: 0.0
+    scale: 14610.106945288027
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_iat_min_max:
+    median: 51068893.0
+    scale: 40151765.0
+    is_log1p: false
+    q25: 20029723.0
+    q75: 60181488.0
+  fwd_psh_flags_mean:
+    median: 0.04096228868660598
+    scale: 0.04564010825191504
+    is_log1p: false
+    q25: 0.022189349112426034
+    q75: 0.06782945736434108
+  fwd_psh_flags_std:
+    median: 0.1980944566327535
+    scale: 0.10436904769725644
+    is_log1p: false
+    q25: 0.1471652319626923
+    q75: 0.25153427965994873
+  fwd_psh_flags_sum:
+    median: 49.0
+    scale: 56.0
+    is_log1p: false
+    q25: 24.0
+    q75: 80.0
+  fwd_psh_flags_min:
+    median: 0.0
+    scale: 0.02228835993459966
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_psh_flags_max:
+    median: 1.0
+    scale: 0.27055890049015713
+    is_log1p: false
+    q25: 1.0
+    q75: 1.0
+  bwd_psh_flags_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_psh_flags_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_psh_flags_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_psh_flags_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_psh_flags_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_urg_flags_mean:
+    median: 0.0
+    scale: 0.004091650560246484
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_urg_flags_std:
+    median: 0.0
+    scale: 0.027957449576724323
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_urg_flags_sum:
+    median: 0.0
+    scale: 5.017306614897113
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_urg_flags_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_urg_flags_max:
+    median: 0.0
+    scale: 0.2311953167117099
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_urg_flags_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_urg_flags_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_urg_flags_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_urg_flags_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_urg_flags_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_header_len_mean:
+    median: 103.03217503217503
+    scale: 37.27315953853018
+    is_log1p: false
+    q25: 88.73793103448276
+    q75: 126.01109057301294
+  fwd_header_len_std:
+    median: 180.47892056780486
+    scale: 403.0850821984404
+    is_log1p: false
+    q25: 116.76394891155935
+    q75: 519.8490311099997
+  fwd_header_len_sum:
+    median: 126516.0
+    scale: 165792.0
+    is_log1p: false
+    q25: 65976.0
+    q75: 231768.0
+  fwd_header_len_min:
+    median: 0.0
+    scale: 8.922486238259749
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_header_len_max:
+    median: 2892.0
+    scale: 14620.0
+    is_log1p: false
+    q25: 1212.0
+    q75: 15832.0
+  bwd_header_len_mean:
+    median: 100.91891891891892
+    scale: 73.79693433911784
+    is_log1p: false
+    q25: 77.32659507264687
+    q75: 151.1235294117647
+  bwd_header_len_std:
+    median: 288.1305856593831
+    scale: 1060.8277052630328
+    is_log1p: false
+    q25: 147.40215697736122
+    q75: 1208.2298622403941
+  bwd_header_len_sum:
+    median: 117400.0
+    scale: 208820.0
+    is_log1p: false
+    q25: 57472.0
+    q75: 266292.0
+  bwd_header_len_min:
+    median: 0.0
+    scale: 4.280816964793362
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_header_len_max:
+    median: 4740.0
+    scale: 29060.0
+    is_log1p: false
+    q25: 1824.0
+    q75: 30884.0
+  fwd_pkts_per_sec_mean:
+    median: 25121.259873688854
+    scale: 24804.40253686672
+    is_log1p: false
+    q25: 15005.35134820785
+    q75: 39809.75388507457
+  fwd_pkts_per_sec_std:
+    median: 187938.36331971764
+    scale: 122900.77770752489
+    is_log1p: false
+    q25: 123973.62345114729
+    q75: 246874.40115867218
+  fwd_pkts_per_sec_sum:
+    median: 29317329.259048194
+    scale: 38187965.489805035
+    is_log1p: false
+    q25: 14740487.489486227
+    q75: 52928452.97929126
+  fwd_pkts_per_sec_min:
+    median: 0.0
+    scale: 1173.0706902606712
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_pkts_per_sec_max:
+    median: 2000000.0
+    scale: 1000000.0
+    is_log1p: false
+    q25: 2000000.0
+    q75: 3000000.0
+  bwd_pkts_per_sec_mean:
+    median: 3488.7624780353394
+    scale: 4241.676681179473
+    is_log1p: false
+    q25: 2131.702959503701
+    q75: 6373.379640683174
+  bwd_pkts_per_sec_std:
+    median: 16733.62265632228
+    scale: 43751.082583632306
+    is_log1p: false
+    q25: 8797.704068905377
+    q75: 52548.78665253768
+  bwd_pkts_per_sec_sum:
+    median: 4020587.843247635
+    scale: 5213478.13084302
+    is_log1p: false
+    q25: 2096799.2497717116
+    q75: 7310277.380614731
+  bwd_pkts_per_sec_min:
+    median: 0.0
+    scale: 1173.0712045698128
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_pkts_per_sec_max:
+    median: 142857.1429
+    scale: 909090.9090909091
+    is_log1p: false
+    q25: 90909.0909090909
+    q75: 1000000.0
+  pkt_len_min_mean:
+    median: 13.691358024691358
+    scale: 9.427971631802839
+    is_log1p: false
+    q25: 8.68780705672175
+    q75: 18.11577868852459
+  pkt_len_min_std:
+    median: 26.549364964461645
+    scale: 14.40272058106881
+    is_log1p: false
+    q25: 20.0670141643261
+    q75: 34.46973474539491
+  pkt_len_min_sum:
+    median: 12622.0
+    scale: 16346.0
+    is_log1p: false
+    q25: 6127.0
+    q75: 22473.0
+  pkt_len_min_min:
+    median: 0.0
+    scale: 30.248425442585045
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  pkt_len_min_max:
+    median: 500.0
+    scale: 410.0
+    is_log1p: false
+    q25: 90.0
+    q75: 500.0
+  pkt_len_max_mean:
+    median: 372.904593639576
+    scale: 92.71133494836164
+    is_log1p: false
+    q25: 328.8973607038123
+    q75: 421.60869565217394
+  pkt_len_max_std:
+    median: 514.4048269197516
+    scale: 61.503341533886214
+    is_log1p: false
+    q25: 479.98434118759826
+    q75: 541.4876827214845
+  pkt_len_max_sum:
+    median: 422128.0
+    scale: 443186.0
+    is_log1p: false
+    q25: 234430.0
+    q75: 677616.0
+  pkt_len_max_min:
+    median: 0.0
+    scale: 47.68330452750748
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  pkt_len_max_max:
+    median: 1460.0
+    scale: 1630.4756753204476
+    is_log1p: false
+    q25: 1460.0
+    q75: 1460.0
+  pkt_len_mean_mean:
+    median: 80.64293348075543
+    scale: 21.693892711511197
+    is_log1p: false
+    q25: 69.53141510527823
+    q75: 91.22530781678942
+  pkt_len_mean_std:
+    median: 104.04390344764039
+    scale: 32.73433943871767
+    is_log1p: false
+    q25: 86.95488473165479
+    q75: 119.68922417037246
+  pkt_len_mean_sum:
+    median: 88293.5119597564
+    scale: 94566.9560745162
+    is_log1p: false
+    q25: 48800.8594114613
+    q75: 143367.8154859775
+  pkt_len_mean_min:
+    median: 0.0
+    scale: 31.111796313999513
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  pkt_len_mean_max:
+    median: 924.2576687117
+    scale: 461.5338392407999
+    is_log1p: false
+    q25: 667.5892857143
+    q75: 1129.1231249551
+  pkt_len_std_mean:
+    median: 113.30927777931394
+    scale: 30.997980359916028
+    is_log1p: false
+    q25: 97.69002415214004
+    q75: 128.68800451205607
+  pkt_len_std_std:
+    median: 157.62297373827
+    scale: 32.48255070923136
+    is_log1p: false
+    q25: 140.0850515741462
+    q75: 172.56760228337757
+  pkt_len_std_sum:
+    median: 127057.7139515176
+    scale: 135805.835059346
+    is_log1p: false
+    q25: 70780.9383594193
+    q75: 206586.7734187653
+  pkt_len_std_min:
+    median: 0.0
+    scale: 6.968697153478145
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  pkt_len_std_max:
+    median: 710.1090095
+    scale: 35.38909860000001
+    is_log1p: false
+    q25: 684.4181883
+    q75: 719.8072869
+  pkt_len_var_mean:
+    median: 37658.44088880868
+    scale: 14527.374639079379
+    is_log1p: false
+    q25: 31056.89199574925
+    q75: 45584.26663482863
+  pkt_len_var_std:
+    median: 77325.82315594744
+    scale: 33102.217188104165
+    is_log1p: false
+    q25: 58391.235512301944
+    q75: 91493.45270040611
+  pkt_len_var_sum:
+    median: 43404709.92659341
+    scale: 46320651.56593688
+    is_log1p: false
+    q25: 23713322.277121704
+    q75: 70033973.84305859
+  pkt_len_var_min:
+    median: 0.0
+    scale: 2098.727987315336
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  pkt_len_var_max:
+    median: 504254.8054
+    scale: 49694.27389999997
+    is_log1p: false
+    q25: 468428.2564
+    q75: 518122.5303
+  fin_flag_cnt_mean:
+    median: 0.004228329809725159
+    scale: 0.005693453633588813
+    is_log1p: false
+    q25: 0.0014792899408284023
+    q75: 0.007172743574417215
+  fin_flag_cnt_std:
+    median: 0.06490171112847387
+    scale: 0.04597044025837901
+    is_log1p: false
+    q25: 0.0384425591667921
+    q75: 0.08441299942517111
+  fin_flag_cnt_sum:
+    median: 5.0
+    scale: 8.0
+    is_log1p: false
+    q25: 2.0
+    q75: 10.0
+  fin_flag_cnt_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fin_flag_cnt_max:
+    median: 1.0
+    scale: 0.3782342609585675
+    is_log1p: false
+    q25: 1.0
+    q75: 1.0
+  syn_flag_cnt_mean:
+    median: 0.04096228868660598
+    scale: 0.04564010825191504
+    is_log1p: false
+    q25: 0.022189349112426034
+    q75: 0.06782945736434108
+  syn_flag_cnt_std:
+    median: 0.1980944566327535
+    scale: 0.10436904769725644
+    is_log1p: false
+    q25: 0.1471652319626923
+    q75: 0.25153427965994873
+  syn_flag_cnt_sum:
+    median: 49.0
+    scale: 56.0
+    is_log1p: false
+    q25: 24.0
+    q75: 80.0
+  syn_flag_cnt_min:
+    median: 0.0
+    scale: 0.02228835993459966
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  syn_flag_cnt_max:
+    median: 1.0
+    scale: 0.27055890049015713
+    is_log1p: false
+    q25: 1.0
+    q75: 1.0
+  rst_flag_cnt_mean:
+    median: 0.13549883990719258
+    scale: 0.1608723373559019
+    is_log1p: false
+    q25: 0.06311787072243347
+    q75: 0.22399020807833536
+  rst_flag_cnt_std:
+    median: 0.3423447843059833
+    scale: 0.17404338057312
+    is_log1p: false
+    q25: 0.24321903035056477
+    q75: 0.41726241092368477
+  rst_flag_cnt_sum:
+    median: 150.0
+    scale: 168.0
+    is_log1p: false
+    q25: 70.0
+    q75: 238.0
+  rst_flag_cnt_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  rst_flag_cnt_max:
+    median: 1.0
+    scale: 0.25444682195061424
+    is_log1p: false
+    q25: 1.0
+    q75: 1.0
+  psh_flag_cnt_mean:
+    median: 0.3840220385674931
+    scale: 0.12995043431319625
+    is_log1p: false
+    q25: 0.3299798792756539
+    q75: 0.45993031358885017
+  psh_flag_cnt_std:
+    median: 0.48440829641150535
+    scale: 0.02782887117718047
+    is_log1p: false
+    q25: 0.46802450060390505
+    q75: 0.4958533717810855
+  psh_flag_cnt_sum:
+    median: 445.0
+    scale: 523.0
+    is_log1p: false
+    q25: 226.0
+    q75: 749.0
+  psh_flag_cnt_min:
+    median: 0.0
+    scale: 0.0545272299805296
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  psh_flag_cnt_max:
+    median: 1.0
+    scale: 0.1288921535437021
+    is_log1p: false
+    q25: 1.0
+    q75: 1.0
+  ack_flag_cnt_mean:
+    median: 0.26291079812206575
+    scale: 0.1403557221989134
+    is_log1p: false
+    q25: 0.20077220077220076
+    q75: 0.34112792297111416
+  ack_flag_cnt_std:
+    median: 0.4409830000528198
+    scale: 0.07335720064736828
+    is_log1p: false
+    q25: 0.40138648595974324
+    q75: 0.4747436866071115
+  ack_flag_cnt_sum:
+    median: 320.0
+    scale: 347.0
+    is_log1p: false
+    q25: 159.0
+    q75: 506.0
+  ack_flag_cnt_min:
+    median: 0.0
+    scale: 0.02228835993459966
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  ack_flag_cnt_max:
+    median: 1.0
+    scale: 0.23214596987686908
+    is_log1p: false
+    q25: 1.0
+    q75: 1.0
+  urg_flag_cnt_mean:
+    median: 0.043478260869565216
+    scale: 0.03880214833097609
+    is_log1p: false
+    q25: 0.0264797507788162
+    q75: 0.06528189910979229
+  urg_flag_cnt_std:
+    median: 0.20406559486350914
+    scale: 0.08662907657636465
+    is_log1p: false
+    q25: 0.16059877036983042
+    q75: 0.24722784694619507
+  urg_flag_cnt_sum:
+    median: 49.0
+    scale: 56.0
+    is_log1p: false
+    q25: 26.0
+    q75: 82.0
+  urg_flag_cnt_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  urg_flag_cnt_max:
+    median: 1.0
+    scale: 0.2736241994606296
+    is_log1p: false
+    q25: 1.0
+    q75: 1.0
+  cwe_flag_cnt_mean:
+    median: 0.0
+    scale: 0.004091650560246484
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  cwe_flag_cnt_std:
+    median: 0.0
+    scale: 0.027957449576724323
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  cwe_flag_cnt_sum:
+    median: 0.0
+    scale: 5.017306614897113
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  cwe_flag_cnt_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  cwe_flag_cnt_max:
+    median: 0.0
+    scale: 0.2311953167117099
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  ece_flag_cnt_mean:
+    median: 0.13549883990719258
+    scale: 0.16096239683609495
+    is_log1p: false
+    q25: 0.06311787072243347
+    q75: 0.22408026755852842
+  ece_flag_cnt_std:
+    median: 0.3423447843059833
+    scale: 0.17409930062949266
+    is_log1p: false
+    q25: 0.24321903035056477
+    q75: 0.41731833098005744
+  ece_flag_cnt_sum:
+    median: 150.0
+    scale: 168.0
+    is_log1p: false
+    q25: 70.0
+    q75: 238.0
+  ece_flag_cnt_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  ece_flag_cnt_max:
+    median: 1.0
+    scale: 0.25444682195061424
+    is_log1p: false
+    q25: 1.0
+    q75: 1.0
+  down_up_ratio_mean:
+    median: 0.5320197044334976
+    scale: 0.20069259852399746
+    is_log1p: false
+    q25: 0.41417226634086746
+    q75: 0.6148648648648649
+  down_up_ratio_std:
+    median: 0.5219009313929442
+    scale: 0.06332970153529682
+    is_log1p: false
+    q25: 0.5004861391881325
+    q75: 0.5638158407234293
+  down_up_ratio_sum:
+    median: 560.0
+    scale: 715.0
+    is_log1p: false
+    q25: 285.0
+    q75: 1000.0
+  down_up_ratio_min:
+    median: 0.0
+    scale: 0.04978872223178637
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  down_up_ratio_max:
+    median: 4.0
+    scale: 4.0
+    is_log1p: false
+    q25: 2.0
+    q75: 6.0
+  pkt_size_avg_mean:
+    median: 92.42867678286622
+    scale: 26.24086837462316
+    is_log1p: false
+    q25: 79.54970945047553
+    q75: 105.7905778250987
+  pkt_size_avg_std:
+    median: 108.58027229880113
+    scale: 31.288602776274203
+    is_log1p: false
+    q25: 92.45066578912578
+    q75: 123.73926856539998
+  pkt_size_avg_sum:
+    median: 101716.3238456957
+    scale: 106749.2454771932
+    is_log1p: false
+    q25: 56124.9769588074
+    q75: 162874.2224360006
+  pkt_size_avg_min:
+    median: 0.0
+    scale: 36.757856260549005
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  pkt_size_avg_max:
+    median: 929.9311076373
+    scale: 451.89522514630005
+    is_log1p: false
+    q25: 693.9563758389
+    q75: 1145.8516009852
+  fwd_seg_size_avg_mean:
+    median: 48.41298649934967
+    scale: 11.456261630497906
+    is_log1p: false
+    q25: 43.752211207903564
+    q75: 55.20847283840147
+  fwd_seg_size_avg_std:
+    median: 55.15499561371804
+    scale: 15.516638427954021
+    is_log1p: false
+    q25: 48.31528350156942
+    q75: 63.83192192952344
+  fwd_seg_size_avg_sum:
+    median: 54805.8067543839
+    scale: 52784.171114190496
+    is_log1p: false
+    q25: 32269.6809609828
+    q75: 85053.8520751733
+  fwd_seg_size_avg_min:
+    median: 0.0
+    scale: 30.495326818877626
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_seg_size_avg_max:
+    median: 500.0
+    scale: 103.77439024390003
+    is_log1p: false
+    q25: 472.75
+    q75: 576.5243902439
+  bwd_seg_size_avg_mean:
+    median: 112.75753822934502
+    scale: 41.364727276669996
+    is_log1p: false
+    q25: 92.82806018577405
+    q75: 134.19278746244404
+  bwd_seg_size_avg_std:
+    median: 161.4939912797566
+    scale: 61.159863821089715
+    is_log1p: false
+    q25: 126.11317981111168
+    q75: 187.2730436322014
+  bwd_seg_size_avg_sum:
+    median: 130144.3271569129
+    scale: 144329.8165039922
+    is_log1p: false
+    q25: 68669.48611028
+    q75: 212999.3026142722
+  bwd_seg_size_avg_min:
+    median: 0.0
+    scale: 5.8369047720331295
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_seg_size_avg_max:
+    median: 1324.0150943396
+    scale: 404.8099258543998
+    is_log1p: false
+    q25: 1029.131579
+    q75: 1433.9415048544
+  fwd_byts_b_avg_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_byts_b_avg_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_byts_b_avg_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_byts_b_avg_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_byts_b_avg_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_pkts_b_avg_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_pkts_b_avg_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_pkts_b_avg_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_pkts_b_avg_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_pkts_b_avg_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_blk_rate_avg_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_blk_rate_avg_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_blk_rate_avg_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_blk_rate_avg_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_blk_rate_avg_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_byts_b_avg_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_byts_b_avg_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_byts_b_avg_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_byts_b_avg_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_byts_b_avg_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_pkts_b_avg_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_pkts_b_avg_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_pkts_b_avg_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_pkts_b_avg_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_pkts_b_avg_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_blk_rate_avg_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_blk_rate_avg_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_blk_rate_avg_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_blk_rate_avg_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_blk_rate_avg_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  subflow_fwd_pkts_mean:
+    median: 5.357692307692307
+    scale: 1.6665229761186309
+    is_log1p: false
+    q25: 4.714285714285714
+    q75: 6.380808690404345
+  subflow_fwd_pkts_std:
+    median: 9.407171915146394
+    scale: 18.112579828822653
+    is_log1p: false
+    q25: 6.2829958707396845
+    q75: 24.39557569956234
+  subflow_fwd_pkts_sum:
+    median: 6430.0
+    scale: 7954.0
+    is_log1p: false
+    q25: 3597.0
+    q75: 11551.0
+  subflow_fwd_pkts_min:
+    median: 1.0
+    scale: 1.618550893238209
+    is_log1p: false
+    q25: 1.0
+    q75: 1.0
+  subflow_fwd_pkts_max:
+    median: 146.0
+    scale: 688.0
+    is_log1p: false
+    q25: 65.0
+    q75: 753.0
+  subflow_fwd_byts_mean:
+    median: 397.4241645244216
+    scale: 144.67029466244531
+    is_log1p: false
+    q25: 340.3511777301927
+    q75: 485.02147239263803
+  subflow_fwd_byts_std:
+    median: 931.327840874443
+    scale: 648.6348092298684
+    is_log1p: false
+    q25: 693.9675148257307
+    q75: 1342.6023240555992
+  subflow_fwd_byts_sum:
+    median: 467696.0
+    scale: 494358.0
+    is_log1p: false
+    q25: 266862.0
+    q75: 761220.0
+  subflow_fwd_byts_min:
+    median: 0.0
+    scale: 170.09548860251678
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  subflow_fwd_byts_max:
+    median: 14454.0
+    scale: 16979.0
+    is_log1p: false
+    q25: 7799.0
+    q75: 24778.0
+  subflow_bwd_pkts_mean:
+    median: 4.814432989690721
+    scale: 3.645203594616675
+    is_log1p: false
+    q25: 3.6538461538461537
+    q75: 7.299049748462829
+  subflow_bwd_pkts_std:
+    median: 12.970666221610323
+    scale: 55.026359739471594
+    is_log1p: false
+    q25: 6.831576366583919
+    q75: 61.85793610605551
+  subflow_bwd_pkts_sum:
+    median: 5583.0
+    scale: 10146.0
+    is_log1p: false
+    q25: 2731.0
+    q75: 12877.0
+  subflow_bwd_pkts_min:
+    median: 0.0
+    scale: 0.17670029673817245
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  subflow_bwd_pkts_max:
+    median: 238.0
+    scale: 1444.0
+    is_log1p: false
+    q25: 90.0
+    q75: 1534.0
+  subflow_bwd_byts_mean:
+    median: 1841.929542645241
+    scale: 4105.248578282506
+    is_log1p: false
+    q25: 900.6039697542533
+    q75: 5005.852548036759
+  subflow_bwd_byts_std:
+    median: 11723.920746256636
+    scale: 72496.52215706844
+    is_log1p: false
+    q25: 3022.3018701103633
+    q75: 75518.8240271788
+  subflow_bwd_byts_sum:
+    median: 2260040.0
+    scale: 7883167.0
+    is_log1p: false
+    q25: 714599.0
+    q75: 8597766.0
+  subflow_bwd_byts_min:
+    median: 0.0
+    scale: 22.75266783604572
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  subflow_bwd_byts_max:
+    median: 255280.0
+    scale: 2017561.0
+    is_log1p: false
+    q25: 50875.0
+    q75: 2068436.0
+  window_size_fwd_mean:
+    median: 5891.770521270221
+    scale: 5037.0788253477585
+    is_log1p: false
+    q25: 4028.921174652241
+    q75: 9066.0
+  window_size_fwd_std:
+    median: 11624.869001118415
+    scale: 7383.961835203527
+    is_log1p: false
+    q25: 8281.349576874914
+    q75: 15665.311412078441
+  window_size_fwd_sum:
+    median: 6430454.0
+    scale: 13107815.0
+    is_log1p: false
+    q25: 2766783.0
+    q75: 15874598.0
+  window_size_fwd_min:
+    median: -1.0
+    scale: 1407.9980381614969
+    is_log1p: false
+    q25: -1.0
+    q75: -1.0
+  window_size_fwd_max:
+    median: 65535.0
+    scale: 675.0
+    is_log1p: false
+    q25: 64860.0
+    q75: 65535.0
+  window_size_bwd_mean:
+    median: 8422.542465753424
+    scale: 7271.21081955643
+    is_log1p: false
+    q25: 4910.346907993967
+    q75: 12181.557727550397
+  window_size_bwd_std:
+    median: 20597.367211836125
+    scale: 8338.386501176603
+    is_log1p: false
+    q25: 15843.66720287938
+    q75: 24182.053704055983
+  window_size_bwd_sum:
+    median: 8981216.0
+    scale: 12718541.0
+    is_log1p: false
+    q25: 4573010.0
+    q75: 17291551.0
+  window_size_bwd_min:
+    median: -1.0
+    scale: 7.358112041086736
+    is_log1p: false
+    q25: -1.0
+    q75: -1.0
+  window_size_bwd_max:
+    median: 65044.0
+    scale: 1535.0
+    is_log1p: false
+    q25: 64000.0
+    q75: 65535.0
+  fwd_act_data_pkts_mean:
+    median: 2.1401601830663615
+    scale: 0.5772731540403515
+    is_log1p: false
+    q25: 1.8710801393728222
+    q75: 2.4483532934131738
+  fwd_act_data_pkts_std:
+    median: 3.596085535135807
+    scale: 1.2886345820305682
+    is_log1p: false
+    q25: 2.9551911042475383
+    q75: 4.2438256862781065
+  fwd_act_data_pkts_sum:
+    median: 2502.0
+    scale: 2730.0
+    is_log1p: false
+    q25: 1365.0
+    q75: 4095.0
+  fwd_act_data_pkts_min:
+    median: 0.0
+    scale: 0.4748184394794087
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_act_data_pkts_max:
+    median: 29.0
+    scale: 38.0
+    is_log1p: false
+    q25: 21.0
+    q75: 59.0
+  fwd_seg_size_min_mean:
+    median: 16.277551020408165
+    scale: 2.9135452061360017
+    is_log1p: false
+    q25: 14.982990152193375
+    q75: 17.896535358329377
+  fwd_seg_size_min_std:
+    median: 6.190335802787719
+    scale: 1.0209311586569507
+    is_log1p: false
+    q25: 5.613902297024949
+    q75: 6.6348334556819
+  fwd_seg_size_min_sum:
+    median: 18948.0
+    scale: 21612.0
+    is_log1p: false
+    q25: 10060.0
+    q75: 31672.0
+  fwd_seg_size_min_min:
+    median: 0.0
+    scale: 2.5190051984909214
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_seg_size_min_max:
+    median: 32.0
+    scale: 8.0
+    is_log1p: false
+    q25: 32.0
+    q75: 40.0
+  active_mean_mean:
+    median: 92532.94522602789
+    scale: 257104.29655633934
+    is_log1p: false
+    q25: 54447.16619007443
+    q75: 311551.4627464138
+  active_mean_std:
+    median: 707736.0204483751
+    scale: 2102528.811974219
+    is_log1p: false
+    q25: 460625.36422947014
+    q75: 2563154.176203689
+  active_mean_sum:
+    median: 124537971.90119047
+    scale: 176048365.01483545
+    is_log1p: false
+    q25: 60445167.53030303
+    q75: 236493532.54513848
+  active_mean_min:
+    median: 0.0
+    scale: 530353.0080349942
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  active_mean_max:
+    median: 13315297.0
+    scale: 31462879.0
+    is_log1p: false
+    q25: 8637121.0
+    q75: 40100000.0
+  active_std_mean:
+    median: 35799.73592368683
+    scale: 96914.38850945725
+    is_log1p: false
+    q25: 13382.652192299309
+    q75: 110297.04070175656
+  active_std_std:
+    median: 245241.4827884502
+    scale: 1377001.0464689073
+    is_log1p: false
+    q25: 131245.20119317243
+    q75: 1508246.2476620798
+  active_std_sum:
+    median: 53200790.376843385
+    scale: 99096849.33727762
+    is_log1p: false
+    q25: 15171498.219957178
+    q75: 114268347.5572348
+  active_std_min:
+    median: 0.0
+    scale: 294206.3511367154
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  active_std_max:
+    median: 5171101.77561156
+    scale: 33085481.66683817
+    is_log1p: false
+    q25: 2314518.33316183
+    q75: 35400000.0
+  active_max_mean:
+    median: 162504.87737901034
+    scale: 370680.74596564285
+    is_log1p: false
+    q25: 86605.32679738563
+    q75: 457286.0727630285
+  active_max_std:
+    median: 949961.8972132301
+    scale: 3188825.3856917783
+    is_log1p: false
+    q25: 625531.2359579382
+    q75: 3814356.6216497165
+  active_max_sum:
+    median: 206746812.0
+    scale: 300948050.0
+    is_log1p: false
+    q25: 90357888.0
+    q75: 391305938.0
+  active_max_min:
+    median: 0.0
+    scale: 852794.8404962382
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  active_max_max:
+    median: 15161964.0
+    scale: 57758839.0
+    is_log1p: false
+    q25: 10041161.0
+    q75: 67800000.0
+  active_min_mean:
+    median: 67846.3844856661
+    scale: 152566.1955978847
+    is_log1p: false
+    q25: 40359.416458852866
+    q75: 192925.6120567376
+  active_min_std:
+    median: 622592.2434275798
+    scale: 1418120.9421194918
+    is_log1p: false
+    q25: 432201.5063416432
+    q75: 1850322.448461135
+  active_min_sum:
+    median: 86154367.0
+    scale: 115750836.0
+    is_log1p: false
+    q25: 45115646.0
+    q75: 160866482.0
+  active_min_min:
+    median: 0.0
+    scale: 327848.1857222723
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  active_min_max:
+    median: 11464742.0
+    scale: 11396227.0
+    is_log1p: false
+    q25: 7641631.0
+    q75: 19037858.0
+  idle_mean_mean:
+    median: 4721877.157138589
+    scale: 4791475.680813449
+    is_log1p: false
+    q25: 3253010.0183974328
+    q75: 8044485.699210882
+  idle_mean_std:
+    median: 13465810.416265571
+    scale: 9722824.698161136
+    is_log1p: false
+    q25: 11133213.837597854
+    q75: 20856038.53575899
+  idle_mean_sum:
+    median: 4468841958.704676
+    scale: 8396209433.008206
+    is_log1p: false
+    q25: 2197030442.4595957
+    q75: 10593239875.467802
+  idle_mean_min:
+    median: 0.0
+    scale: 1741845.7086936173
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  idle_mean_max:
+    median: 78733259.0
+    scale: 32550633.0
+    is_log1p: false
+    q25: 59900000.0
+    q75: 92450633.0
+  idle_std_mean:
+    median: 140901.15939150078
+    scale: 188783.8942919474
+    is_log1p: false
+    q25: 79095.31221955098
+    q75: 267879.20651149837
+  idle_std_std:
+    median: 1508260.8428792881
+    scale: 1128030.4575830093
+    is_log1p: false
+    q25: 1014124.2879747258
+    q75: 2142154.745557735
+  idle_std_sum:
+    median: 162346748.72597024
+    scale: 192636081.5395617
+    is_log1p: false
+    q25: 78017877.43523906
+    q75: 270653958.97480077
+  idle_std_min:
+    median: 0.0
+    scale: 901676.2660305753
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  idle_std_max:
+    median: 30300000.0
+    scale: 20988118.969729602
+    is_log1p: false
+    q25: 15300000.0
+    q75: 36288118.9697296
+  idle_max_mean:
+    median: 4984034.337338262
+    scale: 5037293.661507799
+    is_log1p: false
+    q25: 3403568.095412844
+    q75: 8440861.756920643
+  idle_max_std:
+    median: 14449361.836844848
+    scale: 10155958.673015276
+    is_log1p: false
+    q25: 11749903.785053594
+    q75: 21905862.45806887
+  idle_max_sum:
+    median: 4664860277.0
+    scale: 8346495124.0
+    is_log1p: false
+    q25: 2343127499.0
+    q75: 10689622623.0
+  idle_max_min:
+    median: 0.0
+    scale: 3383471.116510302
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  idle_max_max:
+    median: 83562463.0
+    scale: 34077643.0
+    is_log1p: false
+    q25: 59936384.0
+    q75: 94014027.0
+  idle_min_mean:
+    median: 4340120.740079365
+    scale: 4268025.498117911
+    is_log1p: false
+    q25: 2974062.3772981614
+    q75: 7242087.875416072
+  idle_min_std:
+    median: 13230787.100900894
+    scale: 10061743.131279772
+    is_log1p: false
+    q25: 10761671.708059913
+    q75: 20823414.839339685
+  idle_min_sum:
+    median: 4247523208.0
+    scale: 8201013730.0
+    is_log1p: false
+    q25: 2093210823.0
+    q75: 10294224553.0
+  idle_min_min:
+    median: 0.0
+    scale: 617384.9578751352
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  idle_min_max:
+    median: 78733259.0
+    scale: 32550633.0
+    is_log1p: false
+    q25: 59900000.0
+    q75: 92450633.0
+  duration_sec_mean:
+    median: 2.758133970673079
+    scale: 0.4590324681343203
+    is_log1p: true
+    q25: 2.5059254925811687
+    q75: 2.964957960715489
+  duration_sec_std:
+    median: 3.54973304054033
+    scale: 0.24867289472454113
+    is_log1p: true
+    q25: 3.390869100862493
+    q75: 3.639541995587034
+  duration_sec_sum:
+    median: 9.607687159918346
+    scale: 1.2565410296033743
+    is_log1p: true
+    q25: 8.923194950434873
+    q75: 10.179735980038247
+  duration_sec_min:
+    median: 0.0
+    scale: 0.5165958887338795
+    is_log1p: true
+    q25: 0.0
+    q75: 0.0
+  duration_sec_max:
+    median: 4.795309529100407
+    scale: 0.004074566386245593
+    is_log1p: true
+    q25: 4.791678441315875
+    q75: 4.79575300770212
+  flow_count:
+    median: 1170.0
+    scale: 1229.0
+    is_log1p: false
+    q25: 628.0
+    q75: 1857.0
+  unique_dst_ports_count:
+    median: 131.0
+    scale: 197.0
+    is_log1p: false
+    q25: 77.0
+    q75: 274.0
+  unique_protocols_count:
+    median: 3.0
+    scale: 0.32509277425745225
+    is_log1p: false
+    q25: 3.0
+    q75: 3.0
+  pkt_ttl_min:
+    median: 0.0
+    scale: 52.0
+    is_log1p: false
+    q25: 0.0
+    q75: 52.0
+  pkt_ttl_max:
+    median: 0.0
+    scale: 128.0
+    is_log1p: false
+    q25: 0.0
+    q75: 128.0
+  pkt_ttl_std:
+    median: 0.0
+    scale: 14.2
+    is_log1p: false
+    q25: 0.0
+    q75: 14.2
+  pkt_ttl_mode:
+    median: 0.0
+    scale: 64.0
+    is_log1p: false
+    q25: 0.0
+    q75: 64.0
+  pkt_frag_mf_count:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  pkt_frag_df_count:
+    median: 0.0
+    scale: 1164.8
+    is_log1p: false
+    q25: 0.0
+    q75: 1164.8
+  pkt_payload_size_p25:
+    median: 0.0
+    scale: 32.0
+    is_log1p: false
+    q25: 0.0
+    q75: 32.0
+  pkt_payload_size_p50:
+    median: 0.0
+    scale: 48.25443572721787
+    is_log1p: false
+    q25: 0.0
+    q75: 48.25443572721787
+  pkt_payload_size_p75:
+    median: 0.0
+    scale: 88.0
+    is_log1p: false
+    q25: 0.0
+    q75: 88.0
+  pkt_payload_size_p95:
+    median: 0.0
+    scale: 186.40166289661917
+    is_log1p: false
+    q25: 0.0
+    q75: 186.40166289661917
+  pkt_tcp_retrans_count:
+    median: 0.0
+    scale: 3.06
+    is_log1p: false
+    q25: 0.0
+    q75: 3.06
+  pkt_port_scan_seq_score:
+    median: 0.0
+    scale: 0.05
+    is_log1p: false
+    q25: 0.0
+    q75: 0.05

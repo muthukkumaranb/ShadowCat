@@ -1,0 +1,96 @@
+{
+  "protocol": "chronological split",
+  "target": "S(t+1), ..., S(t+K)",
+  "rollout": [
+    {
+      "k": 1,
+      "model": "persistence",
+      "protocol": "chronological split",
+      "representation": "UCS feature space supplied to the LSTM",
+      "samples": 311,
+      "mse": 13.508399963378906,
+      "mae": 0.4744175970554352,
+      "rmse": 3.675377607345581
+    },
+    {
+      "k": 1,
+      "model": "lagged_linear",
+      "protocol": "chronological split",
+      "representation": "UCS feature space supplied to the LSTM",
+      "samples": 311,
+      "mse": 130583.46875,
+      "mae": 22.98764991760254,
+      "rmse": 361.36334228515625
+    },
+    {
+      "k": 1,
+      "model": "lstm_world_model",
+      "protocol": "chronological split",
+      "representation": "UCS feature space supplied to the LSTM",
+      "samples": 311,
+      "mse": 8.222637176513672,
+      "mae": 0.48566383123397827,
+      "rmse": 2.867514133453369
+    },
+    {
+      "k": 2,
+      "model": "persistence",
+      "protocol": "chronological split",
+      "representation": "UCS feature space supplied to the LSTM",
+      "samples": 309,
+      "mse": 12.121081352233887,
+      "mae": 0.4574851095676422,
+      "rmse": 3.481534242630005
+    },
+    {
+      "k": 2,
+      "model": "lagged_linear",
+      "protocol": "chronological split",
+      "representation": "UCS feature space supplied to the LSTM",
+      "samples": 309,
+      "mse": 450611.0625,
+      "mae": 30.70246124267578,
+      "rmse": 671.2756958007812
+    },
+    {
+      "k": 2,
+      "model": "lstm_world_model",
+      "protocol": "chronological split",
+      "representation": "UCS feature space supplied to the LSTM",
+      "samples": 309,
+      "mse": 5.858071327209473,
+      "mae": 0.47738760709762573,
+      "rmse": 2.4203453063964844
+    },
+    {
+      "k": 3,
+      "model": "persistence",
+      "protocol": "chronological split",
+      "representation": "UCS feature space supplied to the LSTM",
+      "samples": 307,
+      "mse": 11.445185661315918,
+      "mae": 0.46325305104255676,
+      "rmse": 3.383073329925537
+    },
+    {
+      "k": 3,
+      "model": "lagged_linear",
+      "protocol": "chronological split",
+      "representation": "UCS feature space supplied to the LSTM",
+      "samples": 307,
+      "mse": 10821200.0,
+      "mae": 107.95001220703125,
+      "rmse": 3289.559326171875
+    },
+    {
+      "k": 3,
+      "model": "lstm_world_model",
+      "protocol": "chronological split",
+      "representation": "UCS feature space supplied to the LSTM",
+      "samples": 307,
+      "mse": 4.970414161682129,
+      "mae": 0.4746912717819214,
+      "rmse": 2.229442596435547
+    }
+  ]
+}

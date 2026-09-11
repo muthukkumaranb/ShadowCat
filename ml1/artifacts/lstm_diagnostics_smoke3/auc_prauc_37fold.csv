@@ -1,0 +1,2 @@
+fold_id,completed,roc_auc,pr_auc,f1,precision,recall,fpr,validation_selected_threshold,fixed_038_f1
+0,True,,,0.0,0.0,0.0,0.0,0.4,0.0

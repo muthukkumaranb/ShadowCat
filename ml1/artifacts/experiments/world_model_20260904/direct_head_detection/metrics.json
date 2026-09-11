@@ -1,0 +1,20 @@
+{
+  "protocol": "LOEO (retrained per fold)",
+  "target": "label_binary",
+  "available_episodes": 37,
+  "completed_folds": 37,
+  "skipped_episodes": [],
+  "f1_macro": 0.9406624669782565,
+  "pr_auc_macro": NaN,
+  "precision_macro": 0.9459459459459459,
+  "recall_macro": 0.9364864864864865,
+  "roc_auc_pooled": null,
+  "f1_pooled": 0.9759450171821306,
+  "pr_auc_pooled": 1.0,
+  "precision_pooled": 1.0,
+  "recall_pooled": 0.9530201342281879,
+  "threshold": 0.38,
+  "validated_fold_count": 37,
+  "note": "Eligibility is restricted to SSH-Bruteforce, DDOS-LOIC-UDP, and Botnet episode_id values; evaluation may skip folds that cannot form boundary-safe sequences after purge and embargo.",
+  "fpr_macro": 0.0
+}

@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+
+# Testing
+.pytest_cache/
+
+# Models and training artifacts
+artifacts/models/*.pt
+artifacts/models/*.pth
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+# UCS data artifacts
+data/ucs/*.parquet
+data/ucs/*.yaml
+
+# Large raw prediction & NLL distribution dumps
+*_nll_distribution.csv
+*_predictions.json
+nll_outliers.csv

@@ -1,0 +1,10 @@
+fold_id,episode_id,test_samples,test_positives,run_a_accuracy,run_a_precision,run_a_recall,run_a_f1,run_a_tp,run_a_fp,run_a_fn,run_a_tn,run_b_accuracy,run_b_precision,run_b_recall,run_b_f1,run_b_tp,run_b_fp,run_b_fn,run_b_tn,f1_delta,f1_status
+10,14-02-2018_SSH-Bruteforce_0,12,1,1.0,1.0,1.0,1.0,1,0,0,11,1.0,1.0,1.0,1.0,1,0,0,11,0.0,HELD_STEADY
+11,14-02-2018_SSH-Bruteforce_1,9,4,1.0,1.0,1.0,1.0,4,0,0,5,1.0,1.0,1.0,1.0,4,0,0,5,0.0,HELD_STEADY
+12,14-02-2018_SSH-Bruteforce_2,20,10,1.0,1.0,1.0,1.0,10,0,0,10,1.0,1.0,1.0,1.0,10,0,0,10,0.0,HELD_STEADY
+13,14-02-2018_SSH-Bruteforce_3,6,1,1.0,1.0,1.0,1.0,1,0,0,5,1.0,1.0,1.0,1.0,1,0,0,5,0.0,HELD_STEADY
+14,14-02-2018_SSH-Bruteforce_4,16,8,1.0,1.0,1.0,1.0,8,0,0,8,1.0,1.0,1.0,1.0,8,0,0,8,0.0,HELD_STEADY
+15,14-02-2018_SSH-Bruteforce_5,24,12,1.0,1.0,1.0,1.0,12,0,0,12,1.0,1.0,1.0,1.0,12,0,0,12,0.0,HELD_STEADY
+16,14-02-2018_SSH-Bruteforce_6,66,33,0.5,0.0,0.0,0.0,0,0,33,33,0.5,0.0,0.0,0.0,0,0,33,33,0.0,HELD_STEADY
+17,14-02-2018_SSH-Bruteforce_7,12,6,1.0,1.0,1.0,1.0,6,0,0,6,1.0,1.0,1.0,1.0,6,0,0,6,0.0,HELD_STEADY
+18,14-02-2018_SSH-Bruteforce_8,14,7,1.0,1.0,1.0,1.0,7,0,0,7,1.0,1.0,1.0,1.0,7,0,0,7,0.0,HELD_STEADY

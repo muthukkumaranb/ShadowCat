@@ -1,0 +1,32 @@
+{
+  "task": "next-state prediction",
+  "protocol": "chronological split",
+  "train_mse": 833952.8125,
+  "val_mse": 1080.8427734375,
+  "test_mse": 8.222637176513672,
+  "test_mae": 0.48566383123397827,
+  "test_rmse": 2.867514133453369,
+  "train_validation_gap": 832871.9697265625,
+  "feature_count": 406,
+  "state_dim": 406,
+  "one_step_comparison": {
+    "persistence": {
+      "mse": 13.508399963378906,
+      "mae": 0.4744175970554352,
+      "rmse": 3.675377607345581
+    },
+    "lagged_linear": {
+      "mse": 130583.46875,
+      "mae": 22.98764991760254,
+      "rmse": 361.36334228515625
+    },
+    "lstm_world_model": {
+      "mse": 8.222637176513672,
+      "mae": 0.48566383123397827,
+      "rmse": 2.867514133453369
+    },
+    "protocol": "chronological split",
+    "representation": "UCS feature space supplied to the LSTM",
+    "target": "S(t+1)"
+  }
+}

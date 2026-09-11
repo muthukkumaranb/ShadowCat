@@ -1,0 +1,26 @@
+{
+  "model_type": "LSTMWorldModel",
+  "encoder_configuration": {
+    "lookback_windows": 30,
+    "hidden_size": 64,
+    "num_layers": 1,
+    "dropout": 0.2
+  },
+  "input_dimensions": 406,
+  "state_dimensions": 406,
+  "lookback": 30,
+  "protocol": "chronological split",
+  "target": "S(t+1)",
+  "task": "next-state prediction",
+  "seed": 42,
+  "loss": "MSE",
+  "baselines": [
+    "persistence",
+    "lagged_linear"
+  ],
+  "rollout_horizons": [
+    1,
+    2,
+    3
+  ]
+}

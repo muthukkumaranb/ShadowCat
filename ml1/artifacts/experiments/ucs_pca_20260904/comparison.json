@@ -1,0 +1,49 @@
+{
+    "selection_metric":  "validation_pr_auc_then_validation_f1",
+    "winner":  "baseline_406",
+    "experiments":  {
+                        "baseline_406":  {
+                                             "features":  406,
+                                             "train_sequences":  1688,
+                                             "validation_sequences":  255,
+                                             "test_sequences":  312,
+                                             "validation_pr_auc":  0.85610556632319867,
+                                             "validation_f1":  0.80575539568345322,
+                                             "test_f1":  0.48148148148148145,
+                                             "test_pr_auc":  0.59884085401824483
+                                         },
+                        "pca_32":  {
+                                       "features":  32,
+                                       "train_sequences":  1688,
+                                       "validation_sequences":  255,
+                                       "test_sequences":  312,
+                                       "validation_pr_auc":  0.82483565240168888,
+                                       "validation_f1":  0.77777777777777779,
+                                       "cumulative_explained_variance":  0.99999967666568779,
+                                       "test_f1":  0.57525083612040129,
+                                       "test_pr_auc":  0.67498226583246812
+                                   },
+                        "pca_64":  {
+                                       "features":  64,
+                                       "train_sequences":  1688,
+                                       "validation_sequences":  255,
+                                       "test_sequences":  312,
+                                       "validation_pr_auc":  0.85520062597953261,
+                                       "validation_f1":  0.779874213836478,
+                                       "cumulative_explained_variance":  0.99999993706414059,
+                                       "test_f1":  0.56862745098039214,
+                                       "test_pr_auc":  0.6336586824977839
+                                   },
+                        "pca_128":  {
+                                        "features":  128,
+                                        "train_sequences":  1688,
+                                        "validation_sequences":  255,
+                                        "test_sequences":  312,
+                                        "validation_pr_auc":  0.85759509993763916,
+                                        "validation_f1":  0.77966101694915257,
+                                        "cumulative_explained_variance":  0.999999994637755,
+                                        "test_f1":  0.065573770491803282,
+                                        "test_pr_auc":  0.55254046352904063
+                                    }
+                    }
+}

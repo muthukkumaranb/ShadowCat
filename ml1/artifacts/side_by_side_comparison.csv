@@ -1,0 +1,17 @@
+Model,Target,Attack Type,F1,Precision,Recall,FPR,Protocol
+Logistic Regression,Detection,Aggregate (All),0.972973,0.972973,0.972973,0.0,Corrected 37-fold LOEO
+Logistic Regression,Detection,Botnet,1.0,1.0,1.0,0.0,Corrected 37-fold LOEO
+Logistic Regression,Detection,DDOS-LOIC-UDP,1.0,1.0,1.0,0.0,Corrected 37-fold LOEO
+Logistic Regression,Detection,SSH-Bruteforce,0.888889,0.888889,0.888889,0.0,Corrected 37-fold LOEO
+LSTM + UCS,Detection,Aggregate (All),0.663164,0.645045,0.725635,0.12973,Corrected 37-fold LOEO
+LSTM + UCS,Detection,Botnet,0.266667,0.25,0.3,0.1,Corrected 37-fold LOEO
+LSTM + UCS,Detection,DDOS-LOIC-UDP,0.962963,0.955556,1.0,0.044444,Corrected 37-fold LOEO
+LSTM + UCS,Detection,SSH-Bruteforce,0.50412,0.462963,0.649832,0.333333,Corrected 37-fold LOEO
+Logistic Regression,Onset,Aggregate (All),0.888031,0.945946,0.878378,0.0,Corrected 37-fold LOEO
+Logistic Regression,Onset,Botnet,0.928571,1.0,0.916667,0.0,Corrected 37-fold LOEO
+Logistic Regression,Onset,DDOS-LOIC-UDP,0.904762,0.944444,0.898148,0.0,Corrected 37-fold LOEO
+Logistic Regression,Onset,SSH-Bruteforce,0.809524,0.888889,0.796296,0.0,Corrected 37-fold LOEO
+LSTM + UCS,Onset,Aggregate (All),0.606632,0.588862,0.702703,0.226126,Corrected 37-fold LOEO
+LSTM + UCS,Onset,Botnet,0.190476,0.216667,0.316667,0.3,Corrected 37-fold LOEO
+LSTM + UCS,Onset,DDOS-LOIC-UDP,0.90305,0.886364,0.935185,0.075926,Corrected 37-fold LOEO
+LSTM + UCS,Onset,SSH-Bruteforce,0.47619,0.407407,0.666667,0.444444,Corrected 37-fold LOEO

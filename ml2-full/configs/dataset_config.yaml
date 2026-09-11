@@ -1,0 +1,13 @@
+dataset:
+  name: UGR16
+
+scope:
+  id: UGR16:TEST
+
+paths:
+  raw_file: "data/raw/august_week5.parquet"
+  intermediate_dir: "data/intermediate/ugr16/"
+  windows_file: "data/processed/ucs_v1/ucs_windows_raw.parquet"
+  baseline_output: "data/processed/ucs_v1/ucs_with_baseline.parquet"
+  labels_output: "data/processed/ucs_v1/labels.parquet"
+  split_dir: "data/processed/ucs_v1/splits/"

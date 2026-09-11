@@ -1,0 +1,11 @@
+{
+  "global_roc": 0.8660654889496636,
+  "max_shift": 0.023250750366575756,
+  "max_shift_fold": 16,
+  "f16_roc": 0.9393939393939394,
+  "f16_benign_mae": 70.25608912121211,
+  "f16_onset_mae": 74.432556,
+  "f16_sustained_mae": 74.53163018750001,
+  "small_inflated_count": 20,
+  "shift_gt_05_count": 0
+}

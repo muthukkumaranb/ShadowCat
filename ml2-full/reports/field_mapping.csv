@@ -1,0 +1,18 @@
+dataset,source_field,canonical_field,transformation,unit,notes
+ugr16,ts_start,timestamp,parse as Unix epoch seconds -> UTC datetime,datetime,flow start time; will be sorted and used for windowing
+ugr16,ts_end,timestamp_end,parse as Unix epoch seconds -> UTC datetime,datetime,flow end time; used only for validation, not part of UCS schema
+ugr16,(none - injected from config),scope_id,inject from configs/dataset_config.yaml scope.id,identifier,"scope represents monitoring environment, not calendar period; TEST chosen based on capture date (2016-08-29) matching UGR16's test-period attacks"
+ugr16,dataset,dataset,"validate unique(raw.dataset) == {""ugr16""}, then normalize to configured dataset.name (UGR16)",string,do not trust raw column blindly - validate first, then overwrite with canonical config value
+ugr16,src_ip,source_id,copy as-is (IP string used as identifier),identifier,per Section 24 node identity rules - IP fallback used since no stable entity ID exists in this dataset
+ugr16,dst_ip,destination_id,copy as-is (IP string used as identifier),identifier,same as above
+ugr16,src_port,source_port,copy as-is,port number,validated: always within 0-65535
+ugr16,dst_port,destination_port,copy as-is,port number,validated: always within 0-65535
+ugr16,l4_proto,protocol,map IANA number to protocol name (6=TCP 17=UDP 1=ICMP),categorical,used to compute tcp_ratio/udp_ratio/icmp_ratio; values 47(GRE) 50(ESP) 0(HOPOPT) fall outside the three canonical ratios and are counted in flow_count only
+ugr16,duration,duration,copy as-is,seconds,validated: no negative values found
+ugr16,packets,packet_count,copy as-is,count,forward-direction only; validated no negative values
+ugr16,bytes,byte_count,copy as-is,bytes,forward-direction only; validated no negative values
+ugr16,(none - unavailable),packet_count_reverse,not computable,count,packets_rev is 0% filled in source data; cannot populate bytes_in/bytes_out split reliably
+ugr16,(none - unavailable),byte_count_reverse,not computable,bytes,bytes_rev is 0% filled in source data; same limitation as above
+ugr16,tcp_flags,tcp_flags,copy as-is; only meaningful where protocol=TCP,bitmask,populated for all rows but only valid for TCP; must be ignored for non-TCP rows during feature generation
+ugr16,label_binary,label_binary,copy as-is,categorical,"values found: ""unknown"" (99.9999975%) ""malicious"" (0.0000025%); kept separate from feature matrix per Section 28"
+ugr16,label_attack,label_attack_type,copy as-is,string,only populated where label_binary="malicious"; kept separate from feature matrix per Section 28

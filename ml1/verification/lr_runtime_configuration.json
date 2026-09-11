@@ -1,0 +1,12 @@
+{
+  "producer": "examples\\run_lr_loeo.py",
+  "fit_call": "model.fit(x_train_scaled, y_train)",
+  "features_at_fit": {
+    "count": 406,
+    "manifest": "artifacts\\lr_set_a_corrected\\set_a_features.json",
+    "prohibited_features_found": []
+  },
+  "scaler": "StandardScaler fitted independently on each training fold",
+  "purge_call_in_producer": true,
+  "manifest_load_call_in_producer": true
+}

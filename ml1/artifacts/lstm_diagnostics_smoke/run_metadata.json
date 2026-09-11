@@ -1,0 +1,17 @@
+{
+  "command": "scripts/diagnose_lstm_loeo.py --epochs 1 --folds 0 --out-dir artifacts/lstm_diagnostics_smoke",
+  "data": "C:\\Users\\Vicky\\Documents\\SIH_2026\\LSTM-type-model-CICIDS2018-UCS\\data\\ucs\\ucs_windows.parquet",
+  "manifest": "C:\\Users\\Vicky\\Documents\\SIH_2026\\LSTM-type-model-CICIDS2018-UCS\\artifacts\\loeo\\corrected_37fold_manifest.json",
+  "feature_manifest": "C:\\Users\\Vicky\\Documents\\SIH_2026\\LSTM-type-model-CICIDS2018-UCS\\artifacts\\lr_set_a\\set_a_features.json",
+  "fold_count_requested": 1,
+  "epochs_requested": 1,
+  "seed": 42,
+  "device": "cpu",
+  "class_weighting": false,
+  "pos_weight_runtime": null,
+  "pca_components": 32,
+  "python": "3.10.2",
+  "torch": "2.13.0+cpu",
+  "numpy": "2.2.6",
+  "pandas": "2.3.3"
+}

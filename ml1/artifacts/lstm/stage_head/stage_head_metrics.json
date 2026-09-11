@@ -1,0 +1,197 @@
+{
+  "architectural_input": "predicted_future_latent_state_S_hat_t_plus_1",
+  "world_model_checkpoint": "artifacts\\lstm\\gaussian_next_state_best_v2.pt",
+  "chronological_split_metrics": {
+    "overall_accuracy": 0.9163987138263665,
+    "per_class_metrics": {
+      "Command and Control": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 26
+      },
+      "Credential Access": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 0
+      },
+      "Discovery": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 0
+      },
+      "Impact": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 0
+      },
+      "Initial Access": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 0
+      },
+      "Unknown/Other": {
+        "precision": 0.9163987138263665,
+        "recall": 1.0,
+        "f1": 0.9563758389261745,
+        "support": 285
+      }
+    },
+    "confusion_matrix": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        26
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        285
+      ]
+    ]
+  },
+  "loeo_split_metrics": {
+    "overall_accuracy": 0.8367875647668394,
+    "total_eval_samples": 386,
+    "per_class_metrics": {
+      "Command and Control": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 0
+      },
+      "Credential Access": {
+        "precision": 0.9523809523809523,
+        "recall": 0.4878048780487805,
+        "f1": 0.6451612903225806,
+        "support": 82
+      },
+      "Discovery": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 0
+      },
+      "Impact": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 19
+      },
+      "Initial Access": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 0
+      },
+      "Unknown/Other": {
+        "precision": 0.8226744186046512,
+        "recall": 0.9929824561403509,
+        "f1": 0.8998410174880763,
+        "support": 285
+      }
+    },
+    "confusion_matrix": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        40,
+        0,
+        0,
+        0,
+        42
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        19
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        2,
+        0,
+        0,
+        0,
+        283
+      ]
+    ]
+  },
+  "num_stage_classes": 6,
+  "stage_classes": [
+    "Command and Control",
+    "Credential Access",
+    "Discovery",
+    "Impact",
+    "Initial Access",
+    "Unknown/Other"
+  ],
+  "unknown_other_fraction_in_dataset": 0.8880516684607105
+}

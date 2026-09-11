@@ -1,0 +1,2 @@
+fold_id,initial_train_loss,best_train_loss,final_train_loss,initial_validation_loss,best_validation_loss,final_validation_loss,best_epoch,epochs_completed,train_validation_gap_at_best,pos_weight_runtime
+0,0.6566518528275149,0.6566518528275149,0.6566518528275149,0.684241078116677,0.684241078116677,0.684241078116677,1,1,0.027589225289162078,

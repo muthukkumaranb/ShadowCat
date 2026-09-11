@@ -1,0 +1,11 @@
+feature,abs_coefficient
+fwd_pkt_len_std_mean,2.011951964413223
+window_size_bwd_std,1.953081637256225
+fwd_pkt_len_max_std,1.678366493881243
+bwd_pkt_len_std_mean,1.6498861352987486
+byte_count_bwd_std,1.5667897037674585
+pkt_tcp_retrans_count,1.5540630333028438
+pkt_len_var_std,1.5469376505409789
+bwd_seg_size_avg_max,1.539736622767891
+bwd_pkt_len_mean_max,1.539736622767771
+pkt_len_var_max,1.4842192933815423

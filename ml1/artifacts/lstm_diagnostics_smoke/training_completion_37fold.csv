@@ -1,0 +1,2 @@
+fold_id,training_started,training_completed,epochs_requested,epochs_completed,early_stopping_triggered,training_exception,checkpoint_created,best_checkpoint_available,best_epoch,final_epoch
+0,False,False,1,0,False,"ValueError: UCS split must contain only train, val, and test.",False,False,,

@@ -1,0 +1,60 @@
+{
+  "phase1_contract": {
+    "adapter_file": "GNN_FINAL/ml2/data/ml1_interface.py",
+    "adapter_class": "ML1Adapter",
+    "input_format": "Per-window JSON files OR single .npz file",
+    "json_schema": "{window_id}.json -> {str(host_id): float(novelty_score)}",
+    "npz_keys": "timestamps/window_ids, novelty/scores, hosts/host_ids",
+    "alignment": "ML1 stores at window t. ML2 adapter fetches t-1 itself via inject_novelty_into_graphs",
+    "slot_10": "graph.x[:, 10] (zero-indexed), the 11th feature of each node",
+    "slot_10_semantic": "novelty_tminus1 from ML1 (per node_features.py line 23)",
+    "expected_shape": "novelty vector of shape [N] for N active hosts per window",
+    "missing_value_behavior": "Returns np.zeros(N, dtype=float32) for missing windows",
+    "z_t_usage": "Separate 64-dim temporal embedding (currently MOCK zeros in trainer/metrics)",
+    "z_t_note": "z_t is NOT the same as slot-10 novelty; z_t is a separate fusion input"
+  },
+  "phase2_host_differentiation": {
+    "total_windows": 233,
+    "windows_all_identical": 233,
+    "pct_identical": 100.0
+  },
+  "phase3_population_coverage": {
+    "total_ucs_windows": 2787,
+    "total_edge_windows": 2927,
+    "ml1_deviation_windows": 233,
+    "covered_windows": 233,
+    "uncovered_windows": 2694,
+    "train_windows": 2048,
+    "train_covered": 233,
+    "train_fallback": 1815,
+    "val_windows": 439,
+    "val_covered": 0,
+    "val_fallback": 439,
+    "test_windows": 440,
+    "test_covered": 0,
+    "test_fallback": 440
+  },
+  "phase4_deviation_scale": {
+    "count": 233,
+    "min": 14.162308692932127,
+    "p1": 15.033231684366863,
+    "p5": 66.1572166442871,
+    "p25": 67.66916910807292,
+    "p50": 69.65576934814453,
+    "p75": 72.68572235107422,
+    "p95": 11637.08554687499,
+    "p99": 13043.277265625002,
+    "max": 20589.017578125,
+    "mean": 1025.7223827756552,
+    "median": 69.65576934814453,
+    "std": 3334.0262693099894,
+    "nan_count": 0,
+    "inf_count": 0
+  },
+  "phase5_normalization": {
+    "ml1_normalizes": false,
+    "ml2_normalizes": false,
+    "raw_scale": "direct_insertion",
+    "concern": "large_dynamic_range_may_dominate"
+  }
+}

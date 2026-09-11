@@ -1,0 +1,26 @@
+{
+  "canonical_lr_experiment_id": "artifacts/lr_set_a_corrected",
+  "script": "examples/run_lr_loeo.py",
+  "manifest": "artifacts/loeo/corrected_37fold_manifest.json",
+  "dataset_artifact": "data/ucs/ucs_windows.parquet",
+  "commit_hash": "in-repo reproducible",
+  "detection_metrics": {
+    "f1": 0.972972972972973,
+    "precision": 0.972972972972973,
+    "recall": 0.972972972972973,
+    "fpr": 0.0
+  },
+  "onset_metrics": {
+    "f1": 0.8880308880308881,
+    "precision": 0.9459459459459459,
+    "recall": 0.8783783783783784,
+    "fpr": 0.0045045045045045045
+  },
+  "fold_count": 37,
+  "purge_embargo_evidence": "Verified with scripts/verify_purge_embargo.py and scripts/generate_verification_artifacts.py",
+  "coefficient_audit_evidence": "Saved per-fold in artifacts/lr_set_a_corrected/lr_coefficient_audit_detection_fold*.csv",
+  "superseded_experiments": [
+    "artifacts/lr",
+    "artifacts/lr_set_a"
+  ]
+}

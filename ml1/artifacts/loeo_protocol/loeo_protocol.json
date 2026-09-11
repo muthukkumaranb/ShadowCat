@@ -1,0 +1,6 @@
+{
+  "fold_count": 37,
+  "benign_sampling_rule": "day-local temporally closest max(N,5)",
+  "purge_embargo_configuration": "test explicitly isolated from train",
+  "feature_audit_pass": true
+}

@@ -1,0 +1,57 @@
+model:
+  type: LSTM
+
+  input_size: null
+
+  hidden_size: 64
+  num_layers: 1
+  dropout: 0.2
+  bidirectional: false
+
+ucs:
+  window_seconds: 60
+  lookback_windows: 30
+  horizon_windows: 5
+  train_ratio: 0.70
+  val_ratio: 0.15
+  test_ratio: 0.15
+  target: future_attack_label
+  normalization: robust_scaler
+  threshold: 0.5
+
+preprocessing:
+  pca:
+    enabled: false
+    components: null
+
+training:
+  batch_size: 64
+  epochs: 30
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  class_weighting: true
+
+  early_stopping:
+    enabled: true
+    patience: 5
+    min_delta: 0.001
+
+  loss: BCEWithLogitsLoss
+  optimizer: Adam
+
+reproducibility:
+  seed: 42
+
+evaluation:
+  threshold:
+    mode: validation_f1
+
+world_model:
+  task: next_state
+  distribution: gaussian
+  loss: gaussian_nll
+  seed: 42
+  rollout:
+    horizons: [1, 2, 3]
+  intervals:
+    levels: [0.80, 0.95]

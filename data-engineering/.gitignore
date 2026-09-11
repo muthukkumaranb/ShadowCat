@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Raw datasets
+data/raw/
+
+# Intermediate datasets
+data/intermediate/
+
+
+# Generated experiment outputs
+*.txt
+*.json
+
+# Scratch / diagnostic scripts
+scratch/
+
+# IDE / OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+

@@ -1,0 +1,19 @@
+{
+  "n_graphs": 430,
+  "phase_boundary": "2018-03-01 03:36:00+00:00",
+  "threshold_fires_at_transition": true,
+  "anomalous_2sigma": [
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    362,
+    363,
+    368,
+    369
+  ],
+  "velocity_mean": 34.93901824951172,
+  "velocity_std": 131.36155700683594
+}

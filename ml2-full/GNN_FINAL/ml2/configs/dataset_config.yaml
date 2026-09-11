@@ -1,0 +1,17 @@
+dataset:
+  name: CIC-IDS2018
+  source: canonical_ucs
+  ucs_version: UCS_V1
+
+paths:
+  ucs_dir: ml2/data/ucs
+  windows: ml2/data/ucs/ucs_windows.parquet
+  graph_edgelists: ml2/data/ucs/ucs_graph_edgelists.parquet
+  node_lookup: ml2/data/ucs/node_lookup.parquet
+  scaler_params: ml2/data/ucs/scaler_params.yaml
+  schema: ml2/data/ucs/SCHEMA.md
+
+split:
+  source: ucs_windows.split
+  protocol: chronological_70_15_15_post_purge
+  purge_embargo_windows: 35

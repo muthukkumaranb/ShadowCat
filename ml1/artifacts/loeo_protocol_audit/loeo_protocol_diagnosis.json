@@ -1,0 +1,23 @@
+{
+  "diagnosis": "Protocol Design Gap",
+  "root_causes": [
+    {
+      "issue": "Zero-Benign Test Sets for Detection",
+      "explanation": "Because LOEO grouping uses `episode_id`, and benign windows are assigned separate `episode_id`s (e.g., `14-02-2018_Benign_0`), holding out a specific attack episode strictly isolates only the attack windows. All benign traffic falls into the `~holdout_mask` (training set). Thus, test sets contain zero negative examples, mechanically forcing FPR=0.0 and Precision=1.0."
+    },
+    {
+      "issue": "Missing Pre-Onset Windows in Onset Evaluation",
+      "explanation": "For Onset forecasting, the actual targets are the $H$ benign windows preceding the attack (where `future_attack_label = 1`). These pre-onset windows have a benign `episode_id` but are linked to the attack via `forecast_episode_id`. Using `episode_id` for LOEO holdout places these pre-onset windows into the training set, meaning the Onset model is evaluated without its intended pre-onset target instances in the test set."
+    }
+  ],
+  "episode_id_semantics": "Strictly identifies instances belonging to an active episode (either attack or benign). It correctly groups attack windows but excludes adjacent/pre-onset benign windows.",
+  "forecast_episode_id_semantics": "Logically associates pre-onset benign windows with the specific future attack episode they are forecasting. It bridges the gap between benign traffic and upcoming attacks.",
+  "impact": [
+    "LSTM detection LOEO (provisional)",
+    "LSTM onset LOEO (provisional)",
+    "LR detection LOEO (provisional)",
+    "LR onset LOEO (provisional)",
+    "Hazard, novelty, and B2 remain blocked."
+  ],
+  "proposed_correction_overview": "For Detection: Hold out the attack episode (using `episode_id`) PLUS a deterministically sampled subset of benign traffic (e.g., a global 20% split) to provide a realistic FPR evaluation. For Onset: Hold out the attack episode AND its associated pre-onset windows (using `forecast_episode_id`), PLUS the same deterministic subset of benign traffic."
+}

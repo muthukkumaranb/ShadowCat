@@ -1,0 +1,12 @@
+{
+  "test_probability_min": 0.06389928609132767,
+  "test_probability_max": 0.5850153565406799,
+  "test_probability_mean": 0.21434855461120605,
+  "test_probability_median": 0.18801350891590118,
+  "test_positive_predictions": 11,
+  "test_negative_predictions": 330,
+  "test_roc_auc": 0.6723426212590299,
+  "test_inverted_roc_auc": 0.32765737874097006,
+  "train_positive": 632,
+  "train_negative": 1317
+}

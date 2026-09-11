@@ -1,0 +1,37 @@
+data:
+  base_path: "E:/SIH 2026 - Unified Cyber State ingestion pipeline/SIH 2026 - Unified Cyber State ingestion pipeline/data/processed/ucs_v1"
+
+graph:
+  snapshot_freq_sec: 60
+
+model:
+  node_feature_dim: 11
+  hidden_dim: 64
+  embedding_dim: 64
+  fusion_hidden_dim: 128
+  num_layers: 2
+  dropout: 0.3
+  pooling: "mean"
+
+splits:
+  train_frac: 0.70
+  val_frac: 0.15
+  test_frac: 0.15
+
+training:
+  lr: 0.001
+  epochs: 100
+  patience: 15
+  batch_size: 32
+  max_grad_norm: 1.0
+
+ml1_interface:
+  z_dim: 64
+  output_dir: null  # Path to ML1 novelty outputs; null = mock mode
+
+ablation:
+  model_types: ["fused", "temporal_only"]
+  K_values: [1, 2, 3, 5, 10]
+
+loeo:
+  min_episodes: 2

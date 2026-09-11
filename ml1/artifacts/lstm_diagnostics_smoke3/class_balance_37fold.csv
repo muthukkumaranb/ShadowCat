@@ -1,0 +1,4 @@
+fold_id,split,positive_count,negative_count,sequence_count,positive_prevalence
+0,train,583,1183,1766,0.3301245753114383
+0,validation,153,199,352,0.4346590909090909
+0,test,0,0,0,

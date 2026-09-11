@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "frozen_manifest": "artifacts\\loeo\\corrected_37fold_manifest.json",
+  "frozen_manifest_sha256": "847fe75ed0484419accdd894e704e650bce5de6d5e90568cfaddb76e016b613f",
+  "lr_manifest": "artifacts\\lr_set_a_corrected\\lr_37fold_loeo_fold_manifest.csv",
+  "lr_manifest_sha256": "4d0c91071dba1ad20dd666cccc89ca3b1bda19b0a3298c6e7b09a7a02b1245bd",
+  "exact_train_and_test_population_match": true,
+  "mismatched_folds": []
+}

@@ -1,0 +1,55 @@
+# GNN Configuration for Attack Risk Forecasting
+# All hyperparameters externalized — nothing hardcoded in training script
+
+random_seed: 42
+
+# ── Data ──────────────────────────────────────────────────────────────────────
+data:
+  snapshot_freq: "min"           # 1-minute graph snapshots
+  forecast_horizon_sec: 600      # 10-minute forecast horizon
+  sequence_window: 30            # 30 consecutive graphs as input sequence
+
+# ── Splits ────────────────────────────────────────────────────────────────────
+split:
+  train_fraction: 0.70
+  val_fraction: 0.15
+  test_fraction: 0.15
+  purge_windows: 10              # horizon in snapshot units
+  embargo_windows: 30            # lookback in snapshot units
+
+# ── Model ─────────────────────────────────────────────────────────────────────
+model:
+  type: "graphsage"              # Edge-aware GraphSAGE encoder
+  hidden_channels: 64
+  embedding_dim: 64              # Final graph embedding dimension (GNN output contract)
+  num_layers: 2
+  dropout: 0.3
+  pooling: "mean_max"            # mean, max, or mean_max
+  temporal_method: "mean"         # mean, last, or attention
+
+# ── Training ──────────────────────────────────────────────────────────────────
+training:
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  batch_size: 16
+  epochs: 100
+  patience: 15                   # early stopping patience
+  pos_weight_multiplier: 1.0     # multiplied with computed pos_weight
+  loss: "bce_logits"             # bce_logits with pos_weight
+
+# ── Evaluation ────────────────────────────────────────────────────────────────
+evaluation:
+  threshold: 0.5
+  metrics:
+    - precision
+    - recall
+    - f1
+    - pr_auc
+    - roc_auc
+    - fpr
+
+# ── Paths ─────────────────────────────────────────────────────────────────────
+paths:
+  graphs_dir: "data/processed/graphs/"
+  checkpoint_dir: "gnn/checkpoints/"
+  results_dir: "gnn/results/"

@@ -1,0 +1,16 @@
+{
+  "protocol": "LOEO (retrained per fold)",
+  "available_episodes": 6,
+  "completed_folds": 5,
+  "f1_macro": 0.4766099621008806,
+  "pr_auc_macro": 0.6649103961537771,
+  "precision_macro": 0.6943125485078763,
+  "recall_macro": 0.5217298741358892,
+  "roc_auc_pooled": 0.5957589232350762,
+  "f1_pooled": 0.49183147033533964,
+  "pr_auc_pooled": 0.5575952636689393,
+  "precision_pooled": 0.5652173913043478,
+  "recall_pooled": 0.4353120243531202,
+  "threshold": 0.38,
+  "note": "The supplied UCS artifact contains 6 source_day episodes, so this is 6-fold LOEO, not the requested 38-fold dataset protocol."
+}
