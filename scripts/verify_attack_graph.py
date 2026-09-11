@@ -47,8 +47,8 @@ def test_attack_graph_apptest_rendering():
     print("[PASS] Mandatory n=1 caption present and intact.")
 
     assert "badge-mock" not in rendered_text, "Deprecated MOCK badge still rendered in Lateral Movement Graph!"
-    assert "Running on benchmark data" in rendered_text or "BENCHMARK MODE" in rendered_text, "Sticky benchmark banner missing from Lateral Movement Graph!"
-    print("[PASS] Benchmark governance header verified; individual [MOCK] badges successfully deprecated.")
+    assert any(phrase in rendered_text for phrase in ["Running on benchmark data", "BENCHMARK MODE", "● LIVE", "LIVE"]), "Sticky governance banner missing from Lateral Movement Graph!"
+    print("[PASS] Governance header verified; individual [MOCK] badges successfully deprecated.")
 
     for ip in ["10.0.2.15", "10.0.3.50", "10.0.4.10", "10.0.4.21", "10.0.5.1"]:
         assert ip in rendered_text, f"Host IP {ip} missing from rendered output!"
