@@ -16,12 +16,25 @@ CHAIN_PATH = os.path.join(os.path.dirname(__file__), "audit_chain.json")
 
 
 def _sha256_of_file(filepath: str) -> str:
-    """Hash a file's actual bytes, not a description of it."""
-    h = hashlib.sha256()
-    with open(filepath, "rb") as f:
-        for chunk in iter(lambda: f.read(8192), b""):
-            h.update(chunk)
-    return h.hexdigest()
+    """
+    Hash a file's actual content. For text files (.md, .json, .yaml, .yml, .txt, .csv, .py),
+    normalize CRLF to LF so the hash is invariant across OS line-ending conventions
+    and git checkout settings (core.autocrlf). For binary files, hash raw bytes directly.
+    """
+    ext = os.path.splitext(filepath)[1].lower()
+    text_extensions = {".md", ".json", ".yaml", ".yml", ".txt", ".csv", ".py"}
+
+    if ext in text_extensions:
+        with open(filepath, "rb") as f:
+            content = f.read()
+        canonical = content.replace(b"\r\n", b"\n")
+        return hashlib.sha256(canonical).hexdigest()
+    else:
+        h = hashlib.sha256()
+        with open(filepath, "rb") as f:
+            for chunk in iter(lambda: f.read(8192), b""):
+                h.update(chunk)
+        return h.hexdigest()
 
 
 def _resolve_path(stored_path: str) -> str:

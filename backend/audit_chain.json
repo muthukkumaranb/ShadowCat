@@ -1,72 +1,72 @@
 [
   {
     "index": 0,
-    "timestamp": "2026-09-11T07:12:27.949680+00:00",
+    "timestamp": "2026-09-11T09:00:15.521821+00:00",
     "artifact_path": "../data-engineering/data/ucs/CONTRACT_DIFF_REPORT.md",
     "artifact_type": "contract_verification",
     "description": "UCS-ML1 inference contract diff \u2014 confirmed PASS",
-    "artifact_hash": "95e888dd9ba1b1cf2b47d5db49c5cff9970824d2a7c013fc8ef181522e7d2c54",
+    "artifact_hash": "b4812edae5e93ceb3bb256a3c20722d777c6e3841093ccde9bb2739ae92f0f36",
     "prev_entry_hash": "0000000000000000000000000000000000000000000000000000000000000000",
-    "entry_hash": "872b19ea3184eeaf9b343bfbcb74abd409bb72be1f699409513cf70e18294b09"
+    "entry_hash": "c87af2c2b7cc0e96c6665adc7643f1e91cbb4734f60b08c358568cfcdf792e43"
   },
   {
     "index": 1,
-    "timestamp": "2026-09-11T07:12:27.951718+00:00",
+    "timestamp": "2026-09-11T09:00:15.524325+00:00",
     "artifact_path": "../ml1/artifacts/lstm/gaussian_next_state_best_v2.pt",
     "artifact_type": "model_checkpoint",
     "description": "LSTM world model v2 (post scaler-fix retrain)",
     "artifact_hash": "ac9ef3d2d582e0f4283abb0725fb985fa298c2fc99af161eb06eb371b2cd7b90",
-    "prev_entry_hash": "872b19ea3184eeaf9b343bfbcb74abd409bb72be1f699409513cf70e18294b09",
-    "entry_hash": "b29ce5d91d7f8a496dd2ec6d2116f095c248b05e843889dd0549873b3c97ce64"
+    "prev_entry_hash": "c87af2c2b7cc0e96c6665adc7643f1e91cbb4734f60b08c358568cfcdf792e43",
+    "entry_hash": "4af9fff4094325df095fe42230d54f43500b0bb32ce31b0fe9d744c081c673a5"
   },
   {
     "index": 2,
-    "timestamp": "2026-09-11T07:12:27.952945+00:00",
+    "timestamp": "2026-09-11T09:00:15.526338+00:00",
     "artifact_path": "../ml1/artifacts/lstm/hazard_head/hazard_head_report.md",
     "artifact_type": "evaluation_report",
     "description": "Hazard head v2 evaluation (post label-leak correction)",
-    "artifact_hash": "b78e528bdddbdabda32639e4509903d9953c1a8216432123a38bc8dc3ba2be94",
-    "prev_entry_hash": "b29ce5d91d7f8a496dd2ec6d2116f095c248b05e843889dd0549873b3c97ce64",
-    "entry_hash": "644f9f5b1b944260ecbbcb992522781226ffceef92d63cdfa1f64a41e7db5cc2"
+    "artifact_hash": "bec36f3c22482358e5fa06e42f581f9e06bfa12cb639080e7d5d252cdb8ca142",
+    "prev_entry_hash": "4af9fff4094325df095fe42230d54f43500b0bb32ce31b0fe9d744c081c673a5",
+    "entry_hash": "e0908fd9c3479ff56b69b6fbde03154a91cbe0971a38b9960ee5ffcae5bdac1e"
   },
   {
     "index": 3,
-    "timestamp": "2026-09-11T07:12:27.953946+00:00",
+    "timestamp": "2026-09-11T09:00:15.527338+00:00",
     "artifact_path": "../ml1/artifacts/lstm/stage_head/stage_head_report.md",
     "artifact_type": "evaluation_report",
     "description": "Stage head v2 evaluation",
-    "artifact_hash": "e8001b9bacb5e34bc7c3651bbdfd63324ede3e4caeaa555ec870364a41f821e7",
-    "prev_entry_hash": "644f9f5b1b944260ecbbcb992522781226ffceef92d63cdfa1f64a41e7db5cc2",
-    "entry_hash": "003d3786d2b830043b49db7461fb15de0167e00230de76de83a3da02bf6ac555"
+    "artifact_hash": "bd660c3a165e3f9a44f329918c181bd9e8ab5ef033b4ebb18515bfb28d26db46",
+    "prev_entry_hash": "e0908fd9c3479ff56b69b6fbde03154a91cbe0971a38b9960ee5ffcae5bdac1e",
+    "entry_hash": "c62cb00d4c899db5b61752439994787d274db9058955ce05999e967551af0d8f"
   },
   {
     "index": 4,
-    "timestamp": "2026-09-11T07:12:27.954965+00:00",
+    "timestamp": "2026-09-11T09:00:15.528339+00:00",
     "artifact_path": "../ml1/artifacts/lstm/pc2_significance_report.md",
     "artifact_type": "evaluation_report",
     "description": "PC2 significance test (re-run on v2 checkpoint)",
-    "artifact_hash": "70d8c18077eeaa6c007f18de3f481137da1d7759955ea47fca4055ee740c229b",
-    "prev_entry_hash": "003d3786d2b830043b49db7461fb15de0167e00230de76de83a3da02bf6ac555",
-    "entry_hash": "5c4450b192f785b816e4ea5b00f982afeefbe3210acc51f2ae90bfacf31e79e5"
+    "artifact_hash": "50a97b155beaba9289a2ce8b990b4eb6de8da48edbdb71a5841e6d6d7081f585",
+    "prev_entry_hash": "c62cb00d4c899db5b61752439994787d274db9058955ce05999e967551af0d8f",
+    "entry_hash": "ab08682506410553aa4e747eb5d491d1df4bfc84e91f876e2b8e57a4ebb0d430"
   },
   {
     "index": 5,
-    "timestamp": "2026-09-11T07:12:27.955953+00:00",
+    "timestamp": "2026-09-11T09:00:15.530890+00:00",
     "artifact_path": "../ml2-full/GNN_FINAL/ml2/results/gnn_adopt_hold_decision.md",
     "artifact_type": "architecture_decision",
     "description": "GNN fusion adopt/hold decision \u2014 HOLD, multi-seed evidence",
-    "artifact_hash": "ff5fbaab2a5d4276ca4a3fa61fcbb034f42b1fa07582ada36dcd5995221d112b",
-    "prev_entry_hash": "5c4450b192f785b816e4ea5b00f982afeefbe3210acc51f2ae90bfacf31e79e5",
-    "entry_hash": "7e0b43956d1341f16013ff70af1b156fa63e6a7bc7033c4a7f272d6bd75f15f9"
+    "artifact_hash": "bf697b50640b9283fe04971d9d8b818b39fb403368e11be712631be1089b8315",
+    "prev_entry_hash": "ab08682506410553aa4e747eb5d491d1df4bfc84e91f876e2b8e57a4ebb0d430",
+    "entry_hash": "91bb7c57d1c368dbd044ca4418fd7c5c1d15a19cfd4dd72bbdbdecef065fa934"
   },
   {
     "index": 6,
-    "timestamp": "2026-09-11T07:12:27.955953+00:00",
+    "timestamp": "2026-09-11T09:00:15.531890+00:00",
     "artifact_path": "../ml1/artifacts/leakage_audit/component_exposure_audit.md",
     "artifact_type": "leakage_audit",
     "description": "Packet-feature label-leak exposure audit",
-    "artifact_hash": "39b9c42e9f1acf0ce8dc013d76dad030e68ea328dde0be011fe87844481b02a1",
-    "prev_entry_hash": "7e0b43956d1341f16013ff70af1b156fa63e6a7bc7033c4a7f272d6bd75f15f9",
-    "entry_hash": "123440bfa683f3b3b4cb54bcced09b5b4460b97384586760aa2bc417373ecf34"
+    "artifact_hash": "3bd79bf9be73ee72ad631ccd63f3f0bf7cf923f855661196ec9199c1789b7483",
+    "prev_entry_hash": "91bb7c57d1c368dbd044ca4418fd7c5c1d15a19cfd4dd72bbdbdecef065fa934",
+    "entry_hash": "e9fd8405dc3b2c111a3a3065b663f4fdc84544d041946adf170426b4adf09e57"
   }
 ]
