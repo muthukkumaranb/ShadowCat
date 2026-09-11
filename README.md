@@ -1,10 +1,10 @@
-# SHADOWCAT 🐾
+# SHADOWCAT
 
 > **An AI world model that forecasts network attacks before they happen, learning network state dynamics from traffic and mapping predictions to MITRE ATT&CK stages, fully offline.**
 
 ---
 
-## 📌 Problem Statement Reference
+## Problem Statement Reference
 
 - **ID:** `SIH26153`
 - **Organization:** National Technical Research Organisation (NTRO)
@@ -13,7 +13,7 @@
 
 ---
 
-## 🏛️ Pipeline Architecture
+## Pipeline Architecture
 
 ```
                                   SHADOWCAT PIPELINE
@@ -27,7 +27,7 @@
                                           ▼
    ┌─────────────────────────────────────────────────────────────────────────────┐
    │ 2. ML TRACK: Causal Temporal World Model                                    │
-   │ 30-Window Lookback ──► Log1p + RobustScaler ──► Causal LSTM (128-D Latent z_t)│
+   │ 30-Window Lookback ──► Log1p + RobustScaler ──► Causal LSTM (64-D Latent z_t) │
    │                                                 p(S_{t+1} | S_t) Dynamics   │
    └──────────────────────────────────────┬──────────────────────────────────────┘
                                           │
@@ -65,7 +65,7 @@
 
 ---
 
-## 📁 Repository Structure & Track Ownership
+## Repository Structure & Track Ownership
 
 | Directory | Track / Ownership | Description |
 | :--- | :--- | :--- |
@@ -77,7 +77,7 @@
 
 ---
 
-## ⚡ Quickstart & Setup
+## Quickstart & Setup
 
 ### 1. Clone the Repository
 ```bash
@@ -110,7 +110,7 @@ Open `http://localhost:8501` in your browser.
 
 ---
 
-## 📊 Summary of Key Scientific Results
+## Summary of Key Scientific Results
 
 | Evaluation Metric / Milestone | Result / Finding | Status & Reference |
 | :--- | :--- | :--- |
@@ -124,7 +124,7 @@ Open `http://localhost:8501` in your browser.
 
 ---
 
-## ⛓️ Blockchain-Inspired Tamper-Evident Audit Trail
+## Blockchain-Inspired Tamper-Evident Audit Trail
 
 To meet the SIH **Blockchain & Cybersecurity** theme without introducing the excessive infrastructure overhead of a full distributed ledger for a single-deployment gateway, SHADOWCAT implements a **cryptographic SHA-256 recursive hash chain** ([`backend/audit_chain.py`](backend/audit_chain.py)).
 
@@ -134,7 +134,7 @@ To meet the SIH **Blockchain & Cybersecurity** theme without introducing the exc
 
 ---
 
-## ⚠️ Known Limitations & Scope Disclosures
+## Known Limitations & Scope Disclosures
 
 In accordance with scientific integrity and engineering transparency:
 1. **Dataset Nature:** Evaluated on the CSE-CIC-IDS2018 testbed dataset; real-world enterprise zero-day generalization requires continuous fine-tuning.
@@ -145,7 +145,7 @@ In accordance with scientific integrity and engineering transparency:
 
 ---
 
-## 👥 Track Leads & Contributors
+## Track Leads & Contributors
 
 - **Data Engineering:** Unified Cyber State schema, ingestion pipeline, leakage purging & embargo protocols.
 - **ML1 Modeling:** Causal LSTM state dynamics, probabilistic Gaussian heads, hazard/stage classification.

@@ -4,14 +4,14 @@ This directory contains the Graph Neural Network (GNN) modeling, dynamic graph c
 
 ---
 
-## ⚠️ Directory Guide & Canonical Implementation
+## Directory Guide & Canonical Implementation
 
 - **`GNN_FINAL/ml2/` (CANONICAL)**: Contains the verified, multi-seed GraphSAGE encoder and Temporal-Graph fusion ablation framework built against canonical Unified Cyber State ($S_t$) window graphs.
 - **`gnn/` (SUPERSEDED / EXPLORATORY)**: Contains early exploratory graph construction scripts on legacy datasets. Kept strictly for historical provenance; do not use for new evaluations.
 
 ---
 
-## 📊 Scientific Findings: GNN Adopt/Hold Decision
+## Scientific Findings: GNN Adopt/Hold Decision
 
 A core tenet of SHADOWCAT is empirical honesty. The GraphSAGE fusion model underwent a rigorous 3-seed ablation study comparing the multimodal `FusedModel` ($LSTM + GNN$) against the `TemporalOnlyBaseline` ($LSTM$).
 
@@ -31,7 +31,7 @@ For the full audit and mathematical reconciliation, see [`GNN_FINAL/ml2/results/
 
 ---
 
-## 📁 Structure
+## Structure
 
 ```
 ml2-full/

@@ -4,7 +4,7 @@ The backend track serves as the unified runtime integration layer for the SHADOW
 
 ---
 
-## 🏗️ Architecture & Modules
+## Architecture & Modules
 
 ```
 backend/
@@ -22,7 +22,7 @@ backend/
 
 ---
 
-## ⚡ Primary Inference Contract (`predict.py`)
+## Primary Inference Contract (predict.py)
 
 The primary entry point is `predict(input_df, source_type='flows', config=None) -> dict`.
 
@@ -48,7 +48,7 @@ Input DataFrame (Flows / Windows)
                │
                ▼
    LSTM World Model (z_t Latent Transition)
-(Extracts 128-D causal temporal context from 30-window sequence)
+(Extracts 64-D causal temporal context from 30-window sequence)
                │
       ┌────────┴────────┐
       ▼                 ▼
@@ -69,7 +69,7 @@ Authoritative Prediction Dictionary Output
 
 ---
 
-## 🔗 Tamper-Evident Hash Chain (`audit_chain.py`)
+## Tamper-Evident Hash Chain (audit_chain.py)
 
 To answer the SIH theme (*Blockchain & Cybersecurity*) with genuine technical rigor, SHADOWCAT implements a lightweight, blockchain-inspired SHA-256 recursive hash chain over all verified project artifacts (Gate 0 verdicts, model checkpoint weights, contract diffs, and evaluation reports).
 
@@ -78,7 +78,7 @@ A full distributed consensus network (e.g. proof-of-work/stake) introduces dispr
 
 ---
 
-## 🚀 Standalone Execution & Verification
+## Standalone Execution & Verification
 
 ### 1. Run Pipeline Smoke Test
 Executes end-to-end inference against canonical UCS test data:

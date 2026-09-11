@@ -6,7 +6,7 @@ This repository provides the production data engineering pipeline that processes
 
 ---
 
-## 🚀 Key Features
+## Key Features
 
 1. **Robust Ingestion**: Latin-1 fallback encoding, automated whitespace stripping, duplicate header removal (`Label == 'Label'`), and provenance tracking (`source_day`, `source_file`).
 2. **Canonical 80-to-UCS Mapping**: Maps all flow-level features, timing/IAT distributions, all 8 TCP flags, subflows, bidirectional down/up ratios, and packet-level features (`Init_Win_bytes_forward`, `Init_Win_bytes_backward`, `fwd_seg_size_min`).
@@ -27,7 +27,7 @@ This repository provides the production data engineering pipeline that processes
 
 ---
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```
 ├── configs/
@@ -62,7 +62,7 @@ This repository provides the production data engineering pipeline that processes
 
 ---
 
-## 🛠️ How to Run
+## How to Run
 
 ### 1. Run Unit Tests
 ```bash
@@ -83,7 +83,7 @@ All output datasets and audit reports are written directly to `data/ucs/`.
 
 ---
 
-## ⚡ Runtime Extraction Engine (`UCSExtractor`)
+## Runtime Extraction Engine (UCSExtractor)
 
 The `UCSExtractor` runtime module ([`src/ucs_extractor.py`](file:///e:/SIH%202026%20-%20UCS%20Ingestion%20Pipeline%20(Main)/src/ucs_extractor.py)) packages the batch pipeline into a lightweight, high-performance module for streaming and real-time backend/inference integration.
 
@@ -138,7 +138,7 @@ To guarantee 100% positional and numerical parity between `UCSExtractor` and ML1
 
 ---
 
-## 🛡️ Input Validation (`CICFlowMeterValidator`)
+## Input Validation (CICFlowMeterValidator)
 
 The `CICFlowMeterValidator` module ([`src/csv_validator.py`](file:///e:/SIH%202026%20-%20UCS%20Ingestion%20Pipeline%20(Main)/src/csv_validator.py)) verifies and cleans raw CSV inputs before extraction:
 - **`EXACT_MATCH`**: All 80 raw CICFlowMeter columns are present with standard casing.
@@ -147,7 +147,7 @@ The `CICFlowMeterValidator` module ([`src/csv_validator.py`](file:///e:/SIH%2020
 
 ---
 
-## ⚠️ Limitations
+## Limitations
 
 - **Contiguous Episode Granularity**: Pulsing/intermittent C2 traffic can be split into multiple single-window episodes under the strict contiguity rule; this is documented and does not affect leakage boundaries.
 - **Packet-Level Feature Scope**: Raw PCAP packet extraction is currently scoped to Wednesday-14-02-2018 (`SSH-Bruteforce`); all remaining days use flow-level telemetry and have `mask_has_packet_level_features = 0.0`.

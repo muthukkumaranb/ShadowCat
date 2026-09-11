@@ -4,7 +4,7 @@ The frontend track delivers the executive and operational user interface for the
 
 ---
 
-## 🧭 Dashboard Views & Navigation
+## Dashboard Views & Navigation
 
 ```
 frontend/
@@ -24,7 +24,7 @@ frontend/
 
 ---
 
-## 🎨 Key Features & Capabilities
+## Key Features & Capabilities
 
 1. **Pre-Emptive Lead Time Visualization**:
    - Visualizes multi-step hazard trajectories across forecasting horizons ($t+1$ to $t+4$).
@@ -41,7 +41,7 @@ frontend/
 
 ---
 
-## 🚀 Running the Dashboard
+## Running the Dashboard
 
 ### Standalone Launch:
 ```bash
@@ -49,7 +49,7 @@ streamlit run frontend/app.py
 ```
 Default URL: `http://localhost:8501`
 
-### Data Decoupling Architecture (`data_provider.py`):
+### Data Decoupling Architecture (data_provider.py):
 `data_provider.py` acts as a clean boundary between the UI and backend logic:
 - Auto-detects live model checkpoints and executes `backend.predict()` on demand.
 - Seamlessly falls back to pre-computed benchmark artifacts when operating in offline demo mode.
