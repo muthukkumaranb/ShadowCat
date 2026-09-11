@@ -16,12 +16,20 @@ from data_provider import (
     get_novelty_score,
     get_mitre_data,
 )
+import importlib
+import styles
+importlib.reload(styles)
 from styles import apply_custom_css, render_sidebar, COLORS, render_html, render_footer
+import components.header
+importlib.reload(components.header)
 from components.header import render_header
+import components.forecast
+importlib.reload(components.forecast)
 from components.forecast import create_forecast_chart
+import components.explanation
+importlib.reload(components.explanation)
 from components.explanation import render_attack_stepper
 import components.attack_graph
-import importlib
 importlib.reload(components.attack_graph)
 from components.attack_graph import render_attack_graph_panel
 
@@ -77,14 +85,14 @@ elif pred_prob > 0.35:
     banner_bg = "rgba(224, 152, 43, 0.14)"
     banner_border = "#E0982B"
     badge_bg = "#E0982B"
-    badge_text = "#0A0E17"
+    badge_text = "#000000"
     accent_color = "#FF9F0A"
 else:
     severity_label = "NORMAL"
     banner_bg = "rgba(47, 184, 114, 0.12)"
     banner_border = "#2FB872"
     badge_bg = "#2FB872"
-    badge_text = "#0A0E17"
+    badge_text = "#000000"
     accent_color = "#30D158"
 
 render_html(f"""

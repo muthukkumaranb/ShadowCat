@@ -15,7 +15,12 @@ from data_provider import (
     get_validation_data,
     validation_status,
 )
+import importlib
+import styles
+importlib.reload(styles)
 from styles import apply_custom_css, render_sidebar, COLORS, render_html, render_footer
+import components.header
+importlib.reload(components.header)
 from components.header import render_header
 
 st.set_page_config(

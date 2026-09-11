@@ -16,13 +16,21 @@ from data_provider import (
     get_novelty_score,
     get_flagged_flows,
 )
+import importlib
+import styles
+importlib.reload(styles)
 from styles import apply_custom_css, render_sidebar, COLORS, render_html, render_footer
+import components.header
+importlib.reload(components.header)
 from components.header import render_header
+import components.explanation
+importlib.reload(components.explanation)
 from components.explanation import create_attribution_chart
 import components.evidence
-import importlib
 importlib.reload(components.evidence)
 from components.evidence import render_evidence_table
+import components.temporal_evidence
+importlib.reload(components.temporal_evidence)
 from components.temporal_evidence import render_temporal_evidence
 
 st.set_page_config(

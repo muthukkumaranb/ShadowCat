@@ -179,7 +179,7 @@ def render_attack_graph_panel():
         <div class="card-title">
             <span>Dynamic Enterprise Attack Graph & Lateral Rollout</span>
         </div>
-        <div style="font-size: 0.80rem; color: #9AA7BD;">
+        <div style="font-size: 0.80rem; color: #8A8A8A;">
             Multi-step lateral rollout across hosts.
         </div>
     </div>
@@ -195,8 +195,8 @@ def render_attack_graph_panel():
 
     # Mandatory n=1 caption (dynamically rendered from graph_data payload)
     render_html(f"""
-    <div style="background: rgba(56, 189, 248, 0.05); border-left: 3px solid #38BDF8; padding: 8px 14px; border-radius: 0 6px 6px 0; margin-bottom: 14px;">
-        <span style="font-size: 0.78rem; color: #E8EDF5; font-style: italic;">
+    <div style="background: #141414; border: 1px solid #262626; border-left: 3px solid #8A8A8A; padding: 8px 14px; border-radius: 4px; margin-bottom: 14px;">
+        <span style="font-size: 0.78rem; color: #FFFFFF; font-style: italic;">
             "{disclaimer_text}"
         </span>
     </div>
@@ -688,7 +688,7 @@ def _build_attack_graph_svg(graph_data: dict, active_k: int, selected_host: str,
                 font-size: 11px;
                 font-weight: 700;
                 letter-spacing: 0.02em;
-                text-shadow: 0 1px 4px rgba(0,0,0,0.9), 0 0 3px #0A0E17;
+                text-shadow: 0 1px 4px rgba(0,0,0,0.9), 0 0 3px #000000;
             }}
             .node-role-label {{
                 fill: #8A8A8A;

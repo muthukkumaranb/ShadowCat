@@ -36,6 +36,11 @@ def create_attribution_chart(explanation_data):
         ),
         paper_bgcolor="#141414",
         plot_bgcolor="#141414",
+        hoverlabel=dict(
+            bgcolor="#181818",
+            bordercolor="#333333",
+            font=dict(color="#FFFFFF", size=11, family="'JetBrains Mono', monospace")
+        ),
         margin=dict(l=10, r=20, t=32, b=24),
         height=240,
         xaxis=dict(

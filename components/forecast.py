@@ -112,6 +112,11 @@ def create_forecast_chart(forecast_data):
         margin=dict(l=35, r=25, t=30, b=35),
         height=360,
         hovermode="x unified",
+        hoverlabel=dict(
+            bgcolor="#181818",
+            bordercolor="#333333",
+            font=dict(color="#ffffff", size=11, family="'JetBrains Mono', monospace")
+        ),
         showlegend=False,
         xaxis=dict(
             gridcolor="#222222",
