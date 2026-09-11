@@ -28,6 +28,15 @@ PAGES = [
         "requires_banner": True,
         "unique_headers": [
             "Attack Risk Trajectory & Epistemic Uncertainty",
+            "MITRE ATT&CK Killchain Progression"
+        ],
+    },
+    {
+        "name": "Lateral Movement Graph",
+        "file": "views/01b_AttackGraph.py",
+        "requires_banner": True,
+        "unique_headers": [
+            "Lateral Movement Attack Graph",
             "Dynamic Enterprise Attack Graph & Lateral Rollout",
             "Host Threat Distribution"
         ],
@@ -249,7 +258,7 @@ def main():
     print("\n" + "=" * 70)
     all_passed = call_sites_ok and all(r["passed"] for r in results)
     if all_passed:
-        print("ALL 5 PAGES AND REVISION G GOVERNANCE CHECKS PASSED.")
+        print("ALL 6 PAGES AND REVISION G GOVERNANCE CHECKS PASSED.")
     else:
         print("SOME CHECKS FAILED. SEE DETAILS ABOVE.")
     print("=" * 70)

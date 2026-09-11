@@ -34,9 +34,9 @@ def test_attack_graph_data_integrity():
     print("[PASS] get_host_risk_graph data integrity verified across all 5 rollout steps (k=0..4).")
 
 def test_attack_graph_apptest_rendering():
-    print("\n--- 2. Testing Threat Forecast AppTest Rendering & Interactivity ---")
-    forecast_path = os.path.join(PROJECT_ROOT, "views", "01_Forecast.py")
-    at = AppTest.from_file(forecast_path, default_timeout=30)
+    print("\n--- 2. Testing Lateral Movement Graph AppTest Rendering & Interactivity ---")
+    page_path = os.path.join(PROJECT_ROOT, "views", "01b_AttackGraph.py")
+    at = AppTest.from_file(page_path, default_timeout=30)
     at.run()
 
     assert not at.exception, f"App threw exception: {at.exception}"
@@ -46,8 +46,8 @@ def test_attack_graph_apptest_rendering():
     assert n1_caption in rendered_text, "Mandatory n=1 caption missing!"
     print("[PASS] Mandatory n=1 caption present and intact.")
 
-    assert "badge-mock" not in rendered_text, "Deprecated MOCK badge still rendered in Threat Forecast!"
-    assert "Running on benchmark data" in rendered_text or "BENCHMARK MODE" in rendered_text, "Sticky benchmark banner missing from Threat Forecast!"
+    assert "badge-mock" not in rendered_text, "Deprecated MOCK badge still rendered in Lateral Movement Graph!"
+    assert "Running on benchmark data" in rendered_text or "BENCHMARK MODE" in rendered_text, "Sticky benchmark banner missing from Lateral Movement Graph!"
     print("[PASS] Benchmark governance header verified; individual [MOCK] badges successfully deprecated.")
 
     for ip in ["10.0.2.15", "10.0.3.50", "10.0.4.10", "10.0.4.21", "10.0.5.1"]:
@@ -63,6 +63,16 @@ def test_attack_graph_apptest_rendering():
     inspect_btns = [b for b in at.button if "btn_inspect" in b.key]
     assert len(inspect_btns) == 5, f"Expected 5 inspect buttons, found {len(inspect_btns)}"
 
+    # User Requirement 1: Explicitly test the Telemetry button and confirm its behavior is distinct from Inspect
+    btn_telemetry = next((b for b in inspect_btns if b.label == "Telemetry"), None)
+    assert btn_telemetry is not None, "Telemetry button missing from host cards!"
+    assert btn_telemetry.key == "btn_inspect_10.0.4.10", "Telemetry button must be on the default active SSH Jump Host (10.0.4.10)!"
+    assert btn_telemetry.disabled == True, "Active Telemetry button must be disabled to signify current selection!"
+    inspect_labeled = [b for b in inspect_btns if b.label == "Inspect"]
+    assert len(inspect_labeled) == 4, f"Expected 4 Inspect buttons and 1 Telemetry button, found {len(inspect_labeled)} Inspect buttons"
+    print("[PASS] User verification confirmed: Telemetry button distinct from Inspect (only on SSH Jump Host 10.0.4.10 initially).")
+
+    # Click Inspect on 10.0.2.15
     btn_10_0_2_15 = next(b for b in inspect_btns if "10.0.2.15" in b.key)
     btn_10_0_2_15.click().run()
 
@@ -70,9 +80,16 @@ def test_attack_graph_apptest_rendering():
     updated_text = " ".join([m.value for m in at.markdown])
     assert "HOST TELEMETRY INSPECTOR: 10.0.2.15" in updated_text, "Host inspector did not update to 10.0.2.15!"
     assert "Workstation (Patient Zero)" in updated_text
-    print("[PASS] Interactivity verified: Clicking Inspect button immediately updates Host Telemetry Inspector to 10.0.2.15.")
 
-    btn_10_0_3_50 = next(b for b in inspect_btns if "10.0.3.50" in b.key)
+    # Re-verify that 10.0.2.15 now has Telemetry and 10.0.4.10 reverted to Inspect
+    updated_inspect_btns = [b for b in at.button if "btn_inspect" in b.key]
+    new_telemetry_btn = next((b for b in updated_inspect_btns if b.label == "Telemetry"), None)
+    assert new_telemetry_btn is not None and new_telemetry_btn.key == "btn_inspect_10.0.2.15", "10.0.2.15 should now show Telemetry button!"
+    btn_ssh_reverted = next(b for b in updated_inspect_btns if "10.0.4.10" in b.key)
+    assert btn_ssh_reverted.label == "Inspect" and not btn_ssh_reverted.disabled, "10.0.4.10 should now show enabled Inspect button!"
+    print("[PASS] Interactivity verified: Clicking Inspect button immediately updates Host Telemetry Inspector and swaps Telemetry state to 10.0.2.15.")
+
+    btn_10_0_3_50 = next(b for b in updated_inspect_btns if "10.0.3.50" in b.key)
     btn_10_0_3_50.click().run()
 
     assert not at.exception, f"App threw exception on second button click: {at.exception}"
@@ -110,11 +127,11 @@ def test_attack_graph_svg_rendering_features():
     print("[PASS] Task 2 verified: Predicted attack path rendered with marching ants, laser glow, and scaled arrowheads.")
 
     # Task 3: Dual-dimension node encoding (Node size = asset criticality)
-    assert 'r="38"' in svg_html, "Domain Controller Tier-1 radius 38px missing!"
-    assert 'r="30"' in svg_html, "Gateway/Auth Tier-2 radius 30px missing!"
-    assert 'r="24"' in svg_html or 'r="25"' in svg_html, "Endpoint Tier-3 radius 24px/25px missing!"
+    assert 'r="40"' in svg_html, "Domain Controller Tier-1 radius 40px missing!"
+    assert 'r="32"' in svg_html, "Gateway/Auth Tier-2 radius 32px missing!"
+    assert 'r="26"' in svg_html, "Endpoint Tier-3 radius 26px missing!"
     assert "beacon-ring" in svg_html, "Domain Controller outer target beacon ring missing!"
-    print("[PASS] Task 3 verified: Node size strictly encodes asset criticality (DC=38px + radar ring, GW=30px, EP=24px).")
+    print("[PASS] Task 3 verified: Node size strictly encodes asset criticality (DC=40px + radar ring, GW=32px, EP=26px).")
 
     # Task 4: Compact in-canvas legend
     assert "canvas-legend" in svg_html, "Canvas legend container missing!"
@@ -124,8 +141,17 @@ def test_attack_graph_svg_rendering_features():
     assert "Active Rollout Path" in svg_html, "Legend path label missing!"
     print("[PASS] Task 4 verified: Compact in-canvas legend displays risk colors, criticality sizing, and path styles.")
 
+    # Task 4 (New): Pan, Zoom & HUD Controls
+    assert "canvas-hud-controls" in svg_html, "Canvas HUD controls missing!"
+    assert "btn-zoom-in" in svg_html, "Zoom In button missing!"
+    assert "btn-zoom-out" in svg_html, "Zoom Out button missing!"
+    assert "btn-reset-view" in svg_html, "Reset View button missing!"
+    assert 'id="viewport"' in svg_html, "Master viewport transform container missing!"
+    assert 'viewBox="0 0 880 540"' in svg_html, "Expanded 880x540 viewBox missing!"
+    print("[PASS] Task 4 verified: Pan & Zoom engine, expanded 880x540 viewport, and HUD controls (Zoom in, Zoom out, Reset) verified.")
+
     # Task 5: Smooth horizon unfolding transitions
-    assert "transition: fill 0.7s" in svg_html or "transition" in svg_html, "CSS transitions missing from SVG!"
+    assert "transition: stroke" in svg_html or "transition" in svg_html, "CSS transitions missing from SVG!"
     assert "ROLLOUT_DATA" in svg_html, "Client-side rollout step dataset missing from canvas script!"
     print("[PASS] Task 5 verified: CSS GPU transitions and multi-horizon dataset embedded for smooth step unfolding.")
 

@@ -31,7 +31,7 @@ importlib.reload(components.explanation)
 from components.explanation import render_attack_stepper
 import components.attack_graph
 importlib.reload(components.attack_graph)
-from components.attack_graph import render_attack_graph_panel
+from components.attack_graph import render_attack_graph_preview_card
 
 st.set_page_config(
     page_title="SHADOWCAT — Threat Forecast",
@@ -314,8 +314,8 @@ render_html("""
 """)
 render_attack_stepper(mitre, current_step_idx=2)
 
-# 8. Dynamic Force-Directed Attack Graph (Agraph)
-render_attack_graph_panel()
+# 8. Dynamic Enterprise Attack Graph Preview & Navigation Bridge
+render_attack_graph_preview_card()
 
 # 9. Response Lead Time vs Baselines
 render_html("""

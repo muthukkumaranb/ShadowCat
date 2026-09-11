@@ -30,43 +30,54 @@ def audit_interactions():
     assert at.session_state["selected_horizon_idx"] == 3
     print("[PASS] horizon_radio_selector successfully updates selected_horizon_idx across options.")
 
-    # 1b. Attack Graph Horizon Slider
-    slider = at.slider(key="attack_graph_k_slider")
+    # 1b. Test page_link to Lateral Movement Graph
+    rendered_fc = " ".join([m.value for m in at.markdown])
+    assert "Dynamic Enterprise Attack Graph & Lateral Rollout" in rendered_fc
+    print("[PASS] Threat Forecast preview card and navigation bridge rendered cleanly.")
+
+    # 2. Test Lateral Movement Graph (views/01b_AttackGraph.py)
+    print("\n--- Testing Lateral Movement Graph Interactions ---")
+    at_ag = AppTest.from_file(str(ROOT / "views" / "01b_AttackGraph.py"), default_timeout=30)
+    at_ag.run()
+    assert not at_ag.exception, f"Initial run exception: {at_ag.exception}"
+
+    # 2a. Attack Graph Horizon Slider
+    slider = at_ag.slider(key="attack_graph_k_slider")
     assert slider is not None, "attack_graph_k_slider missing!"
     slider.set_value(0).run()
-    assert not at.exception
-    assert at.session_state["attack_graph_k"] == 0
+    assert not at_ag.exception
+    assert at_ag.session_state["attack_graph_k"] == 0
     slider.set_value(4).run()
-    assert not at.exception
-    assert at.session_state["attack_graph_k"] == 4
+    assert not at_ag.exception
+    assert at_ag.session_state["attack_graph_k"] == 4
     print("[PASS] attack_graph_k_slider successfully updates attack_graph_k.")
 
-    # 1c. Inspect and Focus Buttons
-    inspect_btns = [b for b in at.button if "btn_inspect" in b.key]
-    focus_btns = [b for b in at.button if "btn_focus" in b.key]
+    # 2b. Inspect and Focus Buttons
+    inspect_btns = [b for b in at_ag.button if "btn_inspect" in b.key]
+    focus_btns = [b for b in at_ag.button if "btn_focus" in b.key]
     assert len(inspect_btns) == 5, f"Expected 5 inspect buttons, found {len(inspect_btns)}"
     assert len(focus_btns) == 5, f"Expected 5 focus buttons, found {len(focus_btns)}"
 
     # Test clicking inspect on 10.0.5.1 (Domain Controller)
     btn_dc = next(b for b in inspect_btns if "10.0.5.1" in b.key)
     btn_dc.click().run()
-    assert not at.exception
-    assert at.session_state["selected_graph_host"] == "10.0.5.1"
-    assert "HOST TELEMETRY INSPECTOR: 10.0.5.1" in " ".join([m.value for m in at.markdown])
+    assert not at_ag.exception
+    assert at_ag.session_state["selected_graph_host"] == "10.0.5.1"
+    assert "HOST TELEMETRY INSPECTOR: 10.0.5.1" in " ".join([m.value for m in at_ag.markdown])
     print("[PASS] btn_inspect correctly focuses host 10.0.5.1 and updates Telemetry Inspector.")
 
     # Test clicking focus on 10.0.4.10 (SSH Jump Host)
     btn_foc = next(b for b in focus_btns if "10.0.4.10" in b.key)
     btn_foc.click().run()
-    assert not at.exception
-    assert at.session_state["focused_graph_host"] == "10.0.4.10"
+    assert not at_ag.exception
+    assert at_ag.session_state["focused_graph_host"] == "10.0.4.10"
     print("[PASS] btn_focus correctly toggles blast radius isolation.")
 
     # Test unfocusing
-    btn_foc_again = next(b for b in at.button if "btn_focus_10.0.4.10" in b.key)
+    btn_foc_again = next(b for b in at_ag.button if "btn_focus_10.0.4.10" in b.key)
     btn_foc_again.click().run()
-    assert not at.exception
-    assert at.session_state["focused_graph_host"] is None
+    assert not at_ag.exception
+    assert at_ag.session_state["focused_graph_host"] is None
     print("[PASS] btn_focus correctly unfocuses when clicked a second time.")
 
     # 2. Test Telemetry Ingestion (views/01a_Input.py)

@@ -29,38 +29,38 @@ import streamlit.components.v1 as components
 from styles import render_html, COLORS
 from data_provider import get_host_risk_graph, is_using_mock_data
 
-# Spatial layout coordinates and asset criticality metadata (Reference 5-host baseline)
+# Spatial layout coordinates and asset criticality metadata (Reference 5-host baseline, expanded 880x540 canvas)
 DEFAULT_NODE_METADATA = {
     "10.0.2.15": {
-        "x": 90, "y": 240, "base_r": 24,
+        "x": 120, "y": 270, "base_r": 26,
         "criticality_tier": "Tier 3 (User Endpoint)",
         "criticality_short": "Tier 3",
         "clean_role": "Workstation",
         "is_dc": False
     },
     "10.0.3.50": {
-        "x": 240, "y": 380, "base_r": 25,
+        "x": 290, "y": 420, "base_r": 26,
         "criticality_tier": "Tier 3 (Enterprise Storage)",
         "criticality_short": "Tier 3",
         "clean_role": "Internal File Share",
         "is_dc": False
     },
     "10.0.4.10": {
-        "x": 320, "y": 170, "base_r": 30,
+        "x": 390, "y": 170, "base_r": 32,
         "criticality_tier": "Tier 2 (Management Gateway)",
         "criticality_short": "Tier 2",
         "clean_role": "SSH Jump Host",
         "is_dc": False
     },
     "10.0.4.21": {
-        "x": 490, "y": 330, "base_r": 30,
+        "x": 590, "y": 370, "base_r": 32,
         "criticality_tier": "Tier 2 (Auth Infrastructure)",
         "criticality_short": "Tier 2",
         "clean_role": "Auth Cluster",
         "is_dc": False
     },
     "10.0.5.1": {
-        "x": 630, "y": 170, "base_r": 38,
+        "x": 760, "y": 170, "base_r": 40,
         "criticality_tier": "Tier 1 (Critical Asset)",
         "criticality_short": "Tier 1 Crown Jewel",
         "clean_role": "Domain Controller",
@@ -75,8 +75,8 @@ def generate_node_layout(
     hosts: list[str],
     host_telemetry: dict = None,
     node_roles: dict = None,
-    width: int = 740,
-    height: int = 480
+    width: int = 880,
+    height: int = 540
 ) -> dict[str, dict]:
     """
     Computes spatial canvas coordinates (x, y), node radius (base_r), and visual metadata
@@ -257,7 +257,7 @@ def render_attack_graph_panel():
         """)
 
     # Layout: Graph canvas (left) + Host Risk Leaderboard (right)
-    col_graph, col_hosts = st.columns([2.2, 1.3])
+    col_graph, col_hosts = st.columns([2.4, 1.4])
 
     with col_graph:
         # Build and render the advanced SVG vector canvas
@@ -267,7 +267,7 @@ def render_attack_graph_panel():
             selected_host=selected_host_id,
             focused_host=focused_host_id
         )
-        components.html(svg_html, height=520)
+        components.html(svg_html, height=605)
 
         # Status summary below canvas
         blast_info = ""
@@ -643,16 +643,23 @@ def _build_attack_graph_svg(graph_data: dict, active_k: int, selected_host: str,
             #canvas-container {{
                 position: relative;
                 width: 100%;
-                height: 500px;
+                height: 580px;
                 border: 1px solid #262626;
                 border-radius: 8px;
                 background: #0D0D0D;
                 overflow: hidden;
+                cursor: grab;
+            }}
+            #canvas-container:active {{
+                cursor: grabbing;
             }}
             svg {{
                 width: 100%;
                 height: 100%;
                 display: block;
+            }}
+            #viewport {{
+                transform-origin: 0 0;
             }}
             /* GPU Animated Marching Ants for Active Attack Path */
             @keyframes marchingAnts {{
@@ -765,6 +772,44 @@ def _build_attack_graph_svg(graph_data: dict, active_k: int, selected_host: str,
                 display: inline-block;
             }}
 
+            /* Canvas Navigation HUD Controls (Zoom In, Zoom Out, Reset) */
+            .canvas-hud-controls {{
+                position: absolute;
+                top: 14px;
+                right: 16px;
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                background: rgba(18, 18, 18, 0.95);
+                backdrop-filter: blur(8px);
+                border: 1px solid #262626;
+                border-radius: 6px;
+                padding: 4px 6px;
+                z-index: 10;
+                box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+            }}
+            .canvas-hud-controls button {{
+                background: #181818;
+                border: 1px solid #333333;
+                color: #FFFFFF;
+                border-radius: 4px;
+                padding: 4px 9px;
+                font-size: 0.74rem;
+                font-weight: 700;
+                cursor: pointer;
+                transition: all 0.15s ease;
+                outline: none;
+                font-family: 'JetBrains Mono', Consolas, monospace;
+            }}
+            .canvas-hud-controls button:hover {{
+                background: #262626;
+                border-color: #555555;
+                color: #FFFFFF;
+            }}
+            .canvas-hud-controls button:active {{
+                transform: scale(0.94);
+            }}
+
             /* Floating High-Contrast Tooltip */
             #graph-tooltip {{
                 position: absolute;
@@ -816,10 +861,17 @@ def _build_attack_graph_svg(graph_data: dict, active_k: int, selected_host: str,
                 </div>
             </details>
 
+            <!-- Canvas Navigation HUD Controls (Pan, Zoom, Reset) -->
+            <div class="canvas-hud-controls">
+                <button id="btn-zoom-in" title="Zoom In (or mouse wheel up)" aria-label="Zoom In">+</button>
+                <button id="btn-zoom-out" title="Zoom Out (or mouse wheel down)" aria-label="Zoom Out">−</button>
+                <button id="btn-reset-view" title="Reset View to Default Framing" aria-label="Reset View">⟲ Reset</button>
+            </div>
+
             <!-- Floating Tooltip -->
             <div id="graph-tooltip"></div>
 
-            <svg viewBox="0 0 740 480">
+            <svg id="attack-graph-svg" viewBox="0 0 880 540">
                 <defs>
                     <!-- Active Crimson Arrowhead Marker -->
                     <marker id="arrow-active" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="9" markerHeight="9" orient="auto">
@@ -836,14 +888,17 @@ def _build_attack_graph_svg(graph_data: dict, active_k: int, selected_host: str,
                     </filter>
                 </defs>
 
-                <!-- Edge Layer (Task 2) -->
-                <g id="edges-layer">
-                    {''.join(edge_svg_elements)}
-                </g>
+                <!-- Master Viewport Layer with Pan & Zoom Transform -->
+                <g id="viewport" transform="matrix(1 0 0 1 0 0)">
+                    <!-- Edge Layer (Task 2) -->
+                    <g id="edges-layer">
+                        {''.join(edge_svg_elements)}
+                    </g>
 
-                <!-- Node Layer (Task 3) -->
-                <g id="nodes-layer">
-                    {''.join(node_svg_elements)}
+                    <!-- Node Layer (Task 3) -->
+                    <g id="nodes-layer">
+                        {''.join(node_svg_elements)}
+                    </g>
                 </g>
             </svg>
         </div>
@@ -854,6 +909,102 @@ def _build_attack_graph_svg(graph_data: dict, active_k: int, selected_host: str,
             const currentHorizon = {active_k};
             const tooltip = document.getElementById('graph-tooltip');
             const container = document.getElementById('canvas-container');
+            const viewport = document.getElementById('viewport');
+            const svg = document.getElementById('attack-graph-svg');
+
+            // Pan & Zoom Engine
+            let currentScale = 1.0;
+            let currentTranslateX = 0;
+            let currentTranslateY = 0;
+            let isPanning = false;
+            let startPointerX = 0;
+            let startPointerY = 0;
+
+            function updateTransform(animate = false) {{
+                if (animate) {{
+                    viewport.style.transition = 'transform 0.28s cubic-bezier(0.2, 0, 0, 1)';
+                    setTimeout(() => {{ viewport.style.transition = ''; }}, 280);
+                }} else {{
+                    viewport.style.transition = '';
+                }}
+                viewport.setAttribute('transform', `matrix(${{currentScale}} 0 0 ${{currentScale}} ${{currentTranslateX}} ${{currentTranslateY}})`);
+            }}
+
+            // Mouse wheel zoom (centered on cursor)
+            container.addEventListener('wheel', (e) => {{
+                e.preventDefault();
+                const rect = svg.getBoundingClientRect();
+                const mouseX = (e.clientX - rect.left) * (880 / rect.width);
+                const mouseY = (e.clientY - rect.top) * (540 / rect.height);
+
+                const zoomFactor = e.deltaY < 0 ? 1.15 : 0.87;
+                const newScale = Math.min(Math.max(0.5, currentScale * zoomFactor), 4.0);
+
+                if (newScale !== currentScale) {{
+                    currentTranslateX = mouseX - (mouseX - currentTranslateX) * (newScale / currentScale);
+                    currentTranslateY = mouseY - (mouseY - currentTranslateY) * (newScale / currentScale);
+                    currentScale = newScale;
+                    updateTransform(false);
+                }}
+            }}, {{ passive: false }});
+
+            // Click-and-drag pan
+            container.addEventListener('mousedown', (e) => {{
+                if (e.target.closest('.canvas-legend') || e.target.closest('.canvas-hud-controls') || e.target.closest('.graph-node')) {{
+                    return;
+                }}
+                isPanning = true;
+                startPointerX = e.clientX - currentTranslateX;
+                startPointerY = e.clientY - currentTranslateY;
+                container.style.cursor = 'grabbing';
+            }});
+
+            window.addEventListener('mousemove', (e) => {{
+                if (!isPanning) return;
+                currentTranslateX = e.clientX - startPointerX;
+                currentTranslateY = e.clientY - startPointerY;
+                updateTransform(false);
+            }});
+
+            window.addEventListener('mouseup', () => {{
+                if (isPanning) {{
+                    isPanning = false;
+                    container.style.cursor = 'grab';
+                }}
+            }});
+
+            // HUD Controls: Reset View
+            document.getElementById('btn-reset-view').addEventListener('click', (e) => {{
+                e.stopPropagation();
+                currentScale = 1.0;
+                currentTranslateX = 0;
+                currentTranslateY = 0;
+                updateTransform(true);
+            }});
+
+            // HUD Controls: Zoom In
+            document.getElementById('btn-zoom-in').addEventListener('click', (e) => {{
+                e.stopPropagation();
+                const cx = 440;
+                const cy = 270;
+                const newScale = Math.min(4.0, currentScale * 1.25);
+                currentTranslateX = cx - (cx - currentTranslateX) * (newScale / currentScale);
+                currentTranslateY = cy - (cy - currentTranslateY) * (newScale / currentScale);
+                currentScale = newScale;
+                updateTransform(true);
+            }});
+
+            // HUD Controls: Zoom Out
+            document.getElementById('btn-zoom-out').addEventListener('click', (e) => {{
+                e.stopPropagation();
+                const cx = 440;
+                const cy = 270;
+                const newScale = Math.max(0.5, currentScale * 0.8);
+                currentTranslateX = cx - (cx - currentTranslateX) * (newScale / currentScale);
+                currentTranslateY = cy - (cy - currentTranslateY) * (newScale / currentScale);
+                currentScale = newScale;
+                updateTransform(true);
+            }});
 
             // Interactive Node Hover Tooltips (Task 6)
             document.querySelectorAll('.graph-node').forEach(node => {{
@@ -895,3 +1046,66 @@ def _build_attack_graph_svg(graph_data: dict, active_k: int, selected_host: str,
     </html>
     """
     return html_content
+
+
+def render_attack_graph_preview_card():
+    """
+    Renders a clean, executive bridge card in Threat Forecast summarizing the predicted lateral movement
+    path with a direct link to the dedicated Lateral Movement Graph flagship page.
+    """
+    render_html("""
+    <div style="background: #141414; border: 1px solid #262626; border-radius: 8px; padding: 18px 20px; margin-top: 24px; margin-bottom: 18px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 12px;">
+            <div>
+                <div style="font-size: 0.95rem; font-weight: 800; color: #FFFFFF;">
+                    Dynamic Enterprise Attack Graph & Lateral Rollout
+                </div>
+                <div style="font-size: 0.78rem; color: #8A8A8A; margin-top: 2px;">
+                    Multi-step forward simulation of lateral adversary rollout across enterprise topology.
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 0.72rem; color: #E0982B; background: rgba(224, 152, 43, 0.12); border: 1px solid #E0982B; padding: 2px 8px; border-radius: 4px; font-weight: 700; font-family: 'JetBrains Mono', monospace;">
+                    HORIZON t+3 · LATERAL PIVOT
+                </span>
+            </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 10px; background: #0D0D0D; border: 1px solid #222222; border-radius: 6px; padding: 12px 16px; margin-bottom: 14px; overflow-x: auto;">
+            <div style="display: flex; align-items: center; gap: 8px; white-space: nowrap;">
+                <span style="font-size: 0.78rem; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #FF453A;">#1 10.0.2.15</span>
+                <span style="font-size: 0.70rem; color: #8A8A8A;">(Workstation)</span>
+            </div>
+            <span style="color: #FF453A; font-weight: 800;">&rarr;</span>
+            <div style="display: flex; align-items: center; gap: 8px; white-space: nowrap;">
+                <span style="font-size: 0.78rem; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #FF453A;">#2 10.0.4.10</span>
+                <span style="font-size: 0.70rem; color: #8A8A8A;">(SSH Jump Host)</span>
+            </div>
+            <span style="color: #FF9F0A; font-weight: 800;">&rarr;</span>
+            <div style="display: flex; align-items: center; gap: 8px; white-space: nowrap;">
+                <span style="font-size: 0.78rem; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #FF9F0A;">#3 10.0.4.21</span>
+                <span style="font-size: 0.70rem; color: #8A8A8A;">(Auth Cluster)</span>
+            </div>
+            <span style="color: #8A8A8A; font-weight: 800;">&rarr;</span>
+            <div style="display: flex; align-items: center; gap: 8px; white-space: nowrap;">
+                <span style="font-size: 0.78rem; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #FFFFFF;">#4 10.0.5.1</span>
+                <span style="font-size: 0.70rem; color: #8A8A8A;">(Domain Controller)</span>
+            </div>
+        </div>
+    </div>
+    """)
+    try:
+        st.page_link(
+            "views/01b_AttackGraph.py",
+            label="Explore Dedicated Lateral Movement Attack Graph →",
+            icon="🌐",
+            use_container_width=True,
+        )
+    except Exception:
+        # Fallback button for bare test execution when st.navigation is not mounted
+        st.button(
+            "Explore Dedicated Lateral Movement Attack Graph →",
+            key="btn_explore_attack_graph_fallback",
+            use_container_width=True,
+        )
+
