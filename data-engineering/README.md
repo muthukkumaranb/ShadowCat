@@ -125,16 +125,18 @@ assert ucs_df.shape[1] == 410
 model_tensor = ucs_df[UCSExtractor.MODEL_INPUT_COLUMNS].to_numpy(dtype=np.float32)
 ```
 
+### Real PCAP Packet Extraction Engine (`pcap_extractor.py`)
+For Wednesday-14-02-2018 (`SSH-Bruteforce`), genuine packet-level telemetry (12 features: IP TTL distributions, fragment flags, payload size percentiles, TCP retransmissions, port-scan sequentiality score) is extracted live from the official CSE-CIC-IDS2018 PCAP via Scapy ([`src/pcap_extractor.py`](src/pcap_extractor.py)). This replaces the earlier placeholder zero-fill with genuine packet distributions, with `mask_has_packet_level_features = 1.0` where genuine packets are present. Detailed verification is committed in [`data/ucs/PACKET_EXTRACTION_VERIFICATION.md`](data/ucs/PACKET_EXTRACTION_VERIFICATION.md).
+
 ### Contract Verification & Diff Engine
 To guarantee 100% positional and numerical parity between `UCSExtractor` and ML1's inference contract:
 ```powershell
-# Run programmatic positional diff check
-.venv\Scripts\python.exe scripts/diff_ucs_ml1_contract.py --version v1 --check-only
+# Run programmatic positional and scaler diff check against v3 contract
+.venv\Scripts\python.exe scripts/diff_ucs_ml1_contract.py --version v3 --check-only
 
 # View the committed audit report:
 # data/ucs/CONTRACT_DIFF_REPORT.md
 ```
-*(Once ML1 delivers `_v2` contract files, execute `.venv\Scripts\python.exe scripts/diff_ucs_ml1_contract.py --version v2` to re-validate and update the committed report).*
 
 ---
 
