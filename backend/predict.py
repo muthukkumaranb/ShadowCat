@@ -122,12 +122,14 @@ class ShadowcatPipeline:
 
         # 2. Load World Model (LSTM Gaussian continuous dynamics)
         wm_path = world_model_path or (
-            ML1_DIR / "artifacts" / "lstm" / "gaussian_next_state_best_v2.pt"
+            ML1_DIR / "artifacts" / "lstm" / "gaussian_next_state_best_v3.pt"
         )
         if not Path(wm_path).exists():
-            wm_path = ML1_DIR / "artifacts" / "lstm" / "probabilistic_world_model_v2" / "gaussian_next_state_best.pt"
+            wm_path = ML1_DIR / "artifacts" / "lstm" / "probabilistic_world_model_v3" / "gaussian_next_state_best.pt"
         if not Path(wm_path).exists():
-            wm_path = ML1_DIR / "artifacts" / "lstm" / "probabilistic_world_model" / "gaussian_next_state_best_v2.pt"
+            wm_path = ML1_DIR / "artifacts" / "lstm" / "gaussian_next_state_best_v2.pt"
+        if not Path(wm_path).exists():
+            wm_path = ML1_DIR / "artifacts" / "lstm" / "probabilistic_world_model_v2" / "gaussian_next_state_best.pt"
 
         self.world_model = LSTMGaussianWorldModel(
             input_size=406,
@@ -148,8 +150,11 @@ class ShadowcatPipeline:
 
         # 3. Load Stage Head (ATT&CK Stage Classifier)
         st_path = stage_head_path or (
-            ML1_DIR / "artifacts" / "lstm" / "stage_head" / "stage_head_best.pt"
+            ML1_DIR / "artifacts" / "lstm" / "stage_head_v3" / "stage_head_best.pt"
         )
+        if not Path(st_path).exists():
+            st_path = ML1_DIR / "artifacts" / "lstm" / "stage_head" / "stage_head_best.pt"
+
         self.stage_head = StageClassificationHead(
             state_dim=406,
             num_classes=6,
@@ -166,7 +171,9 @@ class ShadowcatPipeline:
             self.stage_head_loaded = False
 
         # 4. Load Hazard Heads (LOEO Fold Ensemble for H=1, H=2, H=5)
-        hz_dir = Path(hazard_head_dir or (ML1_DIR / "artifacts" / "lstm" / "hazard_head"))
+        hz_dir = Path(hazard_head_dir or (ML1_DIR / "artifacts" / "lstm" / "hazard_head_v3"))
+        if not hz_dir.exists():
+            hz_dir = Path(ML1_DIR / "artifacts" / "lstm" / "hazard_head")
         self.hazard_models: Dict[int, List[LSTMClassifier]] = {1: [], 2: [], 5: []}
 
         for h_val in (1, 2, 5):
