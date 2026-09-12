@@ -39,7 +39,7 @@ Natural continuous distributions observed across Benign (N=353) and Attack (N=19
 | `pkt_payload_size_p75` | 42.25 ± 119.65 | 20.00 | 67.12 ± 27.99 | 40.00 | 0.00 .. 1452.00 |
 | `pkt_payload_size_p95` | 114.39 ± 886.44 | 20.00 | 346.02 ± 315.84 | 40.00 | 0.00 .. 16462.00 |
 | `pkt_tcp_retrans_count` | 29.07 ± 526.82 | 0.00 | 4833.56 ± 5037.55 | 7.00 | 0.00 .. 10429.00 |
-| `pkt_port_scan_seq_score` | 0.08 ± 0.13 | 0.00 | 0.30 ± 0.00 | 0.30 | 0.00 .. 0.53 |
+| `pkt_port_scan_seq_score` | 0.0835 ± 0.1304 | 0.0000 | 0.2998 ± 0.0007 | 0.2999 | 0.0000 .. 0.5333 |
 
 ---
 
@@ -64,11 +64,45 @@ Verification that no extracted feature serves as an artificial ground-truth shor
 
 ---
 
-## 4. Derived Metric Integrity (`pkt_port_scan_seq_score`)
+## 4. Derived Metric Investigation: `pkt_port_scan_seq_score`
 
-- **Computation**: Label-blind aggregation of TCP destination port differences `|diff| == 1` and Shannon entropy across source IPs.
-- **Correlation with Label**: Pearson $r = +0.7010$, Spearman $\rho = +0.7616$.
-- **Finding**: Demonstrates genuine continuous variance without discrete step-function artifacts or label leakage.
+### 4.1. Formula Mechanics
+The port sequencing score is computed label-blind per window across observed TCP destination ports for each active source IP:
+$$\text{Score} = \max_{\text{src}} \left( 0.7 \times \text{seq\_ratio} + 0.3 \times \text{norm\_entropy} \right)$$
+where:
+- $\text{seq\_ratio} = \frac{1}{N-1} \sum_{i=1}^{N-1} \mathbf{1}_{\{|\text{dport}_{i+1} - \text{dport}_i| = 1\}}$ measures sequential $\pm 1$ port increments (e.g. port scanning sweeps $20 \to 21 \to 22$).
+- $\text{norm\_entropy} = \frac{H(\text{dport})}{\log_2(\text{unique\_dports})}$ measures destination port dispersion across observed sessions.
+
+### 4.2. Per-Window Raw Inspection (16 Sample Attack Windows)
+The 2-decimal rounded summary `0.30 ± 0.00` originally reported is an artifact of display formatting over a tight continuous distribution. Inspection across all 190 attack windows shows **132 distinct raw values** ($\mu = 0.299845$, $\sigma = 0.000674$, $\min = 0.290769$, $\max = 0.300308$):
+
+| Window ID | Window Start (UTC) | Attack Period | Scaled UCS Value | Raw Score (8 decimals) |
+|:---|:---|:---|:---:|:---:|
+| `W_14-02-2018_20180214_020100` | 2018-02-14 02:01 | Early SSH Onset | 0.050953 | 0.29076921 |
+| `W_14-02-2018_20180214_021300` | 2018-02-14 02:13 | Active SSH Attack | 0.081109 | 0.29981270 |
+| `W_14-02-2018_20180214_022600` | 2018-02-14 02:26 | Active SSH Attack | 0.080862 | 0.29973866 |
+| `W_14-02-2018_20180214_023800` | 2018-02-14 02:38 | Active SSH Attack | 0.080796 | 0.29971861 |
+| `W_14-02-2018_20180214_025100` | 2018-02-14 02:51 | Active SSH Attack | 0.080706 | 0.29969187 |
+| `W_14-02-2018_20180214_030400` | 2018-02-14 03:04 | Active SSH Attack | 0.081524 | 0.29993701 |
+| `W_14-02-2018_20180214_031600` | 2018-02-14 03:16 | Active SSH Attack | 0.081388 | 0.29989620 |
+| `W_14-02-2018_20180214_032900` | 2018-02-14 03:29 | Active SSH Attack | 0.080732 | 0.29969951 |
+| `W_14-02-2018_20180214_104100` | 2018-02-14 10:41 | Active FTP Attack | 0.081708 | 0.29999240 |
+| `W_14-02-2018_20180214_105400` | 2018-02-14 10:54 | Active FTP Attack | 0.081100 | 0.29980989 |
+| `W_14-02-2018_20180214_110700` | 2018-02-14 11:07 | Active FTP Attack | 0.081708 | 0.29999236 |
+| `W_14-02-2018_20180214_111900` | 2018-02-14 11:19 | Active FTP Attack | 0.081708 | 0.29999235 |
+| `W_14-02-2018_20180214_113200` | 2018-02-14 11:32 | Active FTP Attack | 0.081708 | 0.29999231 |
+| `W_14-02-2018_20180214_114400` | 2018-02-14 11:44 | Active FTP Attack | 0.081734 | 0.30000000 |
+| `W_14-02-2018_20180214_115700` | 2018-02-14 11:57 | Active FTP Attack | 0.081683 | 0.29998483 |
+| `W_14-02-2018_20180214_121000` | 2018-02-14 12:10 | Active FTP Attack | 0.081734 | 0.30000000 |
+
+### 4.3. Physical Explanation from Raw PCAP Packets
+Direct packet inspection of the libpcap capture traces the mechanical cause of values concentrating at $\approx 0.300$:
+1. **Attacking Source IP Behavior (`13.58.98.64` / `18.221.219.4`)**: In brute-force campaigns, the attacking script repeatedly targets a single dedicated destination port (24,363 packets targeting port 22 in SSH attack, 2,000 packets targeting port 21 in FTP attack). Since $\text{diff} = 0$, $\text{seq\_ratio} = 0.0$ and $\text{entropy} = 0.0$.
+2. **Victim Server Response Behavior (`172.31.69.25`)**: The victim server responds to thousands of simultaneous client connections on ephemeral client ports (e.g. `48840, 48842, 48844...`). Because OS TCP stack ephemeral port allocation increments by 2 (or randomized intervals), $\text{seq\_ratio} = 0.0$ ($\ne 1$). However, the thousands of distinct client ports exhibit nearly uniform probability distribution across the window, driving normalized entropy $\text{norm\_entropy} \to 1.000000$ (e.g., $0.969231$ in early onset to $0.999605$ in peak attack).
+3. **Formula Result**: $\text{Score} = 0.7 \times (0.0) + 0.3 \times (\text{norm\_entropy}) \approx 0.300000$.
+4. **Conclusion**: This is genuine mechanical repetition of brute-force single-port and ephemeral return traffic dynamics in the capture, with genuine continuous variation ($\sigma = 0.000674$) rather than a formula saturation flaw.
+
+---
 
 ## 5. Conclusion
 

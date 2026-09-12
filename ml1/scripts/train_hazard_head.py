@@ -226,8 +226,6 @@ def main():
         fold_df = pd.DataFrame(fold_metrics)
         fold_df.to_csv(h_dir / f"hazard_head_H{h_val}_loeo_folds.csv", index=False)
         all_results.append(fold_df)
-        fold_df.to_csv(h_dir / f"hazard_head_H{h_val}_loeo_folds.csv", index=False)
-        all_results.append(fold_df)
         
         print(f"\n  Aggregate for H={h_val}:")
         print(f"    F1 Mean: {fold_df['f1'].mean():.4f}")
