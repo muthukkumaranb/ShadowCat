@@ -101,15 +101,22 @@ def find_contract_paths(
     scaler_arg: Optional[str] = None,
 ) -> Tuple[Path, Path, str]:
     """Resolves paths to ML1's feature order JSON and scaler YAML."""
-    ml1_dir = ROOT_DIR / "scratch" / "ml1_repo" / "artifacts" / "lstm"
+    # Check monorepo path first, then fallback
+    monorepo_ml1 = ROOT_DIR.parent / "ml1" / "artifacts" / "lstm"
+    scratch_ml1 = ROOT_DIR / "scratch" / "ml1_repo" / "artifacts" / "lstm"
+    ml1_dir = monorepo_ml1 if monorepo_ml1.exists() else scratch_ml1
     
     if feature_order_arg and scaler_arg:
         fpath = Path(feature_order_arg).resolve()
         spath = Path(scaler_arg).resolve()
-        ver = version if version in ("v1", "v2") else ("v2" if "v2" in fpath.name else "v1")
+        ver = version if version in ("v1", "v2", "v3") else ("v3" if "v3" in fpath.name else ("v2" if "v2" in fpath.name else "v1"))
         return fpath, spath, ver
 
-    if version == "v2":
+    if version == "v3":
+        fpath = ml1_dir / "inference_feature_order_v3.json"
+        spath = ml1_dir / "inference_scaler_v3.yaml"
+        ver = "v3"
+    elif version == "v2":
         fpath = ml1_dir / "inference_feature_order_v2.json"
         spath = ml1_dir / "inference_scaler_v2.yaml"
         ver = "v2"
@@ -118,9 +125,15 @@ def find_contract_paths(
         spath = ml1_dir / "inference_scaler_v1.yaml"
         ver = "v1"
     else:  # auto
+        v3_f = ml1_dir / "inference_feature_order_v3.json"
+        v3_s = ml1_dir / "inference_scaler_v3.yaml"
         v2_f = ml1_dir / "inference_feature_order_v2.json"
         v2_s = ml1_dir / "inference_scaler_v2.yaml"
-        if v2_f.exists() and v2_s.exists():
+        if v3_f.exists() and v3_s.exists():
+            fpath = v3_f
+            spath = v3_s
+            ver = "v3"
+        elif v2_f.exists() and v2_s.exists():
             fpath = v2_f
             spath = v2_s
             ver = "v2"

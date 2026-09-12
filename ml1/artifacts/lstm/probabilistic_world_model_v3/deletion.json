@@ -1,0 +1,66 @@
+[
+  {
+    "feature_group": "direction_ratio",
+    "mae": 0.5820821523666382,
+    "rmse": 2.9452431201934814,
+    "delta_mae": -0.004133164882659912,
+    "delta_rmse": 0.018399715423583984,
+    "protocol": "chronological split"
+  },
+  {
+    "feature_group": "masks",
+    "mae": 0.5903422236442566,
+    "rmse": 2.9332399368286133,
+    "delta_mae": 0.004126906394958496,
+    "delta_rmse": 0.00639653205871582,
+    "protocol": "chronological split"
+  },
+  {
+    "feature_group": "other",
+    "mae": 0.547203779220581,
+    "rmse": 2.8738157749176025,
+    "delta_mae": -0.03901153802871704,
+    "delta_rmse": -0.05302762985229492,
+    "protocol": "chronological split"
+  },
+  {
+    "feature_group": "packet_volume",
+    "mae": 0.5980921387672424,
+    "rmse": 2.932934522628784,
+    "delta_mae": 0.011876821517944336,
+    "delta_rmse": 0.006091117858886719,
+    "protocol": "chronological split"
+  },
+  {
+    "feature_group": "tcp_flags",
+    "mae": 0.6040070056915283,
+    "rmse": 2.9477522373199463,
+    "delta_mae": 0.017791688442230225,
+    "delta_rmse": 0.020908832550048828,
+    "protocol": "chronological split"
+  },
+  {
+    "feature_group": "tcp_window_segment",
+    "mae": 0.5543088316917419,
+    "rmse": 2.8982512950897217,
+    "delta_mae": -0.03190648555755615,
+    "delta_rmse": -0.02859210968017578,
+    "protocol": "chronological split"
+  },
+  {
+    "feature_group": "timing",
+    "mae": 0.6885662078857422,
+    "rmse": 3.1012115478515625,
+    "delta_mae": 0.10235089063644409,
+    "delta_rmse": 0.17436814308166504,
+    "protocol": "chronological split"
+  },
+  {
+    "feature_group": "traffic_volume",
+    "mae": 0.5834347009658813,
+    "rmse": 2.9214515686035156,
+    "delta_mae": -0.002780616283416748,
+    "delta_rmse": -0.005391836166381836,
+    "protocol": "chronological split"
+  }
+]

@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 import torch
 from sklearn.metrics import f1_score, precision_score, recall_score, confusion_matrix, roc_auc_score, average_precision_score
+from tqdm import tqdm
 
 workspace_dir = Path(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 sys.path.insert(0, str(workspace_dir))
@@ -20,7 +21,7 @@ import torch.nn as nn
 from torch.utils.data import TensorDataset, DataLoader
 
 def train_classifier(model, X_train, y_train, X_val, y_val, epochs=100, batch_size=64,
-                     lr=0.001, patience=5, device='cuda', checkpoint_path=None):
+                     lr=0.001, patience=5, device='cuda', checkpoint_path=None, fold_desc=""):
     train_dataset = TensorDataset(torch.as_tensor(X_train, dtype=torch.float32), 
                                   torch.as_tensor(y_train, dtype=torch.float32))
     val_dataset = TensorDataset(torch.as_tensor(X_val, dtype=torch.float32), 
@@ -35,7 +36,8 @@ def train_classifier(model, X_train, y_train, X_val, y_val, epochs=100, batch_si
     best_val_loss = float('inf')
     early_stop_counter = 0
     
-    for epoch in range(epochs):
+    pbar = tqdm(range(epochs), desc=f"  [{fold_desc}] Training", leave=False, unit="epoch")
+    for epoch in pbar:
         model.train()
         train_loss = 0.0
         for X_b, y_b in train_loader:
@@ -47,6 +49,8 @@ def train_classifier(model, X_train, y_train, X_val, y_val, epochs=100, batch_si
             optimizer.step()
             train_loss += loss.item() * X_b.size(0)
             
+        train_loss /= len(train_dataset)
+        
         model.eval()
         val_loss = 0.0
         with torch.no_grad():
@@ -57,6 +61,7 @@ def train_classifier(model, X_train, y_train, X_val, y_val, epochs=100, batch_si
                 val_loss += loss.item() * X_b.size(0)
                 
         val_loss /= len(val_dataset)
+        pbar.set_postfix({'trn_loss': f"{train_loss:.4f}", 'val_loss': f"{val_loss:.4f}", 'best_val': f"{best_val_loss:.4f}"})
         
         if val_loss < best_val_loss - 0.001:
             best_val_loss = val_loss
@@ -73,12 +78,24 @@ def train_classifier(model, X_train, y_train, X_val, y_val, epochs=100, batch_si
     return model
 
 def main():
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--force", action="store_true", help="Force retraining of fold models")
+    parser.add_argument("--output-dir", type=str, default=None)
+    args = parser.parse_args()
+
     set_seed(42)
     device = get_device()
     
     data_path = workspace_dir / 'data' / 'ucs' / 'ucs_windows.parquet'
+    if not data_path.exists():
+        data_path = workspace_dir.parent / 'data-engineering' / 'data' / 'ucs' / 'ucs_windows.parquet'
     manifest_path = workspace_dir / 'artifacts' / 'loeo' / 'corrected_37fold_manifest.json'
-    out_dir = workspace_dir / 'artifacts' / 'lstm' / 'hazard_head'
+    
+    if args.output_dir:
+        out_dir = Path(args.output_dir)
+    else:
+        out_dir = workspace_dir / 'artifacts' / 'lstm' / 'hazard_head'
     out_dir.mkdir(parents=True, exist_ok=True)
     
     windows = pd.read_parquet(data_path).sort_values('window_start_utc').reset_index(drop=True)
@@ -104,18 +121,20 @@ def main():
     all_results = []
     
     for h_val, target_col in horizons.items():
-        print(f"\n{'='*50}")
-        print(f"Training Hazard Head for H={h_val}")
-        print(f"{'='*50}")
+        print(f"\n{'='*55}")
+        print(f"  Training Hazard Head for Horizon H={h_val}")
+        print(f"{'='*55}")
         
         h_dir = out_dir / f"H{h_val}"
         h_dir.mkdir(parents=True, exist_ok=True)
         
         fold_metrics = []
+        fold_list = manifest['folds']
+        fold_pbar = tqdm(fold_list, desc=f"H={h_val} Progress", unit="fold", ncols=90)
         
-        for fold in manifest['folds']:
+        for fold in fold_pbar:
             fold_id = fold['fold_id']
-            print(f"  Processing Fold {fold_id}...")
+            fold_pbar.set_description(f"H={h_val} Fold {fold_id:02d}")
             
             train_indices = np.array(fold['train_indices'])
             test_indices = np.array(fold['test_indices'])
@@ -158,17 +177,18 @@ def main():
             X_test, y_test = extract_seqs(test_indices)
             
             if len(X_train) == 0 or len(X_val) == 0 or len(X_test) == 0:
-                print(f"    Skipping fold {fold_id} due to empty splits.")
+                tqdm.write(f"    Skipping fold {fold_id} due to empty splits.")
                 continue
                 
             model = LSTMClassifier(input_size=32, hidden_size=64, num_layers=1, dropout=0.2)
             model.to(device)
             ckpt = h_dir / f"model_fold_{fold_id}.pt"
             
-            if not ckpt.exists():
+            if (not ckpt.exists()) or args.force:
                 train_classifier(model, X_train, y_train, X_val, y_val, 
                                  epochs=100, batch_size=64, lr=0.001, patience=5,
-                                 device=device, checkpoint_path=ckpt)
+                                 device=device, checkpoint_path=ckpt,
+                                 fold_desc=f"H={h_val} Fold {fold_id:02d}")
             else:
                 model.load_state_dict(torch.load(ckpt, map_location=device, weights_only=True))
                 
@@ -200,9 +220,12 @@ def main():
                 'tp': tp, 'fp': fp, 'tn': tn, 'fn': fn
             })
             
-            print(f"    F1: {f1:.4f} | ROC: {roc:.4f}")
+            fold_pbar.set_postfix({'last_f1': f"{f1:.3f}", 'last_roc': f"{roc:.3f}" if not np.isnan(roc) else "N/A"})
+            tqdm.write(f"  [Fold {fold_id:02d}] F1: {f1:.4f} | ROC: {roc:.4f} | PR: {pr:.4f}")
             
         fold_df = pd.DataFrame(fold_metrics)
+        fold_df.to_csv(h_dir / f"hazard_head_H{h_val}_loeo_folds.csv", index=False)
+        all_results.append(fold_df)
         fold_df.to_csv(h_dir / f"hazard_head_H{h_val}_loeo_folds.csv", index=False)
         all_results.append(fold_df)
         
@@ -246,6 +269,10 @@ def main():
     with open(report_path, 'w') as f:
         f.write("\n".join(summary_lines))
     print(f"\nSaved hazard head report: {report_path}")
+    v3_report_path = out_dir / "hazard_head_report_v3.md"
+    with open(v3_report_path, 'w') as f:
+        f.write("\n".join(summary_lines))
+    print(f"Saved hazard head report v3: {v3_report_path}")
     print("\nAll Hazard Head evaluations completed.")
 
 if __name__ == '__main__':
