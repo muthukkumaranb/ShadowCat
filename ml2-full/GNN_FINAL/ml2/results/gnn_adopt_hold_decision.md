@@ -84,3 +84,13 @@ Please note the following regarding the v2 checkpoint update:
 3. **Rationale for Accepting HOLD:** Re-running the ablation is not expected to change the outcome. The original HOLD decision was not a marginal or borderline call: validation loss decisively and consistently favored the Temporal-only baseline across **all 3 seeds** and multiple metrics.
 4. **v2 Verification Results:** The `z(t)` encoder re-verification confirmed that the v2 encoder remains healthy (outputs are non-degenerate and input-sensitive). A distribution shift was noted (standard deviation decreased from 0.543 to 0.409), but this is expected given the data correction and does not bear on the underlying adopt/hold question.
 5. **Reopening Condition:** If there is genuine spare time after the backend's `predict()` build, the demo, and the presentation deck are completely finished, re-running the ablation against the v2 `z(t)` would be a reasonable "nice to have" for full rigor. However, it is explicitly **not required** and should not be prioritized over any remaining critical path items.
+
+---
+
+## 2026-09-12 Addendum: v3 Checkpoint Sync (Real Scapy Packet Extraction)
+
+**The HOLD decision remains active and affirmed for the v3 checkpoint sync.**
+
+1. **v3 Sync Context:** Upstream ML1 artifacts were retrained on real packet telemetry extracted directly from raw PCAP captures (`gaussian_next_state_best_v3.pt`, `inference_feature_order_v3.json`, `inference_scaler_v3.yaml`), replacing Option A zero-fill with genuine packet-level distributions.
+2. **z(t) Encoder Health:** Verification via `verify_v3.py` confirms clean weight loading into `Z_tEncoder` (`missing=[]`, `unexpected=[]`), non-degenerate temporal variance (std = 0.5033, variance = 0.2533), and full input sensitivity across consecutive temporal windows.
+3. **Downstream Contract Preservation:** Downstream consumers continue utilizing the unmodified ML1 temporal embedding $z'(t) = z(t)$ under the active HOLD decision.
