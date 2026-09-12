@@ -611,7 +611,7 @@ def main():
     report_md = generate_markdown_report(result)
 
     # Write report file
-    if args.report_out:
+    if args.report_out and not args.check_only:
         out_path = Path(args.report_out).resolve()
         out_path.parent.mkdir(parents=True, exist_ok=True)
         with open(out_path, "w", encoding="utf-8") as f:
