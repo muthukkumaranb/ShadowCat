@@ -557,7 +557,7 @@ def main():
     )
     parser.add_argument(
         "--version",
-        choices=["v1", "v2", "auto"],
+        choices=["v1", "v2", "v3", "auto"],
         default="auto",
         help="ML1 contract version to evaluate against (default: auto)",
     )
