@@ -1,0 +1,6 @@
+Dst Port,Protocol,Timestamp,Flow Duration,Tot Fwd Pkts,Tot Bwd Pkts,TotLen Fwd Pkts,TotLen Bwd Pkts,Fwd Pkt Len Max,Fwd Pkt Len Min,Fwd Pkt Len Mean,Fwd Pkt Len Std,Bwd Pkt Len Max,Bwd Pkt Len Min,Bwd Pkt Len Mean,Bwd Pkt Len Std,Flow Byts/s,Flow Pkts/s,Label
+22,6,14/02/2018 10:30:00,1500000,12,10,1200,1000,100,0,100,0,100,0,100,0,1466.6,14.66,Benign
+22,6,14/02/2018 10:30:15,2000000,15,14,1500,1400,100,0,100,0,100,0,100,0,1450.0,14.5,Benign
+80,6,14/02/2018 10:30:45,500000,5,5,400,500,80,0,80,0,100,0,100,0,1800.0,20.0,Benign
+443,6,14/02/2018 10:31:10,300000,10,8,800,1200,80,0,80,0,150,0,150,0,6666.6,60.0,Benign
+8080,17,14/02/2018 10:31:55,100000,2,2,100,100,50,50,50,0,50,50,50,0,2000.0,40.0,Benign
