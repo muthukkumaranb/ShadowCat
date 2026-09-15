@@ -171,10 +171,21 @@ class ShadowcatPipeline:
             self.stage_head_loaded = False
 
         # 4. Load Hazard Heads (LOEO Fold Ensemble for H=1, H=2, H=5)
-        hz_dir = Path(hazard_head_dir or (ML1_DIR / "artifacts" / "lstm" / "hazard_head_v3"))
+        hz_dir = Path(hazard_head_dir or (ML1_DIR / "artifacts" / "lstm" / "hazard_head_v4"))
+        if not hz_dir.exists():
+            hz_dir = Path(ML1_DIR / "artifacts" / "lstm" / "hazard_head_v3")
         if not hz_dir.exists():
             hz_dir = Path(ML1_DIR / "artifacts" / "lstm" / "hazard_head")
         self.hazard_models: Dict[int, List[LSTMClassifier]] = {1: [], 2: [], 5: []}
+
+        # Calibrated operational thresholds (Option B Global with Option A Type-Aware capability)
+        self.calibrated_threshold_global = 0.35
+        self.calibrated_thresholds_by_type = {
+            "SSH-Bruteforce": 0.40,
+            "DDOS-LOIC-UDP": 0.40,
+            "Botnet": 0.22,
+            "Default": 0.35,
+        }
 
         for h_val in (1, 2, 5):
             h_sub = hz_dir / f"H{h_val}"
@@ -410,10 +421,12 @@ class ShadowcatPipeline:
             "uncertainty": [round(u, 2) for u in uncertainties],
             "lower_bound": [round(lb, 2) for lb in lower_bounds],
             "upper_bound": [round(ub, 2) for ub in upper_bounds],
+            "calibrated_threshold": self.calibrated_threshold_global,
+            "hazard_alert": any(r >= self.calibrated_threshold_global for r in cum_risk),
             "calibrated_uncertainty": True,
-            "source_branch": "Continuous Dynamics Head",
+            "source_branch": "Continuous Dynamics Head (v4 Calibrated)",
             "protocol": "Chronological Split (K=1..3 Validated, K=4 Exploratory)",
-            "hazard_epistemic_note": "Averaged across 37-fold LOEO ensemble. Flow-only telemetry captures baseline onset with wide epistemic uncertainty bounds.",
+            "hazard_epistemic_note": "Averaged across 37-fold LOEO ensemble with calibrated decision threshold tau=0.35 across all attack profiles.",
             "is_mock": False,
         }
 

@@ -1,82 +1,102 @@
 [
   {
     "index": 0,
-    "timestamp": "2026-09-12T07:04:23.624333+00:00",
+    "timestamp": "2026-09-15T03:26:59.146646+00:00",
     "artifact_path": "../data-engineering/data/ucs/PACKET_EXTRACTION_VERIFICATION.md",
     "artifact_type": "extraction_verification",
     "description": "Real Scapy PCAP extraction verification (Option B real packet telemetry)",
     "artifact_hash": "eb430ae6694d174c64437062cf02811d7e49a2ab3cd61801082297d28151bdd5",
     "prev_entry_hash": "0000000000000000000000000000000000000000000000000000000000000000",
-    "entry_hash": "d36333a9e96480d9a5e84f96a188bb7d5b048e075bf8ad654ce8aeeeaba86189"
+    "entry_hash": "53181f3ef232b7eaf0bb6ff7e3eeb3cb86481ee630744dccdeaff2bb052df01a"
   },
   {
     "index": 1,
-    "timestamp": "2026-09-12T07:04:23.626850+00:00",
+    "timestamp": "2026-09-15T03:26:59.148647+00:00",
     "artifact_path": "../data-engineering/data/ucs/CONTRACT_DIFF_REPORT.md",
     "artifact_type": "contract_verification",
     "description": "UCS-ML1 inference contract diff v3 \u2014 confirmed PASS",
     "artifact_hash": "9bb74f45cae1e48fbd99d59519cb9c4dbd53018f6608b2700a77d11a362d1a31",
-    "prev_entry_hash": "d36333a9e96480d9a5e84f96a188bb7d5b048e075bf8ad654ce8aeeeaba86189",
-    "entry_hash": "aaf2c27b9d480bc3778e077d7f4966a8513aa5bdfa8077ede6ab059efdb912a3"
+    "prev_entry_hash": "53181f3ef232b7eaf0bb6ff7e3eeb3cb86481ee630744dccdeaff2bb052df01a",
+    "entry_hash": "32595a5e753f948e557d715a1c101b47b27aee1033f69c7d153969fdfc4a6345"
   },
   {
     "index": 2,
-    "timestamp": "2026-09-12T07:04:23.630539+00:00",
+    "timestamp": "2026-09-15T03:26:59.150660+00:00",
     "artifact_path": "../ml1/artifacts/lstm/gaussian_next_state_best_v3.pt",
     "artifact_type": "model_checkpoint",
     "description": "LSTM world model v3 (trained on genuine PCAP packet telemetry)",
     "artifact_hash": "cff8aa8ab2a5221a4d8bb512671994d90fc8e9c6a8b5c3832539e817fcceab05",
-    "prev_entry_hash": "aaf2c27b9d480bc3778e077d7f4966a8513aa5bdfa8077ede6ab059efdb912a3",
-    "entry_hash": "460da9a9536d7231e91f8858eb2d7a54bcf866b9a2084c65dfaf4f9cdf20f6bb"
+    "prev_entry_hash": "32595a5e753f948e557d715a1c101b47b27aee1033f69c7d153969fdfc4a6345",
+    "entry_hash": "ea2c6268fa98a0294aac26128da1fcb1d5b6d76623aac68891f99581e97e267a"
   },
   {
     "index": 3,
-    "timestamp": "2026-09-12T07:04:23.631550+00:00",
+    "timestamp": "2026-09-15T03:26:59.151650+00:00",
     "artifact_path": "../ml1/artifacts/lstm/hazard_head_v3/hazard_head_report_v3.md",
     "artifact_type": "evaluation_report",
     "description": "Hazard head v3 evaluation report (restored discriminative power under real packet telemetry)",
-    "artifact_hash": "ac7b32c39bff74dd2e71e10cee432859d6dca3c69f6be0c8de752e5cba968e94",
-    "prev_entry_hash": "460da9a9536d7231e91f8858eb2d7a54bcf866b9a2084c65dfaf4f9cdf20f6bb",
-    "entry_hash": "d4c524b0a4ac666274d07097ec4f365eb6b6a32b44271bed3cc69530727ac439"
+    "artifact_hash": "848492a408decf2d4a965c74f0068247ba9bd647d2af628a218339e1243de251",
+    "prev_entry_hash": "ea2c6268fa98a0294aac26128da1fcb1d5b6d76623aac68891f99581e97e267a",
+    "entry_hash": "83f756120b3954e7bb272354d1963461fe07c8cd580292f378396c5b6cc6130c"
   },
   {
     "index": 4,
-    "timestamp": "2026-09-12T07:04:23.633539+00:00",
+    "timestamp": "2026-09-15T03:26:59.152957+00:00",
+    "artifact_path": "../ml1/artifacts/lstm/hazard_head_v4/hazard_head_report_v4.md",
+    "artifact_type": "evaluation_report",
+    "description": "Hazard head v4 multi-day evaluation & threshold calibration report across all attack types",
+    "artifact_hash": "f49718110e7f7662aa99a4b0e89c3e4d6ee5ac642a038f2df0580aedddd54ba8",
+    "prev_entry_hash": "83f756120b3954e7bb272354d1963461fe07c8cd580292f378396c5b6cc6130c",
+    "entry_hash": "1873eba468d00f3d0ef04f8e354889a3b521eb4f3ffea744c9386b98d2e12889"
+  },
+  {
+    "index": 5,
+    "timestamp": "2026-09-15T03:26:59.154287+00:00",
+    "artifact_path": "../ml1/artifacts/lstm/hazard_head_v4/hazard_threshold_sweep_all_types.csv",
+    "artifact_type": "evaluation_dataset",
+    "description": "Full 37-fold LOEO threshold sweep matrix across SSH, DDOS, and Botnet",
+    "artifact_hash": "d3b796a6364f1c72cd67380981475982d808d5a0074743e043e3f891c6a79a0a",
+    "prev_entry_hash": "1873eba468d00f3d0ef04f8e354889a3b521eb4f3ffea744c9386b98d2e12889",
+    "entry_hash": "12ff934b3c6990f07865ab623988d6dbdfdcbba17a0527b12b79bae4ca9198da"
+  },
+  {
+    "index": 6,
+    "timestamp": "2026-09-15T03:26:59.155437+00:00",
     "artifact_path": "../ml1/artifacts/lstm/stage_head_v3/stage_head_report.md",
     "artifact_type": "evaluation_report",
     "description": "Stage head v3 evaluation report",
     "artifact_hash": "fa538ac7159f0ec3acca401ada6604dc401dff94720cddcf2eed85d1b44c470b",
-    "prev_entry_hash": "d4c524b0a4ac666274d07097ec4f365eb6b6a32b44271bed3cc69530727ac439",
-    "entry_hash": "3c9b4529c68d62822df15f963b09de3509d06edf0459d8427e44563cb22fb5cd"
+    "prev_entry_hash": "12ff934b3c6990f07865ab623988d6dbdfdcbba17a0527b12b79bae4ca9198da",
+    "entry_hash": "a7d98f6286dff4a950ab74ddc155e57c7e1ab19117a43effdbb312aeb4e6c5b9"
   },
   {
-    "index": 5,
-    "timestamp": "2026-09-12T07:04:23.635538+00:00",
+    "index": 7,
+    "timestamp": "2026-09-15T03:26:59.156447+00:00",
     "artifact_path": "../ml1/artifacts/lstm/probabilistic_world_model_v3/pc2_attack_significance_report.md",
     "artifact_type": "evaluation_report",
     "description": "PC2 significance test report (evaluated on v3 checkpoint)",
     "artifact_hash": "374ac0d3a87c1b99199b8918a6a54755d2d3679d4b9cb2cc546a5fa0ae4a04fb",
-    "prev_entry_hash": "3c9b4529c68d62822df15f963b09de3509d06edf0459d8427e44563cb22fb5cd",
-    "entry_hash": "ed21df61c9e94f102ccdcc05273d28fe91e9544c3e9f085faa8e88334c73b2c3"
+    "prev_entry_hash": "a7d98f6286dff4a950ab74ddc155e57c7e1ab19117a43effdbb312aeb4e6c5b9",
+    "entry_hash": "42d41f899cbbc2a0d58c5e110004b4a345e87818a514a915a031ac8930137c93"
   },
   {
-    "index": 6,
-    "timestamp": "2026-09-12T07:04:23.638588+00:00",
+    "index": 8,
+    "timestamp": "2026-09-15T03:26:59.157445+00:00",
     "artifact_path": "../ml2-full/GNN_FINAL/ml2/results/gnn_adopt_hold_decision.md",
     "artifact_type": "architecture_decision",
     "description": "GNN fusion adopt/hold decision \u2014 HOLD, v3 sync addendum",
     "artifact_hash": "bf7802ea41b97c4703577b0637a765158014e0ab3ea6e679b2fc3e1e5f863969",
-    "prev_entry_hash": "ed21df61c9e94f102ccdcc05273d28fe91e9544c3e9f085faa8e88334c73b2c3",
-    "entry_hash": "6a2bab7419c2ba71de1db6c12dce0599e622c45e98b3ba69ddedce7584867a43"
+    "prev_entry_hash": "42d41f899cbbc2a0d58c5e110004b4a345e87818a514a915a031ac8930137c93",
+    "entry_hash": "246e3b021557161a99997ffe939f2ea3e5f8a11e2419744e297045aeed081ceb"
   },
   {
-    "index": 7,
-    "timestamp": "2026-09-12T07:04:23.640583+00:00",
+    "index": 9,
+    "timestamp": "2026-09-15T03:26:59.158454+00:00",
     "artifact_path": "../ml1/artifacts/leakage_audit/component_exposure_audit.md",
     "artifact_type": "leakage_audit",
     "description": "Packet-feature label-leak exposure audit",
     "artifact_hash": "3bd79bf9be73ee72ad631ccd63f3f0bf7cf923f855661196ec9199c1789b7483",
-    "prev_entry_hash": "6a2bab7419c2ba71de1db6c12dce0599e622c45e98b3ba69ddedce7584867a43",
-    "entry_hash": "81a1edf9913c993914581b48bddd225a3fe5efdf0322f79f0b55b61b993e1b32"
+    "prev_entry_hash": "246e3b021557161a99997ffe939f2ea3e5f8a11e2419744e297045aeed081ceb",
+    "entry_hash": "e9ebef571489073d2b0cc3f00ccacb93ef3cc7d2e5e86bea6a2d6e84a3102cfa"
   }
 ]
