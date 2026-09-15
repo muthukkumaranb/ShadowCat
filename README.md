@@ -145,16 +145,7 @@ streamlit run frontend/app.py
 | **Stage-Head Scope (v3)** | Validated on *Credential Access / Brute Force* vs background (v3) | [Stage Report v3](ml1/artifacts/lstm/stage_head_v3/stage_head_report.md) |
 | **PC2 Significance Test (v3)** | Persistence baseline significantly outperforms autoregressive rollouts on PC2 | [PC2 Report v3](ml1/artifacts/lstm/probabilistic_world_model_v3/pc2_attack_significance_report.md) |
 | **Inference Contract Verification (v3)**| DE vs ML1 Scaler parameters match bit-for-bit (0 mismatches, 406-D) | [Contract Diff v3](data-engineering/data/ucs/CONTRACT_DIFF_REPORT.md) |
-| **Tamper-Evident Hash Chain** | 8 chained blocks covering all Gate 0, v3 models, and evaluation reports | [Audit Chain](backend/audit_chain.json) |
-=======
-| **LSTM Detection ROC-AUC** | **0.842** (PR-AUC: 0.835) across LOEO 37-Fold cross-validation | [Hazard Report](ml1/artifacts/lstm/hazard_head/hazard_head_report.md) |
-| **Lagged Logistic Regression Baseline** | F1: 0.738 (Caveat: heavily degraded on Fold 16 due to temporal shift) | [Gate 0 Report](data-engineering/gate0_leakage_report.md) |
-| **GNN Multimodal Fusion Ablation** | Validation Loss: Temporal-Only (1.666) beats Fused (1.932) | **HOLD** ([GNN Decision](ml2-full/GNN_FINAL/ml2/results/gnn_adopt_hold_decision.md)) |
-| **Stage-Head Scope** | Validated on *Credential Access / Brute Force* vs background | [Stage Report](ml1/artifacts/lstm/stage_head/stage_head_report.md) |
-| **PC2 Significance Test** | World Model $z_t$ persistence baseline outperforms PCA regression on corrected data | [PC2 Report](ml1/artifacts/lstm/pc2_significance_report.md) |
-| **Feature Leakage Exposure Audit** | Fixed packet-level forward label leakage; 0 feature-label overlap | [Leakage Audit](ml1/artifacts/leakage_audit/component_exposure_audit.md) |
-| **Inference Contract Verification** | DE vs ML1 Scaler parameters match bit-for-bit (0 mismatches) | [Contract Diff](data-engineering/data/ucs/CONTRACT_DIFF_REPORT.md) |
->>>>>>> Stashed changes
+| **Tamper-Evident Hash Chain** | 10 chained blocks covering all verified extraction, v4 models, and FPR-calibrated reports | [Audit Chain](backend/audit_chain.json) |
 
 ---
 
@@ -176,6 +167,9 @@ In accordance with scientific integrity and engineering transparency:
 3. **Onset Forecasting Limit ($H=5$):** Multi-horizon forecasting at horizon $H=5$ minutes represents an epistemic benchmark limit under Leave-One-Episode-Out cross-validation.
 4. **ATT&CK Stage Granularity:** Stage head currently evaluates high-fidelity discrimination for initial access / credential brute-force stages; full 14-tactic multi-stage ATT&CK classification is exploratory.
 5. **Rollout Horizon Boundaries:** Autoregressive state rollout is empirically validated for depths $K=1 \dots 3$; depth $K=4$ is classified as informational/exploratory due to compounding drift.
+6. **Telemetry Extraction (Option B):** Packet-level telemetry is now genuinely extracted for the 14-02-2018 and 02-03-2018 PCAPs without label leakage.
+7. **Hazard FPR Constraints:** Hazard-head calibration is enforced using an explicit False Positive Rate ceiling (global τ=0.45, ≤5% false-alarm rate) to prevent alert fatigue.
+8. **Botnet Detection Shortfall:** Botnet onset detection remains a disclosed, unresolved limitation. Even with real packet telemetry, the signal-to-noise ratio is too weak (ROC-AUC ~0.63), which is insufficient for reliable, low-FPR alerting. This has not been artificially 'solved' via F1-only threshold manipulation.
 
 ---
 
