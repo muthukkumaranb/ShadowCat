@@ -31,7 +31,7 @@ Across the 37 Leave-One-Episode-Out (LOEO) folds, evaluation breaks down into 3 
 ### Per-Attack-Type Diagnostic Analysis:
 1. **SSH-Bruteforce (14-02-2018, 9 Folds)**: With genuine Scapy PCAP extraction active (Option B), the model demonstrates strong discriminative onset forecasting power across all horizons ($F1=0.8519, ROC=0.8418$ at $H=1$; $F1=0.7692, ROC=0.9489$ at $H=2$). This directly confirms that real packet telemetry restores onset forecasting without artificial label shortcuts.
 2. **DDOS-LOIC-UDP (21-02-2018, 18 Folds)**: Exhibits near-perfect ranking discriminability ($ROC\text{-}AUC \approx 0.973\dots0.978, PR\text{-}AUC \approx 0.958\dots0.979$) driven by unmistakable volumetric ramp dynamics before onset.
-3. **Botnet (02-03-2018, 10 Folds)**: Low-rate diffuse beaconing traffic exhibits lower onset recall at the default 0.5 classification threshold ($ROC\text{-}AUC \approx 0.36\dots0.52$), consistent with prior Gate 0 findings that low-intensity stealthy communication requires customized thresholding.
+3. **Botnet (02-03-2018, 10 Folds)**: F1=0.0000 across all horizons, and ROC-AUC is below random (0.3597) at H=5 ($ROC\text{-}AUC \approx 0.4290$ at $H=1$, $0.5185$ at $H=2$, $0.3597$ at $H=5$). Note that Botnet's packet-level features were never touched by this branch (only 14-02-2018 received real PCAP extraction; Botnet remains zero-filled under Option A) — this is a pre-existing weakness being newly exposed, not a regression from this work.
 
 ---
 
