@@ -178,13 +178,13 @@ class ShadowcatPipeline:
             hz_dir = Path(ML1_DIR / "artifacts" / "lstm" / "hazard_head")
         self.hazard_models: Dict[int, List[LSTMClassifier]] = {1: [], 2: [], 5: []}
 
-        # Calibrated operational thresholds (Option B Global with Option A Type-Aware capability)
-        self.calibrated_threshold_global = 0.35
+        # Calibrated operational thresholds (Option B Global with Option A Type-Aware capability, FPR <= 5% ceiling)
+        self.calibrated_threshold_global = 0.45
         self.calibrated_thresholds_by_type = {
             "SSH-Bruteforce": 0.40,
             "DDOS-LOIC-UDP": 0.40,
-            "Botnet": 0.22,
-            "Default": 0.35,
+            "Botnet": 0.45,
+            "Default": 0.45,
         }
 
         for h_val in (1, 2, 5):
@@ -426,7 +426,7 @@ class ShadowcatPipeline:
             "calibrated_uncertainty": True,
             "source_branch": "Continuous Dynamics Head (v4 Calibrated)",
             "protocol": "Chronological Split (K=1..3 Validated, K=4 Exploratory)",
-            "hazard_epistemic_note": "Averaged across 37-fold LOEO ensemble with calibrated decision threshold tau=0.35 across all attack profiles.",
+            "hazard_epistemic_note": "Averaged across 37-fold LOEO ensemble under an explicit FPR-constrained ceiling (FPR <= 5%) with calibrated threshold tau=0.45.",
             "is_mock": False,
         }
 
