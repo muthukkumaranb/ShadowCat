@@ -1,4 +1,4 @@
-# SHADOWCAT — Backend Integration Layer & Inference Pipeline
+# ShadowCat: Backend Integration Layer & Inference Pipeline
 
 The backend track serves as the unified runtime integration layer for the SHADOWCAT platform. It binds the Data Engineering preprocessing contracts, ML1 causal LSTM world models, hazard/stage classification heads, and tamper-evident audit chains into an authoritative, decoupled `predict()` inference interface.
 

@@ -101,15 +101,26 @@ def find_contract_paths(
     scaler_arg: Optional[str] = None,
 ) -> Tuple[Path, Path, str]:
     """Resolves paths to ML1's feature order JSON and scaler YAML."""
-    ml1_dir = ROOT_DIR / "scratch" / "ml1_repo" / "artifacts" / "lstm"
+    # Check monorepo path first, then fallback
+    monorepo_ml1 = ROOT_DIR.parent / "ml1" / "artifacts" / "lstm"
+    scratch_ml1 = ROOT_DIR / "scratch" / "ml1_repo" / "artifacts" / "lstm"
+    ml1_dir = monorepo_ml1 if monorepo_ml1.exists() else scratch_ml1
     
     if feature_order_arg and scaler_arg:
         fpath = Path(feature_order_arg).resolve()
         spath = Path(scaler_arg).resolve()
-        ver = version if version in ("v1", "v2") else ("v2" if "v2" in fpath.name else "v1")
+        ver = version if version in ("v1", "v2", "v3", "v4") else ("v4" if "v4" in fpath.name else ("v3" if "v3" in fpath.name else ("v2" if "v2" in fpath.name else "v1")))
         return fpath, spath, ver
 
-    if version == "v2":
+    if version == "v4":
+        fpath = ml1_dir / "inference_feature_order_v4.json"
+        spath = ml1_dir / "inference_scaler_v4.yaml"
+        ver = "v4"
+    elif version == "v3":
+        fpath = ml1_dir / "inference_feature_order_v3.json"
+        spath = ml1_dir / "inference_scaler_v3.yaml"
+        ver = "v3"
+    elif version == "v2":
         fpath = ml1_dir / "inference_feature_order_v2.json"
         spath = ml1_dir / "inference_scaler_v2.yaml"
         ver = "v2"
@@ -118,9 +129,21 @@ def find_contract_paths(
         spath = ml1_dir / "inference_scaler_v1.yaml"
         ver = "v1"
     else:  # auto
+        v4_f = ml1_dir / "inference_feature_order_v4.json"
+        v4_s = ml1_dir / "inference_scaler_v4.yaml"
+        v3_f = ml1_dir / "inference_feature_order_v3.json"
+        v3_s = ml1_dir / "inference_scaler_v3.yaml"
         v2_f = ml1_dir / "inference_feature_order_v2.json"
         v2_s = ml1_dir / "inference_scaler_v2.yaml"
-        if v2_f.exists() and v2_s.exists():
+        if v4_f.exists() and v4_s.exists():
+            fpath = v4_f
+            spath = v4_s
+            ver = "v4"
+        elif v3_f.exists() and v3_s.exists():
+            fpath = v3_f
+            spath = v3_s
+            ver = "v3"
+        elif v2_f.exists() and v2_s.exists():
             fpath = v2_f
             spath = v2_s
             ver = "v2"
@@ -544,7 +567,7 @@ def main():
     )
     parser.add_argument(
         "--version",
-        choices=["v1", "v2", "auto"],
+        choices=["v1", "v2", "v3", "v4", "auto"],
         default="auto",
         help="ML1 contract version to evaluate against (default: auto)",
     )
@@ -598,7 +621,7 @@ def main():
     report_md = generate_markdown_report(result)
 
     # Write report file
-    if args.report_out:
+    if args.report_out and not args.check_only:
         out_path = Path(args.report_out).resolve()
         out_path.parent.mkdir(parents=True, exist_ok=True)
         with open(out_path, "w", encoding="utf-8") as f:

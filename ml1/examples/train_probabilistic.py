@@ -113,7 +113,11 @@ def write_nll_diagnostics(output_dir, predictions):
 
 def write_rollout_plot(output_dir, rollout_rows):
     """Write the chronological rollout RMSE figure from saved metric rows."""
-    import matplotlib.pyplot as plt
+    try:
+        import matplotlib.pyplot as plt
+    except ImportError:
+        print("[!] matplotlib not installed; skipping plot generation.")
+        return None
 
     plt.figure()
     for model_name in ("persistence", "lagged_linear_pca", "lstm_gaussian"):
@@ -303,9 +307,13 @@ def run(input_path: Path, output_dir: Path, config_path: Path | None = None) -> 
     (output_dir / "deletion.json").write_text(json.dumps(deletion, indent=2), encoding="utf-8")
     try:
         repository_commit = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
-    except (OSError, subprocess.CalledProcessError):
+    except Exception:
         repository_commit = None
-    metadata = {"experiment": "probabilistic_ucs_transition", "protocol": "chronological split", "seed": seed, "device": str(device), "optimizer": training_settings.get("optimizer", "Adam"), "learning_rate": float(training_settings.get("learning_rate", 0.001)), "weight_decay": float(training_settings.get("weight_decay", 0.0001)), "dropout": float(model_settings.get("dropout", 0.2)), "batch_size": int(training_settings.get("batch_size", 64)), "epochs": int(training_settings.get("epochs", 30)), "early_stopping": {"patience": int(early_settings.get("patience", 5)), "min_delta": float(early_settings.get("min_delta", 0.001))}, "lookback": config.lookback_windows, "state_dimension": int(train_set.y.shape[-1]), "input_dimension": int(train_set.X.shape[-1]), "features": features, "pca": pca.get_metadata(), "pca_fit": "purged training windows only", "lagged_linear": {"representation": "PCA-reduced UCS", "components": pca_components, "recursive": True}, "normalization": "as supplied by canonical UCS artifact", "target": "S(t+1)", "rollout_horizons": rollout_horizons, "interval_levels": interval_levels, "future_episode_id": "unavailable; source_day not used as episode ID", "repository_commit": repository_commit, "software": {"python": platform.python_version(), "torch": torch.__version__, "numpy": np.__version__, "pandas": pd.__version__, "scikit_learn": __import__("sklearn").__version__, "matplotlib": __import__("matplotlib").__version__}}
+    try:
+        matplotlib_ver = __import__("matplotlib").__version__
+    except ImportError:
+        matplotlib_ver = "N/A"
+    metadata = {"experiment": "probabilistic_ucs_transition", "protocol": "chronological split", "seed": seed, "device": str(device), "optimizer": training_settings.get("optimizer", "Adam"), "learning_rate": float(training_settings.get("learning_rate", 0.001)), "weight_decay": float(training_settings.get("weight_decay", 0.0001)), "dropout": float(model_settings.get("dropout", 0.2)), "batch_size": int(training_settings.get("batch_size", 64)), "epochs": int(training_settings.get("epochs", 30)), "early_stopping": {"patience": int(early_settings.get("patience", 5)), "min_delta": float(early_settings.get("min_delta", 0.001))}, "lookback": config.lookback_windows, "state_dimension": int(train_set.y.shape[-1]), "input_dimension": int(train_set.X.shape[-1]), "features": features, "pca": pca.get_metadata(), "pca_fit": "purged training windows only", "lagged_linear": {"representation": "PCA-reduced UCS", "components": pca_components, "recursive": True}, "normalization": "as supplied by canonical UCS artifact", "target": "S(t+1)", "rollout_horizons": rollout_horizons, "interval_levels": interval_levels, "future_episode_id": "unavailable; source_day not used as episode ID", "repository_commit": repository_commit, "software": {"python": platform.python_version(), "torch": torch.__version__, "numpy": np.__version__, "pandas": pd.__version__, "scikit_learn": __import__("sklearn").__version__, "matplotlib": matplotlib_ver}}
     (output_dir / "metadata.json").write_text(json.dumps(metadata, indent=2), encoding="utf-8")
     (output_dir / "reproducibility_metadata.json").write_text(json.dumps(metadata, indent=2), encoding="utf-8")
     if config_path and config_path.exists():

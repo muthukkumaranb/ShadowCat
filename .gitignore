@@ -45,3 +45,11 @@ htmlcov/
 *~
 .DS_Store
 Thumbs.db
+
+# Large raw network data & PCAPs
+*.pcap
+*.pcapng
+*.cap
+raw_pcap/
+data/raw_pcap/
+

@@ -17,12 +17,15 @@ if str(BACKEND_DIR) not in sys.path:
 from audit_chain import append_entry, CHAIN_PATH
 
 ENTRIES = [
-    ("../data-engineering/data/ucs/CONTRACT_DIFF_REPORT.md", "contract_verification", "UCS-ML1 inference contract diff — confirmed PASS"),
-    ("../ml1/artifacts/lstm/gaussian_next_state_best_v2.pt", "model_checkpoint", "LSTM world model v2 (post scaler-fix retrain)"),
-    ("../ml1/artifacts/lstm/hazard_head/hazard_head_report.md", "evaluation_report", "Hazard head v2 evaluation (post label-leak correction)"),
-    ("../ml1/artifacts/lstm/stage_head/stage_head_report.md", "evaluation_report", "Stage head v2 evaluation"),
-    ("../ml1/artifacts/lstm/pc2_significance_report.md", "evaluation_report", "PC2 significance test (re-run on v2 checkpoint)"),
-    ("../ml2-full/GNN_FINAL/ml2/results/gnn_adopt_hold_decision.md", "architecture_decision", "GNN fusion adopt/hold decision — HOLD, multi-seed evidence"),
+    ("../data-engineering/data/ucs/PACKET_EXTRACTION_VERIFICATION.md", "extraction_verification", "Real Scapy PCAP extraction verification (Option B real packet telemetry)"),
+    ("../data-engineering/data/ucs/CONTRACT_DIFF_REPORT.md", "contract_verification", "UCS-ML1 inference contract diff v3 — confirmed PASS"),
+    ("../ml1/artifacts/lstm/gaussian_next_state_best_v3.pt", "model_checkpoint", "LSTM world model v3 (trained on genuine PCAP packet telemetry)"),
+    ("../ml1/artifacts/lstm/hazard_head_v3/hazard_head_report_v3.md", "evaluation_report", "Hazard head v3 evaluation report (restored discriminative power under real packet telemetry)"),
+    ("../ml1/artifacts/lstm/hazard_head_v4/hazard_head_report_v4.md", "evaluation_report", "Hazard head v4 multi-day evaluation & threshold calibration report across all attack types"),
+    ("../ml1/artifacts/lstm/hazard_head_v4/hazard_threshold_sweep_all_types.csv", "evaluation_dataset", "Full 37-fold LOEO threshold sweep matrix across SSH, DDOS, and Botnet"),
+    ("../ml1/artifacts/lstm/stage_head_v3/stage_head_report.md", "evaluation_report", "Stage head v3 evaluation report"),
+    ("../ml1/artifacts/lstm/probabilistic_world_model_v3/pc2_attack_significance_report.md", "evaluation_report", "PC2 significance test report (evaluated on v3 checkpoint)"),
+    ("../ml2-full/GNN_FINAL/ml2/results/gnn_adopt_hold_decision.md", "architecture_decision", "GNN fusion adopt/hold decision — HOLD, v3 sync addendum"),
     ("../ml1/artifacts/leakage_audit/component_exposure_audit.md", "leakage_audit", "Packet-feature label-leak exposure audit"),
 ]
 

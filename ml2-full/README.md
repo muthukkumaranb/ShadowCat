@@ -1,4 +1,4 @@
-# SHADOWCAT — ML2 Track: Graph Neural Network & Fusion Ablation
+# ShadowCat: ML2 Track (Graph Neural Network & Fusion Ablation)
 
 This directory contains the Graph Neural Network (GNN) modeling, dynamic graph construction, and multimodal fusion ablation experiments for the SHADOWCAT platform.
 

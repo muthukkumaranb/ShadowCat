@@ -1,4 +1,4 @@
-# SHADOWCAT — Frontend Dashboard & Analyst Interface
+# ShadowCat: Frontend Dashboard & Analyst Interface
 
 The frontend track delivers the executive and operational user interface for the SHADOWCAT platform. Built with **Streamlit**, **Plotly**, and a custom dark-mode design system, it renders pre-emptive attack forecasts, multi-step horizon trajectories, forensic attributions, and scientific validation benchmarks.
 
