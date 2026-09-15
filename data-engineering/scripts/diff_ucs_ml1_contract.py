@@ -109,10 +109,14 @@ def find_contract_paths(
     if feature_order_arg and scaler_arg:
         fpath = Path(feature_order_arg).resolve()
         spath = Path(scaler_arg).resolve()
-        ver = version if version in ("v1", "v2", "v3") else ("v3" if "v3" in fpath.name else ("v2" if "v2" in fpath.name else "v1"))
+        ver = version if version in ("v1", "v2", "v3", "v4") else ("v4" if "v4" in fpath.name else ("v3" if "v3" in fpath.name else ("v2" if "v2" in fpath.name else "v1")))
         return fpath, spath, ver
 
-    if version == "v3":
+    if version == "v4":
+        fpath = ml1_dir / "inference_feature_order_v4.json"
+        spath = ml1_dir / "inference_scaler_v4.yaml"
+        ver = "v4"
+    elif version == "v3":
         fpath = ml1_dir / "inference_feature_order_v3.json"
         spath = ml1_dir / "inference_scaler_v3.yaml"
         ver = "v3"
@@ -125,11 +129,17 @@ def find_contract_paths(
         spath = ml1_dir / "inference_scaler_v1.yaml"
         ver = "v1"
     else:  # auto
+        v4_f = ml1_dir / "inference_feature_order_v4.json"
+        v4_s = ml1_dir / "inference_scaler_v4.yaml"
         v3_f = ml1_dir / "inference_feature_order_v3.json"
         v3_s = ml1_dir / "inference_scaler_v3.yaml"
         v2_f = ml1_dir / "inference_feature_order_v2.json"
         v2_s = ml1_dir / "inference_scaler_v2.yaml"
-        if v3_f.exists() and v3_s.exists():
+        if v4_f.exists() and v4_s.exists():
+            fpath = v4_f
+            spath = v4_s
+            ver = "v4"
+        elif v3_f.exists() and v3_s.exists():
             fpath = v3_f
             spath = v3_s
             ver = "v3"
@@ -557,7 +567,7 @@ def main():
     )
     parser.add_argument(
         "--version",
-        choices=["v1", "v2", "v3", "auto"],
+        choices=["v1", "v2", "v3", "v4", "auto"],
         default="auto",
         help="ML1 contract version to evaluate against (default: auto)",
     )
