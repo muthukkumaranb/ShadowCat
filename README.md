@@ -137,7 +137,6 @@ streamlit run frontend/app.py
 
 | Evaluation Metric / Milestone | Result / Finding | Status & Reference |
 | :--- | :--- | :--- |
-<<<<<<< Updated upstream
 | **Real PCAP Telemetry (Option B)** | Genuine Scapy-extracted packet stats for 14-02-2018; 0 label leakage | [Extraction Report](data-engineering/data/ucs/PACKET_EXTRACTION_VERIFICATION.md) |
 | **Hazard Forecasting ROC-AUC (v3)** | **0.789** (H=1), **0.843** (H=2), **0.770** (H=5) across LOEO 37 Folds | [Hazard Report v3](ml1/artifacts/lstm/hazard_head_v3/hazard_head_report_v3.md) |
 | **Lagged Logistic Regression Baseline** | F1: 0.738 — Caveat: heavily degraded on Fold 16 (temporal shift) | [Gate 0 Report](data-engineering/gate0_leakage_report.md) |
