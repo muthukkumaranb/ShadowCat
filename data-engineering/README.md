@@ -1,8 +1,8 @@
 
 # CSE-CIC-IDS2018 → Unified Cyber State ($S_t$) Data Pipeline
-**SIH26153 — Cyber World Model Architecture (Data Engineer Track)**
+**SIH26153: Cyber World Model Architecture (Data Engineer Track)**
 
-This repository provides the production data engineering pipeline that processes raw CSE-CIC-IDS2018 CICFlowMeter flow CSVs into the **Unified Cyber State ($S_t$)** — a time-windowed, leakage-safe, dual-format state representation (flat temporal feature vector + graph topology edge list) designed to feed downstream LSTM/GRU and GraphSAGE world models.
+This repository provides the production data engineering pipeline that processes raw CSE-CIC-IDS2018 CICFlowMeter flow CSVs into the **Unified Cyber State ($S_t$)**, which is a time-windowed, leakage-safe, dual-format state representation (flat temporal feature vector + graph topology edge list) designed to feed downstream LSTM/GRU and GraphSAGE world models.
 
 ---
 

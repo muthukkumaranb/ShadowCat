@@ -1,7 +1,7 @@
 > [!WARNING]
 > **Exploratory GNN Work (Superseded)**
 > This directory contains the old, superseded exploratory UGR16-based subproject. It is **NOT** part of the canonical Shadowcat pipeline and should not be merged into the submission monorepo. It is kept here only for historical reference. The verified pipeline lives under GNN_FINAL/ml2/.
-# Graph-Based Cyber Attack Risk Forecasting — GNN Component
+# Graph-Based Cyber Attack Risk Forecasting (GNN Component)
 
 This module implements the **Graph Representation Encoder** for the SIH26153 World Model architecture.
 
@@ -10,7 +10,7 @@ This module implements the **Graph Representation Encoder** for the SIH26153 Wor
 UCS(t) → Graph Construction → GraphEncoder → 64-D Graph Embedding
 ```
 
-The GNN produces a **fusion-ready graph representation** — it is NOT the final attack classifier.
+The GNN produces a **fusion-ready graph representation**; it is NOT the final attack classifier.
 
 ---
 
@@ -145,7 +145,7 @@ python gnn/inference/predict.py --checkpoint gnn/checkpoints/best_gnn.pt --expla
 
 ---
 
-## 5. Integration API — GNN + LSTM/Fusion Contract
+## 5. Integration API: GNN and LSTM/Fusion Contract
 
 ### Primary Interface: Get Graph Embedding
 
@@ -252,7 +252,7 @@ Checkpoints contain full metadata per specification §34:
 
 ## 8. Summary of Findings
 
-- **Dataset**: UGR'16 August Week 5 — 40,289,595 network flows across 9.33 hours
+- **Dataset**: UGR'16 August Week 5 (40,289,595 network flows across 9.33 hours)
 - **Topology**: Average 18,428 nodes and 28,348 directed edges per 1-minute snapshot
 - **Hardware**: CUDA acceleration on NVIDIA GeForce RTX 4070 Laptop GPU (8.0 GB VRAM)
 - **Leakage Prevention**: Chronological splits with label purge and lookback embargo

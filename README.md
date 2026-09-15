@@ -77,36 +77,59 @@
 
 ---
 
-## Quickstart & Setup
+## Installation & Usage Guide
+
+Follow these steps to set up the environment, verify the models, and launch the ShadowCat platform.
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/muthukkumaranb/shadowkutty.git
-cd shadowkutty
+git clone https://github.com/muthukkumaranb/ShadowCat.git
+cd ShadowCat
 ```
 
-### 2. Install Dependencies
+### 2. Set Up a Virtual Environment (Recommended)
+It's highly recommended to use an isolated Python environment (Python 3.9+ is supported). 
+
+**Using `venv`:**
+```bash
+python -m venv venv
+# On Windows:
+venv\Scripts\activate
+# On Linux/Mac:
+source venv/bin/activate
+```
+
+**Using Conda:**
+```bash
+conda create -n shadowcat python=3.10 -y
+conda activate shadowcat
+```
+
+### 3. Install Dependencies
+Install the required packages for the data pipeline, PyTorch models, and Streamlit frontend:
 ```bash
 pip install -r requirements.txt
 ```
 
-### 3. Verify the End-to-End Pipeline
-Run the backend smoke test to verify all models and inference contracts:
+### 4. Verify System Integrity
+Before launching the application, ensure all backend components and models are functioning correctly.
+
+Run the integration smoke test to validate the inference pipeline:
 ```bash
 python backend/smoke_test.py
 ```
 
-### 4. Verify the Cryptographic Audit Chain
-Walk the 7-block hash chain and verify byte-level provenance:
+Then, verify the cryptographic hash chain to confirm no evaluation metrics or models have been tampered with:
 ```bash
 python backend/verify_audit_chain.py
 ```
 
-### 5. Launch the Streamlit Dashboard
+### 5. Launch the Dashboard
+Start the Streamlit operational interface:
 ```bash
 streamlit run frontend/app.py
 ```
-Open `http://localhost:8501` in your browser.
+*The dashboard will automatically open in your default web browser at `http://localhost:8501`. Here you can view the live risk trajectories and forensic benchmark panels.*
 
 ---
 
@@ -114,6 +137,7 @@ Open `http://localhost:8501` in your browser.
 
 | Evaluation Metric / Milestone | Result / Finding | Status & Reference |
 | :--- | :--- | :--- |
+<<<<<<< Updated upstream
 | **Real PCAP Telemetry (Option B)** | Genuine Scapy-extracted packet stats for 14-02-2018; 0 label leakage | [Extraction Report](data-engineering/data/ucs/PACKET_EXTRACTION_VERIFICATION.md) |
 | **Hazard Forecasting ROC-AUC (v3)** | **0.789** (H=1), **0.843** (H=2), **0.770** (H=5) across LOEO 37 Folds | [Hazard Report v3](ml1/artifacts/lstm/hazard_head_v3/hazard_head_report_v3.md) |
 | **Lagged Logistic Regression Baseline** | F1: 0.738 — Caveat: heavily degraded on Fold 16 (temporal shift) | [Gate 0 Report](data-engineering/gate0_leakage_report.md) |
@@ -122,6 +146,15 @@ Open `http://localhost:8501` in your browser.
 | **PC2 Significance Test (v3)** | Persistence baseline significantly outperforms autoregressive rollouts on PC2 | [PC2 Report v3](ml1/artifacts/lstm/probabilistic_world_model_v3/pc2_attack_significance_report.md) |
 | **Inference Contract Verification (v3)**| DE vs ML1 Scaler parameters match bit-for-bit (0 mismatches, 406-D) | [Contract Diff v3](data-engineering/data/ucs/CONTRACT_DIFF_REPORT.md) |
 | **Tamper-Evident Hash Chain** | 8 chained blocks covering all Gate 0, v3 models, and evaluation reports | [Audit Chain](backend/audit_chain.json) |
+=======
+| **LSTM Detection ROC-AUC** | **0.842** (PR-AUC: 0.835) across LOEO 37-Fold cross-validation | [Hazard Report](ml1/artifacts/lstm/hazard_head/hazard_head_report.md) |
+| **Lagged Logistic Regression Baseline** | F1: 0.738 (Caveat: heavily degraded on Fold 16 due to temporal shift) | [Gate 0 Report](data-engineering/gate0_leakage_report.md) |
+| **GNN Multimodal Fusion Ablation** | Validation Loss: Temporal-Only (1.666) beats Fused (1.932) | **HOLD** ([GNN Decision](ml2-full/GNN_FINAL/ml2/results/gnn_adopt_hold_decision.md)) |
+| **Stage-Head Scope** | Validated on *Credential Access / Brute Force* vs background | [Stage Report](ml1/artifacts/lstm/stage_head/stage_head_report.md) |
+| **PC2 Significance Test** | World Model $z_t$ persistence baseline outperforms PCA regression on corrected data | [PC2 Report](ml1/artifacts/lstm/pc2_significance_report.md) |
+| **Feature Leakage Exposure Audit** | Fixed packet-level forward label leakage; 0 feature-label overlap | [Leakage Audit](ml1/artifacts/leakage_audit/component_exposure_audit.md) |
+| **Inference Contract Verification** | DE vs ML1 Scaler parameters match bit-for-bit (0 mismatches) | [Contract Diff](data-engineering/data/ucs/CONTRACT_DIFF_REPORT.md) |
+>>>>>>> Stashed changes
 
 ---
 
