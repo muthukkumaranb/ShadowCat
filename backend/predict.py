@@ -235,15 +235,23 @@ class ShadowcatPipeline:
         using the 37-fold LOEO ensemble.
         """
         # sequence_30x406 shape: (30, 406)
-        # Apply projection to 32 dimensions (matching hazard head 32-dim PCA representation)
-        # For inference, standard first-32 principal channels or top informative features:
+        # BUG EXPOSED: The Hazard Head v4 models were trained on a 32-dim PCA representation 
+        # (see ml1/scripts/train_hazard_head.py `apply_training_only_pca`), but the PCA scaler 
+        # was never saved/exported. The live code previously just sliced the first 32 raw columns 
+        # (e.g., raw duration, packet counts), which saturated the LSTM to a constant ~0.51 output, 
+        # causing false positives.
+        # Since the PCA scaler is lost and retraining is infeasible right now, the hazard models 
+        # cannot be evaluated correctly. We must honestly hold them back.
+        
         seq_32 = sequence_30x406[:, :32]  # (30, 32)
         seq_tensor = torch.as_tensor(seq_32, dtype=torch.float32).unsqueeze(0).to(self.device)
 
         hazards = {}
+        pca_available = False # Honest limitation flag
+
         for h_val in (1, 2, 5):
             models = self.hazard_models.get(h_val, [])
-            if models:
+            if models and pca_available:
                 probs = []
                 with torch.no_grad():
                     for m in models:
@@ -251,8 +259,9 @@ class ShadowcatPipeline:
                         probs.append(p)
                 hazards[h_val] = float(np.mean(probs))
             else:
-                # Fallback calibrated base hazard
-                hazards[h_val] = 0.20 if h_val == 1 else (0.35 if h_val == 2 else 0.50)
+                # Without a working model, we must fall back to a nominal background risk rate
+                # rather than artificially inflating it to ~0.50 which triggers false alerts.
+                hazards[h_val] = 0.05
 
         return hazards
 
@@ -344,27 +353,14 @@ class ShadowcatPipeline:
 
         # Step 5: Hazard Head Ensemble & Cumulative Trajectory
         hazards = self._predict_hazard_ensemble(seq_30x406)
-        h1 = hazards.get(1, 0.21)
-        h2 = hazards.get(2, 0.38)
-        h5 = hazards.get(5, 0.75)
+        h1 = hazards.get(1, 0.05)
+        h2 = hazards.get(2, 0.05)
+        h5 = hazards.get(5, 0.05)
 
         # Interpolate for H=3, 4
         h3 = np.clip(h2 + (1.0 / 3.0) * (h5 - h2), 0.0, 1.0)
         h4 = np.clip(h2 + (2.0 / 3.0) * (h5 - h2), 0.0, 1.0)
         step_hazards = [h1, h2, float(h3), float(h4)]
-
-        # Override for demo: the untrained LSTM models output ~0.51 regardless of input, 
-        # which causes false positive hazard alerts on benign traffic due to cumulative risk.
-        # We explicitly suppress uncalibrated risk if we know the sequence is purely benign.
-        is_malicious = True
-        if isinstance(raw_input, pd.DataFrame):
-            if 'has_malicious_flows' in raw_input.columns:
-                is_malicious = (raw_input['has_malicious_flows'].sum() > 0)
-            elif 'label_binary' in raw_input.columns:
-                is_malicious = (raw_input['label_binary'].sum() > 0)
-
-        if not is_malicious:
-            step_hazards = [0.05, 0.05, 0.05, 0.05]
 
         # Cumulative risk P(event <= K) = 1 - prod(1 - h_k)
         cum_risk = []
@@ -484,9 +480,9 @@ class ShadowcatPipeline:
             "calibrated_threshold": self.calibrated_threshold_global,
             "hazard_alert": any(r >= self.calibrated_threshold_global for r in cum_risk),
             "calibrated_uncertainty": True,
-            "source_branch": "Continuous Dynamics Head (v4 Calibrated)",
+            "source_branch": "Hazard Models Disabled (Missing PCA Transform)",
             "protocol": "Chronological Split (K=1..3 Validated, K=4 Exploratory)",
-            "hazard_epistemic_note": "Averaged across 37-fold LOEO ensemble under an explicit FPR-constrained ceiling (FPR <= 5%) with calibrated threshold tau=0.45.",
+            "hazard_epistemic_note": "CRITICAL LIMITATION: Hazard models disabled. The training pipeline used a 32-dim PCA which was never exported, leaving live inference to ingest unscaled raw features, causing saturated outputs (~0.51). Risk scores are currently held at baseline.",
             "is_mock": False,
         }
 
