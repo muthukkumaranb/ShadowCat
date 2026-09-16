@@ -189,6 +189,15 @@ def get_forecast_trajectory(window_id: str = None) -> dict:
     return fc
 
 
+def get_fusion_experimental() -> Optional[dict]:
+    """
+    Returns experimental GraphSAGE fusion outputs if available.
+    """
+    pred = _get_live_prediction()
+    return pred.get("fusion_experimental")
+
+
+
 def get_comparison_table() -> list[dict]:
     """
     Returns mandated PS benchmark results comparing the World Model against
@@ -596,4 +605,5 @@ def get_demo_data() -> dict:
             "comparison_table": get_comparison_table(),
         },
         "validation": validation,
+        "fusion_experimental": get_fusion_experimental(),
     }

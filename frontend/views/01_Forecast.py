@@ -15,6 +15,7 @@ from data_provider import (
     get_forecast_trajectory,
     get_novelty_score,
     get_mitre_data,
+    get_fusion_experimental,
 )
 import importlib
 import styles
@@ -362,5 +363,20 @@ render_html("""
     </div>
 </div>
 """)
+
+fusion_exp = get_fusion_experimental()
+if fusion_exp:
+    st.markdown("---")
+    render_html("""
+    <div style="margin-top: 26px; margin-bottom: 10px;">
+        <div class="card-title">
+            <span>[EXPERIMENTAL] GraphSAGE Fusion Output</span>
+        </div>
+        <div style="font-size: 0.78rem; color: #8A8A8A;">
+            Explicitly held-back secondary path evaluating topological GraphSAGE fusion.
+        </div>
+    </div>
+    """)
+    st.json(fusion_exp)
 
 render_footer()

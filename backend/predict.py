@@ -139,14 +139,40 @@ class ShadowcatPipeline:
             dropout=0.2,
         )
         if Path(wm_path).exists():
-            ckpt = torch.load(wm_path, map_location=self.device, weights_only=False)
-            state_dict = ckpt.get("model_state_dict", ckpt)
+            wm_ckpt = torch.load(wm_path, map_location=self.device, weights_only=False)
+            state_dict = wm_ckpt.get("model_state_dict", wm_ckpt)
             self.world_model.load_state_dict(state_dict)
             self.world_model.to(self.device)
             self.world_model.eval()
             self.world_model_loaded = True
         else:
             self.world_model_loaded = False
+
+        # 2b. [EXPERIMENTAL] Load GNN Fused Model if available
+        self.fused_model_loaded = False
+        self.fused_model = None
+        try:
+            import sys
+            import os
+            ml2_path = os.path.abspath('ml2-full/GNN_FINAL')
+            if ml2_path not in sys.path:
+                sys.path.insert(0, ml2_path)
+            import torch_geometric
+            from ml2.models.fusion import FusedModel
+            
+            fused_ckpt_path = 'ml2-full/GNN_FINAL/ml2/results/ablation/fused/best_model.pt'
+            if os.path.exists(fused_ckpt_path):
+                fused_ckpt = torch.load(fused_ckpt_path, map_location=self.device, weights_only=False)
+                self.fused_model = FusedModel(z_dim=64)
+                if 'model_state_dict' in fused_ckpt:
+                    self.fused_model.load_state_dict(fused_ckpt['model_state_dict'])
+                else:
+                    self.fused_model.load_state_dict(fused_ckpt)
+                self.fused_model.to(self.device)
+                self.fused_model.eval()
+                self.fused_model_loaded = True
+        except Exception as e:
+            pass  # Silently fail experimental load if dependencies/checkpoint are missing
 
         # 3. Load Stage Head (ATT&CK Stage Classifier)
         st_path = stage_head_path or (
@@ -282,6 +308,25 @@ class ShadowcatPipeline:
         with torch.no_grad():
             pred_mean_t1, pred_std_t1 = self.world_model(seq_tensor)
             z_t = self.world_model.extract_latent_z(seq_tensor)  # 64-dim latent
+
+        # [EXPERIMENTAL] GNN Fusion
+        fusion_experimental_result = None
+        if getattr(self, 'fused_model_loaded', False) and self.fused_model is not None:
+            try:
+                B = z_t.shape[0]
+                node_feature_dim = 11
+                x = torch.zeros(B, node_feature_dim, device=self.device)
+                edge_index = torch.zeros((2, 0), dtype=torch.long, device=self.device)
+                batch = torch.arange(B, device=self.device)
+                with torch.no_grad():
+                    fused_out = self.fused_model(x, edge_index, z_t, batch)
+                fusion_experimental_result = {
+                    "status": "experimental_held_back",
+                    "z_prime_t": fused_out.cpu().numpy().tolist(),
+                    "note": "GraphSAGE experimental fusion branch. Output is explicitly held back and NOT used for primary hazard forecasting."
+                }
+            except Exception as e:
+                fusion_experimental_result = {"status": "error", "message": str(e)}
 
         # 4-step forward simulation (Rollout K=1..4)
         rollout_means = []
@@ -503,6 +548,7 @@ class ShadowcatPipeline:
             "flagged_flows": flagged_flows,
             "stage_predictions": stage_names,
             "risk_scores": [round(r, 2) for r in cum_risk],
+            "fusion_experimental": fusion_experimental_result,
         }
 
     def _extract_flagged_flows(self, raw_input: pd.DataFrame, source_type: str) -> List[Dict[str, Any]]:
