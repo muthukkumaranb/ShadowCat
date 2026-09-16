@@ -163,7 +163,7 @@ class ShadowcatPipeline:
             fused_ckpt_path = 'ml2-full/GNN_FINAL/ml2/results/ablation/fused/best_model.pt'
             if os.path.exists(fused_ckpt_path):
                 fused_ckpt = torch.load(fused_ckpt_path, map_location=self.device, weights_only=False)
-                self.fused_model = FusedModel(z_dim=64)
+                self.fused_model = FusedModel(z_dim=64, output_dim=64)
                 if 'model_state_dict' in fused_ckpt:
                     self.fused_model.load_state_dict(fused_ckpt['model_state_dict'])
                 else:
@@ -183,7 +183,10 @@ class ShadowcatPipeline:
                     self.ucs_edges = None
                     self.node_lookup = None
         except Exception as e:
-            pass  # Silently fail experimental load if dependencies/checkpoint are missing
+            import logging
+            logging.warning(f"Failed to load experimental FusedModel: {e}")
+            self.fused_model_loaded = False
+            self.fused_model = None
 
         # 3. Load Stage Head (ATT&CK Stage Classifier)
         st_path = stage_head_path or (
@@ -341,7 +344,7 @@ class ShadowcatPipeline:
                 edge_index = torch.zeros((2, 0), dtype=torch.long, device=self.device)
                 batch = torch.zeros(B, dtype=torch.long, device=self.device)
                 status_val = "experimental_placeholder"
-                note_str = "GraphSAGE experimental fusion branch. Graph input is currently a placeholder (all zeros) and not derived from real traffic."
+                note_str = "GraphSAGE experimental fusion branch. Graph construction currently works for known dataset windows only (static lookup). Arbitrary new input (live mode) falls back to this placeholder."
                 
                 # Attempt to build real graph from window
                 if getattr(self, 'ucs_edges', None) is not None and getattr(self, 'node_lookup', None) is not None:

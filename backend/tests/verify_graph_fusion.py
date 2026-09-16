@@ -20,7 +20,7 @@ def test_graph_fusion():
     res_ben = pipeline.predict(ben_seq, source_type="flows")
     z_prime_ben = res_ben.get("fusion_experimental_result", {}).get("z_prime_t", [[0]*64])[0]
     note_ben = res_ben.get("fusion_experimental_result", {}).get("note", "")
-    print(f"Status: {res_ben.get(\"fusion_experimental_result\", {}).get(\"status\")}")
+    print(f"Status: {res_ben.get('fusion_experimental_result', {}).get('status')}")
     print(f"Note: {note_ben}")
     print(f"z_prime_t (first 5 dims): {z_prime_ben[:5]}")
     
@@ -28,7 +28,7 @@ def test_graph_fusion():
     res_mal = pipeline.predict(mal_seq, source_type="flows")
     z_prime_mal = res_mal.get("fusion_experimental_result", {}).get("z_prime_t", [[0]*64])[0]
     note_mal = res_mal.get("fusion_experimental_result", {}).get("note", "")
-    print(f"Status: {res_mal.get(\"fusion_experimental_result\", {}).get(\"status\")}")
+    print(f"Status: {res_mal.get('fusion_experimental_result', {}).get('status')}")
     print(f"Note: {note_mal}")
     print(f"z_prime_t (first 5 dims): {z_prime_mal[:5]}")
     
