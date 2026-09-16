@@ -171,6 +171,17 @@ class ShadowcatPipeline:
                 self.fused_model.to(self.device)
                 self.fused_model.eval()
                 self.fused_model_loaded = True
+
+                # Load canonical graph edges for live windows
+                dat_path = Path(dat_dir)
+                edges_path = dat_path / "ucs_graph_edgelists.parquet"
+                lookup_path = dat_path / "node_lookup.parquet"
+                if edges_path.exists() and lookup_path.exists():
+                    self.ucs_edges = pd.read_parquet(edges_path)
+                    self.node_lookup = pd.read_parquet(lookup_path)
+                else:
+                    self.ucs_edges = None
+                    self.node_lookup = None
         except Exception as e:
             pass  # Silently fail experimental load if dependencies/checkpoint are missing
 
@@ -324,15 +335,45 @@ class ShadowcatPipeline:
             try:
                 B = z_t.shape[0]
                 node_feature_dim = 11
-                x = torch.zeros(B, node_feature_dim, device=self.device)
+                
+                # Default empty graph fallback
+                x = torch.zeros((B, node_feature_dim), device=self.device)
                 edge_index = torch.zeros((2, 0), dtype=torch.long, device=self.device)
-                batch = torch.arange(B, device=self.device)
+                batch = torch.zeros(B, dtype=torch.long, device=self.device)
+                status_val = "experimental_placeholder"
+                note_str = "GraphSAGE experimental fusion branch. Graph input is currently a placeholder (all zeros) and not derived from real traffic."
+                
+                # Attempt to build real graph from window
+                if getattr(self, 'ucs_edges', None) is not None and getattr(self, 'node_lookup', None) is not None:
+                    from ml2.data.canonical_ucs import build_canonical_graphs
+                    
+                    w_df = window_df.tail(1).copy()
+                    if "split" not in w_df.columns:
+                        w_df["split"] = "test"
+                    if "label_binary" not in w_df.columns:
+                        w_df["label_binary"] = 0
+                        
+                    w_id = w_df["window_id"].iloc[0]
+                    window_edges = self.ucs_edges[self.ucs_edges["window_id"] == w_id]
+                    
+                    if len(window_edges) > 0:
+                        graphs = build_canonical_graphs(w_df, window_edges, self.node_lookup)
+                        if len(graphs) > 0:
+                            g = graphs[0]
+                            x = g.x.to(self.device)
+                            edge_index = g.edge_index.to(self.device)
+                            batch = torch.zeros(x.shape[0], dtype=torch.long, device=self.device)
+                            
+                            status_val = "experimental_held_back"
+                            note_str = f"GraphSAGE fusion path active. Real graph built from {x.shape[0]} nodes and {edge_index.shape[1]} edges. Output is explicitly held back."
+                
                 with torch.no_grad():
                     fused_out = self.fused_model(x, edge_index, z_t, batch)
+                
                 fusion_experimental_result = {
-                    "status": "experimental_placeholder",
+                    "status": status_val,
                     "z_prime_t": fused_out.cpu().numpy().tolist(),
-                    "note": "GraphSAGE experimental fusion branch. Graph input is currently a placeholder (all zeros) and not derived from real traffic, as the current predict.py input is window-aggregated (lacking IP topography). Output is explicitly held back."
+                    "note": note_str
                 }
             except Exception as e:
                 fusion_experimental_result = {"status": "error", "message": str(e)}
