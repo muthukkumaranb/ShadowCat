@@ -232,6 +232,26 @@ class UCSExtractor:
             ]
 
         # Step 5: Handle packet-level features & presence masks
+        feature_groups = self.canonical_mapping.get("feature_groups", {})
+        
+        def _has_group(group_name: str) -> bool:
+            base_cols = feature_groups.get(group_name, [])
+            if not base_cols:
+                return False
+            for col in base_cols:
+                if col in df.columns:
+                    return True
+                # Check for windowed variants
+                if any(c.startswith(f"{col}_") for c in df.columns):
+                    return True
+            return False
+
+        has_traffic_volume = _has_group("traffic_volume")
+        has_flow_timing = _has_group("flow_timing")
+        has_tcp_flags = _has_group("tcp_flags")
+        has_graph_topology = _has_group("graph_topology")
+        has_identity_auth = _has_group("identity_auth")
+
         has_packet_data = False
         if source_type == "pcap":
             present_pkt = [c for c in self.PCAP_PACKET_COLUMNS if c in window_df.columns]
@@ -254,11 +274,11 @@ class UCSExtractor:
             window_df = pd.concat([window_df, pd.DataFrame(new_cols, index=window_df.index)], axis=1)
 
         # Update masks in-place (already present in window_df from window aggregator)
-        window_df["mask_has_traffic_volume_features"] = 1.0
-        window_df["mask_has_flow_timing_features"] = 1.0
+        window_df["mask_has_traffic_volume_features"] = 1.0 if has_traffic_volume else 0.0
+        window_df["mask_has_flow_timing_features"] = 1.0 if has_flow_timing else 0.0
         window_df["mask_has_packet_level_features"] = 1.0 if has_packet_data else 0.0
-        window_df["mask_has_tcp_flags"] = 1.0
-        window_df["mask_has_graph_topology"] = 1.0
+        window_df["mask_has_tcp_flags"] = 1.0 if has_tcp_flags else 0.0
+        window_df["mask_has_graph_topology"] = 0.0
         window_df["mask_has_identity_auth"] = 0.0
 
         # Fill any remaining NaNs in feature columns with frozen medians
