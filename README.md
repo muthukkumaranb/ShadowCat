@@ -57,9 +57,10 @@
    │ Streamlit Glassmorphic UI: Risk Trajectories, Attribution & Benchmark Audits│
    └─────────────────────────────────────────────────────────────────────────────┘
 
-   * Note on Graph Branch (ML2): GraphSAGE encoder & multimodal fusion were built and
-     rigorously evaluated across 3 seeds. Per empirical evidence (validation loss favored
-     temporal baseline 1.666 vs 1.932), the GNN was HELD BACK to avoid test-leakage.
+   * Note on Graph Branch (ML2): GraphSAGE fusion (real per-window graph construction) is now
+     wired in as an explicitly labeled experimental/held-back output, separate from the
+     primary verified forecast. The underlying ablation evidence (validation loss 1.666 vs 1.932)
+     remains the reason it's not in the primary path.
      See ml2-full/GNN_FINAL/ml2/results/gnn_adopt_hold_decision.md.
 ```
 
@@ -169,6 +170,8 @@ In accordance with scientific integrity and engineering transparency:
 6. **Telemetry Extraction (Option B):** Packet-level telemetry is now genuinely extracted for the 14-02-2018 and 02-03-2018 PCAPs without label leakage.
 7. **Hazard FPR Constraints:** Hazard-head calibration is enforced using an explicit False Positive Rate ceiling (global τ=0.45, ≤5% false-alarm rate) to prevent alert fatigue.
 8. **Botnet Detection Shortfall:** Botnet onset detection remains a disclosed, unresolved limitation. Even with real packet telemetry, the signal-to-noise ratio is too weak (ROC-AUC ~0.63), which is insufficient for reliable, low-FPR alerting. This has not been artificially 'solved' via F1-only threshold manipulation.
+9. **Hazard Head Robustness:** Currently running an honest baseline fallback (0.05) due to an unrecoverable per-fold PCA scaler limitation; root cause documented, verified via direct testing, not a guess.
+10. **GraphSAGE Fusion:** Real per-window graph construction is now wired in as an explicitly labeled experimental/held-back output, separate from the primary verified forecast; the underlying ablation evidence (validation loss 1.666 vs 1.932) remains the reason it's not in the primary path.
 
 ---
 
