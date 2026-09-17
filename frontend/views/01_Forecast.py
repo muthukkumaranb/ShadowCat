@@ -15,6 +15,7 @@ from data_provider import (
     get_forecast_trajectory,
     get_novelty_score,
     get_mitre_data,
+    get_fusion_experimental,
 )
 import importlib
 import styles
@@ -358,9 +359,219 @@ render_html("""
         <div style="text-align: right;">
             <div style="font-size: 1.35rem; font-weight: 800; color: #E5484D; font-family: 'JetBrains Mono', monospace;">0.0 min</div>
             <div style="font-size: 0.68rem; color: #E5484D; font-weight: 700; letter-spacing: 0.04em;">POST-BREACH</div>
+render_html(f"""
+<div style="display: flex; justify-content: space-between; align-items: center; background: #111111; border: 1px solid #262626; border-radius: 6px; padding: 10px 16px; margin-bottom: 16px;">
+    <div style="display: flex; gap: 18px; align-items: center; flex-wrap: wrap;">
+        <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.80rem; font-weight: 700; color: #FFFFFF;">
+            STATE {current_state['state_id']}: {current_state['dominant_behavior']}
+        </span>
+        <span style="color: #262626;">|</span>
+        <span style="font-size: 0.76rem; color: #8A8A8A;">
+            Active Endpoints: <b style="color: #FFFFFF;">{current_state['active_endpoints']}</b> · SYN/ACK Ratio: <b style="color: #E0982B;">{current_state['syn_ack_ratio']:.1f}x</b>
+        </span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 0.74rem; color: #8A8A8A;">Novelty Drift:</span>
+        <span style="background: rgba(47, 184, 114, 0.12); border: 1px solid #2FB872; color: #2FB872; padding: 1px 7px; border-radius: 4px; font-size: 0.72rem; font-weight: 700; font-family: 'JetBrains Mono', monospace;">
+            Nominal (In Envelope)
+        </span>
+    </div>
+</div>
+""")
+
+# 3. Main Trajectory Chart Header
+render_html(f"""
+<div style="margin-bottom: 10px;">
+    <div class="card-title">
+        <span>Attack Risk Trajectory & Epistemic Uncertainty</span>
+        <span class="badge">{forecast['source_branch']} · {forecast['protocol']}</span>
+    </div>
+    <div style="font-size: 0.78rem; color: #8A8A8A;">
+        Multi-step forward trajectory simulation across horizons t+1 &rarr; t+4 with compounding uncertainty bounds.
+    </div>
+</div>
+""")
+
+# 4. Interactive Plotly Trajectory Chart
+chart_fig = create_forecast_chart(forecast["raw_steps"])
+chart_event = st.plotly_chart(
+    chart_fig,
+    use_container_width=True,
+    on_select="rerun",
+    selection_mode="points",
+    key="trajectory_chart",
+    config={"displayModeBar": False}
+)
+
+# Synchronize chart clicks with horizon state
+if "selected_horizon_idx" not in st.session_state:
+    st.session_state["selected_horizon_idx"] = 2  # default to t+3
+
+if chart_event and hasattr(chart_event, "selection") and chart_event.selection and "points" in chart_event.selection:
+    pts = chart_event.selection["points"]
+    if pts and len(pts) > 0:
+        pt_idx = pts[0].get("point_index", None)
+        if pt_idx is not None and 1 <= pt_idx <= 4:
+            st.session_state["selected_horizon_idx"] = pt_idx - 1
+
+# 5. Horizon Deep-Dive Selector
+step_options = [f"{s['horizon']} ({s['time_ahead']}) — {s['stage']}" for s in forecast["raw_steps"]]
+selected_label = st.radio(
+    "Select Rollout Horizon:",
+    step_options,
+    index=st.session_state["selected_horizon_idx"],
+    horizontal=True,
+    label_visibility="collapsed",
+    key="horizon_radio_selector"
+)
+render_html("""
+<div style="font-size: 0.72rem; color: #8A8A8A; margin-top: 4px; margin-bottom: 8px;">
+    <i>Interactive rollout capped at t+4 &mdash; reliability drops to exploratory beyond this point (see Validation &rarr; Horizon Stability for H=5 benchmark bound).</i>
+</div>
+""")
+
+selected_idx = step_options.index(selected_label)
+st.session_state["selected_horizon_idx"] = selected_idx
+sel = forecast["raw_steps"][selected_idx]
+
+# 6. Horizon Metrics (Bordered high-density row with edge case sanitization)
+sel_prob_raw = sel.get("probability", 0.0)
+try:
+    sel_prob = float(sel_prob_raw) if sel_prob_raw is not None else 0.0
+    if math.isnan(sel_prob):
+        sel_prob = 0.0
+except (TypeError, ValueError):
+    sel_prob = 0.0
+sel_prob = max(0.0, min(1.0, sel_prob))
+
+sel_unc_raw = sel.get("uncertainty", 0.0)
+try:
+    sel_unc = float(sel_unc_raw) if sel_unc_raw is not None else 0.0
+    if math.isnan(sel_unc):
+        sel_unc = 0.0
+except (TypeError, ValueError):
+    sel_unc = 0.0
+sel_unc = max(0.0, min(1.0, sel_unc))
+
+sel_lb_raw = sel.get("lower_bound", 0.0)
+try:
+    sel_lb = float(sel_lb_raw) if sel_lb_raw is not None else 0.0
+    if math.isnan(sel_lb):
+        sel_lb = 0.0
+except (TypeError, ValueError):
+    sel_lb = 0.0
+sel_lb = max(0.0, min(1.0, sel_lb))
+
+sel_ub_raw = sel.get("upper_bound", 1.0)
+try:
+    sel_ub = float(sel_ub_raw) if sel_ub_raw is not None else 1.0
+    if math.isnan(sel_ub):
+        sel_ub = 1.0
+except (TypeError, ValueError):
+    sel_ub = 1.0
+sel_ub = max(0.0, min(1.0, sel_ub))
+
+risk_color = "#2FB872" if sel_prob < 0.25 else "#E0982B" if sel_prob < 0.50 else "#E5484D"
+error_mult = [1.0, 1.8, 3.0, 4.5][selected_idx]
+reliability = "Automated Alerting" if selected_idx <= 1 else "Analyst Escalation" if selected_idx == 2 else "Exploratory Trend"
+
+render_html(f"""
+<div style="display: flex; border: 1px solid #262626; border-radius: 8px; background: #141414; margin-top: 10px; margin-bottom: 22px;">
+    <div style="flex: 1; padding: 12px 16px; border-right: 1px solid #262626;">
+        <div class="metric-label">Horizon</div>
+        <div style="font-size: 1.45rem; font-weight: 800; color: #FFFFFF; font-family: 'JetBrains Mono', monospace;">{sel['horizon']}</div>
+        <div style="font-size: 0.74rem; color: #8A8A8A;">Lead Time: <b style="color: #FFFFFF;">{sel['lead_time']}</b></div>
+    </div>
+    <div style="flex: 1; padding: 12px 16px; border-right: 1px solid #262626;">
+        <div class="metric-label">Threat Risk</div>
+        <div style="font-size: 1.45rem; font-weight: 800; color: {risk_color}; font-family: 'JetBrains Mono', monospace;">{sel_prob:.0%}</div>
+        <div style="font-size: 0.74rem; color: #8A8A8A;">Stage: <b style="color: #FFFFFF;">{sel['stage']}</b></div>
+    </div>
+    <div style="flex: 1; padding: 12px 16px; border-right: 1px solid #262626;">
+        <div class="metric-label">Epistemic Variance</div>
+        <div style="font-size: 1.45rem; font-weight: 800; color: #E0982B; font-family: 'JetBrains Mono', monospace;">±{sel_unc*100:.0f}%</div>
+        <div style="font-size: 0.74rem; color: #8A8A8A;">Bounds: <b style="color: #FFFFFF;">[{sel_lb:.0%} – {sel_ub:.0%}]</b></div>
+    </div>
+    <div style="flex: 1; padding: 12px 16px;">
+        <div class="metric-label">Drift Multiplier</div>
+        <div style="font-size: 1.45rem; font-weight: 800; color: #FFFFFF; font-family: 'JetBrains Mono', monospace;">{error_mult:.1f}x</div>
+        <div style="font-size: 0.74rem; color: #8A8A8A; font-weight: 600;">{reliability}</div>
+    </div>
+</div>
+""")
+
+# 7. Continuous MITRE ATT&CK Killchain Pipeline
+render_html("""
+<div style="margin-top: 18px; margin-bottom: 8px;">
+    <div class="card-title">
+        <span>MITRE ATT&CK Killchain Progression</span>
+    </div>
+</div>
+""")
+render_attack_stepper(mitre, current_step_idx=2)
+
+# 8. Dynamic Force-Directed Attack Graph (Agraph)
+render_attack_graph_panel()
+
+# 9. Response Lead Time vs Baselines
+render_html("""
+<div style="margin-top: 26px; margin-bottom: 10px;">
+    <div class="card-title">
+        <span>Pre-Emptive Response Lead Time vs Baselines</span>
+    </div>
+</div>
+""")
+
+render_html("""
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-bottom: 22px;">
+    <div style="background: #141414; border: 1px solid #262626; border-radius: 8px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <div style="font-weight: 700; color: #FFFFFF; font-size: 0.92rem;">SHADOWCAT World Model</div>
+            <div style="font-size: 0.74rem; color: #8A8A8A; margin-top: 2px;">Pre-lateral trajectory forecasting</div>
+        </div>
+        <div style="text-align: right;">
+            <div style="font-size: 1.35rem; font-weight: 800; color: #FFFFFF; font-family: 'JetBrains Mono', monospace;">+3.5 min</div>
+            <div style="font-size: 0.68rem; color: #2FB872; font-weight: 700; letter-spacing: 0.04em;">PRE-EMPTIVE</div>
+        </div>
+    </div>
+
+    <div style="background: #141414; border: 1px solid #262626; border-radius: 8px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <div style="font-weight: 700; color: #FFFFFF; font-size: 0.92rem;">Lagged Autoregressive</div>
+            <div style="font-size: 0.74rem; color: #8A8A8A; margin-top: 2px;">History extrapolation without topology</div>
+        </div>
+        <div style="text-align: right;">
+            <div style="font-size: 1.35rem; font-weight: 800; color: #E0982B; font-family: 'JetBrains Mono', monospace;">+1.2 min</div>
+            <div style="font-size: 0.68rem; color: #E0982B; font-weight: 700; letter-spacing: 0.04em;">PARTIAL LEAD</div>
+        </div>
+    </div>
+
+    <div style="background: #141414; border: 1px solid #262626; border-radius: 8px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <div style="font-weight: 700; color: #FFFFFF; font-size: 0.92rem;">Conventional Static IDS</div>
+            <div style="font-size: 0.74rem; color: #8A8A8A; margin-top: 2px;">Reactive post-compromise detection</div>
+        </div>
+        <div style="text-align: right;">
+            <div style="font-size: 1.35rem; font-weight: 800; color: #E5484D; font-family: 'JetBrains Mono', monospace;">0.0 min</div>
+            <div style="font-size: 0.68rem; color: #E5484D; font-weight: 700; letter-spacing: 0.04em;">POST-BREACH</div>
         </div>
     </div>
 </div>
 """)
+
+fusion_exp = get_fusion_experimental()
+if fusion_exp:
+    st.markdown("---")
+    render_html(f"""
+    <div style="margin-top: 26px; margin-bottom: 10px;">
+        <div class="card-title">
+            <span>[EXPERIMENTAL] GraphSAGE Fusion Output</span>
+        </div>
+        <div style="font-size: 0.78rem; color: #8A8A8A;">
+            {fusion_exp.get('note', 'Graph input is currently a placeholder, not derived from real traffic.')}
+        </div>
+    </div>
+    """)
+    st.json(fusion_exp)
 
 render_footer()

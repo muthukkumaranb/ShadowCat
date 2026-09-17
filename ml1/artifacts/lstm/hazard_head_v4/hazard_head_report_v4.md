@@ -80,6 +80,12 @@ The table below presents the side-by-side progression across the v3 baseline, v4
 We do not artificially depress thresholds to claim "Botnet is fixed". We state plainly:
 > **Documented Finding**: Low-rate botnet traffic in CSE-CIC-IDS2018 consists of diffuse HTTP/IRC background probes. While packet-level features restore ranking power ($ROC=0.6310$), operating under a realistic SOC false-alarm ceiling ($FPR \le 10\%$) prevents aggressive threshold triggering. The hazard head prioritizes high-confidence early warning over high-noise guessing.
 
+### CRITICAL LIMITATION: Missing PCA Scaler for Live Inference
+> **Documented Finding (Sep 2026)**: The v4 models were trained using a dynamically fit 32-dim PCA representation (`apply_training_only_pca`), but the specific scaler per fold was **never exported or saved**.
+> - Attempting to use unscaled raw features directly on live data saturates the LSTM weights, yielding a constant `~0.51` degenerate output.
+> - An existing fallback artifact (`ucs_pca_20260904/pca_32/preprocessing_pca.joblib`) was formally verified but **fails to resolve this issue** (yielding degenerate shifted probabilities of `0.2841` (benign) vs `0.2842` (malicious)). 
+> - **Conclusion**: The root cause is an unrecoverable per-fold PCA scaler. Live hazard models must remain explicitly disabled (using a `0.05` honest fallback) until models are fully retrained with an explicitly saved pre-processor. Do NOT re-investigate the existing PCA artifact; it has been definitively ruled out.
+
 ---
 
 ## 5. Artifacts & Audit Integration

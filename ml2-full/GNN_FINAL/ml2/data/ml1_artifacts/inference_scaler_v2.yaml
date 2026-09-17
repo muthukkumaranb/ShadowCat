@@ -1,0 +1,2423 @@
+_metadata:
+  version: v2
+  artifact_type: inference_scaler
+  description: Exact normalization parameters for live inference against the v2 probabilistic LSTM world-model checkpoint
+    (gaussian_next_state_best_v2.pt). Includes Option A data fix (zero-filled packet telemetry & absent mask).
+  checkpoint: gaussian_next_state_best_v2.pt
+  checkpoint_commit: 70493347f6d1576787a12c0a75a3a76e0196652f
+  exported_at: '2026-09-10T06:14:23.317075+00:00'
+  normalization_pipeline:
+    step_1: 'For features with is_log1p=true: x = log1p(x)'
+    step_2: 'For all 400 scaled features: x = (x - median) / scale'
+    step_3: The 6 mask columns (mask_has_*) are fixed flags (1.0 or 0.0) and are NOT scaled.
+  total_scaled_features: 400
+  total_unscaled_mask_features: 6
+  total_lstm_input_features: 406
+  unscaled_mask_columns:
+  - mask_has_flow_timing_features
+  - mask_has_graph_topology
+  - mask_has_identity_auth
+  - mask_has_packet_level_features
+  - mask_has_tcp_flags
+  - mask_has_traffic_volume_features
+features:
+  duration_microsec_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.4924353109324769
+    q75: 0.5075646890675231
+  duration_microsec_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.6098644024238478
+    q75: 0.3901355975761523
+  duration_microsec_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.3910336994088664
+    q75: 0.6089663005911337
+  duration_microsec_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  duration_microsec_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.8909616037365777
+    q75: 0.10903839626342222
+  packet_count_fwd_mean:
+    median: 0.0
+    scale: 0.459370993611396
+    is_log1p: true
+    q25: 0.0
+    q75: 0.459370993611396
+  packet_count_fwd_std:
+    median: 0.0
+    scale: 0.5389561492919074
+    is_log1p: true
+    q25: 0.0
+    q75: 0.5389561492919074
+  packet_count_fwd_sum:
+    median: 0.0
+    scale: 0.40688621724115326
+    is_log1p: true
+    q25: 0.0
+    q75: 0.40688621724115326
+  packet_count_fwd_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: true
+    q25: 0.0
+    q75: 0.0
+  packet_count_fwd_max:
+    median: 0.0
+    scale: 0.5135647007555567
+    is_log1p: true
+    q25: 0.0
+    q75: 0.5135647007555567
+  packet_count_bwd_mean:
+    median: 0.0
+    scale: 0.47939151134130015
+    is_log1p: true
+    q25: 0.0
+    q75: 0.47939151134130015
+  packet_count_bwd_std:
+    median: 0.0
+    scale: 0.5435416886230021
+    is_log1p: true
+    q25: 0.0
+    q75: 0.5435416886230021
+  packet_count_bwd_sum:
+    median: 0.0
+    scale: 0.4310921394568249
+    is_log1p: true
+    q25: 0.0
+    q75: 0.4310921394568249
+  packet_count_bwd_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: true
+    q25: 0.0
+    q75: 0.0
+  packet_count_bwd_max:
+    median: 0.0
+    scale: 0.5057597010019868
+    is_log1p: true
+    q25: 0.0
+    q75: 0.5057597010019868
+  byte_count_fwd_mean:
+    median: 0.0
+    scale: 0.4462532464316415
+    is_log1p: true
+    q25: 0.0
+    q75: 0.4462532464316415
+  byte_count_fwd_std:
+    median: 0.0
+    scale: 0.4410309989414228
+    is_log1p: true
+    q25: 0.0
+    q75: 0.4410309989414228
+  byte_count_fwd_sum:
+    median: 0.0
+    scale: 0.38165693555268987
+    is_log1p: true
+    q25: 0.0
+    q75: 0.38165693555268987
+  byte_count_fwd_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: true
+    q25: 0.0
+    q75: 0.0
+  byte_count_fwd_max:
+    median: 0.0
+    scale: 0.38272609231586563
+    is_log1p: true
+    q25: 0.0
+    q75: 0.38272609231586563
+  byte_count_bwd_mean:
+    median: 0.0
+    scale: 0.45930821461527604
+    is_log1p: true
+    q25: 0.0
+    q75: 0.45930821461527604
+  byte_count_bwd_std:
+    median: 0.0
+    scale: 0.45667959632829824
+    is_log1p: true
+    q25: 0.0
+    q75: 0.45667959632829824
+  byte_count_bwd_sum:
+    median: 0.0
+    scale: 0.42991441785877244
+    is_log1p: true
+    q25: 0.0
+    q75: 0.42991441785877244
+  byte_count_bwd_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: true
+    q25: 0.0
+    q75: 0.0
+  byte_count_bwd_max:
+    median: 0.0
+    scale: 0.4476736448999989
+    is_log1p: true
+    q25: 0.0
+    q75: 0.4476736448999989
+  fwd_pkt_len_max_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.39213571108338136
+    q75: 0.6078642889166187
+  fwd_pkt_len_max_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.4862548155960275
+    q75: 0.5137451844039725
+  fwd_pkt_len_max_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.43877662635361037
+    q75: 0.5612233736463896
+  fwd_pkt_len_max_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_pkt_len_max_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.8
+    q75: 0.2
+  fwd_pkt_len_min_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.5246924973341766
+    q75: 0.47530750266582344
+  fwd_pkt_len_min_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.449854320241677
+    q75: 0.550145679758323
+  fwd_pkt_len_min_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.3941495778045838
+    q75: 0.6058504221954162
+  fwd_pkt_len_min_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_pkt_len_min_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -1.0
+    q75: 0.0
+  fwd_pkt_len_mean_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.4068321274226646
+    q75: 0.5931678725773354
+  fwd_pkt_len_mean_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.4407985752781693
+    q75: 0.5592014247218307
+  fwd_pkt_len_mean_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.4269485589656723
+    q75: 0.5730514410343278
+  fwd_pkt_len_mean_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_pkt_len_mean_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.26258887126153735
+    q75: 0.7374111287384627
+  fwd_pkt_len_std_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.41133261124849146
+    q75: 0.5886673887515086
+  fwd_pkt_len_std_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.4798052820831667
+    q75: 0.5201947179168334
+  fwd_pkt_len_std_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.4262103839697454
+    q75: 0.5737896160302547
+  fwd_pkt_len_std_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_pkt_len_std_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.4155751100014674
+    q75: 0.5844248899985326
+  bwd_pkt_len_max_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.4864919743418682
+    q75: 0.5135080256581318
+  bwd_pkt_len_max_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.548155700508879
+    q75: 0.4518442994911211
+  bwd_pkt_len_max_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.4313988322614401
+    q75: 0.56860116773856
+  bwd_pkt_len_max_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_pkt_len_max_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_pkt_len_min_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.5494240399702405
+    q75: 0.4505759600297595
+  bwd_pkt_len_min_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.6642213619589411
+    q75: 0.33577863804105884
+  bwd_pkt_len_min_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.39580172606760017
+    q75: 0.6041982739323998
+  bwd_pkt_len_min_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_pkt_len_min_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -1.0
+    q75: 0.0
+  bwd_pkt_len_mean_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.4817988502685315
+    q75: 0.5182011497314686
+  bwd_pkt_len_mean_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.5784972244566149
+    q75: 0.4215027755433851
+  bwd_pkt_len_mean_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.425933064530242
+    q75: 0.574066935469758
+  bwd_pkt_len_mean_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_pkt_len_mean_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.7284493203006643
+    q75: 0.2715506796993357
+  bwd_pkt_len_std_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.4868693298118328
+    q75: 0.5131306701881672
+  bwd_pkt_len_std_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.5308411457900919
+    q75: 0.46915885420990816
+  bwd_pkt_len_std_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.4379302638542665
+    q75: 0.5620697361457335
+  bwd_pkt_len_std_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_pkt_len_std_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.5187282992316862
+    q75: 0.4812717007683138
+  bytes_per_sec_mean:
+    median: 0.0
+    scale: 0.3536601676395112
+    is_log1p: true
+    q25: 0.0
+    q75: 0.3536601676395112
+  bytes_per_sec_std:
+    median: 0.0
+    scale: 0.2930825375916623
+    is_log1p: true
+    q25: 0.0
+    q75: 0.2930825375916623
+  bytes_per_sec_sum:
+    median: 0.0
+    scale: 0.3395382618287509
+    is_log1p: true
+    q25: 0.0
+    q75: 0.3395382618287509
+  bytes_per_sec_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: true
+    q25: 0.0
+    q75: 0.0
+  bytes_per_sec_max:
+    median: 0.0
+    scale: 0.12868005797043644
+    is_log1p: true
+    q25: 0.0
+    q75: 0.12868005797043644
+  packets_per_sec_mean:
+    median: 0.0
+    scale: 0.38962385217530643
+    is_log1p: true
+    q25: 0.0
+    q75: 0.38962385217530643
+  packets_per_sec_std:
+    median: 0.0
+    scale: 0.3791294904778897
+    is_log1p: true
+    q25: 0.0
+    q75: 0.3791294904778897
+  packets_per_sec_sum:
+    median: 0.0
+    scale: 0.3955338828023275
+    is_log1p: true
+    q25: 0.0
+    q75: 0.3955338828023275
+  packets_per_sec_min:
+    median: 0.0
+    scale: 9.414220852532557e-05
+    is_log1p: true
+    q25: 0.0
+    q75: 9.414220852532557e-05
+  packets_per_sec_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: true
+    q25: 0.0
+    q75: 0.0
+  flow_iat_mean_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.23614692836643286
+    q75: 0.7638530716335672
+  flow_iat_mean_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.2806899435822146
+    q75: 0.7193100564177854
+  flow_iat_mean_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.10506976232307674
+    q75: 0.8949302376769234
+  flow_iat_mean_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  flow_iat_mean_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.10297698010902624
+    q75: 0.8970230198909738
+  flow_iat_std_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.4801449590510798
+    q75: 0.5198550409489202
+  flow_iat_std_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.4751872540885979
+    q75: 0.524812745911402
+  flow_iat_std_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.43153752836379616
+    q75: 0.5684624716362038
+  flow_iat_std_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  flow_iat_std_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.19759177126557648
+    q75: 0.8024082287344235
+  flow_iat_max_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.2657770959027581
+    q75: 0.7342229040972419
+  flow_iat_max_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.2542034787023168
+    q75: 0.7457965212976831
+  flow_iat_max_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.25757118615675767
+    q75: 0.7424288138432423
+  flow_iat_max_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  flow_iat_max_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.6218580052794439
+    q75: 0.3781419947205561
+  flow_iat_min_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.2318812343888781
+    q75: 0.7681187656111219
+  flow_iat_min_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.28316658746256795
+    q75: 0.7168334125374322
+  flow_iat_min_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.13165147486208326
+    q75: 0.8683485251379167
+  flow_iat_min_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  flow_iat_min_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.10293249927052257
+    q75: 0.8970675007294774
+  fwd_iat_tot_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.49473955585106966
+    q75: 0.5052604441489303
+  fwd_iat_tot_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.6108519210322497
+    q75: 0.3891480789677503
+  fwd_iat_tot_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.3877304055706097
+    q75: 0.6122695944293902
+  fwd_iat_tot_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_iat_tot_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.9274740930496633
+    q75: 0.07252590695033667
+  fwd_iat_mean_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.23261448623994413
+    q75: 0.7673855137600558
+  fwd_iat_mean_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.26417408739732257
+    q75: 0.7358259126026775
+  fwd_iat_mean_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.11740287407911286
+    q75: 0.8825971259208871
+  fwd_iat_mean_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_iat_mean_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.11426652055630263
+    q75: 0.8857334794436974
+  fwd_iat_std_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.485489821568179
+    q75: 0.514510178431821
+  fwd_iat_std_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.5197753019759227
+    q75: 0.4802246980240773
+  fwd_iat_std_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.41064839452971585
+    q75: 0.5893516054702842
+  fwd_iat_std_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_iat_std_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.6606836049205073
+    q75: 0.33931639507949274
+  fwd_iat_max_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.2657753786038127
+    q75: 0.7342246213961874
+  fwd_iat_max_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.2532429877536663
+    q75: 0.7467570122463337
+  fwd_iat_max_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.24639744363466798
+    q75: 0.753602556365332
+  fwd_iat_max_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_iat_max_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.6416017068536897
+    q75: 0.35839829314631033
+  fwd_iat_min_mean:
+    median: 0.0
+    scale: 0.9999999999999998
+    is_log1p: false
+    q25: -0.23398022883438047
+    q75: 0.7660197711656194
+  fwd_iat_min_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.2811381976570194
+    q75: 0.7188618023429806
+  fwd_iat_min_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.12925138965752953
+    q75: 0.8707486103424705
+  fwd_iat_min_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_iat_min_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.11426986079590398
+    q75: 0.885730139204096
+  bwd_iat_tot_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.5495055384944479
+    q75: 0.4504944615055521
+  bwd_iat_tot_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.6254668392582978
+    q75: 0.37453316074170223
+  bwd_iat_tot_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.40315354133396547
+    q75: 0.5968464586660346
+  bwd_iat_tot_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_iat_tot_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.7268812077294248
+    q75: 0.2731187922705752
+  bwd_iat_mean_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.5035527309035523
+    q75: 0.49644726909644765
+  bwd_iat_mean_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.3894435784219841
+    q75: 0.6105564215780158
+  bwd_iat_mean_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.44063102764859413
+    q75: 0.5593689723514059
+  bwd_iat_mean_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_iat_mean_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.7220140692002943
+    q75: 0.2779859307997057
+  bwd_iat_std_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.5079936237227863
+    q75: 0.4920063762772137
+  bwd_iat_std_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.5570853354546679
+    q75: 0.4429146645453321
+  bwd_iat_std_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.39719285375218993
+    q75: 0.6028071462478101
+  bwd_iat_std_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_iat_std_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.2066934379346967
+    q75: 0.7933065620653033
+  bwd_iat_max_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.5164617954490305
+    q75: 0.4835382045509695
+  bwd_iat_max_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.5529386077591434
+    q75: 0.4470613922408566
+  bwd_iat_max_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.4087108705390875
+    q75: 0.5912891294609125
+  bwd_iat_max_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_iat_max_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.06043965095493432
+    q75: 0.9395603490450657
+  bwd_iat_min_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.3611384860552273
+    q75: 0.6388615139447728
+  bwd_iat_min_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.42687509261841894
+    q75: 0.5731249073815811
+  bwd_iat_min_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.4175348537151301
+    q75: 0.5824651462848699
+  bwd_iat_min_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_iat_min_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.7730462160256217
+    q75: 0.2269537839743782
+  fwd_psh_flags_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.41132548307205735
+    q75: 0.5886745169279427
+  fwd_psh_flags_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.487972495617587
+    q75: 0.512027504382413
+  fwd_psh_flags_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.44642857142857145
+    q75: 0.5535714285714286
+  fwd_psh_flags_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_psh_flags_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_psh_flags_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_psh_flags_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_psh_flags_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_psh_flags_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_psh_flags_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_urg_flags_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_urg_flags_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_urg_flags_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_urg_flags_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_urg_flags_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_urg_flags_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_urg_flags_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_urg_flags_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_urg_flags_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_urg_flags_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_header_len_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.3834996596657165
+    q75: 0.6165003403342836
+  fwd_header_len_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.1580682949335207
+    q75: 0.8419317050664793
+  fwd_header_len_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.3651563404748118
+    q75: 0.6348436595251882
+  fwd_header_len_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_header_len_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.11491108071135431
+    q75: 0.8850889192886456
+  bwd_header_len_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.31969246497230674
+    q75: 0.6803075350276933
+  bwd_header_len_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.13265908119087838
+    q75: 0.8673409188091217
+  bwd_header_len_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.2869840053634709
+    q75: 0.7130159946365291
+  bwd_header_len_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_header_len_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.10034411562284928
+    q75: 0.8996558843771507
+  fwd_pkts_per_sec_mean:
+    median: 0.0
+    scale: 0.9999999999999999
+    is_log1p: false
+    q25: -0.407827139171998
+    q75: 0.5921728608280019
+  fwd_pkts_per_sec_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.5204583816450005
+    q75: 0.47954161835499953
+  fwd_pkts_per_sec_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.38171297115719655
+    q75: 0.6182870288428034
+  fwd_pkts_per_sec_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_pkts_per_sec_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 1.0
+  bwd_pkts_per_sec_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.31993469105105954
+    q75: 0.6800653089489405
+  bwd_pkts_per_sec_std:
+    median: 0.0
+    scale: 0.9999999999999999
+    is_log1p: false
+    q25: -0.18138793645270404
+    q75: 0.8186120635472959
+  bwd_pkts_per_sec_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.3690029084604305
+    q75: 0.6309970915395695
+  bwd_pkts_per_sec_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_pkts_per_sec_max:
+    median: 0.0
+    scale: 1.0000000000000002
+    is_log1p: false
+    q25: -0.05714285719000002
+    q75: 0.9428571428100001
+  pkt_len_min_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.5307134093500466
+    q75: 0.4692865906499534
+  pkt_len_min_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.45007821707352025
+    q75: 0.5499217829264798
+  pkt_len_min_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.3973449161874465
+    q75: 0.6026550838125535
+  pkt_len_min_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  pkt_len_min_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -1.0
+    q75: 0.0
+  pkt_len_max_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.4746693913993886
+    q75: 0.5253306086006114
+  pkt_len_max_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.5596522867491491
+    q75: 0.4403477132508509
+  pkt_len_max_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.4235196960192786
+    q75: 0.5764803039807214
+  pkt_len_max_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  pkt_len_max_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  pkt_len_mean_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.512195691351475
+    q75: 0.4878043086485249
+  pkt_len_mean_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.5220517355475631
+    q75: 0.4779482644524369
+  pkt_len_mean_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.41761577391976074
+    q75: 0.5823842260802393
+  pkt_len_mean_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  pkt_len_mean_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.5561203993614134
+    q75: 0.44387960063858656
+  pkt_len_std_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.5038797188016612
+    q75: 0.4961202811983388
+  pkt_len_std_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.5399182570702369
+    q75: 0.46008174292976306
+  pkt_len_std_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.41439144030524033
+    q75: 0.5856085596947598
+  pkt_len_std_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  pkt_len_std_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.7259529690309758
+    q75: 0.27404703096902416
+  pkt_len_var_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.4544213291850354
+    q75: 0.5455786708149646
+  pkt_len_var_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.5720036073731627
+    q75: 0.4279963926268373
+  pkt_len_var_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.42511033380955915
+    q75: 0.5748896661904409
+  pkt_len_var_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  pkt_len_var_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.7209391784674013
+    q75: 0.27906082153259876
+  fin_flag_cnt_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.48284223352213834
+    q75: 0.5171577664778616
+  fin_flag_cnt_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.5755688179831837
+    q75: 0.42443118201681623
+  fin_flag_cnt_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.375
+    q75: 0.625
+  fin_flag_cnt_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fin_flag_cnt_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  syn_flag_cnt_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.41132548307205735
+    q75: 0.5886745169279427
+  syn_flag_cnt_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.487972495617587
+    q75: 0.512027504382413
+  syn_flag_cnt_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.44642857142857145
+    q75: 0.5535714285714286
+  syn_flag_cnt_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  syn_flag_cnt_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  rst_flag_cnt_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.44992800113688214
+    q75: 0.5500719988631179
+  rst_flag_cnt_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.5695462454762726
+    q75: 0.4304537545237274
+  rst_flag_cnt_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.47619047619047616
+    q75: 0.5238095238095238
+  rst_flag_cnt_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  rst_flag_cnt_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  psh_flag_cnt_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.4158674772997762
+    q75: 0.5841325227002239
+  psh_flag_cnt_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.5887337543548992
+    q75: 0.4112662456451009
+  psh_flag_cnt_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.4187380497131931
+    q75: 0.5812619502868069
+  psh_flag_cnt_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  psh_flag_cnt_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  ack_flag_cnt_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.4427222230512384
+    q75: 0.5572777769487617
+  ack_flag_cnt_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.5397767873316076
+    q75: 0.46022321266839245
+  ack_flag_cnt_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.46397694524495675
+    q75: 0.5360230547550432
+  ack_flag_cnt_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  ack_flag_cnt_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  urg_flag_cnt_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.43808167387420044
+    q75: 0.5619183261257996
+  urg_flag_cnt_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.5017579109868747
+    q75: 0.49824208901312533
+  urg_flag_cnt_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.4107142857142857
+    q75: 0.5892857142857143
+  urg_flag_cnt_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  urg_flag_cnt_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  cwe_flag_cnt_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  cwe_flag_cnt_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  cwe_flag_cnt_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  cwe_flag_cnt_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  cwe_flag_cnt_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  ece_flag_cnt_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.44967626357144347
+    q75: 0.5503237364285565
+  ece_flag_cnt_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.5693633093126078
+    q75: 0.4306366906873922
+  ece_flag_cnt_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.47619047619047616
+    q75: 0.5238095238095238
+  ece_flag_cnt_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  ece_flag_cnt_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  down_up_ratio_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.587203708354689
+    q75: 0.41279629164531095
+  down_up_ratio_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.3381476887724831
+    q75: 0.6618523112275169
+  down_up_ratio_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.38461538461538464
+    q75: 0.6153846153846154
+  down_up_ratio_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  down_up_ratio_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.5
+    q75: 0.5
+  pkt_size_avg_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.49079806157808364
+    q75: 0.5092019384219163
+  pkt_size_avg_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.5155106038134197
+    q75: 0.48448939618658027
+  pkt_size_avg_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.42708823545388735
+    q75: 0.5729117645461127
+  pkt_size_avg_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  pkt_size_avg_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.5221890355712514
+    q75: 0.4778109644287486
+  fwd_seg_size_avg_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.4068321274226646
+    q75: 0.5931678725773354
+  fwd_seg_size_avg_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.4407985752781693
+    q75: 0.5592014247218307
+  fwd_seg_size_avg_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.4269485589656723
+    q75: 0.5730514410343278
+  fwd_seg_size_avg_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_seg_size_avg_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.26258887126153735
+    q75: 0.7374111287384627
+  bwd_seg_size_avg_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.4817988502685315
+    q75: 0.5182011497314686
+  bwd_seg_size_avg_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.5784972244566149
+    q75: 0.4215027755433851
+  bwd_seg_size_avg_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.425933064530242
+    q75: 0.574066935469758
+  bwd_seg_size_avg_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_seg_size_avg_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.7284493203006643
+    q75: 0.2715506796993357
+  fwd_byts_b_avg_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_byts_b_avg_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_byts_b_avg_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_byts_b_avg_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_byts_b_avg_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_pkts_b_avg_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_pkts_b_avg_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_pkts_b_avg_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_pkts_b_avg_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_pkts_b_avg_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_blk_rate_avg_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_blk_rate_avg_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_blk_rate_avg_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_blk_rate_avg_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_blk_rate_avg_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_byts_b_avg_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_byts_b_avg_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_byts_b_avg_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_byts_b_avg_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_byts_b_avg_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_pkts_b_avg_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_pkts_b_avg_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_pkts_b_avg_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_pkts_b_avg_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_pkts_b_avg_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_blk_rate_avg_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_blk_rate_avg_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_blk_rate_avg_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_blk_rate_avg_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  bwd_blk_rate_avg_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  subflow_fwd_pkts_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.38607724143419925
+    q75: 0.6139227585658008
+  subflow_fwd_pkts_std:
+    median: 0.0
+    scale: 1.0000000000000002
+    is_log1p: false
+    q25: -0.17248653002126127
+    q75: 0.8275134699787389
+  subflow_fwd_pkts_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.3561729947196379
+    q75: 0.6438270052803621
+  subflow_fwd_pkts_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  subflow_fwd_pkts_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.11773255813953488
+    q75: 0.8822674418604651
+  subflow_fwd_byts_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.3945038401103385
+    q75: 0.6054961598896615
+  subflow_fwd_byts_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.3659383102342795
+    q75: 0.6340616897657205
+  subflow_fwd_byts_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.4062521492521614
+    q75: 0.5937478507478386
+  subflow_fwd_byts_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  subflow_fwd_byts_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.39195476765416104
+    q75: 0.608045232345839
+  subflow_bwd_pkts_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.3183873837825
+    q75: 0.6816126162175
+  subflow_bwd_pkts_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.11156634536779474
+    q75: 0.8884336546322052
+  subflow_bwd_pkts_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.28109599842302385
+    q75: 0.7189040015769761
+  subflow_bwd_pkts_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  subflow_bwd_pkts_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.10249307479224377
+    q75: 0.8975069252077562
+  subflow_bwd_byts_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.22929806927423768
+    q75: 0.7707019307257623
+  subflow_bwd_byts_std:
+    median: 0.0
+    scale: 0.9999999999999999
+    is_log1p: false
+    q25: -0.1200280871031806
+    q75: 0.8799719128968193
+  subflow_bwd_byts_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.19604316387056117
+    q75: 0.8039568361294388
+  subflow_bwd_byts_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  subflow_bwd_byts_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.10131292188935055
+    q75: 0.8986870781106494
+  window_size_fwd_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.3698273168257139
+    q75: 0.6301726831742862
+  window_size_fwd_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.45280832957492423
+    q75: 0.5471916704250758
+  window_size_fwd_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.27950280042859926
+    q75: 0.7204971995714007
+  window_size_fwd_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  window_size_fwd_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -1.0
+    q75: 0.0
+  window_size_bwd_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.48302760639440706
+    q75: 0.5169723936055929
+  window_size_bwd_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.5700983047842607
+    q75: 0.42990169521573923
+  window_size_bwd_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.34659683056413465
+    q75: 0.6534031694358653
+  window_size_bwd_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  window_size_bwd_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.6801302931596092
+    q75: 0.3198697068403909
+  fwd_act_data_pkts_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.4661225657390097
+    q75: 0.5338774342609903
+  fwd_act_data_pkts_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.4973438085747927
+    q75: 0.5026561914252073
+  fwd_act_data_pkts_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.4164835164835165
+    q75: 0.5835164835164836
+  fwd_act_data_pkts_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_act_data_pkts_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.21052631578947367
+    q75: 0.7894736842105263
+  fwd_seg_size_min_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.4443249637892732
+    q75: 0.5556750362107268
+  fwd_seg_size_min_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.5646154501945816
+    q75: 0.43538454980541835
+  fwd_seg_size_min_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.41125300758837685
+    q75: 0.5887469924116232
+  fwd_seg_size_min_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  fwd_seg_size_min_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 1.0
+  active_mean_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.14813357670826677
+    q75: 0.8518664232917332
+  active_mean_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.11753021162495966
+    q75: 0.8824697883750403
+  active_mean_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.36406361607213106
+    q75: 0.6359363839278689
+  active_mean_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  active_mean_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.14868874523529776
+    q75: 0.8513112547647023
+  active_std_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.2313081068369944
+    q75: 0.7686918931630056
+  active_std_std:
+    median: 0.0
+    scale: 0.9999999999999999
+    is_log1p: false
+    q25: -0.08278590774320942
+    q75: 0.9172140922567905
+  active_std_sum:
+    median: 0.0
+    scale: 0.9999999999999999
+    is_log1p: false
+    q25: -0.3837588420944942
+    q75: 0.6162411579055057
+  active_std_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  active_std_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.08633948482947144
+    q75: 0.9136605151705286
+  active_max_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.20475719715061647
+    q75: 0.7952428028493835
+  active_max_std:
+    median: 0.0
+    scale: 0.9999999999999999
+    is_log1p: false
+    q25: -0.10173986406123346
+    q75: 0.8982601359387664
+  active_max_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.38674091425413787
+    q75: 0.6132590857458621
+  active_max_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  active_max_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.08865834370389612
+    q75: 0.9113416562961039
+  active_min_mean:
+    median: 0.0
+    scale: 1.0000000000000002
+    is_log1p: false
+    q25: -0.18016420950326387
+    q75: 0.8198357904967363
+  active_min_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.13425564169539927
+    q75: 0.8657443583046007
+  active_min_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.35454362506720905
+    q75: 0.645456374932791
+  active_min_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  active_min_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.33547164337811103
+    q75: 0.664528356621889
+  idle_mean_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.30655840425590686
+    q75: 0.6934415957440931
+  idle_mean_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.23990935258854124
+    q75: 0.7600906474114588
+  idle_mean_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.27057585144480273
+    q75: 0.7294241485551972
+  idle_mean_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  idle_mean_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.5785834948278886
+    q75: 0.4214165051721114
+  idle_std_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.32738940683345225
+    q75: 0.6726105931665478
+  idle_std_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.43805249369182025
+    q75: 0.5619475063081798
+  idle_std_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.43776259679271223
+    q75: 0.5622374032072879
+  idle_std_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  idle_std_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.7146900597254071
+    q75: 0.2853099402745929
+  idle_max_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.31375304838835655
+    q75: 0.6862469516116434
+  idle_max_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.26580041714464686
+    q75: 0.7341995828553531
+  idle_max_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.2781685897501999
+    q75: 0.7218314102498001
+  idle_max_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  idle_max_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.6933014410650408
+    q75: 0.30669855893495923
+  idle_min_mean:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.32006799476329273
+    q75: 0.6799320052367073
+  idle_min_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.2453963851616365
+    q75: 0.7546036148383635
+  idle_min_sum:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.26268854752911136
+    q75: 0.7373114524708886
+  idle_min_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  idle_min_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.5785834948278886
+    q75: 0.4214165051721114
+  duration_sec_mean:
+    median: 0.0
+    scale: 0.3719531748127637
+    is_log1p: true
+    q25: 0.0
+    q75: 0.3719531748127637
+  duration_sec_std:
+    median: 0.0
+    scale: 0.3083321143008596
+    is_log1p: true
+    q25: 0.0
+    q75: 0.3083321143008596
+  duration_sec_sum:
+    median: 0.0
+    scale: 0.37518236453603776
+    is_log1p: true
+    q25: 0.0
+    q75: 0.37518236453603776
+  duration_sec_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: true
+    q25: 0.0
+    q75: 0.0
+  duration_sec_max:
+    median: 0.0
+    scale: 0.10331504274274328
+    is_log1p: true
+    q25: 0.0
+    q75: 0.10331504274274328
+  flow_count:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.44100895036615134
+    q75: 0.5589910496338486
+  unique_dst_ports_count:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: -0.27411167512690354
+    q75: 0.7258883248730964
+  unique_protocols_count:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  pkt_ttl_min:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  pkt_ttl_max:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  pkt_ttl_std:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  pkt_ttl_mode:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  pkt_frag_mf_count:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  pkt_frag_df_count:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  pkt_payload_size_p25:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  pkt_payload_size_p50:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  pkt_payload_size_p75:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  pkt_payload_size_p95:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  pkt_tcp_retrans_count:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0
+  pkt_port_scan_seq_score:
+    median: 0.0
+    scale: 1.0
+    is_log1p: false
+    q25: 0.0
+    q75: 0.0

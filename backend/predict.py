@@ -139,14 +139,61 @@ class ShadowcatPipeline:
             dropout=0.2,
         )
         if Path(wm_path).exists():
-            ckpt = torch.load(wm_path, map_location=self.device, weights_only=False)
-            state_dict = ckpt.get("model_state_dict", ckpt)
+            wm_ckpt = torch.load(wm_path, map_location=self.device, weights_only=False)
+            state_dict = wm_ckpt.get("model_state_dict", wm_ckpt)
             self.world_model.load_state_dict(state_dict)
             self.world_model.to(self.device)
             self.world_model.eval()
             self.world_model_loaded = True
         else:
             self.world_model_loaded = False
+
+        # 2b. [EXPERIMENTAL] Load GNN Fused Model if available
+        self.fused_model_loaded = False
+        self.fused_model = None
+        try:
+            import sys
+            import os
+            ml2_path = os.path.abspath('ml2-full/GNN_FINAL')
+            if ml2_path not in sys.path:
+                sys.path.insert(0, ml2_path)
+            import torch_geometric
+            from ml2.models.fusion import FusedModel
+            
+            fused_ckpt_path = 'ml2-full/GNN_FINAL/ml2/results/ablation/fused/best_model.pt'
+            if os.path.exists(fused_ckpt_path):
+                fused_ckpt = torch.load(fused_ckpt_path, map_location=self.device, weights_only=False)
+                self.fused_model = FusedModel(z_dim=64, output_dim=64)
+                if 'model_state_dict' in fused_ckpt:
+                    state_dict = fused_ckpt['model_state_dict']
+                else:
+                    state_dict = fused_ckpt
+                    
+                missing_keys, unexpected_keys = self.fused_model.load_state_dict(state_dict, strict=False)
+                import logging
+                if missing_keys:
+                    logging.info(f"FusedModel missing keys: {missing_keys}")
+                if unexpected_keys:
+                    logging.info(f"FusedModel unexpected keys: {unexpected_keys}")
+                self.fused_model.to(self.device)
+                self.fused_model.eval()
+                self.fused_model_loaded = True
+
+                # Load canonical graph edges for live windows
+                dat_path = Path(dat_dir)
+                edges_path = dat_path / "ucs_graph_edgelists.parquet"
+                lookup_path = dat_path / "node_lookup.parquet"
+                if edges_path.exists() and lookup_path.exists():
+                    self.ucs_edges = pd.read_parquet(edges_path)
+                    self.node_lookup = pd.read_parquet(lookup_path)
+                else:
+                    self.ucs_edges = None
+                    self.node_lookup = None
+        except Exception as e:
+            import logging
+            logging.warning(f"Failed to load experimental FusedModel: {e}")
+            self.fused_model_loaded = False
+            self.fused_model = None
 
         # 3. Load Stage Head (ATT&CK Stage Classifier)
         st_path = stage_head_path or (
@@ -209,15 +256,23 @@ class ShadowcatPipeline:
         using the 37-fold LOEO ensemble.
         """
         # sequence_30x406 shape: (30, 406)
-        # Apply projection to 32 dimensions (matching hazard head 32-dim PCA representation)
-        # For inference, standard first-32 principal channels or top informative features:
+        # BUG EXPOSED: The Hazard Head v4 models were trained on a 32-dim PCA representation 
+        # (see ml1/scripts/train_hazard_head.py `apply_training_only_pca`), but the PCA scaler 
+        # was never saved/exported. The live code previously just sliced the first 32 raw columns 
+        # (e.g., raw duration, packet counts), which saturated the LSTM to a constant ~0.51 output, 
+        # causing false positives.
+        # Since the PCA scaler is lost and retraining is infeasible right now, the hazard models 
+        # cannot be evaluated correctly. We must honestly hold them back.
+        
         seq_32 = sequence_30x406[:, :32]  # (30, 32)
         seq_tensor = torch.as_tensor(seq_32, dtype=torch.float32).unsqueeze(0).to(self.device)
 
         hazards = {}
+        pca_available = False # Honest limitation flag
+
         for h_val in (1, 2, 5):
             models = self.hazard_models.get(h_val, [])
-            if models:
+            if models and pca_available:
                 probs = []
                 with torch.no_grad():
                     for m in models:
@@ -225,8 +280,9 @@ class ShadowcatPipeline:
                         probs.append(p)
                 hazards[h_val] = float(np.mean(probs))
             else:
-                # Fallback calibrated base hazard
-                hazards[h_val] = 0.20 if h_val == 1 else (0.35 if h_val == 2 else 0.50)
+                # Without a working model, we must fall back to a nominal background risk rate
+                # rather than artificially inflating it to ~0.50 which triggers false alerts.
+                hazards[h_val] = 0.05
 
         return hazards
 
@@ -283,6 +339,57 @@ class ShadowcatPipeline:
             pred_mean_t1, pred_std_t1 = self.world_model(seq_tensor)
             z_t = self.world_model.extract_latent_z(seq_tensor)  # 64-dim latent
 
+        # [EXPERIMENTAL] GNN Fusion
+        fusion_experimental_result = None
+        if getattr(self, 'fused_model_loaded', False) and self.fused_model is not None:
+            try:
+                B = z_t.shape[0]
+                node_feature_dim = 11
+                
+                # Default empty graph fallback
+                x = torch.zeros((B, node_feature_dim), device=self.device)
+                edge_index = torch.zeros((2, 0), dtype=torch.long, device=self.device)
+                batch = torch.zeros(B, dtype=torch.long, device=self.device)
+                status_val = "experimental_placeholder"
+                note_str = "GraphSAGE experimental fusion branch. Graph construction currently works for known dataset windows only (static lookup). Arbitrary new input (live mode) falls back to this placeholder."
+                
+                # Attempt to build real graph from window
+                if getattr(self, 'ucs_edges', None) is not None and getattr(self, 'node_lookup', None) is not None:
+                    from ml2.data.canonical_ucs import build_canonical_graphs
+                    
+                    w_df = window_df.tail(1).copy()
+                    if "split" not in w_df.columns:
+                        w_df["split"] = "test"
+                    if "label_binary" not in w_df.columns:
+                        w_df["label_binary"] = 0
+                        
+                    w_id = w_df["window_id"].iloc[0]
+                    window_edges = self.ucs_edges[self.ucs_edges["window_id"] == w_id]
+                    
+                    if len(window_edges) > 0:
+                        graphs = build_canonical_graphs(w_df, window_edges, self.node_lookup)
+                        if len(graphs) > 0:
+                            g = graphs[0]
+                            x = g.x.to(self.device)
+                            edge_index = g.edge_index.to(self.device)
+                            batch = torch.zeros(x.shape[0], dtype=torch.long, device=self.device)
+                            
+                            status_val = "experimental_held_back"
+                            note_str = f"GraphSAGE fusion path active. Real graph built from {x.shape[0]} nodes and {edge_index.shape[1]} edges. Output is explicitly held back."
+                
+                with torch.no_grad():
+                    fused_out = self.fused_model(x, edge_index, z_t, batch)
+                
+                fusion_experimental_result = {
+                    "status": status_val,
+                    "z_prime_t": fused_out.cpu().numpy().tolist(),
+                    "note": note_str
+                }
+            except Exception as e:
+                import logging
+                logging.warning(f"Experimental fusion branch failed at runtime: {e}")
+                fusion_experimental_result = {"status": "error", "message": str(e)}
+
         # 4-step forward simulation (Rollout K=1..4)
         rollout_means = []
         rollout_stds = []
@@ -299,9 +406,9 @@ class ShadowcatPipeline:
 
         # Step 5: Hazard Head Ensemble & Cumulative Trajectory
         hazards = self._predict_hazard_ensemble(seq_30x406)
-        h1 = hazards.get(1, 0.21)
-        h2 = hazards.get(2, 0.38)
-        h5 = hazards.get(5, 0.75)
+        h1 = hazards.get(1, 0.05)
+        h2 = hazards.get(2, 0.05)
+        h5 = hazards.get(5, 0.05)
 
         # Interpolate for H=3, 4
         h3 = np.clip(h2 + (1.0 / 3.0) * (h5 - h2), 0.0, 1.0)
@@ -314,6 +421,8 @@ class ShadowcatPipeline:
         for h_k in step_hazards:
             prod_surv *= (1.0 - h_k)
             cum_risk.append(float(np.clip(1.0 - prod_surv, 0.0, 1.0)))
+
+        risk_trajectory = step_hazards
 
         # Step 6: Stage Head Classification on Predicted Future State S_hat(t+1)
         stage_names = []
@@ -424,9 +533,9 @@ class ShadowcatPipeline:
             "calibrated_threshold": self.calibrated_threshold_global,
             "hazard_alert": any(r >= self.calibrated_threshold_global for r in cum_risk),
             "calibrated_uncertainty": True,
-            "source_branch": "Continuous Dynamics Head (v4 Calibrated)",
+            "source_branch": "Hazard Models Disabled (Missing PCA Transform)",
             "protocol": "Chronological Split (K=1..3 Validated, K=4 Exploratory)",
-            "hazard_epistemic_note": "Averaged across 37-fold LOEO ensemble under an explicit FPR-constrained ceiling (FPR <= 5%) with calibrated threshold tau=0.45.",
+            "hazard_epistemic_note": "CRITICAL LIMITATION: Hazard models disabled. The training pipeline used a 32-dim PCA which was never exported, leaving live inference to ingest unscaled raw features, causing saturated outputs (~0.51). Risk scores are currently held at baseline.",
             "is_mock": False,
         }
 
@@ -503,6 +612,7 @@ class ShadowcatPipeline:
             "flagged_flows": flagged_flows,
             "stage_predictions": stage_names,
             "risk_scores": [round(r, 2) for r in cum_risk],
+            "fusion_experimental": fusion_experimental_result,
         }
 
     def _extract_flagged_flows(self, raw_input: pd.DataFrame, source_type: str) -> List[Dict[str, Any]]:
