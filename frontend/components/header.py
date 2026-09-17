@@ -7,7 +7,7 @@ from styles import COLORS, render_html
 from data_provider import inference_status
 
 
-def render_header(data):
+def render_header(data, active_tab=None):
     """Renders the sticky pinned status banner and slim persistent top bar."""
     analysis = data["analysis"]
     telemetry_source = st.session_state.get("telemetry_source", "BENCHMARK: CIC-IDS2018 (Infiltration)")

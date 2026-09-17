@@ -895,3 +895,64 @@ def _build_attack_graph_svg(graph_data: dict, active_k: int, selected_host: str,
     </html>
     """
     return html_content
+
+
+def render_attack_graph_preview_card():
+    """
+    Renders a clean, executive bridge card in Threat Forecast summarizing the predicted lateral movement
+    path with a direct link to the dedicated Lateral Movement Graph flagship page.
+    """
+    render_html("""
+    <div style="background: #171717; border: 1px solid #282828; border-radius: 6px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45); padding: 18px 20px; margin-top: 24px; margin-bottom: 18px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 12px;">
+            <div>
+                <div style="font-size: 0.95rem; font-weight: 700; color: #FFFFFF;">
+                    Dynamic enterprise attack graph &amp; lateral rollout
+                </div>
+                <div style="font-size: 0.78rem; color: #8A8A8A; margin-top: 2px;">
+                    Multi-step forward simulation of lateral adversary rollout across enterprise topology.
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 0.72rem; color: #E0982B; background: rgba(224, 152, 43, 0.12); border: 1px solid #E0982B; padding: 2px 8px; border-radius: 4px; font-weight: 600; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+                    Horizon t+3 &rarr; Lateral pivot
+                </span>
+            </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 10px; background: #0D0D0D; border: 1px solid #222222; border-radius: 6px; padding: 12px 16px; margin-bottom: 14px; overflow-x: auto;">
+            <div style="display: flex; align-items: center; gap: 8px; white-space: nowrap;">
+                <span style="font-size: 0.78rem; font-family: 'JetBrains Mono', Consolas, monospace; font-weight: 700; color: #FF453A;">#1 10.0.2.15</span>
+                <span style="font-size: 0.70rem; color: #8A8A8A;">(Workstation)</span>
+            </div>
+            <span style="color: #FF453A; font-weight: 800;">&rarr;</span>
+            <div style="display: flex; align-items: center; gap: 8px; white-space: nowrap;">
+                <span style="font-size: 0.78rem; font-family: 'JetBrains Mono', Consolas, monospace; font-weight: 700; color: #FF453A;">#2 10.0.4.10</span>
+                <span style="font-size: 0.70rem; color: #8A8A8A;">(SSH Jump Host)</span>
+            </div>
+            <span style="color: #FF9F0A; font-weight: 800;">&rarr;</span>
+            <div style="display: flex; align-items: center; gap: 8px; white-space: nowrap;">
+                <span style="font-size: 0.78rem; font-family: 'JetBrains Mono', Consolas, monospace; font-weight: 700; color: #FF9F0A;">#3 10.0.4.21</span>
+                <span style="font-size: 0.70rem; color: #8A8A8A;">(Auth Cluster)</span>
+            </div>
+            <span style="color: #8A8A8A; font-weight: 800;">&rarr;</span>
+            <div style="display: flex; align-items: center; gap: 8px; white-space: nowrap;">
+                <span style="font-size: 0.78rem; font-family: 'JetBrains Mono', Consolas, monospace; font-weight: 700; color: #FFFFFF;">#4 10.0.5.1</span>
+                <span style="font-size: 0.70rem; color: #8A8A8A;">(Domain Controller)</span>
+            </div>
+        </div>
+    </div>
+    """)
+    try:
+        st.page_link(
+            "views/01b_AttackGraph.py",
+            label="Explore Dedicated Lateral Movement Attack Graph \u2192",
+            use_container_width=True,
+        )
+    except Exception:
+        # Fallback button for bare test execution when st.navigation is not mounted
+        st.button(
+            "Explore Dedicated Lateral Movement Attack Graph \u2192",
+            key="btn_explore_attack_graph_fallback",
+            use_container_width=True,
+        )
