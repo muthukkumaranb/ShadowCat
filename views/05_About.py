@@ -61,34 +61,52 @@ render_html("""
     <span>Core operational capabilities</span>
 </div>
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin-bottom: 24px;">
-    <div class="glass-card" style="padding: 16px;" title="Evaluates future risk progression across multi-step horizons prior to lateral breach completion.">
+    <div class="glass-card" style="padding: 16px;">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
             <div style="font-size: 0.90rem; font-weight: 700; color: #FFFFFF;">
                 Multi-Horizon Trajectory Rollout
             </div>
-            <span style="font-size: 0.68rem; color: #8A8A8A; border: 1px solid #333333; border-radius: 50%; width: 15px; height: 15px; display: inline-flex; align-items: center; justify-content: center; cursor: help;" title="Evaluates future risk progression across multi-step horizons prior to lateral breach completion.">i</span>
+            <span class="info-tooltip-wrapper">
+                <span class="info-icon">i</span>
+                <span class="info-tooltip-box">
+                    <span class="tooltip-header">Multi-Horizon Trajectory Rollout</span>
+                    Evaluates future risk progression across multi-step horizons (t+1 &rarr; t+4) prior to lateral breach completion. Forward rollout simulates state transition dynamics P(S_{t+1}|S_t) across network host topology, enabling pre-emptive isolation before critical assets are compromised.
+                </span>
+            </span>
         </div>
         <div style="font-size: 0.78rem; color: #8A8A8A; line-height: 1.5;">
             Continuous forward simulation of state transition dynamics P(S_{t+1} | S_t) across future horizons t+1 &rarr; t+4.
         </div>
     </div>
-    <div class="glass-card" style="padding: 16px;" title="Governs operational policies: horizons K=1–2 trigger automated mitigation, while K=3–4 trigger tiered SOC escalation.">
+    <div class="glass-card" style="padding: 16px;">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
             <div style="font-size: 0.90rem; font-weight: 700; color: #E0982B;">
                 Compounding Epistemic Uncertainty
             </div>
-            <span style="font-size: 0.68rem; color: #8A8A8A; border: 1px solid #333333; border-radius: 50%; width: 15px; height: 15px; display: inline-flex; align-items: center; justify-content: center; cursor: help;" title="Governs operational policies: horizons K=1–2 trigger automated mitigation, while K=3–4 trigger tiered SOC escalation.">i</span>
+            <span class="info-tooltip-wrapper">
+                <span class="info-icon">i</span>
+                <span class="info-tooltip-box">
+                    <span class="tooltip-header">Compounding Epistemic Uncertainty</span>
+                    Explicitly models compounding variance growth (&sigma;) across forward projection steps. Governs operational response policies: horizons K=1&ndash;2 (&sigma; &le; 0.15) trigger automated mitigation, while K=3&ndash;4 trigger tiered SOC escalation to prevent false-positive disruption.
+                </span>
+            </span>
         </div>
         <div style="font-size: 0.78rem; color: #8A8A8A; line-height: 1.5;">
             Explicitly models compounding variance growth at each forward step to govern tiered response policies.
         </div>
     </div>
-    <div class="glass-card" style="padding: 16px;" title="Local system fonts, disabled telemetry tracking, and in-memory feature tensor parsing for Critical Information Infrastructure.">
+    <div class="glass-card" style="padding: 16px;">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
             <div style="font-size: 0.90rem; font-weight: 700; color: #2FB872;">
                 Air-Gapped High-Assurance Operation
             </div>
-            <span style="font-size: 0.68rem; color: #8A8A8A; border: 1px solid #333333; border-radius: 50%; width: 15px; height: 15px; display: inline-flex; align-items: center; justify-content: center; cursor: help;" title="Local system fonts, disabled telemetry tracking, and in-memory feature tensor parsing for Critical Information Infrastructure.">i</span>
+            <span class="info-tooltip-wrapper">
+                <span class="info-icon">i</span>
+                <span class="info-tooltip-box">
+                    <span class="tooltip-header">Air-Gapped High-Assurance Operation</span>
+                    Engineered for isolated Critical Information Infrastructure (CII). Operates 100% offline with zero outbound cloud API calls, local system fonts, disabled telemetry tracking, and in-memory feature tensor parsing to guarantee data residency.
+                </span>
+            </span>
         </div>
         <div style="font-size: 0.78rem; color: #8A8A8A; line-height: 1.5;">
             Operates fully offline with zero outbound cloud dependencies, local fonts, and in-memory tensor parsing.

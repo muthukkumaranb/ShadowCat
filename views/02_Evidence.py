@@ -65,8 +65,15 @@ col_att, col_sig = st.columns([1.55, 1.45])
 
 with col_att:
     render_html("""
-    <div class="card-title">
-        <span title="Protocol: Deletion-Tested Attribution" style="cursor: help; display: inline-flex; align-items: center; gap: 6px;">Feature Attribution <span style="font-size: 0.64rem; color: #8A8A8A; border: 1px solid #333333; border-radius: 50%; width: 13px; height: 13px; display: inline-flex; align-items: center; justify-content: center; font-weight: 600;">i</span></span>
+    <div class="card-title" style="display: flex; align-items: center; gap: 8px;">
+        <span>Feature Attribution</span>
+        <span class="info-tooltip-wrapper">
+            <span class="info-icon">i</span>
+            <span class="info-tooltip-box tooltip-left">
+                <span class="tooltip-header">Protocol: Deletion-Tested Attribution</span>
+                Measures predictive drop when features are systematically ablated from input sequence windows, establishing certified causal importance rather than raw internal attention correlation.
+            </span>
+        </span>
     </div>
     """)
     st.plotly_chart(create_attribution_chart(attributions), width="stretch", config={"displayModeBar": False})

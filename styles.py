@@ -1030,6 +1030,116 @@ CUSTOM_CSS = """
         visibility: hidden !important;
     }
 
+    /* Custom Interactive SOC Tooltips */
+    .info-tooltip-wrapper {
+        position: relative !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        cursor: pointer !important;
+        vertical-align: middle !important;
+    }
+
+    .info-icon {
+        font-size: 0.68rem !important;
+        font-weight: 700 !important;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+        color: #8A8A8A !important;
+        background: #1C1C1C !important;
+        border: 1px solid #333333 !important;
+        border-radius: 50% !important;
+        width: 16px !important;
+        height: 16px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        transition: all 0.15s ease !important;
+        user-select: none !important;
+        cursor: pointer !important;
+        line-height: 1 !important;
+    }
+
+    .info-tooltip-wrapper:hover .info-icon {
+        color: #FFFFFF !important;
+        background: #2E2E2E !important;
+        border-color: #666666 !important;
+        box-shadow: 0 0 6px rgba(255, 255, 255, 0.2) !important;
+    }
+
+    .info-tooltip-box {
+        visibility: hidden !important;
+        opacity: 0 !important;
+        position: absolute !important;
+        bottom: calc(100% + 8px) !important;
+        right: -8px !important;
+        width: 290px !important;
+        background: #141414 !important;
+        color: #CBD5E1 !important;
+        border: 1px solid #333333 !important;
+        border-radius: 6px !important;
+        padding: 10px 13px !important;
+        font-size: 0.75rem !important;
+        line-height: 1.45 !important;
+        font-weight: 400 !important;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.07) !important;
+        z-index: 99999 !important;
+        pointer-events: none !important;
+        transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s ease !important;
+        transform: translateY(4px) !important;
+        text-align: left !important;
+        white-space: normal !important;
+    }
+
+    .info-tooltip-box .tooltip-header {
+        display: block !important;
+        font-weight: 700 !important;
+        color: #FFFFFF !important;
+        margin-bottom: 5px !important;
+        font-size: 0.78rem !important;
+        border-bottom: 1px solid #282828 !important;
+        padding-bottom: 4px !important;
+    }
+
+    /* Bottom arrow indicator */
+    .info-tooltip-box::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        right: 11px;
+        border-width: 5px;
+        border-style: solid;
+        border-color: #141414 transparent transparent transparent;
+    }
+    .info-tooltip-box::before {
+        content: '';
+        position: absolute;
+        top: 100%;
+        right: 10px;
+        border-width: 6px;
+        border-style: solid;
+        border-color: #333333 transparent transparent transparent;
+    }
+
+    .info-tooltip-wrapper:hover .info-tooltip-box {
+        visibility: visible !important;
+        opacity: 1 !important;
+        transform: translateY(0) !important;
+    }
+
+    .info-tooltip-box.tooltip-left {
+        right: auto !important;
+        left: -8px !important;
+    }
+    .info-tooltip-box.tooltip-left::after {
+        right: auto !important;
+        left: 11px !important;
+    }
+    .info-tooltip-box.tooltip-left::before {
+        right: auto !important;
+        left: 10px !important;
+    }
+
     /* Hide ONLY unwanted Streamlit chrome */
     [data-testid="stAppDeployButton"] { visibility: hidden !important; display: none !important; }
     [data-testid="stMainMenu"] { visibility: hidden !important; display: none !important; }

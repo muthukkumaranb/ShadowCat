@@ -49,10 +49,16 @@ def render_temporal_evidence(data: dict):
 
     render_html("""
     <div style="margin-top: 24px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
-        <div class="card-title" style="margin: 0;">
+        <div class="card-title" style="margin: 0; display: flex; align-items: center; gap: 8px;">
             <span>Temporal Context & Window Attention</span>
-            <span class="badge" style="background: #222222; color: #8A8A8A; border: 1px solid #333333; cursor: help;" title="Internal attention weights — exploratory model internals, not a certified explanation method. See feature attribution below for deletion-tested attribution.">
-                [Model Internals · Exploratory]
+            <span class="info-tooltip-wrapper">
+                <span class="badge" style="background: #222222; color: #8A8A8A; border: 1px solid #333333; cursor: pointer;">
+                    [Model Internals · Exploratory]
+                </span>
+                <span class="info-tooltip-box tooltip-left" style="width: 270px;">
+                    <span class="tooltip-header">Model Internals · Exploratory</span>
+                    Internal attention weights represent latent sequence activations. They are intended for investigative exploration, not certified causal attribution.
+                </span>
             </span>
         </div>
         <span style="font-size: 0.72rem; color: #8A8A8A; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
