@@ -165,9 +165,16 @@ class ShadowcatPipeline:
                 fused_ckpt = torch.load(fused_ckpt_path, map_location=self.device, weights_only=False)
                 self.fused_model = FusedModel(z_dim=64, output_dim=64)
                 if 'model_state_dict' in fused_ckpt:
-                    self.fused_model.load_state_dict(fused_ckpt['model_state_dict'])
+                    state_dict = fused_ckpt['model_state_dict']
                 else:
-                    self.fused_model.load_state_dict(fused_ckpt)
+                    state_dict = fused_ckpt
+                    
+                missing_keys, unexpected_keys = self.fused_model.load_state_dict(state_dict, strict=False)
+                import logging
+                if missing_keys:
+                    logging.info(f"FusedModel missing keys: {missing_keys}")
+                if unexpected_keys:
+                    logging.info(f"FusedModel unexpected keys: {unexpected_keys}")
                 self.fused_model.to(self.device)
                 self.fused_model.eval()
                 self.fused_model_loaded = True
@@ -379,6 +386,8 @@ class ShadowcatPipeline:
                     "note": note_str
                 }
             except Exception as e:
+                import logging
+                logging.warning(f"Experimental fusion branch failed at runtime: {e}")
                 fusion_experimental_result = {"status": "error", "message": str(e)}
 
         # 4-step forward simulation (Rollout K=1..4)
