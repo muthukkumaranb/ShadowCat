@@ -15,7 +15,7 @@ import sys
 import re
 
 if sys.platform == "win32":
-    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stdout.reconfigure(encoding="utf-8")  # type: ignore[union-attr]
 
 FORBIDDEN_PATTERNS = [
     (r"\b5-[Ff]old\b", "Stale 5-fold LOEO label detected (must be 37-fold LOEO)."),

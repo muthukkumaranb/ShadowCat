@@ -14,7 +14,8 @@ def render_evidence_table(data, limit=None, *args, **kwargs):
         flows = flows[:limit]
 
     render_html(f"""
-    <div class="card-title" style="margin-top: 20px; margin-bottom: 12px;">
+    <div class="card-title" style="margin-top: 18px; margin-bottom: 8px;">
+        <svg class="soc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
         <span>Correlated Network Flow Evidence</span>
         <span class="badge">{len(flows)} High-Risk Flows</span>
     </div>
@@ -66,7 +67,7 @@ def render_evidence_table(data, limit=None, *args, **kwargs):
     )
 
     render_html("""
-    <div style="font-size: 0.76rem; color: #8A8A8A; margin-top: 6px; margin-bottom: 14px;">
-        Flagged flows correlate with authentication spikes and connection resets on port 22.
+    <div class="section-caption">
+        Correlated flows driving forensic attribution.
     </div>
     """)

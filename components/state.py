@@ -36,26 +36,26 @@ def render_current_state(data):
             </div>
             <div style="flex: 2.2; min-width: 240px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
                 <div>
-                    <div class="metric-label">Active Flows</div>
-                    <div style="font-size: 1.25rem; font-weight: 700; color: #FFFFFF; font-family: 'JetBrains Mono', monospace;">
+                    <div class="metric-label">Active flows</div>
+                    <div style="font-size: 1.25rem; font-weight: 700; color: #FFFFFF; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; letter-spacing: -0.02em;">
                         {analysis['flows_analyzed']:,}
                     </div>
                 </div>
                 <div>
                     <div class="metric-label">Packets</div>
-                    <div style="font-size: 1.25rem; font-weight: 700; color: #FFFFFF; font-family: 'JetBrains Mono', monospace;">
+                    <div style="font-size: 1.25rem; font-weight: 700; color: #FFFFFF; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; letter-spacing: -0.02em;">
                         {analysis['packets_analyzed']:,}
                     </div>
                 </div>
                 <div>
                     <div class="metric-label">Endpoints</div>
-                    <div style="font-size: 1.25rem; font-weight: 700; color: #FFFFFF; font-family: 'JetBrains Mono', monospace;">
+                    <div style="font-size: 1.25rem; font-weight: 700; color: #FFFFFF; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; letter-spacing: -0.02em;">
                         {state['active_endpoints']} <span style="font-size: 0.8rem; color: #8A8A8A; font-weight: normal;">hosts</span>
                     </div>
                 </div>
                 <div>
-                    <div class="metric-label">SYN / ACK Ratio</div>
-                    <div style="font-size: 1.25rem; font-weight: 700; color: #E0982B; font-family: 'JetBrains Mono', monospace;">
+                    <div class="metric-label">SYN/ACK ratio</div>
+                    <div style="font-size: 1.25rem; font-weight: 700; color: #E0982B; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; letter-spacing: -0.02em;">
                         {state['syn_ack_ratio']:.1f}x <span style="font-size: 0.72rem; color: #E0982B; font-weight: 600;">(Elevated)</span>
                     </div>
                 </div>

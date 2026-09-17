@@ -36,7 +36,7 @@ from components.temporal_evidence import render_temporal_evidence
 st.set_page_config(
     page_title="SHADOWCAT — Evidence",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
 apply_custom_css()
@@ -47,14 +47,14 @@ attributions = get_attributions()
 state = get_novelty_score()
 flagged_flows = get_flagged_flows()
 
-render_header({"analysis": analysis})
+render_header({"analysis": analysis}, active_tab="Evidence & Attribution")
 
 render_html("""
-<div style="margin-bottom: 18px;">
-    <h2 style="font-size: 1.4rem; font-weight: 800; color: #FFFFFF; margin: 0;">
+<div style="margin-bottom: 14px;">
+    <h2 class="page-title">
         Telemetry Evidence & Forensic Attribution
     </h2>
-    <div style="font-size: 0.84rem; color: #8A8A8A; margin-top: 4px;">
+    <div class="page-caption">
         Correlated flow evidence and feature attribution rankings.
     </div>
 </div>
@@ -66,10 +66,10 @@ col_att, col_sig = st.columns([1.55, 1.45])
 with col_att:
     render_html("""
     <div class="card-title">
-        <span title="Protocol: Deletion-Tested Attribution" style="cursor: help;">Feature Attribution <span style="font-size: 0.72rem; color: #8A8A8A; font-weight: 400;">&#9432;</span></span>
+        <span title="Protocol: Deletion-Tested Attribution" style="cursor: help; display: inline-flex; align-items: center; gap: 6px;">Feature Attribution <span style="font-size: 0.64rem; color: #8A8A8A; border: 1px solid #333333; border-radius: 50%; width: 13px; height: 13px; display: inline-flex; align-items: center; justify-content: center; font-weight: 600;">i</span></span>
     </div>
     """)
-    st.plotly_chart(create_attribution_chart(attributions), use_container_width=True, config={"displayModeBar": False})
+    st.plotly_chart(create_attribution_chart(attributions), width="stretch", config={"displayModeBar": False})
 
 with col_sig:
     nov_val_raw = state.get("novelty_score", 0.23)
@@ -120,10 +120,10 @@ target_socket = f"{top_flow.get('destination', '10.0.4.21')}:{top_flow.get('dpor
 indicator = top_flow.get("reason", "SYN burst")
 
 render_html(f"""
-<div style="background: #141414; border: 1px solid #262626; border-left: 3px solid #E0982B; border-radius: 8px; padding: 12px 16px; margin-top: 12px; margin-bottom: 20px;">
+<div style="background: #171717; border: 1px solid #282828; border-left: 3px solid #38BDF8; border-radius: 6px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45); padding: 12px 16px; margin-top: 12px; margin-bottom: 20px;">
     <div style="font-size: 0.80rem; color: #FFFFFF; line-height: 1.5;">
-        <b style="color: #E0982B;">Containment Guidance:</b>
-        Evaluate ingress rate-limiting and host isolation for socket <b>{target_socket}</b> triggered by {indicator.lower()}.
+        <b style="color: #38BDF8;">Containment guidance:</b>
+        Evaluate ingress rate-limiting and host isolation for socket <b class="soc-mono">{target_socket}</b> triggered by {indicator.lower()}.
     </div>
 </div>
 """)

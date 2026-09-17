@@ -66,8 +66,8 @@ def render_input_panel():
 
             render_html(f"""
             <div class="glass-card" style="padding: 10px 14px; margin-top: 4px;">
-                <div class="metric-label" style="margin-bottom: 4px;">Active Telemetry Pipeline</div>
-                <div style="font-size: 0.76rem; font-weight: 700; color: {badge_color}; font-family: 'JetBrains Mono', monospace; margin-bottom: 4px;">
+                <div class="metric-label" style="margin-bottom: 4px;">Active telemetry pipeline</div>
+                <div style="font-size: 0.76rem; font-weight: 700; color: {badge_color}; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin-bottom: 4px;">
                     {badge_text}
                 </div>
                 <div style="font-size: 0.70rem; color: #8A8A8A; line-height: 1.4;">

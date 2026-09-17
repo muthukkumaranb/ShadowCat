@@ -53,13 +53,13 @@ def audit_interactions():
     print("[PASS] attack_graph_k_slider successfully updates attack_graph_k.")
 
     # 2b. Inspect and Focus Buttons
-    inspect_btns = [b for b in at_ag.button if "btn_inspect" in b.key]
-    focus_btns = [b for b in at_ag.button if "btn_focus" in b.key]
+    inspect_btns = [b for b in at_ag.button if "btn_inspect" in (b.key or "")]
+    focus_btns = [b for b in at_ag.button if "btn_focus" in (b.key or "")]
     assert len(inspect_btns) == 5, f"Expected 5 inspect buttons, found {len(inspect_btns)}"
     assert len(focus_btns) == 5, f"Expected 5 focus buttons, found {len(focus_btns)}"
 
     # Test clicking inspect on 10.0.5.1 (Domain Controller)
-    btn_dc = next(b for b in inspect_btns if "10.0.5.1" in b.key)
+    btn_dc = next(b for b in inspect_btns if "10.0.5.1" in (b.key or ""))
     btn_dc.click().run()
     assert not at_ag.exception
     assert at_ag.session_state["selected_graph_host"] == "10.0.5.1"
@@ -67,14 +67,14 @@ def audit_interactions():
     print("[PASS] btn_inspect correctly focuses host 10.0.5.1 and updates Telemetry Inspector.")
 
     # Test clicking focus on 10.0.4.10 (SSH Jump Host)
-    btn_foc = next(b for b in focus_btns if "10.0.4.10" in b.key)
+    btn_foc = next(b for b in focus_btns if "10.0.4.10" in (b.key or ""))
     btn_foc.click().run()
     assert not at_ag.exception
     assert at_ag.session_state["focused_graph_host"] == "10.0.4.10"
     print("[PASS] btn_focus correctly toggles blast radius isolation.")
 
     # Test unfocusing
-    btn_foc_again = next(b for b in at_ag.button if "btn_focus_10.0.4.10" in b.key)
+    btn_foc_again = next(b for b in at_ag.button if "btn_focus_10.0.4.10" in (b.key or ""))
     btn_foc_again.click().run()
     assert not at_ag.exception
     assert at_ag.session_state["focused_graph_host"] is None

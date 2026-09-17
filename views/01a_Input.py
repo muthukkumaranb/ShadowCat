@@ -21,12 +21,12 @@ from components.header import render_header
 st.set_page_config(
     page_title="SHADOWCAT — Telemetry Ingestion",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
 apply_custom_css()
 data = get_demo_data()
-render_header(data)
+render_header(data, active_tab="Telemetry Ingestion")
 
 # Ensure session state initialization
 if "telemetry_source" not in st.session_state:
@@ -37,12 +37,12 @@ if "demo_running" not in st.session_state:
     st.session_state["demo_running"] = False
 
 render_html("""
-<div style="margin-bottom: 18px;">
-    <h2 style="font-size: 1.4rem; font-weight: 800; color: #FFFFFF; margin: 0;">
+<div style="margin-bottom: 14px;">
+    <h2 class="page-title">
         Telemetry Ingestion & Dataset Replay
     </h2>
-    <div style="font-size: 0.84rem; color: #8A8A8A; margin-top: 4px;">
-        Ingest live sensor taps, standardized multi-dataset benchmarks, or custom capture files into the Unified Cyber State (UCS) tensor.
+    <div class="page-caption">
+        Ingest live sensor taps and multi-dataset benchmarks into the UCS tensor.
     </div>
 </div>
 """)

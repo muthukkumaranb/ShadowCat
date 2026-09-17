@@ -101,7 +101,7 @@ def get_mock_badge_html(key: str) -> str:
         return (
             '<span class="badge-mock" style="background: rgba(224, 152, 43, 0.15); '
             'border: 1px solid #E0982B; color: #E0982B; padding: 1px 6px; border-radius: 4px; '
-            'font-size: 0.68rem; font-weight: 700; font-family: \'JetBrains Mono\', monospace; '
+            'font-size: 0.68rem; font-weight: 700; font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, Helvetica, Arial, sans-serif; '
             'letter-spacing: 0.05em; margin-left: 6px; vertical-align: middle;">MOCK</span>'
         )
     return ""
@@ -120,14 +120,16 @@ def _get_live_prediction() -> Dict[str, Any]:
         return _CACHED_LIVE_PREDICTION
 
     try:
-        from backend.predict import predict
+        from backend.predict import predict  # type: ignore
 
         # Load canonical window slice for live demonstration
         parquet_path = REPO_ROOT / "data-engineering" / "data" / "ucs" / "ucs_windows.parquet"
         if parquet_path.exists():
             df = pd.read_parquet(parquet_path).head(40).copy()
-            _CACHED_LIVE_PREDICTION = predict(df, source_type="flows")
-            return _CACHED_LIVE_PREDICTION
+            res = predict(df, source_type="flows")
+            if isinstance(res, dict):
+                _CACHED_LIVE_PREDICTION = res
+                return _CACHED_LIVE_PREDICTION
 
         # Minimal live prediction if parquet not found
         dummy_flows = pd.DataFrame({
@@ -143,9 +145,11 @@ def _get_live_prediction() -> Dict[str, Any]:
             "Dst IP": ["10.0.4.21"] * 36,
             "Src Port": [54000 + i for i in range(36)],
         })
-        _CACHED_LIVE_PREDICTION = predict(dummy_flows, source_type="csv")
-        return _CACHED_LIVE_PREDICTION
-    except Exception as e:
+        res = predict(dummy_flows, source_type="csv")
+        if isinstance(res, dict):
+            _CACHED_LIVE_PREDICTION = res
+            return _CACHED_LIVE_PREDICTION
+    except Exception:
         pass
 
     # Build canonical fallback prediction payload matching expected schema
@@ -242,7 +246,7 @@ def get_analysis_metadata() -> dict:
     }
 
 
-def get_forecast_trajectory(window_id: str = None) -> dict:
+def get_forecast_trajectory(window_id: str | None = None) -> dict:
     """
     Returns multi-step forward trajectory simulation across K=1..4 horizons,
     including risk probabilities, stage mapping, calibrated uncertainty, and protocol metadata.
@@ -319,7 +323,7 @@ def get_comparison_table() -> list[dict]:
     return table
 
 
-def get_host_risk_graph(episode_id: str = None, k_step: int = 2) -> dict:
+def get_host_risk_graph(episode_id: str | None = None, k_step: int = 2) -> dict:
     """
     Returns enterprise host graph topology, communication edges, and
     forward-simulated host risk scores h_v(t) across rollout horizons.
@@ -492,7 +496,7 @@ def get_host_risk_graph(episode_id: str = None, k_step: int = 2) -> dict:
     }
 
 
-def get_attributions(window_id: str = None) -> list[dict]:
+def get_attributions(window_id: str | None = None) -> list[dict]:
     """
     Returns deletion-tested feature attribution rankings and percentage weights.
     Consumed by: views/02_Evidence.py, components/explanation.py
@@ -504,7 +508,7 @@ def get_attributions(window_id: str = None) -> list[dict]:
     return items
 
 
-def get_novelty_score(window_id: str = None) -> dict:
+def get_novelty_score(window_id: str | None = None) -> dict:
     """
     Returns current observed network state S(t) telemetry, novelty score,
     behavioral envelope classification, and sparkline metrics.
@@ -516,7 +520,7 @@ def get_novelty_score(window_id: str = None) -> dict:
     return nv
 
 
-def get_flagged_flows(window_id: str = None, limit: int = None) -> list[dict]:
+def get_flagged_flows(window_id: str | None = None, limit: int | None = None) -> list[dict]:
     """
     Returns flagged suspicious network flows driving the forecast.
     Consumed by: views/02_Evidence.py, components/evidence.py

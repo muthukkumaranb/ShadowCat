@@ -60,7 +60,7 @@ def test_attack_graph_apptest_rendering():
     assert "Driving Flow Indicators" in rendered_text
     print("[PASS] HOST TELEMETRY INSPECTOR rendered with multi-step trajectory and socket metadata.")
 
-    inspect_btns = [b for b in at.button if "btn_inspect" in b.key]
+    inspect_btns = [b for b in at.button if "btn_inspect" in (b.key or "")]
     assert len(inspect_btns) == 5, f"Expected 5 inspect buttons, found {len(inspect_btns)}"
 
     # User Requirement 1: Explicitly test the Telemetry button and confirm its behavior is distinct from Inspect
@@ -73,7 +73,7 @@ def test_attack_graph_apptest_rendering():
     print("[PASS] User verification confirmed: Telemetry button distinct from Inspect (only on SSH Jump Host 10.0.4.10 initially).")
 
     # Click Inspect on 10.0.2.15
-    btn_10_0_2_15 = next(b for b in inspect_btns if "10.0.2.15" in b.key)
+    btn_10_0_2_15 = next(b for b in inspect_btns if "10.0.2.15" in (b.key or ""))
     btn_10_0_2_15.click().run()
 
     assert not at.exception, f"App threw exception on button click: {at.exception}"
@@ -82,14 +82,14 @@ def test_attack_graph_apptest_rendering():
     assert "Workstation (Patient Zero)" in updated_text
 
     # Re-verify that 10.0.2.15 now has Telemetry and 10.0.4.10 reverted to Inspect
-    updated_inspect_btns = [b for b in at.button if "btn_inspect" in b.key]
+    updated_inspect_btns = [b for b in at.button if "btn_inspect" in (b.key or "")]
     new_telemetry_btn = next((b for b in updated_inspect_btns if b.label == "Telemetry"), None)
     assert new_telemetry_btn is not None and new_telemetry_btn.key == "btn_inspect_10.0.2.15", "10.0.2.15 should now show Telemetry button!"
-    btn_ssh_reverted = next(b for b in updated_inspect_btns if "10.0.4.10" in b.key)
+    btn_ssh_reverted = next(b for b in updated_inspect_btns if "10.0.4.10" in (b.key or ""))
     assert btn_ssh_reverted.label == "Inspect" and not btn_ssh_reverted.disabled, "10.0.4.10 should now show enabled Inspect button!"
     print("[PASS] Interactivity verified: Clicking Inspect button immediately updates Host Telemetry Inspector and swaps Telemetry state to 10.0.2.15.")
 
-    btn_10_0_3_50 = next(b for b in updated_inspect_btns if "10.0.3.50" in b.key)
+    btn_10_0_3_50 = next(b for b in updated_inspect_btns if "10.0.3.50" in (b.key or ""))
     btn_10_0_3_50.click().run()
 
     assert not at.exception, f"App threw exception on second button click: {at.exception}"
@@ -100,9 +100,9 @@ def test_attack_graph_apptest_rendering():
     print("[PASS] Interactivity verified: Clicking Inspect button immediately updates Host Telemetry Inspector to 10.0.3.50.")
 
     # Test Focus button (Task 1 & 6)
-    focus_btns = [b for b in at.button if "btn_focus" in b.key]
+    focus_btns = [b for b in at.button if "btn_focus" in (b.key or "")]
     assert len(focus_btns) == 5, f"Expected 5 focus buttons, found {len(focus_btns)}"
-    btn_focus_10_0_4_10 = next(b for b in focus_btns if "10.0.4.10" in b.key)
+    btn_focus_10_0_4_10 = next(b for b in focus_btns if "10.0.4.10" in (b.key or ""))
     btn_focus_10_0_4_10.click().run()
     assert not at.exception, f"App threw exception on focus click: {at.exception}"
     assert at.session_state["focused_graph_host"] == "10.0.4.10", "focused_graph_host not set in session state!"

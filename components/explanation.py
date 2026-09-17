@@ -13,19 +13,30 @@ def create_attribution_chart(explanation_data):
     contributions = [item["contribution"] for item in reversed(explanation_data)]
     deltas = [item["delta"] for item in reversed(explanation_data)]
 
+    # Single-hue gradient: muted sky-cyan #38BDF8 scaling in saturation/opacity with attribution weight
+    max_c = max(contributions) if contributions and max(contributions) > 0 else 1.0
+    colors = [
+        f"rgba(56, 189, 248, {0.35 + 0.60 * (c / max_c):.2f})"
+        for c in contributions
+    ]
+    border_colors = [
+        f"rgba(56, 189, 248, {0.60 + 0.40 * (c / max_c):.2f})"
+        for c in contributions
+    ]
+
     fig = go.Figure()
     fig.add_trace(go.Bar(
         y=features,
         x=contributions,
         orientation="h",
         marker=dict(
-            color="#E4E4E7",
-            line=dict(color="rgba(255, 255, 255, 0.3)", width=1)
+            color=colors,
+            line=dict(color=border_colors, width=1)
         ),
         text=[f"<b>{c*100:.0f}%</b>" for c in contributions],
         customdata=deltas,
         textposition="outside",
-        textfont=dict(color="#FFFFFF", size=11, family="'JetBrains Mono', monospace"),
+        textfont=dict(color="#FFFFFF", size=11, family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"),
         hovertemplate="<b>%{y}</b><br>Attribution Weight: %{x:.1%}<br>Signal Deviation: %{customdata}<extra></extra>"
     ))
 
@@ -34,12 +45,12 @@ def create_attribution_chart(explanation_data):
             text="<b>Feature Attribution (Deletion-Tested · Integrated Gradients)</b>",
             font=dict(size=12, color="#FFFFFF")
         ),
-        paper_bgcolor="#141414",
-        plot_bgcolor="#141414",
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
         hoverlabel=dict(
             bgcolor="#181818",
             bordercolor="#333333",
-            font=dict(color="#FFFFFF", size=11, family="'JetBrains Mono', monospace")
+            font=dict(color="#FFFFFF", size=11, family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif")
         ),
         margin=dict(l=10, r=20, t=32, b=24),
         height=240,
@@ -52,7 +63,7 @@ def create_attribution_chart(explanation_data):
             title=dict(text="Attribution Weight", font=dict(color="#8A8A8A", size=10)),
         ),
         yaxis=dict(
-            tickfont=dict(color="#FFFFFF", size=11, family="'Plus Jakarta Sans', sans-serif"),
+            tickfont=dict(color="#FFFFFF", size=11, family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"),
             gridcolor="rgba(0,0,0,0)",
         )
     )
@@ -77,7 +88,7 @@ def render_attack_stepper(mitre_data, current_step_idx=2):
                     <span style="font-size: 0.68rem; font-weight: 700; color: #2FB872; text-transform: uppercase; letter-spacing: 0.05em;">
                         ✓ OBSERVED
                     </span>
-                    <span style="font-size: 0.70rem; color: #8A8A8A; font-family: 'JetBrains Mono', monospace;">
+                    <span style="font-size: 0.70rem; color: #8A8A8A; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 600;">
                         {item_id}
                     </span>
                 </div>
@@ -85,7 +96,7 @@ def render_attack_stepper(mitre_data, current_step_idx=2):
                     {item_stage}
                 </div>
                 <div style="font-size: 0.68rem; color: #2FB872; font-weight: 600; margin-top: 2px;">
-                    Historical Stage
+                    Historical stage
                 </div>
                 <details style="margin-top: 6px; cursor: pointer;">
                     <summary style="font-size: 0.70rem; color: #2FB872; font-weight: 600; outline: none; user-select: none;">
@@ -105,15 +116,15 @@ def render_attack_stepper(mitre_data, current_step_idx=2):
                         <span style="width: 6px; height: 6px; border-radius: 50%; background: #E5484D; display: inline-block;"></span>
                         PREDICTED THREAT
                     </span>
-                    <span style="font-size: 0.72rem; color: #FFFFFF; font-weight: 700; font-family: 'JetBrains Mono', monospace;">
+                    <span style="font-size: 0.72rem; color: #FFFFFF; font-weight: 700; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
                         {item_id} · t+3
                     </span>
                 </div>
                 <div style="font-size: 1.05rem; font-weight: 800; color: #FFFFFF; margin-bottom: 3px;">
                     {item_stage}
                 </div>
-                <div style="display: inline-block; background: rgba(229, 72, 77, 0.2); border: 1px solid #E5484D; border-radius: 4px; padding: 2px 6px; font-size: 0.70rem; color: #FFFFFF; font-weight: 700; margin-top: 2px; font-family: 'JetBrains Mono', monospace;">
-                    Elevated Risk · Horizon t+3
+                <div style="display: inline-block; background: rgba(229, 72, 77, 0.2); border: 1px solid #E5484D; border-radius: 4px; padding: 2px 6px; font-size: 0.70rem; color: #FFFFFF; font-weight: 700; margin-top: 2px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+                    Elevated risk · Horizon t+3
                 </div>
                 <details style="margin-top: 6px; cursor: pointer;">
                     <summary style="font-size: 0.70rem; color: #E5484D; font-weight: 600; outline: none; user-select: none;">
@@ -132,7 +143,7 @@ def render_attack_stepper(mitre_data, current_step_idx=2):
                     <span style="font-size: 0.68rem; font-weight: 600; color: #666666; text-transform: uppercase; letter-spacing: 0.04em;">
                         ○ DOWNSTREAM
                     </span>
-                    <span style="font-size: 0.70rem; color: #666666; font-family: 'JetBrains Mono', monospace;">
+                    <span style="font-size: 0.70rem; color: #666666; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 600;">
                         {item_id}
                     </span>
                 </div>
@@ -140,7 +151,7 @@ def render_attack_stepper(mitre_data, current_step_idx=2):
                     {item_stage}
                 </div>
                 <div style="font-size: 0.68rem; color: #666666; margin-top: 2px;">
-                    Horizon t+4 (Rollout)
+                    Horizon t+4 (rollout)
                 </div>
                 <details style="margin-top: 6px; cursor: pointer;">
                     <summary style="font-size: 0.70rem; color: #666666; font-weight: 600; outline: none; user-select: none;">

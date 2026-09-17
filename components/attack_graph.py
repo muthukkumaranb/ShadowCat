@@ -26,27 +26,118 @@ import json
 import math
 import streamlit as st
 import streamlit.components.v1 as components
+import plotly.graph_objects as go
 from styles import render_html, COLORS
 from data_provider import get_host_risk_graph, is_using_mock_data
+
+
+# Authoritative Risk Classification Thresholds (Shared Source of Truth)
+RISK_THRESHOLD_CRITICAL = 0.70
+RISK_THRESHOLD_ELEVATED = 0.35
+
+
+def create_host_risk_donut(host_risks: dict):
+    """Constructs a sleek Plotly donut chart showing host risk distribution by tier."""
+    crit_count = sum(1 for h in host_risks.values() if h.get("risk", 0.0) > RISK_THRESHOLD_CRITICAL)
+    elev_count = sum(1 for h in host_risks.values() if RISK_THRESHOLD_ELEVATED < h.get("risk", 0.0) <= RISK_THRESHOLD_CRITICAL)
+    norm_count = sum(1 for h in host_risks.values() if h.get("risk", 0.0) <= RISK_THRESHOLD_ELEVATED)
+    total = len(host_risks)
+
+    labels = ["Critical", "Elevated", "Nominal"]
+    values = [crit_count, elev_count, norm_count]
+    colors = ["#E5484D", "#E0982B", "#2FB872"]
+
+    fig = go.Figure(data=[go.Pie(
+        labels=labels,
+        values=values,
+        hole=0.70,
+        marker=dict(colors=colors, line=dict(color="#171717", width=2)),
+        textinfo="none",
+        hoverinfo="label+value+percent",
+        hovertemplate="<b>%{label} Risk</b><br>Hosts: %{value} (%{percent})<extra></extra>",
+        sort=False
+    )])
+
+    fig.update_layout(
+        showlegend=False,
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        margin=dict(l=4, r=4, t=4, b=4),
+        height=140,
+        annotations=[
+            dict(
+                text=f"<b style='font-size:1.35rem;color:#FFFFFF;'>{total}</b><br><span style='font-size:0.62rem;color:#8A8A8A;font-weight:600;'>HOSTS</span>",
+                x=0.5, y=0.5,
+                font_size=13,
+                showarrow=False,
+                font=dict(family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif")
+            )
+        ]
+    )
+    return fig
+
+
+def create_host_risk_donut_svg(host_risks: dict) -> str:
+    """Constructs a crisp, lightweight inline SVG donut chart for host threat distribution."""
+    crit_count = sum(1 for h in host_risks.values() if h.get("risk", 0.0) > RISK_THRESHOLD_CRITICAL)
+    elev_count = sum(1 for h in host_risks.values() if RISK_THRESHOLD_ELEVATED < h.get("risk", 0.0) <= RISK_THRESHOLD_CRITICAL)
+    norm_count = sum(1 for h in host_risks.values() if h.get("risk", 0.0) <= RISK_THRESHOLD_ELEVATED)
+    total = len(host_risks) if host_risks else 1
+
+    r = 38
+    c = 2 * math.pi * r  # ~238.76
+
+    slices = [
+        ("Critical", crit_count, "#E5484D"),
+        ("Elevated", elev_count, "#E0982B"),
+        ("Nominal", norm_count, "#2FB872"),
+    ]
+
+    circles_svg = []
+    current_offset = 0.0
+    for label, count, color in slices:
+        if count <= 0:
+            continue
+        pct = count / total
+        dash_len = pct * c
+        gap_len = c - dash_len
+        circles_svg.append(
+            f'<circle cx="60" cy="60" r="{r}" fill="none" stroke="{color}" stroke-width="11" '
+            f'stroke-dasharray="{dash_len:.2f} {gap_len:.2f}" stroke-dashoffset="{-current_offset:.2f}" '
+            f'transform="rotate(-90 60 60)">'
+            f'<title>{label}: {count}/{total} hosts ({pct:.0%})</title>'
+            f'</circle>'
+        )
+        current_offset += dash_len
+
+    return (
+        f'<svg viewBox="0 0 120 120" style="width: 102px; height: 102px; display: block; margin: 0 auto;">'
+        f'<circle cx="60" cy="60" r="{r}" fill="none" stroke="#222222" stroke-width="11" />'
+        f'{"".join(circles_svg)}'
+        f'<text x="60" y="57" text-anchor="middle" font-size="18" font-weight="800" fill="#FFFFFF" font-family="-apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, sans-serif">{len(host_risks)}</text>'
+        f'<text x="60" y="71" text-anchor="middle" font-size="8.5" font-weight="700" fill="#8A8A8A" font-family="-apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, sans-serif" letter-spacing="0.05em">HOSTS</text>'
+        f'</svg>'
+    )
+
 
 # Spatial layout coordinates and asset criticality metadata (Reference 5-host baseline, expanded 880x540 canvas)
 DEFAULT_NODE_METADATA = {
     "10.0.2.15": {
-        "x": 120, "y": 270, "base_r": 26,
+        "x": 130, "y": 270, "base_r": 26,
         "criticality_tier": "Tier 3 (User Endpoint)",
         "criticality_short": "Tier 3",
         "clean_role": "Workstation",
         "is_dc": False
     },
     "10.0.3.50": {
-        "x": 290, "y": 420, "base_r": 26,
+        "x": 300, "y": 410, "base_r": 26,
         "criticality_tier": "Tier 3 (Enterprise Storage)",
         "criticality_short": "Tier 3",
         "clean_role": "Internal File Share",
         "is_dc": False
     },
     "10.0.4.10": {
-        "x": 390, "y": 170, "base_r": 32,
+        "x": 400, "y": 180, "base_r": 32,
         "criticality_tier": "Tier 2 (Management Gateway)",
         "criticality_short": "Tier 2",
         "clean_role": "SSH Jump Host",
@@ -60,7 +151,7 @@ DEFAULT_NODE_METADATA = {
         "is_dc": False
     },
     "10.0.5.1": {
-        "x": 760, "y": 170, "base_r": 40,
+        "x": 740, "y": 190, "base_r": 40,
         "criticality_tier": "Tier 1 (Critical Asset)",
         "criticality_short": "Tier 1 Crown Jewel",
         "clean_role": "Domain Controller",
@@ -73,8 +164,8 @@ NODE_METADATA = DEFAULT_NODE_METADATA
 
 def generate_node_layout(
     hosts: list[str],
-    host_telemetry: dict = None,
-    node_roles: dict = None,
+    host_telemetry: dict | None = None,
+    node_roles: dict | None = None,
     width: int = 880,
     height: int = 540
 ) -> dict[str, dict]:
@@ -226,9 +317,10 @@ def render_attack_graph_panel():
     host_risks = step_info["host_risks"]
 
     # Active selected and focused host state management
-    selected_host_id = st.session_state.get("selected_graph_host", "10.0.4.10")
+    _default_host = next(iter(UI_NODE_ROLES), None)  # First host from live graph data
+    selected_host_id = st.session_state.get("selected_graph_host", _default_host)
     if selected_host_id not in UI_NODE_ROLES:
-        selected_host_id = "10.0.4.10"
+        selected_host_id = _default_host
         st.session_state["selected_graph_host"] = selected_host_id
 
     focused_host_id = st.session_state.get("focused_graph_host", None)
@@ -242,8 +334,8 @@ def render_attack_graph_panel():
         render_html(f"""
         <div class="glass-card" style="padding: 10px 14px; margin-top: 6px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                <span class="metric-label" style="margin: 0; font-size: 0.70rem;">Rollout Uncertainty</span>
-                <span style="font-size: 0.82rem; font-weight: 800; color: {step_info['uncertainty_color']}; font-family: 'JetBrains Mono', monospace;">
+                <span class="metric-label" style="margin: 0; font-size: 0.70rem;">Rollout uncertainty</span>
+                <span style="font-size: 0.82rem; font-weight: 700; color: {step_info['uncertainty_color']}; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
                     {step_info['uncertainty_label']}
                 </span>
             </div>
@@ -256,93 +348,255 @@ def render_attack_graph_panel():
         </div>
         """)
 
-    # Layout: Graph canvas (left) + Host Risk Leaderboard (right)
-    col_graph, col_hosts = st.columns([2.4, 1.4])
+    # 1. Full-Width Attack Graph Canvas Layer
+    svg_html = _build_attack_graph_svg(
+        graph_data=graph_data,
+        active_k=k_step,
+        selected_host=selected_host_id,
+        focused_host=focused_host_id
+    )
+    components.html(svg_html, height=500)
 
-    with col_graph:
-        # Build and render the advanced SVG vector canvas
-        svg_html = _build_attack_graph_svg(
-            graph_data=graph_data,
-            active_k=k_step,
-            selected_host=selected_host_id,
-            focused_host=focused_host_id
-        )
-        components.html(svg_html, height=605)
+    # Status summary below canvas
+    blast_info = ""
+    if focused_host_id:
+        blast_info = f"<span style='color: #FFFFFF; font-weight: 700;'>[Blast Radius Filter Active on {focused_host_id}]</span> "
 
-        # Status summary below canvas
-        blast_info = ""
-        if focused_host_id:
-            blast_info = f"<span style='color: #FFFFFF; font-weight: 700;'>[Blast Radius Filter Active on {focused_host_id}]</span> "
+    render_html(f"""
+    <div style="font-size: 0.76rem; color: #8A8A8A; margin-top: 4px; margin-bottom: 22px;">
+        {blast_info}<b>{step_info['label']}:</b> {step_info['summary']}
+    </div>
+    """)
 
-        render_html(f"""
-        <div style="font-size: 0.76rem; color: #8A8A8A; margin-top: 4px;">
-            {blast_info}<b>{step_info['label']}:</b> {step_info['summary']}
+    # 2. Host Threat Distribution Panel (Full Width, 2-Column Grid stacked below)
+    render_html("""
+    <div style="margin-top: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: flex-end;">
+        <div>
+            <div class="card-title" style="margin-bottom: 2px;">
+                <span>Host Threat Distribution</span>
+            </div>
+            <div class="section-caption">
+                Ranked enterprise entities by simulated forward compromise probability.
+            </div>
         </div>
-        """)
-
-    with col_hosts:
-        render_html("""
-        <div style="font-size: 0.82rem; font-weight: 700; color: #FFFFFF; margin-bottom: 8px;">
-            Host Threat Distribution
+        <div style="font-size: 0.72rem; color: #8A8A8A;">
+            Observed hosts: 5
         </div>
-        """)
+    </div>
+    """)
 
-        # Ranked list consuming authoritative host_risks dictionary
-        sorted_hosts = sorted(host_risks.items(), key=lambda x: x[1]["risk"], reverse=True)
+    # Executive Posture & Risk Donut Summary Block (Equal-Height Paired Cards)
+    crit_count = sum(1 for h in host_risks.values() if h.get("risk", 0.0) > RISK_THRESHOLD_CRITICAL)
+    elev_count = sum(1 for h in host_risks.values() if RISK_THRESHOLD_ELEVATED < h.get("risk", 0.0) <= RISK_THRESHOLD_CRITICAL)
+    norm_count = sum(1 for h in host_risks.values() if h.get("risk", 0.0) <= RISK_THRESHOLD_ELEVATED)
 
-        for rank_idx, (host_ip, hr) in enumerate(sorted_hosts, start=1):
-            r = hr["risk"]
-            u = hr["uncertainty"]
-            role = UI_NODE_ROLES.get(host_ip, "Host")
-            t_info = HOST_TELEMETRY.get(host_ip, {})
-            crit_tier = t_info.get("criticality_tier", "Tier 3 (Endpoint)")
-            is_active_sel = (host_ip == selected_host_id)
-            is_focused = (host_ip == focused_host_id)
+    donut_svg = create_host_risk_donut_svg(host_risks)
 
-            status_color = "#FF453A" if r > 0.70 else "#FF9F0A" if r > 0.35 else "#30D158"
-            border_left = f"4px solid {status_color}"
-            bg_card = "#1C1C1C" if is_active_sel else "#141414"
-            border_card = "#FFFFFF" if (is_active_sel or is_focused) else "#262626"
-            u_bar_width = min(100, int(r * 100))
-
-            # Host card metrics header
-            render_html(f"""
-            <div style="background: {bg_card}; border: 1px solid {border_card}; border-left: {border_left}; border-radius: 6px; padding: 7px 10px; margin-bottom: 4px;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <span style="font-size: 0.78rem; font-weight: 700; color: #FFFFFF; font-family: 'JetBrains Mono', monospace;">
-                            #{rank_idx} {host_ip}
-                        </span>
-                        <span style="font-size: 0.65rem; color: #8A8A8A; background: #222222; border: 1px solid #333333; padding: 1px 5px; border-radius: 3px; margin-left: 6px; font-weight: 600;">
-                            {crit_tier.split('(')[0].strip()}
-                        </span>
-                    </div>
-                    <span style="font-size: 0.78rem; font-weight: 800; color: {status_color}; font-family: 'JetBrains Mono', monospace;">
-                        {r:.0%} <span style="font-size: 0.65rem; color: #8A8A8A; font-weight: 400;">±{u*100:.0f}%</span>
-                    </span>
+    render_html(f"""
+    <div style="display: grid; grid-template-columns: minmax(220px, 1fr) minmax(380px, 2.5fr); gap: 14px; align-items: stretch; margin-top: 4px; margin-bottom: 16px;">
+        <!-- Card 1: Risk Proportion (Properly contained SVG donut chart, equal height) -->
+        <div class="glass-card" style="padding: 14px 16px; margin: 0; display: flex; flex-direction: column; justify-content: space-between;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <div class="card-title" style="margin: 0; font-size: 0.86rem !important;">
+                    <svg class="soc-icon" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2" style="width: 14px; height: 14px; display: inline-block; vertical-align: -2px; margin-right: 6px;"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+                    <span>Risk Proportion</span>
                 </div>
-                <div style="font-size: 0.68rem; color: #8A8A8A; margin-top: 1px;">
-                    {role}
+                <span class="badge" style="font-size: 0.68rem;">5 Hosts</span>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: center; flex: 1; padding: 4px 0;">
+                {donut_svg}
+            </div>
+            <div style="display: flex; justify-content: center; gap: 14px; font-size: 0.70rem; color: #8A8A8A; margin-top: 4px; border-top: 1px solid #222222; padding-top: 6px;">
+                <span style="display: inline-flex; align-items: center; gap: 5px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: #E5484D; display: inline-block;"></span><b style="color: #FFFFFF;">{crit_count}</b> Crit</span>
+                <span style="display: inline-flex; align-items: center; gap: 5px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: #E0982B; display: inline-block;"></span><b style="color: #FFFFFF;">{elev_count}</b> Elev</span>
+                <span style="display: inline-flex; align-items: center; gap: 5px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: #2FB872; display: inline-block;"></span><b style="color: #FFFFFF;">{norm_count}</b> Nom</span>
+            </div>
+        </div>
+
+        <!-- Card 2: Enterprise Host Posture Summary (Equal height) -->
+        <div class="glass-card" style="padding: 14px 18px; margin: 0; display: flex; flex-direction: column; justify-content: space-between;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <div class="card-title" style="margin: 0; font-size: 0.86rem !important;">
+                    <span>Enterprise Host Posture Summary</span>
                 </div>
-                <div style="margin-top: 4px; background: rgba(255, 255, 255, 0.05); border-radius: 2px; height: 3px; width: 100%; overflow: hidden;">
-                    <div style="background: {status_color}; height: 100%; width: {u_bar_width}%; border-radius: 2px;"></div>
+                <span class="badge">Horizon {step_info['horizon_code']} &middot; Step {k_step}</span>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 8px; flex: 1;">
+                <div style="flex: 1; background: rgba(229, 72, 77, 0.10); border: 1px solid rgba(229, 72, 77, 0.3); border-radius: 6px; padding: 10px 8px; text-align: center; display: flex; flex-direction: column; justify-content: center;">
+                    <div style="font-size: 0.68rem; color: #E5484D; font-weight: 700; letter-spacing: 0.04em;">CRITICAL</div>
+                    <div style="font-size: 1.55rem; font-weight: 800; color: #E5484D; margin-top: 2px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">{crit_count}</div>
+                    <div style="font-size: 0.65rem; color: #8A8A8A; margin-top: 1px;">Crown jewel</div>
+                </div>
+                <div style="flex: 1; background: rgba(224, 152, 43, 0.10); border: 1px solid rgba(224, 152, 43, 0.3); border-radius: 6px; padding: 10px 8px; text-align: center; display: flex; flex-direction: column; justify-content: center;">
+                    <div style="font-size: 0.68rem; color: #E0982B; font-weight: 700; letter-spacing: 0.04em;">ELEVATED</div>
+                    <div style="font-size: 1.55rem; font-weight: 800; color: #E0982B; margin-top: 2px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">{elev_count}</div>
+                    <div style="font-size: 0.65rem; color: #8A8A8A; margin-top: 1px;">Pivots / Auth</div>
+                </div>
+                <div style="flex: 1; background: rgba(47, 184, 114, 0.10); border: 1px solid rgba(47, 184, 114, 0.3); border-radius: 6px; padding: 10px 8px; text-align: center; display: flex; flex-direction: column; justify-content: center;">
+                    <div style="font-size: 0.68rem; color: #2FB872; font-weight: 700; letter-spacing: 0.04em;">NOMINAL</div>
+                    <div style="font-size: 1.55rem; font-weight: 800; color: #2FB872; margin-top: 2px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">{norm_count}</div>
+                    <div style="font-size: 0.65rem; color: #8A8A8A; margin-top: 1px;">Endpoints</div>
                 </div>
             </div>
-            """)
+        </div>
+    </div>
+    """)
 
-            # Dedicated full-width action bar preventing "In..." / "Fo..." truncation
-            b_col1, b_col2 = st.columns(2)
-            with b_col1:
-                btn_inspect_lbl = "Telemetry" if is_active_sel else "Inspect"
-                if st.button(btn_inspect_lbl, key=f"btn_inspect_{host_ip}", use_container_width=True, disabled=is_active_sel, help=f"Inspect telemetry trajectory and sockets for {host_ip}"):
-                    st.session_state["selected_graph_host"] = host_ip
-                    st.rerun()
-            with b_col2:
-                btn_focus_lbl = "Unfocus" if is_focused else "Focus"
-                if st.button(btn_focus_lbl, key=f"btn_focus_{host_ip}", use_container_width=True, help=f"Toggle 1-hop lateral blast radius isolation for {host_ip}"):
-                    st.session_state["focused_graph_host"] = None if is_focused else host_ip
-                    st.session_state["selected_graph_host"] = host_ip
-                    st.rerun()
+    # 3. Interactive Host Search & Multi-Tier Filtering Toolbar
+    filter_col1, filter_col2, filter_col3 = st.columns([2.2, 1.1, 1.1])
+    with filter_col1:
+        search_query = st.text_input(
+            "Search hosts",
+            placeholder="Search by IP or host role (e.g. 10.0.4, SSH)...",
+            label_visibility="collapsed",
+            key="host_filter_search"
+        ).strip()
+    with filter_col2:
+        risk_filter = st.selectbox(
+            "Risk Tier",
+            options=["All Risks", "Critical", "Elevated", "Nominal"],
+            index=0,
+            label_visibility="collapsed",
+            key="host_filter_risk"
+        )
+    with filter_col3:
+        asset_filter = st.selectbox(
+            "Asset Tier",
+            options=["All Tiers", "Tier 1", "Tier 2", "Tier 3"],
+            index=0,
+            label_visibility="collapsed",
+            key="host_filter_asset"
+        )
+
+    # Ranked list consuming authoritative host_risks dictionary
+    sorted_hosts = sorted(host_risks.items(), key=lambda x: x[1]["risk"], reverse=True)
+
+    # Combined Filtering Logic
+    filtered_hosts = []
+    for host_ip, hr in sorted_hosts:
+        r = hr["risk"]
+        role = UI_NODE_ROLES.get(host_ip, "Host")
+        t_info = HOST_TELEMETRY.get(host_ip, {})
+        crit_tier = t_info.get("criticality_tier", "")
+
+        # 1. Search Query filter (case-insensitive across IP, role, and tier metadata)
+        if search_query:
+            search_corpus = f"{host_ip} {role} {crit_tier}".lower()
+            if search_query.lower() not in search_corpus:
+                continue
+
+        # 2. Risk Tier filter (referencing shared authoritative threshold constants)
+        if risk_filter != "All Risks":
+            host_risk_tier = (
+                "Critical" if r > RISK_THRESHOLD_CRITICAL
+                else "Elevated" if r > RISK_THRESHOLD_ELEVATED
+                else "Nominal"
+            )
+            if host_risk_tier != risk_filter:
+                continue
+
+        # 3. Asset Tier filter (Tier 1 / Tier 2 / Tier 3)
+        if asset_filter != "All Tiers":
+            if asset_filter.lower() not in crit_tier.lower():
+                continue
+
+        filtered_hosts.append((host_ip, hr))
+
+    # Host count & active filter status strip
+    total_count = len(sorted_hosts)
+    filtered_count = len(filtered_hosts)
+    if filtered_count < total_count:
+        count_label = f"Showing <b>{filtered_count}</b> of <b>{total_count}</b> hosts"
+        active_tags = []
+        if search_query:
+            active_tags.append(f'Search: &ldquo;{search_query}&rdquo;')
+        if risk_filter != "All Risks":
+            active_tags.append(f'Risk: {risk_filter}')
+        if asset_filter != "All Tiers":
+            active_tags.append(f'Asset: {asset_filter}')
+        filter_status = " &middot; ".join(active_tags)
+    else:
+        count_label = f"Showing all <b>{total_count}</b> hosts"
+        filter_status = "All filters clear"
+
+    render_html(f"""
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; margin-bottom: 12px; font-size: 0.72rem; color: #8A8A8A; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+        <span>{count_label}</span>
+        <span style="font-size: 0.68rem; color: #737373;">{filter_status}</span>
+    </div>
+    """)
+
+    # Render Empty State if no hosts match current filters
+    if not filtered_hosts:
+        render_html("""
+        <div style="background: #171717; border: 1px dashed #333333; border-radius: 6px; padding: 32px 20px; text-align: center; margin: 8px 0 20px 0;">
+            <svg class="soc-icon" viewBox="0 0 24 24" fill="none" stroke="#8A8A8A" stroke-width="2" style="width: 28px; height: 28px; margin-bottom: 8px; display: inline-block;"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.35-4.35"></path></svg>
+            <div style="font-size: 0.90rem; font-weight: 700; color: #FFFFFF; margin-bottom: 4px;">No hosts match the current filters</div>
+            <div style="font-size: 0.76rem; color: #8A8A8A;">Try adjusting your search query, risk tier, or asset criticality filter.</div>
+        </div>
+        """)
+    else:
+        # Render ranked host cards in a clean 2-column grid spanning full width
+        for i in range(0, len(filtered_hosts), 2):
+            row_cols = st.columns(2)
+            batch = [(i + 1, filtered_hosts[i])]
+            if i + 1 < len(filtered_hosts):
+                batch.append((i + 2, filtered_hosts[i + 1]))
+
+            for col_idx, (rank_idx, (host_ip, hr)) in enumerate(batch):
+                with row_cols[col_idx]:
+                    r = hr["risk"]
+                    u = hr["uncertainty"]
+                    role = UI_NODE_ROLES.get(host_ip, "Host")
+                    t_info = HOST_TELEMETRY.get(host_ip, {})
+                    crit_tier = t_info.get("criticality_tier", "Tier 3 (Endpoint)")
+                    is_active_sel = (host_ip == selected_host_id)
+                    is_focused = (host_ip == focused_host_id)
+
+                    status_color = "#FF453A" if r > RISK_THRESHOLD_CRITICAL else "#FF9F0A" if r > RISK_THRESHOLD_ELEVATED else "#30D158"
+                    border_left = f"4px solid {status_color}"
+                    bg_card = "#202020" if is_active_sel else "#171717"
+                    border_card = "#38bdf8" if is_active_sel else ("#FFFFFF" if is_focused else "#282828")
+                    u_bar_width = min(100, int(r * 100))
+
+                    # Host card metrics header
+                    render_html(f"""
+                    <div style="background: {bg_card}; border: 1px solid {border_card}; border-left: {border_left}; border-radius: 6px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45); padding: 10px 14px; margin-bottom: 6px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <span style="font-size: 0.84rem; font-weight: 700; color: #FFFFFF;">
+                                    #{rank_idx} <span style="font-family: 'JetBrains Mono', Consolas, monospace;">{host_ip}</span>
+                                </span>
+                                <span style="font-size: 0.68rem; color: #8A8A8A; background: #222222; border: 1px solid #333333; padding: 2px 6px; border-radius: 3px; margin-left: 8px; font-weight: 600;">
+                                    {crit_tier.split('(')[0].strip()}
+                                </span>
+                            </div>
+                            <span style="font-size: 0.88rem; font-weight: 800; color: {status_color}; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; letter-spacing: -0.02em;">
+                                {r:.0%} <span style="font-size: 0.68rem; color: #8A8A8A; font-weight: 400;">±{u*100:.0f}%</span>
+                            </span>
+                        </div>
+                        <div style="font-size: 0.72rem; color: #8A8A8A; margin-top: 3px;">
+                            {role}
+                        </div>
+                        <div style="margin-top: 6px; background: rgba(255, 255, 255, 0.05); border-radius: 2px; height: 4px; width: 100%; overflow: hidden;">
+                            <div style="background: {status_color}; height: 100%; width: {u_bar_width}%; border-radius: 2px;"></div>
+                        </div>
+                    </div>
+                    """)
+
+                    # Dedicated full-width action bar with clear primary/secondary button hierarchy
+                    b_col1, b_col2 = st.columns(2)
+                    with b_col1:
+                        btn_inspect_lbl = "Telemetry" if is_active_sel else "Inspect"
+                        if st.button(btn_inspect_lbl, key=f"btn_inspect_{host_ip}", use_container_width=True, type="primary", help=f"Inspect telemetry trajectory and sockets for {host_ip}"):
+                            st.session_state["selected_graph_host"] = host_ip
+                            st.rerun()
+                    with b_col2:
+                        btn_focus_lbl = "Unfocus" if is_focused else "Focus"
+                        if st.button(btn_focus_lbl, key=f"btn_focus_{host_ip}", use_container_width=True, type="secondary", help=f"Toggle 1-hop lateral blast radius isolation for {host_ip}"):
+                            st.session_state["focused_graph_host"] = None if is_focused else host_ip
+                            st.session_state["selected_graph_host"] = host_ip
+                            st.rerun()
 
     # Enriched Host Telemetry Inspector Panel
     if selected_host_id:
@@ -366,15 +620,15 @@ def render_attack_graph_panel():
             h_u = h_hr["uncertainty"]
             h_color = "#FF453A" if h_r > 0.70 else "#FF9F0A" if h_r > 0.35 else "#30D158"
             is_active_step = (h_idx == k_step)
-            cell_bg = "rgba(255, 255, 255, 0.08)" if is_active_step else "#111111"
-            cell_border = "1px solid #FFFFFF" if is_active_step else "1px solid #262626"
+            cell_bg = "rgba(56, 189, 248, 0.10)" if is_active_step else "#171717"
+            cell_border = "1px solid #38bdf8" if is_active_step else "1px solid #282828"
 
             traj_cells.append(f"""
             <div style="flex: 1; background: {cell_bg}; border: {cell_border}; border-radius: 6px; padding: 6px 8px; text-align: center;">
-                <div style="font-size: 0.68rem; color: {'#FFFFFF' if is_active_step else '#8A8A8A'}; font-weight: 700; font-family: 'JetBrains Mono', monospace;">
+                <div style="font-size: 0.68rem; color: {'#38bdf8' if is_active_step else '#8A8A8A'}; font-weight: 700; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
                     {h_code} {'(Active)' if is_active_step else ''}
                 </div>
-                <div style="font-size: 0.88rem; font-weight: 800; color: {h_color}; font-family: 'JetBrains Mono', monospace; margin: 2px 0;">
+                <div style="font-size: 0.92rem; font-weight: 800; color: {h_color}; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; letter-spacing: -0.02em; margin: 2px 0;">
                     {h_r:.0%}
                 </div>
                 <div style="font-size: 0.62rem; color: #8A8A8A;">
@@ -393,11 +647,11 @@ def render_attack_graph_panel():
         """
 
         render_html(f"""
-        <div style="background: #141414; border: 1px solid #262626; border-radius: 8px; padding: 14px 18px; margin-top: 14px;">
+        <div style="background: #171717; border: 1px solid #282828; border-radius: 6px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45); padding: 14px 18px; margin-top: 14px;">
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #262626; padding-bottom: 8px; margin-bottom: 8px;">
                 <div>
-                    <span style="font-size: 0.88rem; font-weight: 700; color: #FFFFFF; font-family: 'JetBrains Mono', monospace;">
-                        HOST TELEMETRY INSPECTOR: {selected_host_id}
+                    <span style="font-size: 0.88rem; font-weight: 700; color: #FFFFFF;">
+                        Host telemetry inspector: <span style="font-family: 'JetBrains Mono', Consolas, monospace;">{selected_host_id}</span>
                     </span>
                     <span style="font-size: 0.74rem; color: #8A8A8A; margin-left: 8px;">
                         [{sh_role}]
@@ -405,35 +659,35 @@ def render_attack_graph_panel():
                     <span style="font-size: 0.68rem; color: #8A8A8A; background: #222222; border: 1px solid #333333; padding: 1px 6px; border-radius: 3px; margin-left: 8px; font-weight: 600;">
                         {t_info.get('criticality_tier', 'Standard')}
                     </span>
-                    <span style="font-size: 0.70rem; color: #8A8A8A; margin-left: 8px; font-family: 'JetBrains Mono', monospace;">
+                    <span style="font-size: 0.70rem; color: #8A8A8A; margin-left: 8px; font-family: 'JetBrains Mono', Consolas, monospace;">
                         {t_info['subnet']}
                     </span>
                 </div>
-                <div style="font-size: 0.82rem; font-weight: 800; color: #FFFFFF; font-family: 'JetBrains Mono', monospace;">
+                <div style="font-size: 0.82rem; font-weight: 700; color: #FFFFFF; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; letter-spacing: -0.02em;">
                     Horizon h_v({step_info['horizon_code']}): {sh_hr['risk']:.0%} (±{sh_hr['uncertainty']*100:.0f}%)
                 </div>
             </div>
 
             <div style="font-size: 0.72rem; color: #8A8A8A; margin-bottom: 4px; font-weight: 600;">
-                Forward Risk Trajectory Progression (t → t+4):
+                Forward risk trajectory progression (t → t+4):
             </div>
             {traj_strip_html}
 
             <div style="font-size: 0.75rem; color: #8A8A8A; line-height: 1.5; display: grid; grid-template-columns: 1fr; gap: 6px;">
                 <div>
-                    <span style="color: #FFFFFF; font-weight: 600;">Active Sockets & Ports:</span>
-                    <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: #FFFFFF; margin-left: 6px;">
+                    <span style="color: #FFFFFF; font-weight: 600;">Active sockets & ports:</span>
+                    <span style="font-family: 'JetBrains Mono', Consolas, monospace; font-size: 0.72rem; color: #FFFFFF; margin-left: 6px;">
                         {t_info['active_ports']}
                     </span>
                 </div>
                 <div>
-                    <span style="color: #FFFFFF; font-weight: 600;">Driving Flow Indicators:</span>
+                    <span style="color: #FFFFFF; font-weight: 600;">Driving flow indicators:</span>
                     <span style="color: #FFFFFF; margin-left: 6px;">
                         {t_info['driving_indicators']}
                     </span>
                 </div>
                 <div style="margin-top: 4px; padding-top: 6px; border-top: 1px dashed #262626;">
-                    <span style="color: #E0982B; font-weight: 600;">Containment Stance:</span>
+                    <span style="color: #E0982B; font-weight: 600;">Containment stance:</span>
                     <span style="color: #8A8A8A; margin-left: 6px;">
                         {t_info['containment_stance']}
                     </span>
@@ -443,7 +697,7 @@ def render_attack_graph_panel():
         """)
 
 
-def _build_attack_graph_svg(graph_data: dict, active_k: int, selected_host: str, focused_host: str = None) -> str:
+def _build_attack_graph_svg(graph_data: dict, active_k: int, selected_host: str | None = None, focused_host: str | None = None) -> str:
     """
     Constructs the self-contained offline SVG vector canvas with GPU-accelerated marching ants,
     pulsing laser glow, dual-dimension node sizing, compact legend, and blast radius isolation.
@@ -630,7 +884,7 @@ def _build_attack_graph_svg(graph_data: dict, active_k: int, selected_host: str,
                 margin: 0;
                 padding: 0;
                 box-sizing: border-box;
-                font-family: 'JetBrains Mono', Consolas, -apple-system, sans-serif;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             }}
             body {{
                 background-color: #0D0D0D;
@@ -643,9 +897,10 @@ def _build_attack_graph_svg(graph_data: dict, active_k: int, selected_host: str,
             #canvas-container {{
                 position: relative;
                 width: 100%;
-                height: 580px;
-                border: 1px solid #262626;
-                border-radius: 8px;
+                height: 480px;
+                border: 1px solid #282828;
+                border-radius: 6px;
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
                 background: #0D0D0D;
                 overflow: hidden;
                 cursor: grab;
@@ -692,6 +947,7 @@ def _build_attack_graph_svg(graph_data: dict, active_k: int, selected_host: str,
             }}
             .node-ip-label {{
                 fill: #FFFFFF;
+                font-family: 'JetBrains Mono', Consolas, monospace;
                 font-size: 11px;
                 font-weight: 700;
                 letter-spacing: 0.02em;
@@ -706,7 +962,8 @@ def _build_attack_graph_svg(graph_data: dict, active_k: int, selected_host: str,
             .node-risk-label {{
                 fill: #FFFFFF;
                 font-size: 11px;
-                font-weight: 800;
+                font-weight: 700;
+                letter-spacing: -0.02em;
                 pointer-events: none;
                 text-shadow: 0 1px 3px rgba(0,0,0,0.8);
             }}
@@ -736,15 +993,14 @@ def _build_attack_graph_svg(graph_data: dict, active_k: int, selected_host: str,
                 pointer-events: auto;
             }}
             .legend-title {{
-                font-weight: 800;
+                font-weight: 700;
                 color: #FFFFFF;
                 font-size: 0.70rem;
                 margin-bottom: 2px;
                 display: flex;
                 align-items: center;
                 gap: 6px;
-                letter-spacing: 0.04em;
-                text-transform: uppercase;
+                text-transform: none;
                 cursor: pointer;
             }}
             .legend-row {{
@@ -799,7 +1055,7 @@ def _build_attack_graph_svg(graph_data: dict, active_k: int, selected_host: str,
                 cursor: pointer;
                 transition: all 0.15s ease;
                 outline: none;
-                font-family: 'JetBrains Mono', Consolas, monospace;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             }}
             .canvas-hud-controls button:hover {{
                 background: #262626;
@@ -843,7 +1099,7 @@ def _build_attack_graph_svg(graph_data: dict, active_k: int, selected_host: str,
             <!-- Compact Collapsible Legend (Task 8) -->
             <details class="canvas-legend">
                 <summary class="legend-title">
-                    <span>ⓘ Graph Encoding Key</span>
+                    <span>● Graph Encoding Key</span>
                 </summary>
                 <div style="margin-top:4px; border-top:1px dashed #262626; padding-top:4px;">
                     <div class="legend-row">
@@ -863,16 +1119,20 @@ def _build_attack_graph_svg(graph_data: dict, active_k: int, selected_host: str,
 
             <!-- Canvas Navigation HUD Controls (Pan, Zoom, Reset) -->
             <div class="canvas-hud-controls">
-                <button id="btn-zoom-in" title="Zoom In (or mouse wheel up)" aria-label="Zoom In">+</button>
-                <button id="btn-zoom-out" title="Zoom Out (or mouse wheel down)" aria-label="Zoom Out">−</button>
+                <button id="btn-zoom-in" title="Zoom In" aria-label="Zoom In">+</button>
+                <button id="btn-zoom-out" title="Zoom Out" aria-label="Zoom Out">−</button>
                 <button id="btn-reset-view" title="Reset View to Default Framing" aria-label="Reset View">⟲ Reset</button>
             </div>
 
             <!-- Floating Tooltip -->
             <div id="graph-tooltip"></div>
 
-            <svg id="attack-graph-svg" viewBox="0 0 880 540">
+            <svg id="attack-graph-svg" viewBox="40 100 800 390" preserveAspectRatio="xMidYMid meet">
                 <defs>
+                    <!-- Tactical Dot Grid Pattern -->
+                    <pattern id="tactical-grid" width="30" height="30" patternUnits="userSpaceOnUse">
+                        <circle cx="2" cy="2" r="1.1" fill="#252525" opacity="0.65"/>
+                    </pattern>
                     <!-- Active Crimson Arrowhead Marker -->
                     <marker id="arrow-active" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="9" markerHeight="9" orient="auto">
                         <path d="M 1 2 L 10 6 L 1 10 z" fill="#FF453A" />
@@ -887,6 +1147,9 @@ def _build_attack_graph_svg(graph_data: dict, active_k: int, selected_host: str,
                         <feComposite in="SourceGraphic" in2="blur" operator="over" />
                     </filter>
                 </defs>
+
+                <!-- Tactical Grid Background Layer -->
+                <rect x="0" y="0" width="100%" height="100%" fill="url(#tactical-grid)" pointer-events="none" />
 
                 <!-- Master Viewport Layer with Pan & Zoom Transform -->
                 <g id="viewport" transform="matrix(1 0 0 1 0 0)">
@@ -930,39 +1193,27 @@ def _build_attack_graph_svg(graph_data: dict, active_k: int, selected_host: str,
                 viewport.setAttribute('transform', `matrix(${{currentScale}} 0 0 ${{currentScale}} ${{currentTranslateX}} ${{currentTranslateY}})`);
             }}
 
-            // Mouse wheel zoom (centered on cursor)
-            container.addEventListener('wheel', (e) => {{
-                e.preventDefault();
-                const rect = svg.getBoundingClientRect();
-                const mouseX = (e.clientX - rect.left) * (880 / rect.width);
-                const mouseY = (e.clientY - rect.top) * (540 / rect.height);
-
-                const zoomFactor = e.deltaY < 0 ? 1.15 : 0.87;
-                const newScale = Math.min(Math.max(0.5, currentScale * zoomFactor), 4.0);
-
-                if (newScale !== currentScale) {{
-                    currentTranslateX = mouseX - (mouseX - currentTranslateX) * (newScale / currentScale);
-                    currentTranslateY = mouseY - (mouseY - currentTranslateY) * (newScale / currentScale);
-                    currentScale = newScale;
-                    updateTransform(false);
-                }}
-            }}, {{ passive: false }});
-
-            // Click-and-drag pan
+            // Click-and-drag pan (mouse wheel zoom removed completely to prevent scroll-hijacking)
             container.addEventListener('mousedown', (e) => {{
                 if (e.target.closest('.canvas-legend') || e.target.closest('.canvas-hud-controls') || e.target.closest('.graph-node')) {{
                     return;
                 }}
                 isPanning = true;
-                startPointerX = e.clientX - currentTranslateX;
-                startPointerY = e.clientY - currentTranslateY;
+                const rect = svg.getBoundingClientRect();
+                const scaleX = 880 / (rect.width || 880);
+                const scaleY = 540 / (rect.height || 540);
+                startPointerX = (e.clientX * scaleX) - currentTranslateX;
+                startPointerY = (e.clientY * scaleY) - currentTranslateY;
                 container.style.cursor = 'grabbing';
             }});
 
             window.addEventListener('mousemove', (e) => {{
                 if (!isPanning) return;
-                currentTranslateX = e.clientX - startPointerX;
-                currentTranslateY = e.clientY - startPointerY;
+                const rect = svg.getBoundingClientRect();
+                const scaleX = 880 / (rect.width || 880);
+                const scaleY = 540 / (rect.height || 540);
+                currentTranslateX = (e.clientX * scaleX) - startPointerX;
+                currentTranslateY = (e.clientY * scaleY) - startPointerY;
                 updateTransform(false);
             }});
 
@@ -1054,41 +1305,41 @@ def render_attack_graph_preview_card():
     path with a direct link to the dedicated Lateral Movement Graph flagship page.
     """
     render_html("""
-    <div style="background: #141414; border: 1px solid #262626; border-radius: 8px; padding: 18px 20px; margin-top: 24px; margin-bottom: 18px;">
+    <div style="background: #171717; border: 1px solid #282828; border-radius: 6px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45); padding: 18px 20px; margin-top: 24px; margin-bottom: 18px;">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 12px;">
             <div>
-                <div style="font-size: 0.95rem; font-weight: 800; color: #FFFFFF;">
-                    Dynamic Enterprise Attack Graph & Lateral Rollout
+                <div style="font-size: 0.95rem; font-weight: 700; color: #FFFFFF;">
+                    Dynamic enterprise attack graph & lateral rollout
                 </div>
                 <div style="font-size: 0.78rem; color: #8A8A8A; margin-top: 2px;">
                     Multi-step forward simulation of lateral adversary rollout across enterprise topology.
                 </div>
             </div>
             <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 0.72rem; color: #E0982B; background: rgba(224, 152, 43, 0.12); border: 1px solid #E0982B; padding: 2px 8px; border-radius: 4px; font-weight: 700; font-family: 'JetBrains Mono', monospace;">
-                    HORIZON t+3 · LATERAL PIVOT
+                <span style="font-size: 0.72rem; color: #E0982B; background: rgba(224, 152, 43, 0.12); border: 1px solid #E0982B; padding: 2px 8px; border-radius: 4px; font-weight: 600; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+                    Horizon t+3 · Lateral pivot
                 </span>
             </div>
         </div>
 
         <div style="display: flex; align-items: center; gap: 10px; background: #0D0D0D; border: 1px solid #222222; border-radius: 6px; padding: 12px 16px; margin-bottom: 14px; overflow-x: auto;">
             <div style="display: flex; align-items: center; gap: 8px; white-space: nowrap;">
-                <span style="font-size: 0.78rem; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #FF453A;">#1 10.0.2.15</span>
+                <span style="font-size: 0.78rem; font-family: 'JetBrains Mono', Consolas, monospace; font-weight: 700; color: #FF453A;">#1 10.0.2.15</span>
                 <span style="font-size: 0.70rem; color: #8A8A8A;">(Workstation)</span>
             </div>
             <span style="color: #FF453A; font-weight: 800;">&rarr;</span>
             <div style="display: flex; align-items: center; gap: 8px; white-space: nowrap;">
-                <span style="font-size: 0.78rem; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #FF453A;">#2 10.0.4.10</span>
+                <span style="font-size: 0.78rem; font-family: 'JetBrains Mono', Consolas, monospace; font-weight: 700; color: #FF453A;">#2 10.0.4.10</span>
                 <span style="font-size: 0.70rem; color: #8A8A8A;">(SSH Jump Host)</span>
             </div>
             <span style="color: #FF9F0A; font-weight: 800;">&rarr;</span>
             <div style="display: flex; align-items: center; gap: 8px; white-space: nowrap;">
-                <span style="font-size: 0.78rem; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #FF9F0A;">#3 10.0.4.21</span>
+                <span style="font-size: 0.78rem; font-family: 'JetBrains Mono', Consolas, monospace; font-weight: 700; color: #FF9F0A;">#3 10.0.4.21</span>
                 <span style="font-size: 0.70rem; color: #8A8A8A;">(Auth Cluster)</span>
             </div>
             <span style="color: #8A8A8A; font-weight: 800;">&rarr;</span>
             <div style="display: flex; align-items: center; gap: 8px; white-space: nowrap;">
-                <span style="font-size: 0.78rem; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #FFFFFF;">#4 10.0.5.1</span>
+                <span style="font-size: 0.78rem; font-family: 'JetBrains Mono', Consolas, monospace; font-weight: 700; color: #FFFFFF;">#4 10.0.5.1</span>
                 <span style="font-size: 0.70rem; color: #8A8A8A;">(Domain Controller)</span>
             </div>
         </div>
@@ -1098,7 +1349,6 @@ def render_attack_graph_preview_card():
         st.page_link(
             "views/01b_AttackGraph.py",
             label="Explore Dedicated Lateral Movement Attack Graph →",
-            icon="🌐",
             use_container_width=True,
         )
     except Exception:

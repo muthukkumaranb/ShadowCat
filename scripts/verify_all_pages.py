@@ -19,7 +19,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 if sys.platform == "win32":
-    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stdout.reconfigure(encoding="utf-8")  # type: ignore[union-attr]
 
 PAGES = [
     {
@@ -28,7 +28,7 @@ PAGES = [
         "requires_banner": True,
         "unique_headers": [
             "Attack Risk Trajectory & Epistemic Uncertainty",
-            "MITRE ATT&CK Killchain Progression"
+            "MITRE ATT&CK killchain progression"
         ],
     },
     {
@@ -63,8 +63,8 @@ PAGES = [
         "file": "views/03_Validation.py",
         "requires_banner": True,
         "unique_headers": [
-            "Model Performance vs Baselines",
-            "Horizon Stability Benchmarks"
+            "Model performance vs baselines",
+            "Horizon stability benchmarks"
         ],
     },
     {
@@ -72,8 +72,8 @@ PAGES = [
         "file": "views/05_About.py",
         "requires_banner": True,
         "unique_headers": [
-            "Platform Specifications",
-            "Core Operational Capabilities"
+            "Platform Specifications\n</h2>",
+            "Core operational capabilities"
         ],
     },
 ]

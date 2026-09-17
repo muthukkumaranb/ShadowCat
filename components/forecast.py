@@ -84,14 +84,14 @@ def create_forecast_chart(forecast_data):
         ),
         text=[f"<b>{p*100:.0f}%</b>" for p in probs],
         textposition="top left",
-        textfont=dict(color="#ffffff", size=12, family="'JetBrains Mono', monospace"),
+        textfont=dict(color="#ffffff", size=12, family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"),
         customdata=custom_tuples,
         hovertemplate=(
             "<b>%{x}</b><br>"
-            "<b>Predicted Stage:</b> %{customdata[0]}<br>"
-            "<b>Attack Risk Probability:</b> <span style='color:#ffffff; font-weight:700;'>%{y:.1%}</span><br>"
-            "<b>Epistemic Bounds:</b> %{customdata[1]} %{customdata[2]}<br>"
-            "<b>Pre-Emptive Lead Time:</b> %{customdata[3]}<extra></extra>"
+            "<b>Predicted stage:</b> %{customdata[0]}<br>"
+            "<b>Attack risk probability:</b> <span style='color:#ffffff; font-weight:700;'>%{y:.1%}</span><br>"
+            "<b>Epistemic bounds:</b> %{customdata[1]} %{customdata[2]}<br>"
+            "<b>Pre-emptive lead time:</b> %{customdata[3]}<extra></extra>"
         )
     ))
 
@@ -115,13 +115,13 @@ def create_forecast_chart(forecast_data):
         hoverlabel=dict(
             bgcolor="#181818",
             bordercolor="#333333",
-            font=dict(color="#ffffff", size=11, family="'JetBrains Mono', monospace")
+            font=dict(color="#ffffff", size=11, family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif")
         ),
         showlegend=False,
         xaxis=dict(
             gridcolor="#222222",
             zerolinecolor="#222222",
-            tickfont=dict(color="#ffffff", size=11, family="'Plus Jakarta Sans', sans-serif"),
+            tickfont=dict(color="#ffffff", size=11, family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"),
             showgrid=True,
         ),
         yaxis=dict(

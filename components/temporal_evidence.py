@@ -55,7 +55,7 @@ def render_temporal_evidence(data: dict):
                 [Model Internals · Exploratory]
             </span>
         </div>
-        <span style="font-size: 0.72rem; color: #8A8A8A; font-family: 'JetBrains Mono', monospace;">
+        <span style="font-size: 0.72rem; color: #8A8A8A; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
             S(t-2) → S(t-1) → S(t)
         </span>
     </div>
@@ -73,7 +73,7 @@ def render_temporal_evidence(data: dict):
                 <div>
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                         <span style="font-size: 0.88rem; font-weight: 700; color: #FFFFFF;">{win['window']}</span>
-                        <span style="font-size: 0.72rem; color: #8A8A8A; font-family: 'JetBrains Mono', monospace;">{win['time_range']}</span>
+                        <span style="font-size: 0.72rem; color: #8A8A8A; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">{win['time_range']}</span>
                     </div>
                     <div style="font-size: 0.78rem; color: #8A8A8A; line-height: 1.45; margin-bottom: 10px;">
                         {win['behavior']}
@@ -81,8 +81,8 @@ def render_temporal_evidence(data: dict):
                 </div>
                 <div style="border-top: 1px solid #262626; padding-top: 10px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                        <span class="metric-label" style="margin: 0; font-size: 0.70rem;">Attention Weight (Internal)</span>
-                        <span style="font-size: 0.82rem; font-weight: 800; color: #FFFFFF; font-family: 'JetBrains Mono', monospace;">
+                        <span class="metric-label" style="margin: 0; font-size: 0.70rem;">Attention weight (internal)</span>
+                        <span style="font-size: 0.82rem; font-weight: 700; color: #FFFFFF; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; letter-spacing: -0.02em;">
                             {win['weight_pct']}
                         </span>
                     </div>
