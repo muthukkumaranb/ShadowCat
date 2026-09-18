@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cytoscape Attack Graph</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.23.0/cytoscape.min.js"></script>
+    <style>
+        body { margin: 0; padding: 0; font-family: sans-serif; background-color: transparent; }
+        #cy { width: 100vw; height: 100vh; display: block; }
+    </style>
+</head>
+<body>
+    <div id="cy"></div>
+    <script>
+        // The data will be injected here via string formatting in Python
+        const graphElements = __GRAPH_ELEMENTS__;
+        
+        const cy = cytoscape({
+            container: document.getElementById('cy'),
+            elements: graphElements,
+            style: [
+                {
+                    selector: 'node',
+                    style: {
+                        'background-color': 'data(color)',
+                        'label': 'data(id)',
+                        'color': '#E8ECF1',
+                        'font-size': '10px',
+                        'text-valign': 'bottom',
+                        'text-margin-y': '5px',
+                        'width': 'data(size)',
+                        'height': 'data(size)',
+                        'border-width': '2px',
+                        'border-color': '#282828'
+                    }
+                },
+                {
+                    selector: 'node[flagged="true"]',
+                    style: {
+                        'border-color': '#FF3B5C',
+                        'border-width': '4px',
+                        'background-color': '#FF3B5C'
+                    }
+                },
+                {
+                    selector: 'edge',
+                    style: {
+                        'width': 'data(weight)',
+                        'line-color': '#39FF88',
+                        'opacity': 0.4,
+                        'target-arrow-shape': 'triangle',
+                        'target-arrow-color': '#39FF88',
+                        'curve-style': 'bezier'
+                    }
+                },
+                {
+                    selector: 'edge[flagged="true"]',
+                    style: {
+                        'line-color': '#FF3B5C',
+                        'target-arrow-color': '#FF3B5C',
+                        'opacity': 0.8,
+                        'width': 3
+                    }
+                },
+                // Highlighting neighborhood
+                {
+                    selector: 'node.dimmed',
+                    style: {
+                        'opacity': 0.2
+                    }
+                },
+                {
+                    selector: 'edge.dimmed',
+                    style: {
+                        'opacity': 0.1
+                    }
+                }
+            ],
+            layout: {
+                name: 'cose',
+                idealEdgeLength: 100,
+                nodeOverlap: 20,
+                refresh: 20,
+                fit: true,
+                padding: 30,
+                randomize: false,
+                componentSpacing: 100,
+                nodeRepulsion: 400000,
+                edgeElasticity: 100,
+                nestingFactor: 5,
+                gravity: 80,
+                numIter: 1000,
+                initialTemp: 200,
+                coolingFactor: 0.95,
+                minTemp: 1.0
+            },
+            wheelSensitivity: 0.2
+        });
+
+        // Click interaction: Highlight neighborhood and communicate back (if possible) or just UI effect
+        cy.on('tap', 'node', function(evt){
+            const node = evt.target;
+            const neighborhood = node.closedNeighborhood();
+
+            cy.elements().addClass('dimmed');
+            neighborhood.removeClass('dimmed');
+            
+            // Post message to parent if we want to update Streamlit via custom component bridge
+            window.parent.postMessage({
+                type: 'streamlit:setComponentValue',
+                value: { id: node.id(), flow_stats: node.data('flow_stats'), flagged: node.data('flagged') }
+            }, '*');
+        });
+
+        cy.on('tap', function(evt){
+            if( evt.target === cy ){
+                cy.elements().removeClass('dimmed');
+            }
+        });
+    </script>
+</body>
+</html>
