@@ -35,6 +35,8 @@ from backend.models import (
     LSTMClassifier,
     StageClassificationHead,
 )
+from backend.fabric_bridge import notarize_model, notarize_alert
+
 
 
 def get_feature_category(feat_name: str) -> Optional[str]:
@@ -145,6 +147,13 @@ class ShadowcatPipeline:
             self.world_model.to(self.device)
             self.world_model.eval()
             self.world_model_loaded = True
+            
+            # Notarize World Model on Fabric (Fire & Forget)
+            try:
+                notarize_model("lstm-gaussian-v3", str(wm_path), "v3.0")
+            except Exception as e:
+                import logging
+                logging.warning(f"Fabric Notarization Failed for model: {e}")
         else:
             self.world_model_loaded = False
 
@@ -602,7 +611,7 @@ class ShadowcatPipeline:
             "is_mock": False,
         }
 
-        return {
+        payload = {
             "window_id": window_id,
             "is_warmup": is_warmup,
             "analysis_metadata": analysis_metadata,
@@ -614,6 +623,20 @@ class ShadowcatPipeline:
             "risk_scores": [round(r, 2) for r in cum_risk],
             "fusion_experimental": fusion_experimental_result,
         }
+
+        # Fabric Notarization Hook
+        if forecast_trajectory.get("hazard_alert"):
+            try:
+                import hashlib
+                # Create a deterministic hash of the alert payload
+                alert_str = f"{window_id}-{window_start}-{max(cum_risk)}"
+                alert_hash = hashlib.sha256(alert_str.encode()).hexdigest()[:16]
+                notarize_alert(alert_hash, "HIGH" if max(cum_risk) > 0.8 else "MEDIUM", window_start)
+            except Exception as e:
+                import logging
+                logging.warning(f"Fabric Notarization Failed for alert: {e}")
+
+        return payload
 
     def _extract_flagged_flows(self, raw_input: pd.DataFrame, source_type: str) -> List[Dict[str, Any]]:
         """Extract top anomalous flow records from input DataFrame."""
