@@ -5,7 +5,7 @@ Wired to live data_provider.py and authoritative predictions.
 """
 
 import streamlit as st
-from styles import TOKENS
+from styles import TOKENS, render_html
 from data_provider import (
     get_analysis_metadata,
     get_forecast_trajectory,
@@ -28,7 +28,7 @@ def render_page():
     lead_time = fc.get("lead_time", ["1m 00s"])[0]
 
     # TOP FULL-WIDTH THREAT HEADER STRIP
-    st.markdown(f"""
+    render_html(f"""
     <div class="soc-card" style="margin-bottom: 1.25rem;">
         <div style="display: grid; grid-template-columns: 7fr 5fr; gap: 1.5rem; align-items: center;">
             <!-- Left: Risk Status & Telemetry Metadata -->
@@ -106,13 +106,13 @@ def render_page():
             </div>
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """)
 
     # 4 REALISTIC STREAMLIT METRIC CARDS
     m_col1, m_col2, m_col3, m_col4 = st.columns(4)
 
     with m_col1:
-        st.markdown(f"""
+        render_html(f"""
         <div class="soc-stat-card">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span class="soc-stat-label">Active Alerts</span>
@@ -131,11 +131,11 @@ def render_page():
                 <span style="color: {t['text_muted']}; margin-left: auto;">Exp: 3.2</span>
             </div>
         </div>
-        """, unsafe_allow_html=True)
+        """)
 
     with m_col2:
         stage_title = mitre[1]["id"] if len(mitre) > 1 else "T1071.001"
-        st.markdown(f"""
+        render_html(f"""
         <div class="soc-stat-card">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span class="soc-stat-label">Current ATT&CK Stage</span>
@@ -152,11 +152,11 @@ def render_page():
                 <span style="color: {t['text_muted']}; margin-left: auto;">Phase 4/7</span>
             </div>
         </div>
-        """, unsafe_allow_html=True)
+        """)
 
     with m_col3:
         novelty_val = novelty.get("novelty_score", 0.892)
-        st.markdown(f"""
+        render_html(f"""
         <div class="soc-stat-card">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span class="soc-stat-label">Novelty Score</span>
@@ -175,11 +175,11 @@ def render_page():
                 <span style="color: {t['text_muted']}; margin-left: auto;">Isolation Forest</span>
             </div>
         </div>
-        """, unsafe_allow_html=True)
+        """)
 
     with m_col4:
         is_valid = audit.get("is_valid", True)
-        st.markdown(f"""
+        render_html(f"""
         <div class="soc-stat-card">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span class="soc-stat-label">Audit Chain Integrity</span>
@@ -198,14 +198,14 @@ def render_page():
                 <span style="color: {t['text_muted']}; margin-left: auto;">0 Errors</span>
             </div>
         </div>
-        """, unsafe_allow_html=True)
+        """)
 
-    st.markdown("<div style='height: 1rem;'></div>", unsafe_allow_html=True)
+    render_html("<div style='height: 1rem;'></div>")
 
     # SEVERITY-SORTED RECENT ALERTS QUEUE
-    st.markdown(f"""
+    render_html(f"""
     <div class="soc-card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
             <div>
                 <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['primary']}; font-weight: 700; text-transform: uppercase;">
                     LIVE TELEMETRY FEED • AUTO-REFRESH: 5s
@@ -215,7 +215,7 @@ def render_page():
                 </div>
             </div>
         </div>
-    """, unsafe_allow_html=True)
+    """)
 
     # Filter Segmented Tabs
     filter_choice = st.radio(
@@ -235,7 +235,7 @@ def render_page():
 
     for item in alert_items:
         badge_cls = "badge-critical" if item["sev"] == "critical" else ("badge-caution" if item["sev"] == "medium" else "badge-nominal")
-        st.markdown(f"""
+        render_html(f"""
         <div class="soc-card-nested" style="margin-bottom: 0.45rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
             <div style="display: flex; align-items: center; gap: 0.75rem; min-width: 0; flex: 1;">
                 <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: {t['text_muted']}; shrink: 0;">{item['time']}</span>
@@ -247,9 +247,9 @@ def render_page():
                 <span style="color: {t['primary']}; font-weight: 600;">{item['target']}</span>
             </div>
         </div>
-        """, unsafe_allow_html=True)
+        """)
 
-    st.markdown(f"""
+    render_html(f"""
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem; font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_muted']};">
             <div>
                 <span class="soc-pulse-dot" style="display: inline-block;"></span> INGESTION BUFFER: 4,812 EVT/SEC • 0 DROPPED PACKETS
@@ -257,7 +257,7 @@ def render_page():
             <span style="color: {t['primary']};">PIPELINE NOMINAL // 0x9F41</span>
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """)
 
 if __name__ == "__main__":
     render_page()

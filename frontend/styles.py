@@ -520,3 +520,13 @@ def apply_custom_css(theme: Literal["dark", "light"] = "dark") -> None:
     """Injects the custom CSS into the Streamlit session."""
     import streamlit as st
     st.markdown(get_custom_css(theme), unsafe_allow_html=True)
+
+
+def render_html(html_str: str) -> None:
+    """Safely renders HTML without markdown indentation block formatting.
+    Strips leading whitespace from every line so CommonMark never treats 4-space indented lines
+    as preformatted code blocks.
+    """
+    import streamlit as st
+    cleaned = "\n".join(line.strip() for line in html_str.strip().splitlines() if line.strip())
+    st.markdown(cleaned, unsafe_allow_html=True)

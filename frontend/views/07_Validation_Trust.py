@@ -6,7 +6,7 @@ Wired to live data_provider.py and backend/audit_chain.json.
 """
 
 import streamlit as st
-from styles import TOKENS
+from styles import TOKENS, render_html
 from data_provider import get_validation_data, get_audit_chain_status, get_comparison_table
 
 def render_page():
@@ -20,7 +20,7 @@ def render_page():
     entries = audit_status.get("entries", [])
 
     # 1. Top Control Bar / Operational Status
-    st.markdown(f"""
+    render_html(f"""
     <div class="soc-card" style="margin-bottom: 1rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
             <div>
@@ -45,13 +45,13 @@ def render_page():
             </div>
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """)
 
     # 2. Telemetry Strip / Chain Summary KPIs
     kpi_col1, kpi_col2, kpi_col3, kpi_col4 = st.columns(4)
 
     with kpi_col1:
-        st.markdown(f"""
+        render_html(f"""
         <div class="soc-stat-card">
             <span class="soc-stat-label">Current Block Height</span>
             <div class="soc-stat-val">#849,204</div>
@@ -59,10 +59,10 @@ def render_page():
                 <span>+3 blocks committed this hour</span>
             </div>
         </div>
-        """, unsafe_allow_html=True)
+        """)
 
     with kpi_col2:
-        st.markdown(f"""
+        render_html(f"""
         <div class="soc-stat-card">
             <span class="soc-stat-label">Genesis Timestamp</span>
             <div style="font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; font-weight: 600; color: {t['text_high']};">
@@ -72,10 +72,10 @@ def render_page():
                 <span>Epoch Age: 64d 14h 28m</span>
             </div>
         </div>
-        """, unsafe_allow_html=True)
+        """)
 
     with kpi_col3:
-        st.markdown(f"""
+        render_html(f"""
         <div class="soc-stat-card">
             <span class="soc-stat-label">Tamper Evident Proofs</span>
             <div class="soc-stat-val" style="color: {t['primary']};">0</div>
@@ -83,10 +83,10 @@ def render_page():
                 <span>Merkle Tree Zero-Drift Asserted</span>
             </div>
         </div>
-        """, unsafe_allow_html=True)
+        """)
 
     with kpi_col4:
-        st.markdown(f"""
+        render_html(f"""
         <div class="soc-stat-card">
             <span class="soc-stat-label">Enclave Heartbeat</span>
             <div class="soc-stat-val" style="color: {t['primary']};">100%</div>
@@ -94,20 +94,11 @@ def render_page():
                 <span>SGX Secure • Dual Quorum Synced</span>
             </div>
         </div>
-        """, unsafe_allow_html=True)
+        """)
 
-    st.markdown("<div style='height: 1rem;'></div>", unsafe_allow_html=True)
+    render_html("<div style='height: 1rem;'></div>")
 
     # 3. Section 1: Cryptographic Audit Chain Viewer
-    st.markdown(f"""
-    <div class="soc-card">
-        <div class="soc-section-header">
-            <div class="soc-section-title">Chronological Attestation Blocks (Verified Ledger)</div>
-            <span class="soc-subsystem-tag">ALGORITHM: SHA-256 / CURVE25519</span>
-        </div>
-        <div style="border-left: 2px solid {t['primary']}; margin-left: 0.75rem; padding-left: 1.25rem; display: flex; flex-direction: column; gap: 0.85rem;">
-    """, unsafe_allow_html=True)
-
     # Render up to 4 recent blocks from audit chain
     display_entries = entries[-4:] if entries else [
         {"entry_type": "model_checkpoint", "record_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", "description": "Predictive Threat Trajectory Horizon H=5 Inference Commit"},
@@ -115,15 +106,17 @@ def render_page():
         {"entry_type": "contract_verification", "record_hash": "c51ff38fe97f426a88b0123918a1928401928410294810294810294810294810", "description": "UCS-ML1 inference contract diff v3 confirmed PASS"},
     ]
 
+    blocks_html = ""
     for idx, e in enumerate(reversed(display_entries)):
         is_head = (idx == 0)
-        st.markdown(f"""
-        <div class="soc-card-nested" style="border: 1px solid {t['primary'] if is_head else t['border']};">
+        badge_cls = "badge-nominal" if is_head else "badge-neutral"
+        border_col = t['primary'] if is_head else t['border']
+        block_label = "HEAD • #849,204" if is_head else f"BLOCK #{849204 - idx}"
+        blocks_html += f"""
+        <div class="soc-card-nested" style="border: 1px solid {border_col}; margin-bottom: 0.75rem;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem; flex-wrap: wrap;">
                 <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <span class="soc-badge {'badge-nominal' if is_head else 'badge-neutral'}">
-                        {'HEAD • #849,204' if is_head else f'BLOCK #{849204 - idx}'}
-                    </span>
+                    <span class="soc-badge {badge_cls}">{block_label}</span>
                     <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: {t['text_high']}; font-weight: 600;">14:28:10 UTC</span>
                     <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_muted']};">| +41ms</span>
                 </div>
@@ -138,18 +131,38 @@ def render_page():
                 SHA-256: {e.get('record_hash', 'e3b0c44298fc1c14...')}
             </div>
         </div>
-        """, unsafe_allow_html=True)
+        """
 
-    st.markdown("""
+    render_html(f"""
+    <div class="soc-card">
+        <div class="soc-section-header">
+            <div class="soc-section-title">Chronological Attestation Blocks (Verified Ledger)</div>
+            <span class="soc-subsystem-tag">ALGORITHM: SHA-256 / CURVE25519</span>
+        </div>
+        <div style="border-left: 2px solid {t['primary']}; margin-left: 0.75rem; padding-left: 1.25rem; display: flex; flex-direction: column;">
+            {blocks_html}
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """)
 
     # 4. Section 2: LOEO 37-Fold Cross-Validation Matrix
     metrics = val_data.get("metrics", {})
     horizons = val_data.get("horizons", [])
 
-    st.markdown(f"""
+    h_rows = ""
+    for h in horizons:
+        status_badge = "badge-nominal" if "Reliable" in h["status"] else ("badge-caution" if "Informative" in h["status"] else "badge-neutral")
+        h_rows += f"""
+        <tr>
+            <td style="font-weight: 600; color:{t['text_high']};">{h['horizon']}</td>
+            <td><span class="soc-badge {status_badge}">{h['status']}</span></td>
+            <td style="font-weight: 700; color:{t['text_high']};">{h['f1']:.2f}</td>
+            <td>{h['error_growth']}</td>
+            <td style="font-size: 0.75rem; color:{t['text_secondary']};">{h['verdict']}</td>
+        </tr>
+        """
+
+    render_html(f"""
     <div class="soc-card">
         <div class="soc-section-header">
             <div class="soc-section-title">Leave-One-Episode-Out (LOEO 37-Fold) Cross-Validation</div>
@@ -200,30 +213,14 @@ def render_page():
                 </tr>
             </thead>
             <tbody>
-    """, unsafe_allow_html=True)
-
-    h_rows = ""
-    for h in horizons:
-        status_badge = "badge-nominal" if "Reliable" in h["status"] else ("badge-caution" if "Informative" in h["status"] else "badge-neutral")
-        h_rows += f"""
-        <tr>
-            <td style="font-weight: 600; color:{t['text_high']};">{h['horizon']}</td>
-            <td><span class="soc-badge {status_badge}">{h['status']}</span></td>
-            <td style="font-weight: 700; color:{t['text_high']};">{h['f1']:.2f}</td>
-            <td>{h['error_growth']}</td>
-            <td style="font-size: 0.75rem; color:{t['text_secondary']};">{h['verdict']}</td>
-        </tr>
-        """
-
-    st.markdown(f"""
                 {h_rows}
             </tbody>
         </table>
     </div>
-    """, unsafe_allow_html=True)
+    """)
 
     # 5. Section 3: FOLDED MODEL PROVENANCE & WEIGHT REGISTRY SECTION
-    st.markdown(f"""
+    render_html(f"""
     <div class="soc-card" style="border: 1px solid {t['primary']};">
         <div class="soc-section-header">
             <div>
@@ -309,7 +306,7 @@ def render_page():
             </div>
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """)
 
 if __name__ == "__main__":
     render_page()

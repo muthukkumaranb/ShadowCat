@@ -2,6 +2,7 @@
 Cytoscape.js Interactive Attack Graph Component for Streamlit
 Matches the visual spec in Stitch folder shadowcat_soc_attack_graph_with_dynamic_k_step_rollout.
 Features confidence glow halos, flowing lateral/exfil edges, K-step rollout state, and node inspector.
+Supports dynamic light and dark theme styling seamlessly.
 """
 
 import json
@@ -17,6 +18,7 @@ def render_cytoscape_graph(
 ) -> None:
     """
     Renders an interactive Cytoscape.js attack topology graph matching the Stitch design.
+    Dynamically themes all canvas elements, node colors, text labels, and overlays.
     """
     # 19 Enterprise nodes defined in the Stitch mockup
     nodes_data = [
@@ -93,6 +95,34 @@ def render_cytoscape_graph(
 
     elements_json = json.dumps(elements)
 
+    # Dynamic styling tokens based on theme
+    is_light = (theme == "light")
+
+    bg_color = "#f8fafc" if is_light else "#0b0e13"
+    grid_color = "rgba(148, 163, 184, 0.25)" if is_light else "rgba(59, 74, 61, 0.15)"
+    panel_bg = "rgba(255, 255, 255, 0.96)" if is_light else "rgba(25, 28, 33, 0.92)"
+    panel_border = "#cbd5e1" if is_light else "#1E2633"
+    btn_bg = "#ffffff" if is_light else "#272a30"
+    btn_border = "#cbd5e1" if is_light else "#3b4a3d"
+    btn_color = "#0f172a" if is_light else "#f5fff2"
+    btn_hover_bg = "#00A84D" if is_light else "#39ff88"
+    btn_hover_color = "#ffffff" if is_light else "#003918"
+    text_high = "#0f172a" if is_light else "#F3F4F6"
+    text_muted = "#64748b" if is_light else "#A0AEC0"
+    text_subtle = "#94a3b8" if is_light else "#7E8B9B"
+    text_secondary = "#334155" if is_light else "#e1e2ea"
+    
+    primary_sig = "#00A84D" if is_light else "#39FF88"
+    secondary_sig = "#D61B3C" if is_light else "#FF3B5C"
+    tertiary_sig = "#D97706" if is_light else "#FFB84D"
+    
+    node_base_bg = "#e2e8f0" if is_light else "#1d2025"
+    node_base_border = "#94a3b8" if is_light else "#3b4a3d"
+    node_label_color = "#0f172a" if is_light else "#bacbb9"
+    nominal_node_bg = "#ffffff" if is_light else "#191c21"
+    nominal_border = "#cbd5e1" if is_light else "#3b4a3d"
+    edge_default = "#94a3b8" if is_light else "#3b4a3d"
+
     html_content = f"""
     <!DOCTYPE html>
     <html>
@@ -102,8 +132,8 @@ def render_cytoscape_graph(
         <style>
             * {{ box-sizing: border-box; margin: 0; padding: 0; }}
             body {{
-                background-color: #0b0e13;
-                color: #e1e2ea;
+                background-color: {bg_color};
+                color: {text_high};
                 font-family: 'Inter', -apple-system, sans-serif;
                 overflow: hidden;
             }}
@@ -113,10 +143,10 @@ def render_cytoscape_graph(
                 position: absolute;
                 top: 0;
                 left: 0;
-                background-color: #0b0e13;
+                background-color: {bg_color};
                 background-image: 
-                    linear-gradient(to right, rgba(59, 74, 61, 0.15) 1px, transparent 1px),
-                    linear-gradient(to bottom, rgba(59, 74, 61, 0.15) 1px, transparent 1px);
+                    linear-gradient(to right, {grid_color} 1px, transparent 1px),
+                    linear-gradient(to bottom, {grid_color} 1px, transparent 1px);
                 background-size: 32px 32px;
             }}
             /* Overlaid Control Pill */
@@ -125,19 +155,19 @@ def render_cytoscape_graph(
                 top: 12px;
                 left: 12px;
                 z-index: 100;
-                background: rgba(25, 28, 33, 0.92);
-                border: 1px solid #1E2633;
+                background: {panel_bg};
+                border: 1px solid {panel_border};
                 border-radius: 4px;
                 padding: 4px 6px;
                 display: flex;
                 flex-direction: column;
                 gap: 4px;
-                box-shadow: none;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.08);
             }}
             .ctrl-btn {{
-                background: #272a30;
-                border: 1px solid #3b4a3d;
-                color: #f5fff2;
+                background: {btn_bg};
+                border: 1px solid {btn_border};
+                color: {btn_color};
                 width: 28px;
                 height: 28px;
                 border-radius: 4px;
@@ -151,9 +181,9 @@ def render_cytoscape_graph(
                 transition: all 0.15s;
             }}
             .ctrl-btn:hover {{
-                background: #39ff88;
-                color: #003918;
-                border-color: #39ff88;
+                background: {btn_hover_bg};
+                color: {btn_hover_color};
+                border-color: {btn_hover_bg};
             }}
             /* Status readout overlay */
             .status-overlay {{
@@ -161,33 +191,35 @@ def render_cytoscape_graph(
                 top: 12px;
                 right: 12px;
                 z-index: 100;
-                background: rgba(25, 28, 33, 0.92);
-                border: 1px solid #1E2633;
+                background: {panel_bg};
+                border: 1px solid {panel_border};
                 border-radius: 4px;
                 padding: 6px 12px;
                 font-family: 'JetBrains Mono', monospace;
                 font-size: 11px;
-                color: #A0AEC0;
+                color: {text_muted};
                 display: flex;
                 align-items: center;
                 gap: 8px;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.08);
             }}
             .legend-panel {{
                 position: absolute;
                 bottom: 12px;
                 left: 12px;
                 z-index: 100;
-                background: rgba(25, 28, 33, 0.92);
-                border: 1px solid #1E2633;
+                background: {panel_bg};
+                border: 1px solid {panel_border};
                 border-radius: 4px;
                 padding: 8px 12px;
                 font-family: 'JetBrains Mono', monospace;
                 font-size: 10px;
-                color: #A0AEC0;
+                color: {text_secondary};
                 max-width: 320px;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.08);
             }}
             .legend-title {{
-                color: #7E8B9B;
+                color: {text_subtle};
                 text-transform: uppercase;
                 font-weight: 700;
                 margin-bottom: 6px;
@@ -200,9 +232,9 @@ def render_cytoscape_graph(
                 gap: 8px;
                 margin-bottom: 4px;
             }}
-            .dot-red {{ width: 10px; height: 10px; border-radius: 50%; background: #FF3B5C; box-shadow: 0 0 8px #FF3B5C; }}
-            .dot-amber {{ width: 10px; height: 10px; border-radius: 50%; background: #FFB84D; }}
-            .dot-green {{ width: 10px; height: 10px; border-radius: 50%; background: #39FF88; }}
+            .dot-red {{ width: 10px; height: 10px; border-radius: 50%; background: {secondary_sig}; box-shadow: 0 0 8px {secondary_sig}; }}
+            .dot-amber {{ width: 10px; height: 10px; border-radius: 50%; background: {tertiary_sig}; }}
+            .dot-green {{ width: 10px; height: 10px; border-radius: 50%; background: {primary_sig}; }}
         </style>
     </head>
     <body>
@@ -216,25 +248,25 @@ def render_cytoscape_graph(
         </div>
 
         <div class="status-overlay">
-            <span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:#39FF88;"></span>
+            <span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:{primary_sig};"></span>
             <span>CYTOSCAPE ENGINE: 60 FPS</span>
-            <span style="color:#3b4a3d;">|</span>
-            <span>STEP: <b style="color:#39FF88;">k={k_step}</b></span>
-            <span style="color:#3b4a3d;">|</span>
-            <span>NODES: <b style="color:#F3F4F6;">19</b></span>
-            <span style="color:#3b4a3d;">|</span>
-            <span>EDGES: <b style="color:#39FF88;">34</b></span>
+            <span style="color:{panel_border};">|</span>
+            <span>STEP: <b style="color:{primary_sig};">k={k_step}</b></span>
+            <span style="color:{panel_border};">|</span>
+            <span>NODES: <b style="color:{text_high};">19</b></span>
+            <span style="color:{panel_border};">|</span>
+            <span>EDGES: <b style="color:{primary_sig};">34</b></span>
         </div>
 
         <div class="legend-panel">
             <div class="legend-title">
                 <span>GRAPH ENTITY LEGEND</span>
-                <span style="color:#39FF88;">LIVE</span>
+                <span style="color:{primary_sig};">LIVE</span>
             </div>
             <div class="legend-item"><span class="dot-red"></span><span>Compromised Beacon (p &gt; 0.90, σ ≤ 0.08)</span></div>
             <div class="legend-item"><span class="dot-amber"></span><span>Elevated Risk / Dispersion (σ &gt; 0.25)</span></div>
             <div class="legend-item"><span class="dot-green"></span><span>Verified Nominal Microservice (p ≤ 0.20)</span></div>
-            <div style="border-top:1px solid #1E2633; margin-top:6px; padding-top:4px; color:#7E8B9B;">
+            <div style="border-top:1px solid {panel_border}; margin-top:6px; padding-top:4px; color:{text_muted};">
                 Click any node to inspect telemetry & blast radius.
             </div>
         </div>
@@ -250,15 +282,15 @@ def render_cytoscape_graph(
                         selector: 'node',
                         style: {{
                             'label': 'data(label)',
-                            'color': '#bacbb9',
+                            'color': '{node_label_color}',
                             'font-family': 'JetBrains Mono, monospace',
                             'font-size': '9px',
                             'text-wrap': 'wrap',
                             'text-valign': 'bottom',
                             'text-margin-y': 6,
-                            'background-color': '#1d2025',
+                            'background-color': '{node_base_bg}',
                             'border-width': 1.5,
-                            'border-color': '#3b4a3d',
+                            'border-color': '{node_base_border}',
                             'width': 'data(size)',
                             'height': 'data(size)',
                             'transition-property': 'background-color, border-color, width, height',
@@ -269,8 +301,8 @@ def render_cytoscape_graph(
                     {{
                         selector: 'node[type = "compromised"]',
                         style: {{
-                            'background-color': '#FF3B5C',
-                            'border-color': '#39FF88',
+                            'background-color': '{secondary_sig}',
+                            'border-color': '{primary_sig}',
                             'border-width': 2.5,
                             'color': '#ffffff',
                             'font-weight': 'bold',
@@ -280,31 +312,31 @@ def render_cytoscape_graph(
                     {{
                         selector: 'node[type = "external_threat"]',
                         style: {{
-                            'background-color': '#c7003a',
-                            'border-color': '#FF3B5C',
+                            'background-color': '{secondary_sig}',
+                            'border-color': '{secondary_sig}',
                             'border-width': 2,
-                            'color': '#FF3B5C',
+                            'color': '{secondary_sig}',
                             'font-weight': 'bold'
                         }}
                     }},
                     {{
                         selector: 'node[type = "lateral"]',
                         style: {{
-                            'background-color': '#b01330',
-                            'border-color': '#FF3B5C',
+                            'background-color': '{secondary_sig}',
+                            'border-color': '{secondary_sig}',
                             'border-width': 2,
-                            'color': '#ffb3b6'
+                            'color': '{"#ffffff" if is_light else "#ffb3b6"}'
                         }}
                     }},
                     // Elevated dispersion / amber halo
                     {{
                         selector: 'node[type = "dispersion"], node[type = "target"]',
                         style: {{
-                            'background-color': '#272a30',
-                            'border-color': '#FFB84D',
+                            'background-color': '{"#fef3c7" if is_light else "#272a30"}',
+                            'border-color': '{tertiary_sig}',
                             'border-width': 2,
                             'border-style': 'dashed',
-                            'color': '#ffddb3'
+                            'color': '{"#92400e" if is_light else "#ffddb3"}'
                         }}
                     }},
                     // Gateways
@@ -312,26 +344,28 @@ def render_cytoscape_graph(
                         selector: 'node[type = "gateway"]',
                         style: {{
                             'shape': 'diamond',
-                            'border-color': '#39FF88',
+                            'border-color': '{primary_sig}',
                             'border-width': 1.5,
-                            'color': '#f5fff2'
+                            'background-color': '{nominal_node_bg}',
+                            'color': '{node_label_color}'
                         }}
                     }},
                     // Nominal nodes
                     {{
                         selector: 'node[type = "nominal"]',
                         style: {{
-                            'border-color': '#3b4a3d',
-                            'background-color': '#191c21'
+                            'border-color': '{nominal_border}',
+                            'background-color': '{nominal_node_bg}',
+                            'color': '{node_label_color}'
                         }}
                     }},
                     // Selection state
                     {{
                         selector: 'node:selected, node[id = "{selected_node_id}"]',
                         style: {{
-                            'border-color': '#39FF88',
+                            'border-color': '{primary_sig}',
                             'border-width': 3.5,
-                            'color': '#39FF88'
+                            'color': '{primary_sig}'
                         }}
                     }},
                     // Edges
@@ -339,8 +373,8 @@ def render_cytoscape_graph(
                         selector: 'edge',
                         style: {{
                             'width': 1.5,
-                            'line-color': '#3b4a3d',
-                            'target-arrow-color': '#3b4a3d',
+                            'line-color': '{edge_default}',
+                            'target-arrow-color': '{edge_default}',
                             'target-arrow-shape': 'triangle',
                             'curve-style': 'bezier',
                             'opacity': 0.7
@@ -349,26 +383,19 @@ def render_cytoscape_graph(
                     {{
                         selector: 'edge[type = "c2_exfil"]',
                         style: {{
-                            'width': 3.5,
-                            'line-color': '#FF3B5C',
-                            'target-arrow-color': '#FF3B5C',
-                            'line-style': 'dashed',
-                            'opacity': 1.0,
-                            'label': 'data(label)',
-                            'font-family': 'JetBrains Mono, monospace',
-                            'font-size': '8px',
-                            'color': '#FF3B5C',
-                            'text-background-color': '#0b0e13',
-                            'text-background-opacity': 0.85,
-                            'text-background-padding': 2
+                            'width': 3,
+                            'line-color': '{secondary_sig}',
+                            'target-arrow-color': '{secondary_sig}',
+                            'line-style': 'solid',
+                            'opacity': 0.95
                         }}
                     }},
                     {{
                         selector: 'edge[type = "lateral_hop"]',
                         style: {{
                             'width': 2.5,
-                            'line-color': '#FF3B5C',
-                            'target-arrow-color': '#FF3B5C',
+                            'line-color': '{secondary_sig}',
+                            'target-arrow-color': '{secondary_sig}',
                             'line-style': 'dashed',
                             'opacity': 0.9
                         }}
@@ -376,9 +403,9 @@ def render_cytoscape_graph(
                     {{
                         selector: 'edge[type = "suspicious"]',
                         style: {{
-                            'width': 2.0,
-                            'line-color': '#FFB84D',
-                            'target-arrow-color': '#FFB84D',
+                            'width': 2,
+                            'line-color': '{tertiary_sig}',
+                            'target-arrow-color': '{tertiary_sig}',
                             'line-style': 'dashed',
                             'opacity': 0.8
                         }}

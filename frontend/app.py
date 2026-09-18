@@ -5,7 +5,7 @@ Exact 7-tab navigation matching Stitch export specification.
 """
 
 import streamlit as st
-from styles import apply_custom_css, TOKENS, EMBLEM_SVG
+from styles import apply_custom_css, TOKENS, EMBLEM_SVG, render_html
 
 # Base page configuration
 st.set_page_config(
@@ -26,9 +26,9 @@ def toggle_theme():
 apply_custom_css(theme=st.session_state.theme)
 t = TOKENS[st.session_state.theme]
 
-# Define 7 Authoritative App Pages (Strictly 7 items, Model Registry folded into Page 7)
-p1 = st.Page("views/01_Telemetry_Ingestion.py", title="Telemetry Ingestion", url_path="ingestion", default=True)
-p2 = st.Page("views/02_Overview.py", title="Overview", url_path="overview")
+# Define 7 Authoritative App Pages (Overview first, then Telemetry Ingestion)
+p1 = st.Page("views/02_Overview.py", title="Overview", url_path="overview", default=True)
+p2 = st.Page("views/01_Telemetry_Ingestion.py", title="Telemetry Ingestion", url_path="ingestion")
 p3 = st.Page("views/03_Forecast.py", title="Forecast", url_path="forecast")
 p4 = st.Page("views/04_Attack_Graph.py", title="Attack Graph", url_path="attack-graph")
 p5 = st.Page("views/05_Alerts.py", title="Alerts", url_path="alerts")
@@ -42,9 +42,9 @@ pg = st.navigation(pages_list, position="hidden")
 header_col1, header_col2, header_col3 = st.columns([0.22, 0.63, 0.15])
 
 with header_col1:
-    st.markdown(f"""
+    render_html(f"""
     <div style="display: flex; align-items: center; gap: 0.75rem; padding-top: 4px;">
-        {EMBLEM_SVG}
+        {EMBLEM_SVG.strip()}
         <div style="display: flex; align-items: baseline; gap: 0.4rem;">
             <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; font-weight: 700; color: {t['text_high']}; letter-spacing: -0.01em;">
                 SHADOWCAT // SOC
@@ -52,13 +52,13 @@ with header_col1:
             <span class="soc-topbar-tag" style="font-size: 0.6rem; padding: 1px 4px;">v2.4.0-TRL6</span>
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """)
 
 with header_col2:
     nav_cols = st.columns(7)
     nav_titles = [
-        ("Ingestion", p1),
-        ("Overview", p2),
+        ("Overview", p1),
+        ("Ingestion", p2),
         ("Forecast", p3),
         ("Attack Graph", p4),
         ("Alerts", p5),
@@ -74,18 +74,18 @@ with header_col2:
 with header_col3:
     col_status, col_btn = st.columns([0.65, 0.35])
     with col_status:
-        st.markdown(f"""
+        render_html(f"""
         <div style="display: flex; align-items: center; gap: 0.4rem; justify-content: flex-end; padding-top: 6px;">
             <span class="soc-live-badge" style="font-size: 0.65rem; padding: 2px 6px;">
                 <span class="soc-pulse-dot"></span> LIVE [120ms]
             </span>
         </div>
-        """, unsafe_allow_html=True)
+        """)
     with col_btn:
         btn_label = "☀" if st.session_state.theme == "dark" else "🌙"
-        st.button(btn_label, on_click=toggle_theme, title="Toggle Light/Dark Theme", use_container_width=True)
+        st.button(btn_label, on_click=toggle_theme, help="Toggle Light/Dark Theme", use_container_width=True)
 
-st.markdown(f"<div style='border-bottom: 1px solid {t['border']}; margin-bottom: 1rem;'></div>", unsafe_allow_html=True)
+render_html(f"<div style='border-bottom: 1px solid {t['border']}; margin-bottom: 1rem;'></div>")
 
 # Run Selected Page
 pg.run()

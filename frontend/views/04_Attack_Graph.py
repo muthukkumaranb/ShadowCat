@@ -5,7 +5,10 @@ Features Cytoscape.js interactive topology, GNN experimental caution banner, and
 """
 
 import streamlit as st
-from styles import TOKENS
+from styles import TOKENS, render_html
+import importlib
+import components.cytoscape_attack_graph
+importlib.reload(components.cytoscape_attack_graph)
 from components.cytoscape_attack_graph import render_cytoscape_graph
 from data_provider import get_host_risk_graph, get_fusion_experimental
 
@@ -22,7 +25,7 @@ def render_page():
     curr_k = st.session_state.attack_k_step
 
     # TOP CONTROL BAR
-    st.markdown(f"""
+    render_html(f"""
     <div class="soc-card" style="margin-bottom: 0.75rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
             <div style="display: flex; align-items: center; gap: 0.5rem;">
@@ -38,10 +41,10 @@ def render_page():
             </div>
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """)
 
     # MANDATORY CAUTION BANNER (Experimental GNN Fusion)
-    st.markdown(f"""
+    render_html(f"""
     <div class="soc-caution-banner">
         <div style="display: flex; align-items: center; gap: 0.5rem;">
             <span style="font-size: 1.1rem; color: {t['tertiary']};">⚡</span>
@@ -56,12 +59,12 @@ def render_page():
             EPISTEMIC SIGMA: 0.28
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """)
 
     # K-STEP SCRUBBER PANEL
-    st.markdown(f"""
-    <div class="soc-card" style="margin-bottom: 1rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
+    render_html(f"""
+    <div class="soc-card" style="margin-bottom: 0.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
             <div style="display: flex; align-items: center; gap: 0.5rem;">
                 <span class="soc-badge badge-nominal">HORIZON SCRUBBER [k = 0..5]</span>
                 <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: {t['text_high']}; font-weight: 600;">
@@ -72,7 +75,8 @@ def render_page():
                 Mitigation Window: 34m 12s [TIGHTENING]
             </div>
         </div>
-    """, unsafe_allow_html=True)
+    </div>
+    """)
 
     # Step buttons for Attack Graph
     k_steps_info = [
@@ -92,8 +96,9 @@ def render_page():
                 st.session_state.attack_k_step = i
                 st.rerun()
 
-    st.markdown(f"""
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_muted']};">
+    render_html(f"""
+    <div class="soc-card" style="margin-bottom: 1rem; padding: 0.6rem 1rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_muted']};">
             <div>
                 Active Step: <b style="color:{t['primary']}">k = {curr_k} (+{curr_k*15}m)</b> • 
                 Diffusion P(t): <b style="color:{t['secondary']}">0.962</b> • 
@@ -103,7 +108,7 @@ def render_page():
             <span style="color: {t['tertiary']}; font-weight: 600;">PROPAGATION HORIZON: Single Enclave Pivot Contained</span>
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """)
 
     # 2-COLUMN VIEWPORT: Left (8 cols Cytoscape) | Right (4 cols Inspector)
     c_graph, c_inspector = st.columns([8, 4])
@@ -128,7 +133,7 @@ def render_page():
         status_text = "CRITICAL COMPROMISE" if is_critical else "NOMINAL MONITORING"
         badge_type = "badge-critical" if is_critical else "badge-nominal"
 
-        st.markdown(f"""
+        render_html(f"""
         <div class="soc-card" style="padding: 1rem;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
                 <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.8125rem; font-weight: 700; color: {t['text_high']}; text-transform: uppercase;">
@@ -201,7 +206,7 @@ def render_page():
                 <span class="soc-badge badge-critical" style="font-size: 0.625rem;">P(conf) = 0.94</span>
             </div>
         </div>
-        """, unsafe_allow_html=True)
+        """)
 
         if st.button("Sever Host Connections & Isolate", type="primary", use_container_width=True):
             st.success(f"SDN Isolation Policy applied: {sel_node} blocked on all VPC interfaces.")

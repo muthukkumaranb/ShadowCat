@@ -6,7 +6,7 @@ Wired to live data_provider.py and canonical dataset.
 
 import streamlit as st
 import pandas as pd
-from styles import TOKENS
+from styles import TOKENS, render_html
 from data_provider import get_analysis_metadata, get_novelty_score
 
 def render_page():
@@ -15,7 +15,7 @@ def render_page():
     novelty = get_novelty_score()
 
     # Subsystem Header & Context Telemetry
-    st.markdown(f"""
+    render_html(f"""
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap;">
         <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['outline']};">
             <span style="color: {t['primary']}; font-weight: 700;">SUBSYSTEM 01</span> // <span>TELEMETRY INGESTION PIPELINE</span>
@@ -43,7 +43,7 @@ def render_page():
             <span class="soc-badge badge-caution">VPC-8812 PROD</span>
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """)
 
     # Ingestion Source Selector Bar
     c_tab1, c_tab2, c_tab3 = st.columns([0.45, 0.35, 0.2])
@@ -55,20 +55,20 @@ def render_page():
             label_visibility="collapsed"
         )
     with c_tab2:
-        st.markdown(f"""
+        render_html(f"""
         <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_muted']}; display: flex; gap: 0.75rem; justify-content: flex-end; padding-top: 6px;">
             <span>Partition: <b style="color:{t['text_high']}">#04</b></span>
             <span>De-dup: <b style="color:{t['primary']}">Strict (SHA-256)</b></span>
             <span>Sync: <b style="color:{t['text_high']}">PTP v2 ±12ns</b></span>
         </div>
-        """, unsafe_allow_html=True)
+        """)
     with c_tab3:
         if st.button("Load Demo Benchmark", use_container_width=True):
             st.session_state["benchmark_loaded"] = True
             st.success("Loaded CSE-CIC-IDS2018 canonical benchmark stream (40 windows)")
 
     # Upload / Drop Zone
-    st.markdown(f"""
+    render_html(f"""
     <div style="background: radial-gradient(ellipse at top, rgba(57, 255, 136, 0.05), transparent 70%), {t['surface_container']}; border: 1px dashed {t['outline_variant']}; border-radius: 4px; padding: 1.5rem; text-align: center; margin-bottom: 1.25rem;">
         <div style="font-size: 2rem; color: {t['primary']}; margin-bottom: 0.25rem;">☁</div>
         <div style="font-family: 'Inter', sans-serif; font-size: 1.125rem; font-weight: 600; color: {t['text_high']};">
@@ -81,13 +81,13 @@ def render_page():
             ENCRYPTED TRANSIT: AES-256-GCM • PARQUET ZERO-COPY ENGINE • GPU PINNED BUFFER ACTIVE
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """)
 
     # Modular Dual Split: Statistics Manifest & Schema Validation
     col_left, col_right = st.columns([5, 7])
 
     with col_left:
-        st.markdown(f"""
+        render_html(f"""
         <div class="soc-card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
                 <div style="font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 0.875rem; color: {t['text_high']}; text-transform: uppercase;">
@@ -141,10 +141,10 @@ def render_page():
                 </div>
             </div>
         </div>
-        """, unsafe_allow_html=True)
+        """)
 
     with col_right:
-        st.markdown(f"""
+        render_html(f"""
         <div class="soc-card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
                 <div style="font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 0.875rem; color: {t['text_high']}; text-transform: uppercase;">
@@ -199,10 +199,10 @@ def render_page():
                 </div>
             </div>
         </div>
-        """, unsafe_allow_html=True)
+        """)
 
     # Primary Action & Execution Bar
-    st.markdown(f"""
+    render_html(f"""
     <div style="background: {t['surface_card']}; border: 1px solid {t['border']}; border-radius: 4px; padding: 1rem 1.25rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
         <div style="display: flex; align-items: center; gap: 0.75rem;">
             <span class="soc-pulse-dot" style="width:10px; height:10px;"></span>
@@ -219,10 +219,10 @@ def render_page():
             RAY ACTORS: 16 WORKERS • PINNED GPU: NVIDIA H100 SXM5
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """)
 
     # Terminal Ingestion Event Log
-    st.markdown(f"""
+    render_html(f"""
     <div class="soc-section-header">
         <div class="soc-section-title">Ingestion Event & System Log Stream</div>
         <span class="soc-subsystem-tag">16 RAY WORKERS ONLINE</span>
@@ -235,7 +235,7 @@ def render_page():
         <div><span class="soc-terminal-time">[14:28:10.354]</span><span class="soc-terminal-info">[INFO]</span> Host topology adjacency graph synthesized: 19 vertices, 34 edges confirmed.</div>
         <div><span class="soc-terminal-time">[14:28:10.410]</span><span class="soc-terminal-info">[INFO]</span> Checkpoint sc-threat-v4.1 loaded in memory. Ready for multi-horizon rollout.</div>
     </div>
-    """, unsafe_allow_html=True)
+    """)
 
 if __name__ == "__main__":
     render_page()

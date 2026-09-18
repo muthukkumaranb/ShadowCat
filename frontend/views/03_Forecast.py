@@ -5,7 +5,7 @@ Wired to real data_provider.py and multi-step forecast trajectory.
 """
 
 import streamlit as st
-from styles import TOKENS
+from styles import TOKENS, render_html
 from data_provider import get_forecast_trajectory, get_novelty_score, get_attributions
 
 def render_page():
@@ -86,7 +86,7 @@ def render_page():
     active_step = STEPS_DATA[curr_k]
 
     # TOP SECTION / HORIZON CONTROL BAR
-    st.markdown(f"""
+    render_html(f"""
     <div class="soc-card" style="margin-bottom: 1rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
             <div>
@@ -113,10 +113,10 @@ def render_page():
             </div>
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """)
 
     # PROMINENT INTERACTIVE K-STEP FORWARD ROLLOUT TIMELINE SCRUBBER
-    st.markdown(f"""
+    render_html(f"""
     <div class="soc-card" style="border: 1px solid {t['primary']}; border-top: 2px solid {t['primary']}; margin-bottom: 1rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
             <div style="display: flex; align-items: center; gap: 0.5rem;">
@@ -164,7 +164,7 @@ def render_page():
             </div>
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """)
 
     # Scrubber Buttons Row
     btn_cols = st.columns(6)
@@ -176,10 +176,10 @@ def render_page():
                 st.session_state.forecast_k_step = i
                 st.rerun()
 
-    st.markdown("<div style='height: 0.75rem;'></div>", unsafe_allow_html=True)
+    render_html("<div style='height: 0.75rem;'></div>")
 
     # CENTERPIECE: PREDICTIVE THREAT TRAJECTORY CHART
-    st.markdown(f"""
+    render_html(f"""
     <div class="soc-card" style="margin-bottom: 1rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
             <div style="display: flex; gap: 1.5rem; align-items: baseline;">
@@ -212,7 +212,6 @@ def render_page():
             </div>
         </div>
 
-        <!-- SVG Line & Uncertainty Chart Canvas -->
         <div style="width: 100%; height: 280px; background: {t['surface_lowest']}; border: 1px solid {t['border']}; border-radius: 4px; position: relative;">
             <svg style="width: 100%; height: 100%;" viewBox="0 0 1000 280" preserveAspectRatio="none">
                 <defs>
@@ -227,21 +226,18 @@ def render_page():
                     </linearGradient>
                 </defs>
 
-                <!-- Gridlines -->
                 <line x1="50" y1="20" x2="980" y2="20" stroke="{t['border']}" stroke-dasharray="2 4" />
                 <line x1="50" y1="75" x2="980" y2="75" stroke="{t['secondary']}" stroke-dasharray="4 4" stroke-width="1.2" opacity="0.6" />
                 <line x1="50" y1="135" x2="980" y2="135" stroke="{t['border']}" stroke-dasharray="2 4" />
                 <line x1="50" y1="195" x2="980" y2="195" stroke="{t['border']}" stroke-dasharray="2 4" />
                 <line x1="50" y1="255" x2="980" y2="255" stroke="{t['border']}" />
 
-                <!-- Y Labels -->
                 <text x="42" y="24" fill="{t['text_muted']}" font-family="JetBrains Mono" font-size="9" text-anchor="end">1.00</text>
                 <text x="42" y="79" fill="{t['secondary']}" font-family="JetBrains Mono" font-size="9" text-anchor="end" font-weight="700">0.75</text>
                 <text x="42" y="139" fill="{t['text_muted']}" font-family="JetBrains Mono" font-size="9" text-anchor="end">0.50</text>
                 <text x="42" y="199" fill="{t['text_muted']}" font-family="JetBrains Mono" font-size="9" text-anchor="end">0.25</text>
                 <text x="42" y="259" fill="{t['text_muted']}" font-family="JetBrains Mono" font-size="9" text-anchor="end">0.00</text>
 
-                <!-- Vertical slice lines -->
                 <line x1="100" y1="20" x2="100" y2="255" stroke="{t['border']}" stroke-dasharray="2 3" />
                 <line x1="220" y1="20" x2="220" y2="255" stroke="{t['border']}" stroke-dasharray="2 3" />
                 <line x1="350" y1="20" x2="350" y2="255" stroke="{t['outline']}" stroke-width="1.5" />
@@ -251,24 +247,18 @@ def render_page():
                 <line x1="830" y1="20" x2="830" y2="255" stroke="{t['border']}" stroke-dasharray="2 3" />
                 <line x1="950" y1="20" x2="950" y2="255" stroke="{t['border']}" stroke-dasharray="2 3" />
 
-                <!-- Widening 95% Uncertainty Shaded Polygon -->
                 <polygon points="350,62 470,44 590,30 710,18 830,12 950,8 950,78 830,58 710,48 590,56 470,68 350,62" fill="url(#mainUncertaintyGradient)" />
 
-                <!-- Historical Area Fill -->
                 <polygon points="100,255 100,225 150,220 190,230 230,200 280,175 315,120 350,62 350,255" fill="url(#mainHistoryGradient)" />
 
-                <!-- Historical Solid Line -->
                 <polyline points="100,225 150,220 190,230 230,200 280,175 315,120 350,62" fill="none" stroke="{t['primary']}" stroke-width="2.5" stroke-linecap="round" />
 
-                <!-- Projected Mean Trajectory -->
                 <polyline points="350,62 470,51 590,41 710,33 830,27 950,22" fill="none" stroke="{t['secondary']}" stroke-width="2.5" stroke-dasharray="6 4" stroke-linecap="round" />
 
-                <!-- Dynamic Scrubber Needle at active k step -->
                 <line x1="{active_step['svgX']}" y1="15" x2="{active_step['svgX']}" y2="260" stroke="{t['primary']}" stroke-width="2" stroke-dasharray="3 2" />
                 <circle cx="{active_step['svgX']}" cy="{active_step['svgY']}" r="8" fill="none" stroke="{t['primary']}" stroke-width="2" />
                 <circle cx="{active_step['svgX']}" cy="{active_step['svgY']}" r="3.5" fill="{t['primary']}" />
 
-                <!-- X Axis Step Labels -->
                 <text x="100" y="272" fill="{t['text_muted']}" font-family="JetBrains Mono" font-size="9" text-anchor="middle">t-30m</text>
                 <text x="220" y="272" fill="{t['text_muted']}" font-family="JetBrains Mono" font-size="9" text-anchor="middle">t-15m</text>
                 <text x="350" y="272" fill="{t['text_high']}" font-family="JetBrains Mono" font-size="9" text-anchor="middle" font-weight="700">k=0 [NOW]</text>
@@ -284,11 +274,11 @@ def render_page():
             <span style="color: {t['secondary']}; font-weight: 700;">MITIGATION WINDOW DEPLETING (Est {active_step['window']})</span>
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """)
 
     # PLAIN-LANGUAGE CAUSAL RISK ATTRIBUTION PANEL
     drivers = active_step["drivers"]
-    st.markdown(f"""
+    render_html(f"""
     <div class="soc-card" style="margin-bottom: 1rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
             <div style="display: flex; align-items: center; gap: 0.5rem;">
@@ -300,13 +290,11 @@ def render_page():
                 <span class="soc-badge badge-nominal">Primary Forecast Engine</span>
             </div>
         </div>
-        <!-- Explanatory Narrative in Inter Prose -->
         <div class="soc-card-nested" style="margin-bottom: 0.75rem; line-height: 1.55; font-size: 0.875rem;">
             <p style="margin: 0; color: {t['text_high']};">
                 {active_step['prose']} <span style="color: {t['text_secondary']};">{active_step['forecast_prose']}</span>
             </p>
         </div>
-        <!-- Contextual Driver Track -->
         <div style="display: flex; justify-content: space-between; font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_muted']}; text-transform: uppercase; margin-bottom: 0.25rem;">
             <span>Causal Factor Breakdown for Horizon Step <b style="color:{t['primary']}">k = {active_step['k']}</b></span>
             <span>Aggregated Influence: 100%</span>
@@ -331,13 +319,13 @@ def render_page():
             </div>
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """)
 
     # BASELINE VS CURRENT HISTORICAL TREND COMPARISONS
     c_col1, c_col2, c_col3 = st.columns(3)
 
     with c_col1:
-        st.markdown(f"""
+        render_html(f"""
         <div class="soc-stat-card">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span class="soc-stat-label">Egress Traffic Volume</span>
@@ -355,10 +343,10 @@ def render_page():
                 <span>UDP/53</span>
             </div>
         </div>
-        """, unsafe_allow_html=True)
+        """)
 
     with c_col2:
-        st.markdown(f"""
+        render_html(f"""
         <div class="soc-stat-card">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span class="soc-stat-label">Entropy & Novelty Index</span>
@@ -376,10 +364,10 @@ def render_page():
                 <span>CONF: 99.1%</span>
             </div>
         </div>
-        """, unsafe_allow_html=True)
+        """)
 
     with c_col3:
-        st.markdown(f"""
+        render_html(f"""
         <div class="soc-stat-card">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span class="soc-stat-label">Cluster Peer Connections</span>
@@ -397,12 +385,12 @@ def render_page():
                 <span>SYN: NEGATIVE</span>
             </div>
         </div>
-        """, unsafe_allow_html=True)
+        """)
 
-    st.markdown("<div style='height: 1rem;'></div>", unsafe_allow_html=True)
+    render_html("<div style='height: 1rem;'></div>")
 
     # MITIGATION PLAYBOOK ACTION BAR
-    st.markdown(f"""
+    render_html(f"""
     <div style="background: {t['surface_card']}; border: 1px solid {t['border']}; border-radius: 4px; padding: 1rem 1.25rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
         <div style="display: flex; align-items: center; gap: 0.75rem;">
             <div style="width: 36px; height: 36px; border-radius: 4px; background: {t['secondary_subtle']}; border: 1px solid {t['secondary']}; display: flex; align-items: center; justify-content: center; color: {t['secondary']}; font-size: 1.25rem;">
@@ -417,8 +405,8 @@ def render_page():
                 </div>
             </div>
         </div>
-        <div style="display: flex; gap: 0.5rem;">
-    """, unsafe_allow_html=True)
+    </div>
+    """)
 
     p_col1, p_col2 = st.columns(2)
     with p_col1:

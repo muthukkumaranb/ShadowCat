@@ -5,7 +5,7 @@ Wired to live data_provider.py and flagged flows.
 """
 
 import streamlit as st
-from styles import TOKENS
+from styles import TOKENS, render_html
 from data_provider import get_flagged_flows, get_analysis_metadata
 
 def render_page():
@@ -14,7 +14,7 @@ def render_page():
     meta = get_analysis_metadata()
 
     # 1. Header & Metric Summary Bar
-    st.markdown(f"""
+    render_html(f"""
     <div class="soc-card" style="margin-bottom: 1rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
             <div>
@@ -39,7 +39,7 @@ def render_page():
             </div>
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """)
 
     # 2. Filter & Sort Control Strip
     c_f1, c_f2, c_f3 = st.columns([0.35, 0.35, 0.3])
@@ -61,11 +61,11 @@ def render_page():
     with c_f3:
         search_term = st.text_input("Search", placeholder="Search alert ID, host, ASN...", label_visibility="collapsed")
 
-    st.markdown("<div style='height: 0.5rem;'></div>", unsafe_allow_html=True)
+    render_html("<div style='height: 0.5rem;'></div>")
 
     # 3. Vertical List of Alert Cards
     # Card 1: Critical (Expanded View)
-    st.markdown(f"""
+    render_html(f"""
     <div class="soc-card" style="border-left: 4px solid {t['secondary']}; margin-bottom: 0.75rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
             <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
@@ -104,7 +104,7 @@ def render_page():
             </div>
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """)
 
     c_act1, c_act2, c_act3 = st.columns(3)
     with c_act1:
@@ -117,10 +117,10 @@ def render_page():
         if st.button("Export Forensic PCAP Trace", use_container_width=True):
             st.info("PCAP downloaded.")
 
-    st.markdown("<div style='height: 0.75rem;'></div>", unsafe_allow_html=True)
+    render_html("<div style='height: 0.75rem;'></div>")
 
     # Card 2: Critical
-    st.markdown(f"""
+    render_html(f"""
     <div class="soc-card" style="border-left: 4px solid {t['secondary']}; margin-bottom: 0.75rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem; flex-wrap: wrap; gap: 0.5rem;">
             <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
@@ -140,10 +140,10 @@ def render_page():
             TARGET: <b style="color:{t['text_high']}">svc-auth-master</b> • SUBNET: 10.0.14.0/24 • PROTOCOL: TCP/135
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """)
 
     # Card 3: High
-    st.markdown(f"""
+    render_html(f"""
     <div class="soc-card" style="border-left: 4px solid {t['tertiary']}; margin-bottom: 0.75rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem; flex-wrap: wrap; gap: 0.5rem;">
             <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
@@ -163,10 +163,10 @@ def render_page():
             TARGET: <b style="color:{t['text_high']}">ws-analyst-12</b> • PORTS: 22, 80, 443, 8080, 3389
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """)
 
     # Card 4: Medium
-    st.markdown(f"""
+    render_html(f"""
     <div class="soc-card" style="border-left: 4px solid {t['tertiary']}; margin-bottom: 0.75rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem; flex-wrap: wrap; gap: 0.5rem;">
             <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
@@ -186,7 +186,7 @@ def render_page():
             TARGET: <b style="color:{t['text_high']}">iam-sync-daemon</b> • TOKENS: 2 concurrently active
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """)
 
 if __name__ == "__main__":
     render_page()

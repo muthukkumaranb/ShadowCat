@@ -5,7 +5,7 @@ Wired to live data_provider.py and SHAP / Integrated Gradients attributions.
 """
 
 import streamlit as st
-from styles import TOKENS
+from styles import TOKENS, render_html
 from data_provider import get_attributions, get_analysis_metadata, get_forecast_trajectory
 
 def render_page():
@@ -16,7 +16,7 @@ def render_page():
     risk_val = fc.get("risk", [0.962])[0]
 
     # 1. Top Section: Header, Telemetry Badges & Educational Explainer
-    st.markdown(f"""
+    render_html(f"""
     <div class="soc-card" style="margin-bottom: 1rem;">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
             <div>
@@ -57,7 +57,7 @@ def render_page():
             </div>
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """)
 
     # 2. Source Model Attribution Switcher
     model_choice = st.radio(
@@ -67,7 +67,7 @@ def render_page():
     )
 
     if "Graph Fusion" in model_choice:
-        st.markdown(f"""
+        render_html(f"""
         <div class="soc-caution-banner" style="margin-top: 0.75rem;">
             <div>
                 <span class="soc-caution-title">GRAPH FUSION TOPOLOGY ATTRIBUTION (v0.8.2-PREVIEW)</span>
@@ -77,12 +77,12 @@ def render_page():
             </div>
             <span class="soc-badge badge-caution">EXPERIMENTAL GNN ALPHA</span>
         </div>
-        """, unsafe_allow_html=True)
+        """)
 
-    st.markdown("<div style='height: 0.75rem;'></div>", unsafe_allow_html=True)
+    render_html("<div style='height: 0.75rem;'></div>")
 
     # 3. 4-Category Horizontal Feature Attribution Matrix
-    st.markdown(f"""
+    render_html(f"""
     <div class="soc-card">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap;">
             <div>
@@ -231,15 +231,15 @@ def render_page():
             </div>
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """)
 
     # 4. Live Pipeline Decomposed Feature Table
-    st.markdown(f"""
+    render_html(f"""
     <div class="soc-section-header" style="margin-top: 1rem;">
         <div class="soc-section-title">Live Pipeline Decomposed Feature Manifest</div>
         <span class="soc-subsystem-tag">DELETION-TESTED ATTRIBUTIONS</span>
     </div>
-    """, unsafe_allow_html=True)
+    """)
 
     if attributions:
         table_rows = ""
@@ -255,7 +255,7 @@ def render_page():
                 <td><span class="soc-badge badge-nominal">Active</span></td>
             </tr>
             """
-        st.markdown(f"""
+        render_html(f"""
         <table class="soc-card">
             <thead>
                 <tr>
@@ -270,7 +270,7 @@ def render_page():
                 {table_rows}
             </tbody>
         </table>
-        """, unsafe_allow_html=True)
+        """)
 
 if __name__ == "__main__":
     render_page()
