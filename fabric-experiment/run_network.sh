@@ -8,3 +8,4 @@ dos2unix scripts/*.sh
 dos2unix organizations/fabric-ca/*.sh
 dos2unix addOrg3/*.sh
 ./network.sh up createChannel -c shadowcat-notary-channel -ca
+
