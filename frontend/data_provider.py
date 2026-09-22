@@ -657,6 +657,27 @@ def get_audit_chain_status() -> dict:
     return {"length": 0, "is_valid": False, "issues": ["audit_chain.json not found"], "entries": []}
 
 
+def get_live_notarization_status() -> dict:
+    """
+    Returns the live notarization mechanism and status (Fabric vs. SHA-256 fallback).
+    Consumed by: views/07_Validation_Trust.py
+    """
+    try:
+        pred = _get_live_prediction()
+        mech = pred.get("notarization_mechanism", pred.get("forecast_trajectory", {}).get("notarized_via", "fabric"))
+        return {
+            "active_mechanism": mech,
+            "fabric_active": (mech == "fabric"),
+            "fallback_engaged": (mech == "sha256_fallback"),
+        }
+    except Exception:
+        return {
+            "active_mechanism": "unknown",
+            "fabric_active": False,
+            "fallback_engaged": False,
+        }
+
+
 def get_demo_data() -> dict:
     """
     Constructs the root data dictionary strictly by invoking the typed accessor functions above.

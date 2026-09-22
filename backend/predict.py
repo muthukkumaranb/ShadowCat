@@ -30,8 +30,8 @@ if str(DATA_ENG_DIR) not in sys.path:
     sys.path.insert(0, str(DATA_ENG_DIR))
 if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))
-
 from src.ucs_extractor import UCSExtractor
+
 try:
     from backend.models import (
         LSTMGaussianWorldModel,
@@ -44,6 +44,16 @@ except ImportError:
         LSTMClassifier,
         StageClassificationHead,
     )
+
+try:
+    from backend.fabric_bridge import notarize_model, notarize_alert
+except ImportError:
+    from fabric_bridge import notarize_model, notarize_alert
+
+try:
+    from backend.audit_chain import append_entry as append_audit_entry
+except ImportError:
+    from audit_chain import append_entry as append_audit_entry
 
 
 def get_feature_category(feat_name: str) -> Optional[str]:
@@ -154,6 +164,31 @@ class ShadowcatPipeline:
             self.world_model.to(self.device)
             self.world_model.eval()
             self.world_model_loaded = True
+            
+            # Notarize World Model: Fabric Primary -> SHA-256 Fallback
+            fabric_ok = False
+            try:
+                fabric_ok = bool(notarize_model("lstm-gaussian-v3", str(wm_path), "v3.0"))
+            except Exception as e:
+                import logging
+                logging.warning(f"Fabric Notarization Failed for model: {e}")
+                fabric_ok = False
+
+            if fabric_ok:
+                import logging
+                logging.info("World model notarized via: fabric")
+            else:
+                try:
+                    append_audit_entry(
+                        artifact_path=str(wm_path),
+                        artifact_type="model_checkpoint",
+                        description="LSTM world model v3 loaded into predict pipeline (SHA-256 fallback)",
+                    )
+                    import logging
+                    logging.info("World model notarized via: sha256_fallback")
+                except Exception as e:
+                    import logging
+                    logging.warning(f"SHA-256 fallback notarization failed for model: {e}")
         else:
             self.world_model_loaded = False
 
@@ -750,7 +785,7 @@ class ShadowcatPipeline:
             "is_mock": False,
         }
 
-        return {
+        payload = {
             "window_id": window_id,
             "is_warmup": is_warmup,
             "analysis_metadata": analysis_metadata,
@@ -762,6 +797,62 @@ class ShadowcatPipeline:
             "risk_scores": [round(r, 2) for r in cum_risk],
             "fusion_experimental": fusion_experimental_result,
         }
+
+        # Fabric Notarization Hook with SHA-256 Fallback
+        if forecast_trajectory.get("hazard_alert"):
+            import hashlib
+            import logging
+            alert_str = f"{window_id}-{window_start}-{max(cum_risk)}"
+            alert_hash = hashlib.sha256(alert_str.encode()).hexdigest()[:16]
+            severity = "HIGH" if max(cum_risk) > 0.8 else "MEDIUM"
+
+            fabric_ok = False
+            try:
+                fabric_ok = bool(notarize_alert(alert_hash, severity, window_start))
+            except Exception as e:
+                logging.warning(f"Fabric Notarization Failed for alert: {e}")
+                fabric_ok = False
+
+            if fabric_ok:
+                logging.info(f"Alert {alert_hash} notarized via: fabric")
+                payload["notarization_mechanism"] = "fabric"
+                payload["notarized_via"] = "fabric"
+            else:
+                # Fall back to SHA-256 hash-chaining in backend/audit_chain.py
+                try:
+                    alerts_dir = Path(BACKEND_DIR) / "alerts"
+                    alerts_dir.mkdir(parents=True, exist_ok=True)
+                    alert_file = alerts_dir / f"alert_{alert_hash}.json"
+                    alert_record = {
+                        "alert_hash": alert_hash,
+                        "window_id": str(window_id),
+                        "window_start": str(window_start),
+                        "max_risk": round(float(max(cum_risk)), 4),
+                        "severity": severity,
+                        "notarized_via": "sha256_fallback",
+                    }
+                    with open(alert_file, "w", encoding="utf-8") as f:
+                        json.dump(alert_record, f, indent=2)
+
+                    append_audit_entry(
+                        artifact_path=str(alert_file),
+                        artifact_type="hazard_alert",
+                        description=f"Hazard alert {alert_hash} [{severity}] (SHA-256 fallback)",
+                    )
+                    logging.info(f"Alert {alert_hash} notarized via: sha256_fallback")
+                    payload["notarization_mechanism"] = "sha256_fallback"
+                    payload["notarized_via"] = "sha256_fallback"
+                except Exception as e:
+                    logging.warning(f"SHA-256 fallback notarization failed for alert: {e}")
+                    payload["notarization_mechanism"] = "failed"
+                    payload["notarized_via"] = "failed"
+        else:
+            payload["notarization_mechanism"] = "none"
+            payload["notarized_via"] = "none"
+
+        forecast_trajectory["notarized_via"] = payload["notarized_via"]
+
+        return payload
 
     def _extract_flagged_flows(self, raw_input: pd.DataFrame, source_type: str) -> List[Dict[str, Any]]:
         """Extract top anomalous flow records from input DataFrame."""

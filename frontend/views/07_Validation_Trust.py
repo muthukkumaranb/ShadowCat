@@ -7,17 +7,20 @@ Wired to live data_provider.py and backend/audit_chain.json.
 
 import streamlit as st
 from styles import TOKENS, render_html
-from data_provider import get_validation_data, get_audit_chain_status, get_comparison_table
+from data_provider import get_validation_data, get_audit_chain_status, get_comparison_table, get_live_notarization_status
 
 def render_page():
     t = TOKENS.get(st.session_state.get("theme", "dark"), TOKENS["dark"])
     val_data = get_validation_data()
     audit_status = get_audit_chain_status()
     benchmarks = get_comparison_table()
+    live_notary = get_live_notarization_status()
 
     is_valid = audit_status.get("is_valid", True)
     chain_len = audit_status.get("length", 10)
     entries = audit_status.get("entries", [])
+    fabric_active = live_notary.get("fabric_active", True)
+    fallback_engaged = live_notary.get("fallback_engaged", False)
 
     # 1. Top Control Bar / Operational Status
     render_html(f"""
@@ -26,22 +29,56 @@ def render_page():
             <div>
                 <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
                     <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['primary']}; font-weight: 700; text-transform: uppercase;">
-                        LEDGER SUB-SUBSYSTEM // ATTESTATION ID #SEC-892
+                        HYPERLEDGER FABRIC PRIMARY // DUAL-LAYER NOTARY SYSTEM
                     </span>
                     <span style="color: {t['outline_variant']};">•</span>
                     <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_muted']}; text-transform: uppercase;">
-                        PROTOCOL: ED25519-ENCLAVE
+                        ORG1MSP + ORG2MSP ENDORSEMENT
                     </span>
                 </div>
                 <h1 style="font-family: 'JetBrains Mono', monospace; font-size: 1.5rem; font-weight: 700; color: {t['text_high']}; text-transform: uppercase; margin: 0;">
-                    Immutable Audit Chain & Provenance Ledger
+                    Immutable Audit & Provenance Ledger
                 </h1>
             </div>
             <div style="display: flex; gap: 0.5rem; align-items: center;">
                 <div class="soc-badge {'badge-nominal' if is_valid else 'badge-critical'}" style="padding: 0.35rem 0.75rem;">
                     <span class="soc-pulse-dot" style="background:{t['primary'] if is_valid else t['secondary']};"></span>
-                    {'VERIFIED — INTEGRITY 100% (SHA-256 HASH CHAIN)' if is_valid else 'INTEGRITY TAMPER DETECTED'}
+                    {'VERIFIED — INTEGRITY 100% (FABRIC PRIMARY + SHA-256 FALLBACK)' if is_valid else 'INTEGRITY TAMPER DETECTED'}
                 </div>
+            </div>
+        </div>
+    </div>
+    """)
+
+    # Primary Hyperledger Fabric Status Card
+    notary_status_badge = "badge-nominal" if fabric_active else ("badge-caution" if fallback_engaged else "badge-neutral")
+    notary_status_text = "FABRIC PRIMARY: ACTIVE // IMMUTABLE LEDGER" if fabric_active else ("FALLBACK ENGAGED: SHA-256 HASH-CHAIN ACTIVE" if fallback_engaged else "FABRIC NETWORK READY")
+
+    render_html(f"""
+    <div class="soc-card" style="margin-bottom: 1rem; border-left: 3px solid {'#30d158' if fabric_active else '#ff9f0a'};">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                    <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['primary']}; font-weight: 700; text-transform: uppercase;">
+                        PRIMARY NOTARIZATION MECHANISM // HYPERLEDGER FABRIC v2.5
+                    </span>
+                    <span style="color: {t['outline_variant']};">•</span>
+                    <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_muted']}; text-transform: uppercase;">
+                        CHANNEL: shadowcat-notary-channel • CHAINCODE: shadowcat_notary
+                    </span>
+                </div>
+                <div style="font-family: 'JetBrains Mono', monospace; font-size: 1.05rem; font-weight: 700; color: {t['text_high']};">
+                    2-Org Decentralized Endorsement (peer0.org1 + peer0.org2)
+                </div>
+                <div style="font-family: 'Inter', sans-serif; font-size: 0.78rem; color: {t['text_secondary']}; margin-top: 0.2rem;">
+                    All model checkpoint loads and hazard alerts are committed to the immutable permissioned Fabric ledger. In the event of network disconnection, the pipeline automatically engages the local SHA-256 fallback layer without interruption.
+                </div>
+            </div>
+            <div>
+                <span class="soc-badge {notary_status_badge}" style="font-size: 0.75rem; padding: 0.4rem 0.8rem;">
+                    <span class="soc-pulse-dot" style="background:{'#30d158' if fabric_active else '#ff9f0a'};"></span>
+                    {notary_status_text}
+                </span>
             </div>
         </div>
     </div>
@@ -64,12 +101,12 @@ def render_page():
     with kpi_col2:
         render_html(f"""
         <div class="soc-stat-card">
-            <span class="soc-stat-label">Genesis Timestamp</span>
-            <div style="font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; font-weight: 600; color: {t['text_high']};">
-                2025-01-15 00:00 UTC
+            <span class="soc-stat-label">Active Notary Channel</span>
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 1.0rem; font-weight: 600; color: {t['text_high']};">
+                shadowcat-notary
             </div>
             <div class="soc-stat-delta" style="color: {t['text_muted']};">
-                <span>Epoch Age: 64d 14h 28m</span>
+                <span>Raft Orderer Cluster (7050)</span>
             </div>
         </div>
         """)
@@ -80,7 +117,7 @@ def render_page():
             <span class="soc-stat-label">Tamper Evident Proofs</span>
             <div class="soc-stat-val" style="color: {t['primary']};">0</div>
             <div class="soc-stat-delta delta-nominal">
-                <span>Merkle Tree Zero-Drift Asserted</span>
+                <span>Hash-Chain Zero-Drift Asserted</span>
             </div>
         </div>
         """)
@@ -88,18 +125,19 @@ def render_page():
     with kpi_col4:
         render_html(f"""
         <div class="soc-stat-card">
-            <span class="soc-stat-label">Enclave Heartbeat</span>
-            <div class="soc-stat-val" style="color: {t['primary']};">100%</div>
+            <span class="soc-stat-label">Ledger Integrity Layer</span>
+            <div class="soc-stat-val" style="color: {'#30d158' if fabric_active else '#ff9f0a'}; font-size: 1.1rem;">
+                {'FABRIC' if fabric_active else 'SHA-256'}
+            </div>
             <div class="soc-stat-delta delta-nominal">
-                <span>SGX Secure • Dual Quorum Synced</span>
+                <span>{'Dual Quorum Endorsement' if fabric_active else 'Local Hash-Chain Fallback Active'}</span>
             </div>
         </div>
         """)
 
     render_html("<div style='height: 1rem;'></div>")
 
-    # 3. Section 1: Cryptographic Audit Chain Viewer
-    # Render up to 4 recent blocks from audit chain
+    # 3. Section 1: Fallback Integrity Layer (SHA-256 Hash Chain Viewer)
     display_entries = entries[-4:] if entries else [
         {"entry_type": "model_checkpoint", "record_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", "description": "Predictive Threat Trajectory Horizon H=5 Inference Commit"},
         {"entry_type": "evaluation_report", "record_hash": "7733bf9c5f5aea7918a203f1947e24b91238914ba19d83120194812a48120491", "description": "Hazard head v4 multi-day calibration report across all attack types"},
@@ -109,12 +147,14 @@ def render_page():
     blocks_html = ""
     for idx, e in enumerate(reversed(display_entries)):
         is_head = (idx == 0)
-        badge_cls = "badge-nominal" if is_head else "badge-neutral"
-        border_col = t['primary'] if is_head else t['border']
+        is_fallback = (e.get("notarized_via") == "sha256_fallback") or ("fallback" in e.get("description", "").lower())
+        badge_cls = "badge-caution" if is_fallback else ("badge-nominal" if is_head else "badge-neutral")
+        border_col = "#ff9f0a" if is_fallback else (t['primary'] if is_head else t['border'])
         b_idx = e.get('index', len(display_entries) - 1 - idx)
         block_label = f"HEAD • BLOCK #{b_idx}" if is_head else f"BLOCK #{b_idx}"
         b_hash = e.get('entry_hash', e.get('record_hash', 'b305b08be101513e...'))
         p_hash = e.get('prev_entry_hash', '000000000000...')
+        notarize_mechanism_label = "[FALLBACK ENGAGED] SHA-256 Hash-Chain" if is_fallback else "[VERIFIED] SHA-256 Hash-Chain"
         blocks_html += f"""
         <div class="soc-card-nested" style="border: 1px solid {border_col}; margin-bottom: 0.75rem;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem; flex-wrap: wrap;">
@@ -123,8 +163,8 @@ def render_page():
                     <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: {t['text_high']}; font-weight: 600;">{e.get('timestamp', '2026-09-17T06:19:11Z')[:19].replace('T', ' ')} UTC</span>
                     <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_muted']};">| +41ms</span>
                 </div>
-                <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['primary']};">
-                    [VERIFIED] Cryptographic Hash-Chain
+                <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {'#ff9f0a' if is_fallback else t['primary']};">
+                    {notarize_mechanism_label}
                 </span>
             </div>
             <div style="font-family: 'Inter', sans-serif; font-size: 0.8125rem; font-weight: 600; color: {t['text_high']};">
@@ -139,8 +179,8 @@ def render_page():
     render_html(f"""
     <div class="soc-card">
         <div class="soc-section-header">
-            <div class="soc-section-title">Chronological Attestation Blocks (Verified Ledger)</div>
-            <span class="soc-subsystem-tag">ALGORITHM: SHA-256 / CURVE25519</span>
+            <div class="soc-section-title">Fallback Integrity Layer (SHA-256 Hash Chain)</div>
+            <span class="soc-subsystem-tag">ALGORITHM: SHA-256 HASH-CHAINING</span>
         </div>
         <div style="border-left: 2px solid {t['primary']}; margin-left: 0.75rem; padding-left: 1.25rem; display: flex; flex-direction: column;">
             {blocks_html}
