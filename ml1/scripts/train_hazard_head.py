@@ -75,13 +75,15 @@ def train_classifier(model, X_train, y_train, X_val, y_val, epochs=100, batch_si
                 
     if checkpoint_path and os.path.exists(checkpoint_path):
         model.load_state_dict(torch.load(checkpoint_path, map_location=device, weights_only=True))
-    return model
+    return model, best_val_loss, train_loss
 
 def main():
     import argparse
+    import pickle
     parser = argparse.ArgumentParser()
     parser.add_argument("--force", action="store_true", help="Force retraining of fold models")
     parser.add_argument("--output-dir", type=str, default=None)
+    parser.add_argument("--pca-path", type=str, default=None, help="Path to fitted standardized PCA artifact")
     args = parser.parse_args()
 
     set_seed(42)
@@ -95,9 +97,18 @@ def main():
     if args.output_dir:
         out_dir = Path(args.output_dir)
     else:
-        out_dir = workspace_dir / 'artifacts' / 'lstm' / 'hazard_head'
+        out_dir = workspace_dir / 'artifacts' / 'lstm' / 'hazard_head_v5'
     out_dir.mkdir(parents=True, exist_ok=True)
     
+    pca_file = Path(args.pca_path) if args.pca_path else (workspace_dir.parent / 'models' / 'pca_32.pkl')
+    print(f"Loading standardized PCA artifact from: {pca_file.resolve()}")
+    with open(pca_file, 'rb') as f:
+        pca_artifact = pickle.load(f)
+    pca = pca_artifact['pca']
+    pca_scaler = pca_artifact.get('scaler')
+    pca_features = [f"pca_{i}" for i in range(32)]
+    print(f"Loaded PCA: {pca.__class__.__name__}, Scaler present: {pca_scaler is not None}")
+
     windows = pd.read_parquet(data_path).sort_values('window_start_utc').reset_index(drop=True)
     with open(manifest_path, 'r') as f:
         manifest = json.load(f)
@@ -150,10 +161,11 @@ def main():
             
             purged = fold_frame[fold_frame['split'].isin(['train', 'val', 'test'])].copy()
             
-            transformed, pca = apply_training_only_pca(purged, features, 32, random_state=42)
-            pca_features = [f"pca_{i}" for i in range(32)]
-            
-            full_transformed = pca.transform(fold_frame)
+            # Apply standardized PCA representation from models/pca_32.pkl
+            raw_vals = fold_frame[features].to_numpy(dtype=np.float64)
+            scaled_vals = pca_scaler.transform(raw_vals) if pca_scaler is not None else raw_vals
+            scaled_frame = pd.DataFrame(scaled_vals, columns=features, index=fold_frame.index)
+            full_transformed = pca.transform(scaled_frame)
             full_transformed_np = full_transformed[pca_features].to_numpy(dtype=np.float32)
             target_np = fold_frame[target_col].to_numpy(dtype=np.float32)
             
@@ -185,12 +197,15 @@ def main():
             ckpt = h_dir / f"model_fold_{fold_id}.pt"
             
             if (not ckpt.exists()) or args.force:
-                train_classifier(model, X_train, y_train, X_val, y_val, 
-                                 epochs=100, batch_size=64, lr=0.001, patience=5,
-                                 device=device, checkpoint_path=ckpt,
-                                 fold_desc=f"H={h_val} Fold {fold_id:02d}")
+                model, best_val_loss, train_loss = train_classifier(
+                    model, X_train, y_train, X_val, y_val, 
+                    epochs=100, batch_size=64, lr=0.001, patience=5,
+                    device=device, checkpoint_path=ckpt,
+                    fold_desc=f"H={h_val} Fold {fold_id:02d}"
+                )
             else:
                 model.load_state_dict(torch.load(ckpt, map_location=device, weights_only=True))
+                best_val_loss, train_loss = 0.0, 0.0
                 
             model.eval()
             with torch.no_grad():
@@ -211,6 +226,8 @@ def main():
             fold_metrics.append({
                 'horizon': h_val,
                 'fold_id': fold_id,
+                'train_loss': train_loss,
+                'val_loss': best_val_loss,
                 'f1': f1,
                 'precision': precision,
                 'recall': recall,
@@ -221,7 +238,7 @@ def main():
             })
             
             fold_pbar.set_postfix({'last_f1': f"{f1:.3f}", 'last_roc': f"{roc:.3f}" if not np.isnan(roc) else "N/A"})
-            tqdm.write(f"  [Fold {fold_id:02d}] F1: {f1:.4f} | ROC: {roc:.4f} | PR: {pr:.4f}")
+            tqdm.write(f"  [Fold {fold_id:02d}] TrLoss: {train_loss:.4f} | ValLoss: {best_val_loss:.4f} | F1: {f1:.4f} | ROC: {roc:.4f} | PR: {pr:.4f}")
             
         fold_df = pd.DataFrame(fold_metrics)
         fold_df.to_csv(h_dir / f"hazard_head_H{h_val}_loeo_folds.csv", index=False)

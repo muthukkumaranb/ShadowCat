@@ -267,7 +267,9 @@ class ShadowcatPipeline:
             self.stage_head_loaded = False
 
         # 4. Load Hazard Heads (LOEO Fold Ensemble for H=1, H=2, H=5)
-        hz_dir = Path(hazard_head_dir or (ML1_DIR / "artifacts" / "lstm" / "hazard_head_v4"))
+        hz_dir = Path(hazard_head_dir or (ML1_DIR / "artifacts" / "lstm" / "hazard_head_v5"))
+        if not hz_dir.exists():
+            hz_dir = Path(ML1_DIR / "artifacts" / "lstm" / "hazard_head_v4")
         if not hz_dir.exists():
             hz_dir = Path(ML1_DIR / "artifacts" / "lstm" / "hazard_head_v3")
         if not hz_dir.exists():
@@ -302,6 +304,7 @@ class ShadowcatPipeline:
         # 5. Load Fitted 32-dim PCA for Hazard Models
         self.pca = None
         self.pca_features = None
+        self.pca_scaler = None
         self.pca_available = False
         if str(ML1_DIR) not in sys.path:
             sys.path.insert(0, str(ML1_DIR))
@@ -313,6 +316,7 @@ class ShadowcatPipeline:
                     data = pickle.load(f)
                     self.pca = data.get("pca")
                     self.pca_features = data.get("features")
+                    self.pca_scaler = data.get("scaler")
                     self.pca_available = (self.pca is not None)
             except Exception as e:
                 import logging
@@ -328,6 +332,9 @@ class ShadowcatPipeline:
             try:
                 cols = self.pca_features if (self.pca_features is not None and len(self.pca_features) == sequence_30x406.shape[1]) else [f"f_{i}" for i in range(sequence_30x406.shape[1])]
                 seq_df = pd.DataFrame(sequence_30x406, columns=cols)
+                if getattr(self, "pca_scaler", None) is not None:
+                    scaled_values = self.pca_scaler.transform(seq_df[cols].to_numpy(dtype=np.float64))
+                    seq_df = pd.DataFrame(scaled_values, columns=cols)
                 transformed = self.pca.transform(seq_df)
                 pca_cols = [f"pca_{i}" for i in range(32)]
                 seq_32 = transformed[pca_cols].to_numpy(dtype=np.float32)
