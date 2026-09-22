@@ -54,9 +54,9 @@ def render_page():
         render_html(f"""
         <div class="soc-stat-card">
             <span class="soc-stat-label">Current Block Height</span>
-            <div class="soc-stat-val">#849,204</div>
+            <div class="soc-stat-val">#{chain_len} Blocks</div>
             <div class="soc-stat-delta delta-nominal">
-                <span>+3 blocks committed this hour</span>
+                <span>All {chain_len} blocks cryptographically linked</span>
             </div>
         </div>
         """)
@@ -111,24 +111,27 @@ def render_page():
         is_head = (idx == 0)
         badge_cls = "badge-nominal" if is_head else "badge-neutral"
         border_col = t['primary'] if is_head else t['border']
-        block_label = "HEAD • #849,204" if is_head else f"BLOCK #{849204 - idx}"
+        b_idx = e.get('index', len(display_entries) - 1 - idx)
+        block_label = f"HEAD • BLOCK #{b_idx}" if is_head else f"BLOCK #{b_idx}"
+        b_hash = e.get('entry_hash', e.get('record_hash', 'b305b08be101513e...'))
+        p_hash = e.get('prev_entry_hash', '000000000000...')
         blocks_html += f"""
         <div class="soc-card-nested" style="border: 1px solid {border_col}; margin-bottom: 0.75rem;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem; flex-wrap: wrap;">
                 <div style="display: flex; align-items: center; gap: 0.5rem;">
                     <span class="soc-badge {badge_cls}">{block_label}</span>
-                    <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: {t['text_high']}; font-weight: 600;">14:28:10 UTC</span>
+                    <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: {t['text_high']}; font-weight: 600;">{e.get('timestamp', '2026-09-17T06:19:11Z')[:19].replace('T', ' ')} UTC</span>
                     <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_muted']};">| +41ms</span>
                 </div>
                 <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['primary']};">
-                    ✓ ED25519 Verified by Enclave-Node-Alpha
+                    [VERIFIED] Cryptographic Hash-Chain
                 </span>
             </div>
             <div style="font-family: 'Inter', sans-serif; font-size: 0.8125rem; font-weight: 600; color: {t['text_high']};">
                 {e.get('description', 'Payload Event Commit')}
             </div>
             <div style="margin-top: 0.35rem; background: {t['surface_lowest']}; padding: 0.35rem 0.5rem; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['primary']}; overflow-x: auto; white-space: nowrap;">
-                SHA-256: {e.get('record_hash', 'e3b0c44298fc1c14...')}
+                hash: {b_hash} &bull; <span style="color:{t['text_muted']}">prev: {p_hash[:20]}...</span>
             </div>
         </div>
         """

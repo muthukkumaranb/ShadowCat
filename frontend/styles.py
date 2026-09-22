@@ -348,15 +348,53 @@ def get_custom_css(theme: Literal["dark", "light"] = "dark") -> str:
     .stButton > button:active {{
         transform: scale(0.98);
     }}
-    .stButton > button[kind="primary"] {{
+    /* Primary button — covers ALL Streamlit versions */
+    .stButton > button[kind="primary"],
+    .stButton > button[data-testid="stBaseButton-primary"],
+    .stButton > button[data-testid*="primary"],
+    button[kind="primary"],
+    [data-testid="stBaseButton-primary"] {{
         background: {t["primary"]} !important;
-        color: {t["on_primary"]} !important;
-        border: 1px solid {t["primary"]} !important;
+        color: #000000 !important;
+        border: 2px solid {t["primary"]} !important;
         font-weight: 700 !important;
+        font-size: 0.875rem !important;
+        min-height: 48px !important;
+        letter-spacing: 0.02em !important;
+        text-shadow: none !important;
     }}
-    .stButton > button[kind="primary"]:hover {{
+    .stButton > button[kind="primary"]:hover,
+    .stButton > button[data-testid="stBaseButton-primary"]:hover,
+    .stButton > button[data-testid*="primary"]:hover,
+    button[kind="primary"]:hover,
+    [data-testid="stBaseButton-primary"]:hover {{
         background: {t["primary_fixed_dim"]} !important;
         border-color: {t["primary_fixed_dim"]} !important;
+        color: #000000 !important;
+    }}
+    /* Also force p inside primary buttons to be dark */
+    .stButton > button[kind="primary"] p,
+    .stButton > button[data-testid="stBaseButton-primary"] p,
+    .stButton > button[data-testid*="primary"] p,
+    button[kind="primary"] p,
+    [data-testid="stBaseButton-primary"] p {{
+        color: #000000 !important;
+    }}
+
+    /* Header Nav Button Overrides - Prevent Text Truncation and Dots */
+    div[data-testid="stHorizontalBlock"] .stButton > button {{
+        padding: 0.35rem 0.3rem !important;
+        font-size: 0.76rem !important;
+        font-family: 'JetBrains Mono', monospace !important;
+        white-space: nowrap !important;
+        letter-spacing: -0.01em !important;
+    }}
+    div[data-testid="stHorizontalBlock"] .stButton > button p {{
+        font-size: 0.76rem !important;
+        white-space: nowrap !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
+        margin: 0 !important;
     }}
 
     /* Streamlit Metric Overrides */

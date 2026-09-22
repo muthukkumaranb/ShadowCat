@@ -13,7 +13,20 @@ def render_page():
     attributions = get_attributions()
     meta = get_analysis_metadata()
     fc = get_forecast_trajectory()
-    risk_val = fc.get("risk", [0.962])[0]
+    risk_val = fc.get("risk", [0.05])[0] if fc.get("risk") else 0.05
+
+    if risk_val >= 0.75:
+        risk_badge_cls = "badge-critical"
+        risk_severity_txt = "HIGH SEVERITY"
+    elif risk_val >= 0.5:
+        risk_badge_cls = "badge-caution"
+        risk_severity_txt = "ELEVATED SEVERITY"
+    elif risk_val >= 0.25:
+        risk_badge_cls = "badge-neutral"
+        risk_severity_txt = "MODERATE"
+    else:
+        risk_badge_cls = "badge-nominal"
+        risk_severity_txt = "NOMINAL LOW RISK"
 
     # 1. Top Section: Header, Telemetry Badges & Educational Explainer
     render_html(f"""
@@ -33,7 +46,7 @@ def render_page():
             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                 <span class="soc-badge badge-neutral">Checkpoint: sc-threat-v4.1</span>
                 <span class="soc-badge badge-neutral">Baseline: 30-Day Rolling Normal</span>
-                <span class="soc-badge badge-critical">CURRENT RISK: {risk_val:.3f} (HIGH SEVERITY)</span>
+                <span class="soc-badge {risk_badge_cls}">CURRENT RISK: {risk_val:.3f} ({risk_severity_txt})</span>
             </div>
         </div>
 
@@ -93,10 +106,10 @@ def render_page():
                     Global Relative Feature Contribution Vector
                 </div>
             </div>
-            <div style="display: flex; gap: 0.75rem; font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem;">
-                <span style="color: {t['secondary']};">■ High Impact (≥ 15%)</span>
-                <span style="color: {t['tertiary']};">■ Elevated (≥ 8%)</span>
-                <span style="color: {t['text_muted']};">■ Modest (&lt; 8%)</span>
+            <div style="display: flex; gap: 0.75rem; font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; align-items: center;">
+                <span style="color: {t['secondary']}; display: flex; align-items: center; gap: 0.3rem;"><span style="display:inline-block; width:7px; height:7px; background:{t['secondary']}; border-radius:1px;"></span>High Impact (≥ 15%)</span>
+                <span style="color: {t['tertiary']}; display: flex; align-items: center; gap: 0.3rem;"><span style="display:inline-block; width:7px; height:7px; background:{t['tertiary']}; border-radius:1px;"></span>Elevated (≥ 8%)</span>
+                <span style="color: {t['text_muted']}; display: flex; align-items: center; gap: 0.3rem;"><span style="display:inline-block; width:7px; height:7px; background:{t['text_muted']}; border-radius:1px;"></span>Modest (&lt; 8%)</span>
             </div>
         </div>
 

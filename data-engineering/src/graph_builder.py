@@ -47,13 +47,28 @@ class GraphTopologyBuilder:
         # Since raw AWS CSVs have destination_port and protocol, construct stable endpoint signatures:
         # Source client cluster: 'ClientGroup_{protocol}_{fwd_header_len_or_win}'
         # Destination service: 'SvcPort_{destination_port}_{protocol}'
-        
-        has_src_ip = "source_id" in df_flows.columns or "src_ip" in df_flows.columns
-        has_dst_ip = "destination_id" in df_flows.columns or "dst_ip" in df_flows.columns
+        # Normalize endpoint and protocol columns with case-insensitive / alias resolution
+        if "protocol" not in df_flows.columns:
+            if "Protocol" in df_flows.columns:
+                df_flows["protocol"] = df_flows["Protocol"]
+            else:
+                df_flows["protocol"] = 6
+        if "destination_port" not in df_flows.columns:
+            if "Dst Port" in df_flows.columns:
+                df_flows["destination_port"] = df_flows["Dst Port"]
+            elif "dst_port" in df_flows.columns:
+                df_flows["destination_port"] = df_flows["dst_port"]
+            else:
+                df_flows["destination_port"] = 80
+        if "window_size_fwd" not in df_flows.columns:
+            df_flows["window_size_fwd"] = 8192
+
+        has_src_ip = "source_id" in df_flows.columns or "src_ip" in df_flows.columns or "Src IP" in df_flows.columns
+        has_dst_ip = "destination_id" in df_flows.columns or "dst_ip" in df_flows.columns or "Dst IP" in df_flows.columns
 
         if has_src_ip and has_dst_ip:
-            src_col = "source_id" if "source_id" in df_flows.columns else "src_ip"
-            dst_col = "destination_id" if "destination_id" in df_flows.columns else "dst_ip"
+            src_col = "Src IP" if "Src IP" in df_flows.columns else ("source_id" if "source_id" in df_flows.columns else "src_ip")
+            dst_col = "Dst IP" if "Dst IP" in df_flows.columns else ("destination_id" if "destination_id" in df_flows.columns else "dst_ip")
             df_flows["_src_endpoint"] = df_flows[src_col].astype(str)
             df_flows["_dst_endpoint"] = df_flows[dst_col].astype(str)
         else:
@@ -69,6 +84,21 @@ class GraphTopologyBuilder:
         df_flows["src_node_id"] = df_flows["_src_endpoint"].map(self.node_to_id)
         df_flows["dst_node_id"] = df_flows["_dst_endpoint"].map(self.node_to_id)
 
+        # Ensure edge attribute columns exist with robust fallbacks
+        if "byte_count_fwd" not in df_flows.columns:
+            df_flows["byte_count_fwd"] = df_flows.get("TotLen Fwd Pkts", df_flows.get("flow_byts_s", 1000.0))
+        if "packet_count_fwd" not in df_flows.columns:
+            df_flows["packet_count_fwd"] = df_flows.get("Tot Fwd Pkts", df_flows.get("tot_fwd_pkts", 10.0))
+        if "duration_sec" not in df_flows.columns:
+            if "Flow Duration" in df_flows.columns:
+                df_flows["duration_sec"] = df_flows["Flow Duration"] / 1000000.0
+            elif "flow_duration_s" in df_flows.columns:
+                df_flows["duration_sec"] = df_flows["flow_duration_s"]
+            else:
+                df_flows["duration_sec"] = 0.5
+        if "protocol" not in df_flows.columns:
+            df_flows["protocol"] = 6
+
         # Aggregate directed edges per window
         edge_groups = df_flows.groupby(["window_start_utc", "src_node_id", "dst_node_id"])
 
@@ -77,7 +107,7 @@ class GraphTopologyBuilder:
             byte_count_sum=("byte_count_fwd", lambda s: float(s.sum()) if "byte_count_fwd" in df_flows.columns else 0.0),
             packet_count_sum=("packet_count_fwd", lambda s: float(s.sum()) if "packet_count_fwd" in df_flows.columns else 0.0),
             duration_mean_sec=("duration_sec", lambda s: float(s.mean()) if "duration_sec" in df_flows.columns else 0.0),
-            protocol_mode=("protocol", lambda s: int(s.mode().iloc[0]) if not s.empty else 6),
+            protocol_mode=("protocol", lambda s: (6 if str(s.iloc[0]).upper() == "TCP" else (17 if str(s.iloc[0]).upper() == "UDP" else int(pd.to_numeric(s.iloc[0], errors="coerce") or 6))) if not s.empty else 6),
         ).reset_index()
 
         # Add window_id

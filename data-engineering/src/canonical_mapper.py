@@ -141,6 +141,8 @@ def map_to_canonical_schema(
             unmapped_raw_cols.append(raw_col)
 
     df_mapped = df.rename(columns=rename_dict).copy()
+    if df_mapped.columns.duplicated().any():
+        df_mapped = df_mapped.loc[:, ~df_mapped.columns.duplicated(keep="first")].copy()
 
     audit = {
         "mapped_columns_count": len(rename_dict),

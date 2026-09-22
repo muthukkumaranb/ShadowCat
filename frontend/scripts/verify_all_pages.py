@@ -23,48 +23,59 @@ if sys.platform == "win32":
 
 PAGES = [
     {
-        "name": "Threat Forecast",
-        "file": "views/01_Forecast.py",
-        "requires_banner": True,
+        "name": "Overview",
+        "file": "views/02_Overview.py",
+        "requires_banner": False,
         "unique_headers": [
-            "Attack Risk Trajectory & Epistemic Uncertainty",
-            "Dynamic Enterprise Attack Graph & Lateral Rollout",
-            "Host Threat Distribution"
-        ],
-    },
-    {
-        "name": "Evidence & Attribution",
-        "file": "views/02_Evidence.py",
-        "requires_banner": True,
-        "unique_headers": [
-            "Correlated Network Flow Evidence",
-            "Telemetry Evidence & Forensic Attribution"
+            "Recent Threat Detections & Forecast Anomalies"
         ],
     },
     {
         "name": "Telemetry Ingestion",
-        "file": "views/01a_Input.py",
-        "requires_banner": True,
+        "file": "views/01_Telemetry_Ingestion.py",
+        "requires_banner": False,
         "unique_headers": [
-            "Telemetry Ingestion & Dataset Replay"
+            "TELEMETRY INGESTION & FEATURE EXTRACTOR"
         ],
     },
     {
-        "name": "Validation & Benchmarks",
-        "file": "views/03_Validation.py",
-        "requires_banner": True,
+        "name": "Forecast",
+        "file": "views/03_Forecast.py",
+        "requires_banner": False,
         "unique_headers": [
-            "Model Performance vs Baselines",
-            "Horizon Stability Benchmarks"
+            "Predictive Threat Trajectory Forecast"
         ],
     },
     {
-        "name": "Platform Specifications",
-        "file": "views/05_About.py",
-        "requires_banner": True,
+        "name": "Attack Graph",
+        "file": "views/04_Attack_Graph.py",
+        "requires_banner": False,
         "unique_headers": [
-            "Platform Specifications",
-            "Core Operational Capabilities"
+            "Attack Topology & Lateral Propagation Graph"
+        ],
+    },
+    {
+        "name": "Alerts",
+        "file": "views/05_Alerts.py",
+        "requires_banner": False,
+        "unique_headers": [
+            "Security Telemetry & Anomaly Alerts"
+        ],
+    },
+    {
+        "name": "Explainability",
+        "file": "views/06_Explainability.py",
+        "requires_banner": False,
+        "unique_headers": [
+            "MODEL INFERENCE EXPLAINABILITY & FEATURE ATTRIBUTION"
+        ],
+    },
+    {
+        "name": "Validation & Trust",
+        "file": "views/07_Validation_Trust.py",
+        "requires_banner": False,
+        "unique_headers": [
+            "Immutable Audit Chain & Provenance Ledger"
         ],
     },
 ]

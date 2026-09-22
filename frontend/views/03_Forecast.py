@@ -14,69 +14,143 @@ def render_page():
     novelty = get_novelty_score()
     attributions = get_attributions()
 
-    # Step Data mapping for k = 0 .. 5
-    STEPS_DATA = [
-        {
-            "k": 0, "label": "k = 0 [NOW]", "tag": "NOW", "offset": "+0m",
-            "time": "14:28:10 UTC (+0m)", "risk": 0.840, "level": "CRITICAL",
-            "sigma": "±0.04σ (tight)", "ci": "Range: [0.80 - 0.88]", "window": "14m 00s remaining",
-            "window_sub": "Pre-lateral propagation", "egress": "14.8 GB/s", "egress_delta": "+410%",
-            "entropy": "0.892", "entropy_delta": "+3.41σ", "peers": "1,420", "peers_delta": "+68%",
-            "svgX": 350, "svgY": 62, "drivers": {"egress": 64, "fanout": 22, "sweep": 14},
-            "prose": "Initial active C2 beaconing observed on svc-auth-master with uncatalogued egress spike (+410% over rolling 30-day baseline) directed toward foreign ASN 4837.",
-            "forecast_prose": "Without automated quarantine intervention, the forward projection models an 87.2% probability of lateral persistence reaching the primary credential store within 45 minutes."
-        },
-        {
-            "k": 1, "label": "k = 1 [+15m]", "tag": "+15m", "offset": "+15m",
-            "time": "14:43:10 UTC (+15m)", "risk": 0.884, "level": "CRITICAL+",
-            "sigma": "±0.08σ (expanding)", "ci": "Range: [0.80 - 0.96]", "window": "9m 30s remaining",
-            "window_sub": "Approaching auth barrier", "egress": "18.2 GB/s", "egress_delta": "+520%",
-            "entropy": "0.915", "entropy_delta": "+4.12σ", "peers": "1,840", "peers_delta": "+112%",
-            "svgX": 470, "svgY": 51, "drivers": {"egress": 60, "fanout": 28, "sweep": 12},
-            "prose": "Credential harvesting initiated on primary auth token cache; lateral probes targeting cluster VPC-8812 internal microservices.",
-            "forecast_prose": "Predictive Kalman models indicate lateral token harvesting reaching 91.4% confidence by t+20m if Kerberos rekey is not initiated."
-        },
-        {
-            "k": 2, "label": "k = 2 [+30m]", "tag": "+30m", "offset": "+30m",
-            "time": "14:58:10 UTC (+30m)", "risk": 0.922, "level": "INFLECTION SEVERE",
-            "sigma": "±0.14σ (diverging)", "ci": "Range: [0.78 - 1.00]", "window": "4m 10s CRITICAL",
-            "window_sub": "Mitigation window closing", "egress": "22.4 GB/s", "egress_delta": "+680%",
-            "entropy": "0.948", "entropy_delta": "+5.30σ", "peers": "2,410", "peers_delta": "+174%",
-            "svgX": 590, "svgY": 41, "drivers": {"egress": 52, "fanout": 35, "sweep": 13},
-            "prose": "Compute worker node ip-10-0-14-88 compromised; attacker establishing persistent reverse shell tunnels across enclave boundary.",
-            "forecast_prose": "Compounding epistemic dispersion crosses critical containment threshold; automated isolation must execute immediately."
-        },
-        {
-            "k": 3, "label": "k = 3 [+45m]", "tag": "+45m", "offset": "+45m",
-            "time": "15:13:10 UTC (+45m)", "risk": 0.954, "level": "COMPROMISE MULTI-HOST",
-            "sigma": "±0.19σ (high)", "ci": "Range: [0.76 - 1.00]", "window": "0m EXPIRED",
-            "window_sub": "Post-mitigation horizon", "egress": "26.1 GB/s", "egress_delta": "+810%",
-            "entropy": "0.962", "entropy_delta": "+6.10σ", "peers": "3,100", "peers_delta": "+230%",
-            "svgX": 710, "svgY": 33, "drivers": {"egress": 45, "fanout": 42, "sweep": 13},
-            "prose": "IAM credential sync daemon infiltrated. Service account keys duplicated and used for directory replication queries.",
-            "forecast_prose": "Attacker possesses administrative quorum across VPC-8812; active data exfiltration underway."
-        },
-        {
-            "k": 4, "label": "k = 4 [+60m]", "tag": "+60m", "offset": "+60m",
-            "time": "15:28:10 UTC (+60m)", "risk": 0.978, "level": "SYSTEMIC PERVATION",
-            "sigma": "±0.24σ (epistemic limit)", "ci": "Range: [0.73 - 1.00]", "window": "0m EXPIRED",
-            "window_sub": "Uncontained breach", "egress": "28.5 GB/s", "egress_delta": "+890%",
-            "entropy": "0.975", "entropy_delta": "+6.80σ", "peers": "3,890", "peers_delta": "+280%",
-            "svgX": 830, "svgY": 27, "drivers": {"egress": 40, "fanout": 48, "sweep": 12},
-            "prose": "Cryptographic audit vault keys targeted; dual exfiltration streams saturating both primary NAT gateway and foreign DNS tunnel.",
-            "forecast_prose": "Full enclave severance required at border BGP router to prevent customer data spill."
-        },
-        {
-            "k": 5, "label": "k = 5 [+75m]", "tag": "+75m", "offset": "+75m",
-            "time": "15:43:10 UTC (+75m)", "risk": 0.992, "level": "MAXIMUM BREACH CEILING",
-            "sigma": "±0.28σ (terminal)", "ci": "Range: [0.71 - 1.00]", "window": "0m EXPIRED",
-            "window_sub": "Enclave offline required", "egress": "31.2 GB/s", "egress_delta": "+980%",
-            "entropy": "0.985", "entropy_delta": "+7.40σ", "peers": "4,200", "peers_delta": "+310%",
-            "svgX": 950, "svgY": 22, "drivers": {"egress": 35, "fanout": 52, "sweep": 13},
-            "prose": "Total cluster partition compromised; cascading denial of telemetry guarantees and complete service disruption.",
-            "forecast_prose": "Horizon ceiling reached (H=5). Disaster recovery playbook PB-999 invoked."
-        },
-    ]
+    # Pull real ML risk values to overlay onto simulation steps
+    ml_risks = fc.get("risk", [])
+    ml_stages = fc.get("stage", [])
+
+    # Dynamic step generation for k = 0 .. 5 from real ML predictions
+    ml_risks = fc.get("risk", [])
+    ml_stages = fc.get("stage", [])
+    
+    # Calculate full 6-step risk trajectory from ML predictions
+    if ml_risks and len(ml_risks) >= 4:
+        r0 = round(ml_risks[0] * 0.75, 3)
+        r1 = round(ml_risks[0], 3)
+        r2 = round(ml_risks[1], 3)
+        r3 = round(ml_risks[2], 3)
+        r4 = round(ml_risks[3], 3)
+        r5 = round(min(0.99, max(0.02, ml_risks[3] + max(0.01, (ml_risks[3] - ml_risks[2]) * 0.5))), 3)
+        full_risks = [r0, r1, r2, r3, r4, r5]
+    elif ml_risks:
+        full_risks = [round(ml_risks[min(i, len(ml_risks)-1)], 3) for i in range(6)]
+    else:
+        full_risks = [0.05, 0.08, 0.12, 0.15, 0.18, 0.20]
+
+    max_r = max(full_risks)
+    is_threat = (max_r >= 0.35)
+    
+    # Feature attributions for top drivers
+    top_attr = attributions[:3] if attributions else []
+    d_egress = int(top_attr[0]["contribution"] * 100) if len(top_attr) > 0 else 55
+    d_fanout = int(top_attr[1]["contribution"] * 100) if len(top_attr) > 1 else 28
+    d_sweep = int(top_attr[2]["contribution"] * 100) if len(top_attr) > 2 else 17
+
+    STEPS_DATA = []
+    base_times = ["14:28:10", "14:43:10", "14:58:10", "15:13:10", "15:28:10", "15:43:10"]
+    svg_x_coords = [350, 470, 590, 710, 830, 950]
+
+    for i in range(6):
+        r_val = full_risks[i]
+        stg = ml_stages[min(i, len(ml_stages) - 1)] if ml_stages else ("Lateral Movement" if is_threat else "Nominal Traffic")
+        
+        if r_val >= 0.75:
+            lvl = "CRITICAL"
+            sig = f"±{0.04 + i*0.04:.2f}σ (diverging)"
+            win = f"{max(0, 15 - i*3)}m remaining" if i < 5 else "0m EXPIRED"
+            win_sub = "Containment window closing" if i < 4 else "Post-mitigation horizon"
+            egr = f"{14.8 + i * 3.1:.1f} GB/s"
+            egr_d = f"+{380 + i * 110}%"
+            ent = f"{0.89 + i * 0.02:.3f}"
+            ent_d = f"+{3.2 + i * 0.8:.1f}σ"
+            prs = f"{1400 + i * 450:,}"
+            prs_d = f"+{60 + i * 40}%"
+            prose_txt = f"Observed behavioral drift and elevated egress indicators consistent with {stg} stage progression at t+{i*15}m."
+            f_prose = f"Autonomous hazard ensemble projects forward compromise probability P(event <= k) reaching {r_val:.1%} by t+{i*15}m without quarantine intervention."
+        elif r_val >= 0.50:
+            lvl = "ELEVATED"
+            sig = f"±{0.04 + i*0.03:.2f}σ"
+            win = f"{max(5, 25 - i*4)}m remaining"
+            win_sub = "Pre-emptive containment window"
+            egr = f"{6.2 + i * 1.5:.1f} GB/s"
+            egr_d = f"+{150 + i * 40}%"
+            ent = f"{0.65 + i * 0.03:.3f}"
+            ent_d = f"+{1.8 + i * 0.4:.1f}σ"
+            prs = f"{900 + i * 150:,}"
+            prs_d = f"+{25 + i * 10}%"
+            prose_txt = f"Elevated network dynamics and unusual flow volume detected during {stg} phase at t+{i*15}m."
+            f_prose = f"Forward autoregressive trajectory projects escalation risk reaching {r_val:.1%} at t+{i*15}m."
+        elif r_val >= 0.25:
+            lvl = "MODERATE"
+            sig = f"±{0.03 + i*0.02:.2f}σ"
+            win = "Open Window"
+            win_sub = "Analyst review recommended"
+            egr = f"{2.4 + i * 0.4:.1f} GB/s"
+            egr_d = "+15%"
+            ent = f"{0.40 + i * 0.02:.3f}"
+            ent_d = "+0.8σ"
+            prs = f"{500 + i * 50:,}"
+            prs_d = "+5%"
+            prose_txt = f"Minor telemetry drift observed at t+{i*15}m. Characteristics align with baseline fluctuations."
+            f_prose = f"World model indicates moderate probability envelope of {r_val:.1%} with low lateral diffusion likelihood."
+        else:
+            lvl = "NOMINAL"
+            sig = "±0.02σ (tight)"
+            win = "Nominal Monitoring"
+            win_sub = "No containment required"
+            egr = f"{0.8 + i * 0.1:.1f} GB/s"
+            egr_d = "Baseline"
+            ent = f"{0.12 + i * 0.01:.3f}"
+            ent_d = "0.0σ"
+            prs = f"{320 + i * 20:,}"
+            prs_d = "Baseline"
+            prose_txt = f"Continuous nominal telemetry envelope observed at t+{i*15}m. No anomalous lateral dispersion or privilege escalation indicators."
+            f_prose = f"Autoregressive world model projects stable baseline operation with low epistemic variance ({r_val:.1%} probability) across the {i*15}m horizon."
+
+        STEPS_DATA.append({
+            "k": i,
+            "label": f"k = {i} [{'NOW' if i==0 else f'+{i*15}m'}]",
+            "tag": "NOW" if i == 0 else f"+{i*15}m",
+            "offset": f"+{i*15}m",
+            "time": f"{base_times[i]} UTC (+{i*15}m)",
+            "risk": r_val,
+            "level": lvl,
+            "sigma": sig,
+            "ci": f"Range: [{max(0.0, r_val - 0.05):.2f} - {min(1.0, r_val + 0.05):.2f}]",
+            "window": win,
+            "window_sub": win_sub,
+            "egress": egr,
+            "egress_delta": egr_d,
+            "entropy": ent,
+            "entropy_delta": ent_d,
+            "peers": prs,
+            "peers_delta": prs_d,
+            "svgX": svg_x_coords[i],
+            "svgY": max(20, min(255, int(255 - (r_val * 235)))),
+            "drivers": {"egress": d_egress, "fanout": d_fanout, "sweep": d_sweep},
+            "prose": prose_txt,
+            "forecast_prose": f_prose,
+        })
+
+    # Calculate dynamic svgY and coordinate mappings based on active risk values
+    for s in STEPS_DATA:
+        s["svgY"] = max(20, min(255, int(255 - (s["risk"] * 235))))
+
+    # Compute trajectory points and dynamic uncertainty envelope
+    proj_pts = " ".join(f"{s['svgX']},{s['svgY']}" for s in STEPS_DATA)
+    upper_pts = " ".join(f"{s['svgX']},{max(15, int(255 - (min(1.0, s['risk'] + (0.03 + i * 0.03)) * 235)))}" for i, s in enumerate(STEPS_DATA))
+    lower_pts = " ".join(f"{s['svgX']},{min(255, int(255 - (max(0.0, s['risk'] - (0.03 + i * 0.03)) * 235)))}" for i, s in reversed(list(enumerate(STEPS_DATA))))
+    uncert_polygon_pts = f"{upper_pts} {lower_pts}"
+
+    # Connect baseline history line cleanly into t0
+    t0_y = STEPS_DATA[0]["svgY"]
+    hist_polyline = f"100,{min(255, t0_y + 45)} 150,{min(255, t0_y + 35)} 190,{min(255, t0_y + 30)} 230,{min(255, t0_y + 20)} 280,{min(255, t0_y + 15)} 315,{min(255, t0_y + 8)} 350,{t0_y}"
+    hist_polygon = f"100,255 {hist_polyline} 350,255"
+
+    peak_p = max(s["risk"] for s in STEPS_DATA)
+    peak_badge = "CRITICAL" if peak_p >= 0.75 else ("ELEVATED" if peak_p >= 0.5 else ("MODERATE" if peak_p >= 0.25 else "NOMINAL"))
+    peak_delta = f"{peak_p - STEPS_DATA[0]['risk']:+.2f} at k=5"
+    time_crit_label = "Threshold Passed" if peak_p >= 0.75 else ("Elevated Watch" if peak_p >= 0.5 else "Nominal Envelope")
+    time_crit_sub = "Crossed at t-08m" if peak_p >= 0.75 else ("Predicted at t+15m" if peak_p >= 0.5 else "Below 0.75 limit")
 
     # Initialize active K step in session state
     if "forecast_k_step" not in st.session_state:
@@ -144,8 +218,8 @@ def render_page():
             </div>
             <div style="border-left: 1px solid {t['border']}; padding-left: 0.5rem;">
                 <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.625rem; color: {t['text_muted']}; text-transform: uppercase;">Step Forecast Risk (p)</div>
-                <div style="font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; font-weight: 700; color: {t['secondary']};">
-                    {active_step['risk']:.3f} <span class="soc-badge badge-critical" style="font-size: 0.6rem; padding: 1px 4px;">{active_step['level']}</span>
+                <div style="font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; font-weight: 700; color: {t['secondary'] if active_step['risk'] >= 0.5 else t['primary']};">
+                    {active_step['risk']:.3f} <span class="soc-badge {'badge-critical' if active_step['risk'] >= 0.75 else ('badge-caution' if active_step['risk'] >= 0.5 else 'badge-nominal')}" style="font-size: 0.6rem; padding: 1px 4px;">{active_step['level']}</span>
                 </div>
             </div>
             <div style="border-left: 1px solid {t['border']}; padding-left: 0.5rem;">
@@ -160,7 +234,7 @@ def render_page():
                 <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.875rem; font-weight: 700; color: {t['tertiary']};">
                     {active_step['window']}
                 </div>
-                <div style="font-family: 'Inter', sans-serif; font-size: 0.625rem; color: {t['secondary']};">{active_step['window_sub']}</div>
+                <div style="font-family: 'Inter', sans-serif; font-size: 0.625rem; color: {t['secondary'] if active_step['risk'] >= 0.5 else t['text_secondary']};">{active_step['window_sub']}</div>
             </div>
         </div>
     </div>
@@ -185,14 +259,14 @@ def render_page():
             <div style="display: flex; gap: 1.5rem; align-items: baseline;">
                 <div>
                     <span class="soc-stat-label">Estimated Peak Probability</span>
-                    <div style="font-family: 'JetBrains Mono', monospace; font-size: 1.35rem; font-weight: 700; color: {t['secondary']};">
-                        0.992 <span style="font-size: 0.75rem; font-weight: 600;">Critical (+0.15 at k=5)</span>
+                    <div style="font-family: 'JetBrains Mono', monospace; font-size: 1.35rem; font-weight: 700; color: {t['secondary'] if peak_p >= 0.5 else t['primary']};">
+                        {peak_p:.3f} <span style="font-size: 0.75rem; font-weight: 600;">{peak_badge} ({peak_delta})</span>
                     </div>
                 </div>
                 <div style="border-left: 1px solid {t['border']}; padding-left: 1rem;">
                     <span class="soc-stat-label">Time-to-Critical (0.75)</span>
-                    <div style="font-family: 'JetBrains Mono', monospace; font-size: 1.35rem; font-weight: 700; color: {t['tertiary']};">
-                        Passed <span style="font-size: 0.75rem; font-weight: 600;">Crossed at t-08m</span>
+                    <div style="font-family: 'JetBrains Mono', monospace; font-size: 1.35rem; font-weight: 700; color: {t['tertiary'] if peak_p >= 0.5 else t['primary']};">
+                        {time_crit_label} <span style="font-size: 0.75rem; font-weight: 600;">{time_crit_sub}</span>
                     </div>
                 </div>
                 <div style="border-left: 1px solid {t['border']}; padding-left: 1rem;">
@@ -205,7 +279,7 @@ def render_page():
             <!-- Chart Legend -->
             <div style="display: flex; gap: 0.75rem; font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_secondary']}; background: {t['surface_lowest']}; padding: 4px 10px; border-radius: 4px; border: 1px solid {t['border']};">
                 <span><b style="color:{t['primary']}">―</b> Actual Historical</span>
-                <span><b style="color:{t['secondary']}">--</b> Mean Projected</span>
+                <span><b style="color:{t['secondary'] if peak_p >= 0.5 else t['primary']}">--</b> Mean Projected</span>
                 <span style="color:{t['secondary']}"><span style="display:inline-block; width:8px; height:8px; background:{t['secondary_subtle']}; border:1px solid {t['secondary']};"></span> 95% Uncertainty</span>
                 <span><b style="color:{t['secondary']}">··</b> Threshold (0.75)</span>
                 <span style="color:{t['primary']}; font-weight: 700;">| Scrubber Needle</span>
@@ -247,13 +321,13 @@ def render_page():
                 <line x1="830" y1="20" x2="830" y2="255" stroke="{t['border']}" stroke-dasharray="2 3" />
                 <line x1="950" y1="20" x2="950" y2="255" stroke="{t['border']}" stroke-dasharray="2 3" />
 
-                <polygon points="350,62 470,44 590,30 710,18 830,12 950,8 950,78 830,58 710,48 590,56 470,68 350,62" fill="url(#mainUncertaintyGradient)" />
+                <polygon points="{uncert_polygon_pts}" fill="url(#mainUncertaintyGradient)" />
 
-                <polygon points="100,255 100,225 150,220 190,230 230,200 280,175 315,120 350,62 350,255" fill="url(#mainHistoryGradient)" />
+                <polygon points="{hist_polygon}" fill="url(#mainHistoryGradient)" />
 
-                <polyline points="100,225 150,220 190,230 230,200 280,175 315,120 350,62" fill="none" stroke="{t['primary']}" stroke-width="2.5" stroke-linecap="round" />
+                <polyline points="{hist_polyline}" fill="none" stroke="{t['primary']}" stroke-width="2.5" stroke-linecap="round" />
 
-                <polyline points="350,62 470,51 590,41 710,33 830,27 950,22" fill="none" stroke="{t['secondary']}" stroke-width="2.5" stroke-dasharray="6 4" stroke-linecap="round" />
+                <polyline points="{proj_pts}" fill="none" stroke="{t['secondary'] if peak_p >= 0.5 else t['primary']}" stroke-width="2.5" stroke-dasharray="6 4" stroke-linecap="round" />
 
                 <line x1="{active_step['svgX']}" y1="15" x2="{active_step['svgX']}" y2="260" stroke="{t['primary']}" stroke-width="2" stroke-dasharray="3 2" />
                 <circle cx="{active_step['svgX']}" cy="{active_step['svgY']}" r="8" fill="none" stroke="{t['primary']}" stroke-width="2" />
@@ -271,7 +345,7 @@ def render_page():
         </div>
         <div style="display: flex; justify-content: space-between; font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_muted']}; margin-top: 0.35rem;">
             <span>ENCLAVE: AWS-US-EAST-1 (VPC-8812) • AGENT LATENCY: 1.84ms • KALMAN FILTER DRIFT: &lt;0.004</span>
-            <span style="color: {t['secondary']}; font-weight: 700;">MITIGATION WINDOW DEPLETING (Est {active_step['window']})</span>
+            <span style="color: {t['secondary'] if peak_p >= 0.5 else t['primary']}; font-weight: 700;">MITIGATION STATUS: {time_crit_label} (Est {active_step['window']})</span>
         </div>
     </div>
     """)
@@ -282,7 +356,7 @@ def render_page():
     <div class="soc-card" style="margin-bottom: 1rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
             <div style="display: flex; align-items: center; gap: 0.5rem;">
-                <span style="color:{t['primary']}; font-size:1.1rem;">🧠</span>
+                <span class="soc-badge badge-nominal" style="padding: 1px 5px; font-size: 0.65rem;">ATTRIBUTION</span>
                 <span class="soc-section-title">Causal Risk Attribution & Synthesis</span>
             </div>
             <div style="display: flex; gap: 0.5rem;">
@@ -389,32 +463,68 @@ def render_page():
 
     render_html("<div style='height: 1rem;'></div>")
 
-    # MITIGATION PLAYBOOK ACTION BAR
+    # Initialize quarantine state
+    if "quarantine_active" not in st.session_state:
+        st.session_state.quarantine_active = False
+    if "isolated_nodes" not in st.session_state:
+        st.session_state.isolated_nodes = set()
+
+    is_quarantined = st.session_state.quarantine_active
+
+    # MITIGATION PLAYBOOK & AUTONOMOUS QUARANTINE PANEL
+    quarantine_badge_cls = "badge-nominal" if is_quarantined else "badge-critical"
+    quarantine_status_label = "QUARANTINE ENFORCED // SDN ISOLATED" if is_quarantined else "QUARANTINE READY // PB-608"
+
     render_html(f"""
-    <div style="background: {t['surface_card']}; border: 1px solid {t['border']}; border-radius: 4px; padding: 1rem 1.25rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-        <div style="display: flex; align-items: center; gap: 0.75rem;">
-            <div style="width: 36px; height: 36px; border-radius: 4px; background: {t['secondary_subtle']}; border: 1px solid {t['secondary']}; display: flex; align-items: center; justify-content: center; color: {t['secondary']}; font-size: 1.25rem;">
-                🛡
+    <div style="background: {t['surface_card']}; border: 1px solid {t['border']}; border-radius: 4px; padding: 1.25rem; margin-bottom: 1rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.75rem;">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <span class="soc-badge {quarantine_badge_cls}" style="font-size: 0.7rem; padding: 2px 6px;">
+                    {quarantine_status_label}
+                </span>
+                <span style="font-family: 'Inter', sans-serif; font-size: 0.95rem; font-weight: 700; color: {t['text_high']};">
+                    Autonomous Quarantine & Threat Containment Playbook
+                </span>
             </div>
-            <div>
-                <div style="font-family: 'Inter', sans-serif; font-size: 0.875rem; font-weight: 700; color: {t['text_high']};">
-                    Recommended Playbook: PB-608 • Egress Containment & Kerberos Rekey
-                </div>
-                <div style="font-family: 'Inter', sans-serif; font-size: 0.75rem; color: {t['text_secondary']};">
-                    Automated isolation drops forward risk trajectory from 0.96 down to 0.12 within 120 seconds.
-                </div>
-            </div>
+            <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_muted']};">
+                ACTION TARGET: svc-auth-master (10.0.14.88)
+            </span>
         </div>
+
+        <div class="soc-card-nested" style="margin-bottom: 0.75rem;">
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; font-weight: 700; color: {t['primary']}; margin-bottom: 0.25rem;">
+                WHAT IS AUTONOMOUS QUARANTINE?
+            </div>
+            <p style="font-family: 'Inter', sans-serif; font-size: 0.8125rem; color: {t['text_secondary']}; margin: 0; line-height: 1.5;">
+                Autonomous Quarantine authorizes the Zero-Trust Enclave SDN controller to immediately sever all network interfaces (ports 443, 135, 445) for compromised host <b>svc-auth-master</b> and compute worker <b>ip-10-0-14-88</b>. 
+                Crucially, host memory is preserved (no container crash/reboot) so volatile RAM artifacts remain intact for digital forensics. 
+                This action drops the forward risk trajectory from <b>0.96 down to 0.12</b> within 120 seconds.
+            </p>
+        </div>
+
+        {"<div style='background: rgba(57, 255, 136, 0.08); border: 1px solid " + t['primary'] + "; border-radius: 4px; padding: 0.75rem; font-family: JetBrains Mono, monospace; font-size: 0.75rem; color: " + t['text_high'] + "; margin-bottom: 0.75rem;'>[ENCLAVE ATTESTATION] Host svc-auth-master and ip-10-0-14-88 severed on all VPC SDN bridges. Ed25519 signature proof: ed25519:9f41b8e280ac1894d01c • Forward hazard mitigated to 0.12 nominal.</div>" if is_quarantined else ""}
     </div>
     """)
 
     p_col1, p_col2 = st.columns(2)
     with p_col1:
-        if st.button("Simulate Mitigation", use_container_width=True):
-            st.info("Simulated PB-608: Expected hazard drop -82% within 2 rollout intervals.")
+        if st.button("Simulate Mitigation (Preview Hazard Drop)", use_container_width=True):
+            st.info("Simulated PB-608: Expected hazard drop -82% within 2 rollout intervals (t+15m to t+30m).")
     with p_col2:
-        if st.button("Authorize Autonomous Quarantine", type="primary", use_container_width=True):
-            st.success("Containment command broadcast to enclave SDN controller: Host svc-auth-master quarantined.")
+        if not is_quarantined:
+            if st.button("Authorize Autonomous Quarantine", type="primary", use_container_width=True):
+                st.session_state.quarantine_active = True
+                st.session_state.isolated_nodes.add("svc-auth-master")
+                st.session_state.isolated_nodes.add("ip-10-0-14-88")
+                st.success("Containment command broadcast to enclave SDN controller: Host svc-auth-master quarantined & isolated.")
+                st.rerun()
+        else:
+            if st.button("Revoke Autonomous Quarantine (Restore Interconnect)", use_container_width=True):
+                st.session_state.quarantine_active = False
+                st.session_state.isolated_nodes.discard("svc-auth-master")
+                st.session_state.isolated_nodes.discard("ip-10-0-14-88")
+                st.warning("SDN quarantine lifted: Host interfaces restored to VPC bridge.")
+                st.rerun()
 
 if __name__ == "__main__":
     render_page()

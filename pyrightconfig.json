@@ -1,0 +1,17 @@
+{
+  "venvPath": ".",
+  "venv": ".venv",
+  "extraPaths": [
+    ".",
+    "backend",
+    "frontend",
+    "data-engineering",
+    "data-engineering/src",
+    "ml1",
+    "ml1/scripts",
+    "ml2-full",
+    "ml2-full/GNN_FINAL"
+  ],
+  "reportMissingImports": "warning",
+  "reportMissingTypeStubs": false
+}
