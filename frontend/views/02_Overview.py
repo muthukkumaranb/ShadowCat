@@ -13,6 +13,7 @@ from data_provider import (
     get_audit_chain_status,
     get_mitre_data,
     get_flagged_flows,
+    get_live_notarization_status,
 )
 
 def render_page():
@@ -23,6 +24,12 @@ def render_page():
     audit = get_audit_chain_status()
     mitre = get_mitre_data()
     flows = get_flagged_flows()
+    notary_status = get_live_notarization_status()
+
+    fabric_active = notary_status.get("fabric_active", True)
+    fallback_engaged = notary_status.get("fallback_engaged", False)
+    tx_id = notary_status.get("tx_id", "N/A")
+    fallback_idx = notary_status.get("fallback_index", 0)
 
     risk_val = fc.get("risk", [0.84])[0]
     lead_time = fc.get("lead_time", ["1m 00s"])[0]
@@ -232,23 +239,36 @@ def render_page():
 
     with m_col4:
         is_valid = audit.get("is_valid", True)
+        if fallback_engaged:
+            badge_title = "FALLBACK ENGAGED"
+            badge_cls = "badge-caution"
+            badge_subtext = f"SHA-256 Chain Entry #{fallback_idx} • Fallback Notarization Active"
+            badge_color = "#ff9f0a"
+            badge_footer = "SHA-256 Fallback Active"
+        else:
+            badge_title = "VERIFIED"
+            badge_cls = "badge-nominal"
+            badge_subtext = f"Fabric Tx #{tx_id} • Notarized via Hyperledger Fabric"
+            badge_color = t['primary']
+            badge_footer = "Fabric Ledger Validated"
+
         render_html(f"""
         <div class="soc-stat-card">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span class="soc-stat-label">Audit Chain Integrity</span>
-                <span class="soc-badge badge-nominal" style="font-size: 0.625rem; padding: 1px 5px;">VERIFIED</span>
+                <span class="soc-badge {badge_cls}" style="font-size: 0.625rem; padding: 1px 5px;">{badge_title}</span>
             </div>
             <div style="margin: 0.35rem 0;">
-                <div class="soc-stat-val" style="color: {t['primary']};">
+                <div class="soc-stat-val" style="color: {badge_color};">
                     {"VERIFIED" if is_valid else "TAMPERED"}
                 </div>
                 <div style="font-family: 'Inter', sans-serif; font-size: 0.75rem; color: {t['text_secondary']}; margin-top: 0.25rem;">
-                    Block #849,204 • SHA-256 Validated
+                    {badge_subtext}
                 </div>
             </div>
             <div class="soc-stat-delta delta-nominal">
                 <span>ENCLAVE SECURE</span>
-                <span style="color: {t['text_muted']}; margin-left: auto;">0 Errors</span>
+                <span style="color: {t['text_muted']}; margin-left: auto;">{badge_footer}</span>
             </div>
         </div>
         """)
