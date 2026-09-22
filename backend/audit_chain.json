@@ -98,5 +98,35 @@
     "artifact_hash": "3bd79bf9be73ee72ad631ccd63f3f0bf7cf923f855661196ec9199c1789b7483",
     "prev_entry_hash": "a78630184d3584f673cddc3839a38c62b5d7765e43ebd1e979b7f2913d5ccd78",
     "entry_hash": "681a2ff2d44ae4d98525b29f2a6ccaacbfaa56b2ac7101970730b2c39fed52f3"
+  },
+  {
+    "index": 10,
+    "timestamp": "2026-09-22T15:20:42.922090+00:00",
+    "artifact_path": "../ml1/artifacts/lstm/gaussian_next_state_best_v3.pt",
+    "artifact_type": "model_checkpoint",
+    "description": "LSTM world model v3 loaded into predict pipeline (SHA-256 fallback)",
+    "artifact_hash": "cff8aa8ab2a5221a4d8bb512671994d90fc8e9c6a8b5c3832539e817fcceab05",
+    "prev_entry_hash": "681a2ff2d44ae4d98525b29f2a6ccaacbfaa56b2ac7101970730b2c39fed52f3",
+    "entry_hash": "5ffdbc040cb1b45d26f507a637c1e399b99ea07342abfc7a27cbba26925d9159"
+  },
+  {
+    "index": 11,
+    "timestamp": "2026-09-22T15:21:45.417480+00:00",
+    "artifact_path": "../ml1/artifacts/lstm/gaussian_next_state_best_v3.pt",
+    "artifact_type": "model_checkpoint",
+    "description": "LSTM world model v3 loaded into predict pipeline (SHA-256 fallback)",
+    "artifact_hash": "cff8aa8ab2a5221a4d8bb512671994d90fc8e9c6a8b5c3832539e817fcceab05",
+    "prev_entry_hash": "5ffdbc040cb1b45d26f507a637c1e399b99ea07342abfc7a27cbba26925d9159",
+    "entry_hash": "865db108f67962f2ee68c13198695515b7b22c999a1ef7078f37e0615d47fb19"
+  },
+  {
+    "index": 12,
+    "timestamp": "2026-09-22T15:22:00.964025+00:00",
+    "artifact_path": "alerts/alert_cb27ee5379a75a82.json",
+    "artifact_type": "hazard_alert",
+    "description": "Hazard alert cb27ee5379a75a82 [HIGH] (SHA-256 fallback)",
+    "artifact_hash": "0d172bb66c344a4b4a715c1724afb381187eceade5fa99f797ca78bf29496642",
+    "prev_entry_hash": "865db108f67962f2ee68c13198695515b7b22c999a1ef7078f37e0615d47fb19",
+    "entry_hash": "cf6af1770b681b72d75b648b1b158e8f9f9e57b9a74978a7d08dba26ca2186fd"
   }
 ]

@@ -14,6 +14,7 @@ import numpy as np
 import pandas as pd
 import torch
 import yaml
+import json
 
 # Resolve repository paths
 BACKEND_DIR = Path(__file__).resolve().parent
@@ -179,11 +180,15 @@ class ShadowcatPipeline:
                 logging.info("World model notarized via: fabric")
             else:
                 try:
-                    append_audit_entry(
-                        artifact_path=str(wm_path),
-                        artifact_type="model_checkpoint",
-                        description="LSTM world model v3 loaded into predict pipeline (SHA-256 fallback)",
-                    )
+                    from audit_chain import _load_chain
+                    existing = _load_chain()
+                    already_in_chain = any(e.get("artifact_type") == "model_checkpoint" and "gaussian_next_state_best_v3.pt" in e.get("artifact_path", "") for e in existing)
+                    if not already_in_chain:
+                        append_audit_entry(
+                            artifact_path=str(wm_path),
+                            artifact_type="model_checkpoint",
+                            description="LSTM world model v3 loaded into predict pipeline (SHA-256 fallback)",
+                        )
                     import logging
                     logging.info("World model notarized via: sha256_fallback")
                 except Exception as e:
@@ -834,11 +839,15 @@ class ShadowcatPipeline:
                     with open(alert_file, "w", encoding="utf-8") as f:
                         json.dump(alert_record, f, indent=2)
 
-                    append_audit_entry(
-                        artifact_path=str(alert_file),
-                        artifact_type="hazard_alert",
-                        description=f"Hazard alert {alert_hash} [{severity}] (SHA-256 fallback)",
-                    )
+                    from audit_chain import _load_chain
+                    existing = _load_chain()
+                    already_in_chain = any(alert_hash in e.get("description", "") for e in existing)
+                    if not already_in_chain:
+                        append_audit_entry(
+                            artifact_path=str(alert_file),
+                            artifact_type="hazard_alert",
+                            description=f"Hazard alert {alert_hash} [{severity}] (SHA-256 fallback)",
+                        )
                     logging.info(f"Alert {alert_hash} notarized via: sha256_fallback")
                     payload["notarization_mechanism"] = "sha256_fallback"
                     payload["notarized_via"] = "sha256_fallback"
