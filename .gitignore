@@ -53,3 +53,9 @@ Thumbs.db
 raw_pcap/
 data/raw_pcap/
 
+# Local experiments & submodules
+fabric-experiment/
+stitich frontend/
+
+
+

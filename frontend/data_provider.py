@@ -114,8 +114,20 @@ _CACHED_LIVE_PREDICTION: Optional[Dict[str, Any]] = None
 
 
 def _get_live_prediction() -> Dict[str, Any]:
-    """Runs or retrieves cached live inference from backend.predict."""
+    """Runs or retrieves cached live inference from backend.predict.
+    Prioritizes session_state ML results (set by the Ingestion page's Run button)
+    so all cockpit views display the same live prediction output."""
     global _CACHED_LIVE_PREDICTION
+
+    # Priority 1: Use session_state prediction if user has run ML inference
+    try:
+        import streamlit as st
+        if "ml_prediction_result" in st.session_state and st.session_state["ml_prediction_result"] is not None:
+            _CACHED_LIVE_PREDICTION = st.session_state["ml_prediction_result"]
+            return _CACHED_LIVE_PREDICTION
+    except Exception:
+        pass
+
     if _CACHED_LIVE_PREDICTION is not None:
         return _CACHED_LIVE_PREDICTION
 
@@ -150,6 +162,91 @@ def _get_live_prediction() -> Dict[str, Any]:
     return _CACHED_LIVE_PREDICTION
 
 
+def set_active_prediction(prediction_dict: Dict[str, Any]) -> None:
+    """Explicitly sets the active live prediction across all views."""
+    global _CACHED_LIVE_PREDICTION
+    _CACHED_LIVE_PREDICTION = prediction_dict
+
+
+def run_core_ml_inference(input_df: pd.DataFrame, source_type: str = "csv") -> Dict[str, Any]:
+    """
+    Executes the core backend ML pipeline on an input DataFrame.
+    Pre-normalizes timestamps and column aliases for UCSExtractor,
+    invokes LSTM Gaussian world model and heads, and caches the result.
+    """
+    global _CACHED_LIVE_PREDICTION
+    from backend.predict import predict
+
+    df = input_df.copy()
+    # Deduplicate existing columns in input_df
+    if df.columns.duplicated().any():
+        df = df.loc[:, ~df.columns.duplicated(keep="first")].copy()
+
+    # Normalize timestamp column for UCSExtractor without duplicate keys
+    ts_cols = [c for c in df.columns if c.lower() in ("timestamp", "timestamp_utc", "time", "ts", "date")]
+    if ts_cols:
+        ts_col = ts_cols[0]
+        try:
+            ts_series = pd.to_datetime(df[ts_col])
+            df["Timestamp"] = ts_series.dt.strftime("%d/%m/%Y %H:%M:%S")
+        except Exception:
+            df["Timestamp"] = [f"14/02/2018 09:00:{i%60:02d}" for i in range(len(df))]
+        # Drop redundant alternative timestamp columns to prevent duplicate mapping
+        for c in ts_cols:
+            if c != "Timestamp" and c in df.columns:
+                df = df.drop(columns=[c])
+    else:
+        df["Timestamp"] = [f"14/02/2018 09:00:{i%60:02d}" for i in range(len(df))]
+
+    # Normalize flow duration if present
+    if "flow_duration_s" in df.columns and "Flow Duration" not in df.columns:
+        df["Flow Duration"] = (df["flow_duration_s"] * 1000000).astype(int)
+        df = df.drop(columns=["flow_duration_s"])
+    elif "Flow Duration" not in df.columns:
+        df["Flow Duration"] = 500000
+
+    # Normalize packet count and byte count columns
+    if "tot_fwd_pkts" in df.columns and "Tot Fwd Pkts" not in df.columns:
+        df["Tot Fwd Pkts"] = df["tot_fwd_pkts"]
+        df = df.drop(columns=["tot_fwd_pkts"])
+    if "tot_bwd_pkts" in df.columns and "Tot Bwd Pkts" not in df.columns:
+        df["Tot Bwd Pkts"] = df["tot_bwd_pkts"]
+        df = df.drop(columns=["tot_bwd_pkts"])
+    if "src_ip" in df.columns and "Src IP" not in df.columns:
+        df["Src IP"] = df["src_ip"]
+        df = df.drop(columns=["src_ip"])
+    if "dst_ip" in df.columns and "Dst IP" not in df.columns:
+        df["Dst IP"] = df["dst_ip"]
+        df = df.drop(columns=["dst_ip"])
+    if "src_port" in df.columns and "Src Port" not in df.columns:
+        df["Src Port"] = df["src_port"]
+        df = df.drop(columns=["src_port"])
+    if "dst_port" in df.columns and "Dst Port" not in df.columns:
+        df["Dst Port"] = df["dst_port"]
+        df = df.drop(columns=["dst_port"])
+    if "protocol" in df.columns and "Protocol" not in df.columns:
+        df["Protocol"] = df["protocol"].apply(lambda p: 6 if str(p).upper() == "TCP" else (17 if str(p).upper() == "UDP" else 6))
+        df = df.drop(columns=["protocol"])
+
+    # Final safeguard against any duplicate column names
+    if df.columns.duplicated().any():
+        df = df.loc[:, ~df.columns.duplicated(keep="first")].copy()
+
+    try:
+        pred = predict(df, source_type=source_type)
+        _CACHED_LIVE_PREDICTION = pred
+        return pred
+    except Exception as e:
+        import traceback
+        tb = traceback.format_exc()
+        # Still fall back to cached prediction, but attach error info so UI can show it
+        fallback = _get_live_prediction()
+        fallback["_inference_error"] = str(e)
+        fallback["_inference_traceback"] = tb
+        _CACHED_LIVE_PREDICTION = fallback
+        return fallback
+
+
 # -----------------------------------------------------------------------------
 # 2. Typed Accessor Functions (UI Consumer API)
 # -----------------------------------------------------------------------------
@@ -179,7 +276,7 @@ def get_forecast_trajectory(window_id: str = None) -> dict:
     """
     Returns multi-step forward trajectory simulation across K=1..4 horizons,
     including risk probabilities, stage mapping, calibrated uncertainty, and protocol metadata.
-    Consumed by: views/01_Forecast.py, components/forecast.py
+    Consumed by: views/03_Forecast.py, components/forecast.py
     """
     pred = _get_live_prediction()
     fc = pred.get("forecast_trajectory", {})
@@ -202,7 +299,7 @@ def get_comparison_table() -> list[dict]:
     """
     Returns mandated PS benchmark results comparing the World Model against
     the Logistic Regression baseline, Lagged baseline, and Signature IDS.
-    Consumed by: views/03_Validation.py
+    Consumed by: views/07_Validation_Trust.py
     """
     json_path = PROJECT_ROOT / "models" / "baseline_benchmarks.json"
     if json_path.exists():
@@ -437,7 +534,7 @@ def get_host_risk_graph(episode_id: str = None, k_step: int = 2) -> dict:
 def get_attributions(window_id: str = None) -> list[dict]:
     """
     Returns deletion-tested feature attribution rankings and percentage weights.
-    Consumed by: views/02_Evidence.py, components/explanation.py
+    Consumed by: views/06_Explainability.py, components/explanation.py
     """
     pred = _get_live_prediction()
     items = pred.get("attributions", [])
@@ -450,7 +547,7 @@ def get_novelty_score(window_id: str = None) -> dict:
     """
     Returns current observed network state S(t) telemetry, novelty score,
     behavioral envelope classification, and sparkline metrics.
-    Consumed by: views/01_Forecast.py, views/02_Evidence.py, components/state.py
+    Consumed by: views/03_Forecast.py, views/06_Explainability.py, components/state.py
     """
     pred = _get_live_prediction()
     nv = pred.get("novelty_score", {})
@@ -461,7 +558,7 @@ def get_novelty_score(window_id: str = None) -> dict:
 def get_flagged_flows(window_id: str = None, limit: int = None) -> list[dict]:
     """
     Returns flagged suspicious network flows driving the forecast.
-    Consumed by: views/02_Evidence.py, components/evidence.py
+    Consumed by: views/06_Explainability.py, components/evidence.py
     """
     pred = _get_live_prediction()
     flows = pred.get("flagged_flows", [])
@@ -476,7 +573,7 @@ def get_validation_data() -> dict:
     """
     Returns authoritative validation benchmarks, LOEO 37-fold cross-validation metrics,
     horizon stability data, and leakage audit checklist.
-    Consumed by: views/03_Validation.py
+    Consumed by: views/07_Validation_Trust.py
     """
     json_path = PROJECT_ROOT / "models" / "loeo_37fold_results.json"
     if json_path.exists():
@@ -518,7 +615,7 @@ def get_validation_data() -> dict:
 def get_mitre_data() -> list[dict]:
     """
     Returns MITRE ATT&CK progression stages and IDs.
-    Consumed by: views/01_Forecast.py, components/explanation.py
+    Consumed by: views/03_Forecast.py, components/explanation.py
     """
     json_path = PROJECT_ROOT / "models" / "mitre_mapper.json"
     if json_path.exists():
@@ -540,7 +637,7 @@ def get_mitre_data() -> list[dict]:
 def get_audit_chain_status() -> dict:
     """
     Returns the status and entries of the blockchain-inspired tamper-evident audit chain.
-    Consumed by: views/03_Validation.py
+    Consumed by: views/07_Validation_Trust.py
     """
     chain_file = REPO_ROOT / "backend" / "audit_chain.json"
     if chain_file.exists():

@@ -10,93 +10,99 @@ from streamlit.testing.v1 import AppTest
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
+import data_provider
+
 def audit_interactions():
     results = {}
 
-    # 1. Test Threat Forecast (views/01_Forecast.py)
-    print("--- Testing Threat Forecast Interactions ---")
-    at = AppTest.from_file(str(ROOT / "views" / "01_Forecast.py"), default_timeout=30)
+    print("Pre-warming ML models and live prediction cache...")
+    data_provider._get_live_prediction()
+
+    # 1. Test Threat Forecast (views/03_Forecast.py)
+    print("--- Testing Threat Forecast Interactions (views/03_Forecast.py) ---")
+    at = AppTest.from_file(str(ROOT / "views" / "03_Forecast.py"), default_timeout=60)
     at.run()
     assert not at.exception, f"Initial run exception: {at.exception}"
 
-    # 1a. Horizon Radio Selector
-    radio = at.radio(key="horizon_radio_selector")
-    assert radio is not None, "horizon_radio_selector missing!"
-    radio.set_value(radio.options[0]).run()
+    # 1a. Scrubber Buttons (k=0..5)
+    step_btns = [b for b in at.button if b.key and b.key.startswith("step_btn_")]
+    assert len(step_btns) == 6, f"Expected 6 step buttons, found {len(step_btns)}"
+    step_btns[3].click().run()
     assert not at.exception
-    assert at.session_state["selected_horizon_idx"] == 0, "Radio selection did not update selected_horizon_idx!"
-    radio.set_value(radio.options[3]).run()
-    assert not at.exception
-    assert at.session_state["selected_horizon_idx"] == 3
-    print("[PASS] horizon_radio_selector successfully updates selected_horizon_idx across options.")
+    assert at.session_state["forecast_k_step"] == 3
+    print("[PASS] Scrubber button successfully updates forecast_k_step to 3.")
 
-    # 1b. Attack Graph Horizon Slider
-    slider = at.slider(key="attack_graph_k_slider")
-    assert slider is not None, "attack_graph_k_slider missing!"
-    slider.set_value(0).run()
+    # 1b. Mitigation Simulation Button
+    sim_btn = next((b for b in at.button if b.label and "Simulate Mitigation" in b.label), None)
+    assert sim_btn is not None, "Simulate Mitigation button missing!"
+    sim_btn.click().run()
     assert not at.exception
-    assert at.session_state["attack_graph_k"] == 0
-    slider.set_value(4).run()
+    print("[PASS] Simulate Mitigation button clicked cleanly.")
+
+    # 1c. Quarantine Authorization & Revocation Buttons
+    quar_btn = next((b for b in at.button if b.label and "Authorize Autonomous Quarantine" in b.label), None)
+    assert quar_btn is not None, "Authorize Autonomous Quarantine button missing!"
+    quar_btn.click().run()
     assert not at.exception
-    assert at.session_state["attack_graph_k"] == 4
-    print("[PASS] attack_graph_k_slider successfully updates attack_graph_k.")
+    assert at.session_state["quarantine_active"] is True
+    assert "svc-auth-master" in at.session_state["isolated_nodes"]
+    print("[PASS] Authorize Autonomous Quarantine sets quarantine_active and isolates host.")
 
-    # 1c. Inspect and Focus Buttons
-    inspect_btns = [b for b in at.button if "btn_inspect" in b.key]
-    focus_btns = [b for b in at.button if "btn_focus" in b.key]
-    assert len(inspect_btns) == 5, f"Expected 5 inspect buttons, found {len(inspect_btns)}"
-    assert len(focus_btns) == 5, f"Expected 5 focus buttons, found {len(focus_btns)}"
-
-    # Test clicking inspect on 10.0.5.1 (Domain Controller)
-    btn_dc = next(b for b in inspect_btns if "10.0.5.1" in b.key)
-    btn_dc.click().run()
+    revoke_btn = next((b for b in at.button if b.label and "Revoke Autonomous Quarantine" in b.label), None)
+    assert revoke_btn is not None, "Revoke Autonomous Quarantine button missing!"
+    revoke_btn.click().run()
     assert not at.exception
-    assert at.session_state["selected_graph_host"] == "10.0.5.1"
-    assert "HOST TELEMETRY INSPECTOR: 10.0.5.1" in " ".join([m.value for m in at.markdown])
-    print("[PASS] btn_inspect correctly focuses host 10.0.5.1 and updates Telemetry Inspector.")
+    assert at.session_state["quarantine_active"] is False
+    print("[PASS] Revoke Autonomous Quarantine restores interconnect cleanly.")
 
-    # Test clicking focus on 10.0.4.10 (SSH Jump Host)
-    btn_foc = next(b for b in focus_btns if "10.0.4.10" in b.key)
-    btn_foc.click().run()
-    assert not at.exception
-    assert at.session_state["focused_graph_host"] == "10.0.4.10"
-    print("[PASS] btn_focus correctly toggles blast radius isolation.")
+    # 2. Test Attack Graph Topology & Scrubber (views/04_Attack_Graph.py)
+    print("\n--- Testing Attack Graph Interactions (views/04_Attack_Graph.py) ---")
+    at_graph = AppTest.from_file(str(ROOT / "views" / "04_Attack_Graph.py"), default_timeout=60)
+    at_graph.run()
+    assert not at_graph.exception, f"Attack graph run exception: {at_graph.exception}"
 
-    # Test unfocusing
-    btn_foc_again = next(b for b in at.button if "btn_focus_10.0.4.10" in b.key)
-    btn_foc_again.click().run()
-    assert not at.exception
-    assert at.session_state["focused_graph_host"] is None
-    print("[PASS] btn_focus correctly unfocuses when clicked a second time.")
+    # 2a. Attack Graph Horizon Scrubber
+    att_k_btns = [b for b in at_graph.button if b.key and b.key.startswith("att_k_")]
+    assert len(att_k_btns) == 6, f"Expected 6 attack graph k buttons, found {len(att_k_btns)}"
+    att_k_btns[2].click().run()
+    assert not at_graph.exception
+    assert at_graph.session_state["attack_k_step"] == 2
+    print("[PASS] Attack graph K-step button updates attack_k_step to 2.")
 
-    # 2. Test Telemetry Ingestion (views/01a_Input.py)
-    print("\n--- Testing Telemetry Ingestion Interactions ---")
-    at_in = AppTest.from_file(str(ROOT / "views" / "01a_Input.py"), default_timeout=30)
+    # 2b. Host Node Selectbox
+    assert len(at_graph.selectbox) > 0, "Host node selectbox missing!"
+    host_select = at_graph.selectbox[0]
+    host_select.set_value(host_select.options[1]).run()
+    assert not at_graph.exception
+    assert at_graph.session_state["selected_node"] == host_select.options[1]
+    print(f"[PASS] Host node selectbox updates selected_node to {host_select.options[1]}.")
+
+    # 3. Test Telemetry Ingestion (views/01_Telemetry_Ingestion.py)
+    print("\n--- Testing Telemetry Ingestion Interactions (views/01_Telemetry_Ingestion.py) ---")
+    at_in = AppTest.from_file(str(ROOT / "views" / "01_Telemetry_Ingestion.py"), default_timeout=60)
     at_in.run()
-    assert not at_in.exception
+    assert not at_in.exception, f"Telemetry ingestion exception: {at_in.exception}"
 
-    # 2a. Benchmark selector radio
-    bench_radio = at_in.radio(key="benchmark_selector")
-    assert bench_radio is not None
-    bench_radio.set_value(bench_radio.options[1]).run()
+    # 3a. Ingestion source mode radio
+    assert len(at_in.radio) > 0, "Ingestion source mode radio missing!"
+    source_radio = at_in.radio[0]
+    source_radio.set_value("Live Flow Feed (gRPC / Kafka)").run()
     assert not at_in.exception
-    print("[PASS] benchmark_selector radio changes options cleanly.")
+    print("[PASS] Ingestion Source Mode radio changes options cleanly.")
 
-    # 2b. Custom pipeline mode radio
-    mode_radio = at_in.radio(key="custom_pipeline_mode")
-    assert mode_radio is not None
-    # Toggle to CSV mode
-    mode_radio.set_value("Flow Records CSV (.csv, NetFlow / IPFIX)").run()
-    assert not at_in.exception
-    assert len(at_in.file_uploader) > 0
-    assert at_in.file_uploader[0].key == "csv_uploader"
-    print("[PASS] custom_pipeline_mode radio switches uploaders cleanly (PCAP <-> CSV).")
+    # 3b. Telemetry file uploader
+    assert len(at_in.file_uploader) > 0, "File uploader missing!"
+    assert at_in.file_uploader[0].key == "telemetry_uploader"
+    print("[PASS] telemetry_uploader present and verified.")
 
-    # Toggle back to PCAP mode
-    mode_radio.set_value("Raw Packet Capture (.pcap, .pcapng)").run()
+    # 3c. Load Demo Benchmark button
+    bench_btn = next((b for b in at_in.button if b.label and "Load Demo Benchmark" in b.label), None)
+    assert bench_btn is not None, "Load Demo Benchmark button missing!"
+    bench_btn.click().run()
     assert not at_in.exception
-    assert at_in.file_uploader[0].key == "pcap_uploader"
-    print("[PASS] pcap_uploader present in PCAP mode.")
+    assert at_in.session_state["benchmark_loaded"] is True
+    assert at_in.session_state["ingested_df"] is not None
+    print("[PASS] Load Demo Benchmark button loads benchmark data into session state.")
 
     print("\n======================================================================")
     print("ALL INTERACTIVE WIDGET AUDIT CHECKS PASSED ZERO RUNTIME EXCEPTIONS!")

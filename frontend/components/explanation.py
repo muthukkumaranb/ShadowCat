@@ -75,7 +75,7 @@ def render_attack_stepper(mitre_data, current_step_idx=2):
             <div style="flex: 1; padding: 14px 16px; {border_right} border-top: 3px solid #2FB872; background: #141414;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                     <span style="font-size: 0.68rem; font-weight: 700; color: #2FB872; text-transform: uppercase; letter-spacing: 0.05em;">
-                        ✓ OBSERVED
+                        [OBSERVED]
                     </span>
                     <span style="font-size: 0.70rem; color: #8A8A8A; font-family: 'JetBrains Mono', monospace;">
                         {item_id}
@@ -212,7 +212,7 @@ def render_explanation_section(data):
                 </div>
             </div>
             <div style="border-top: 1px solid #262626; padding-top: 8px; font-size: 0.74rem; color: #8A8A8A;">
-                ✓ Separates familiar attack trajectories from unfamiliar baseline drift.
+                [NOTE] Separates familiar attack trajectories from unfamiliar baseline drift.
             </div>
         </div>
         """)

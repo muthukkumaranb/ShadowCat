@@ -1,651 +1,598 @@
 """
-SHADOWCAT - Neutral High-Contrast SOC Design System & Global Styling
-Overhauled to match the reference SOC Posture dashboard design language:
-  - True near-black neutral base (#0d0d0d to #141414)
-  - Neutral dark gray/black cards (#141414) with thin #262626 borders
-  - Pure white (#ffffff) primary text and muted neutral gray (#8a8a8a) secondary text
-  - Restrained palette: white/gray for structure, sparse amber/green/red for semantic state
+SHADOWCAT SOC Cockpit - Signal on Void Design System
+Direct translation of signal_on_void/DESIGN.md design tokens and rules into pure CSS
+with zero runtime dependencies on cdn.tailwindcss.com.
 """
 
-import streamlit as st
-import textwrap
+from typing import Literal
 
-# Color Palette - Neutral High-Contrast SOC Theme
-COLORS = {
-    "bg": "#0d0d0d",               # True near-black neutral base
-    "surface": "#141414",          # Flat dark gray card
-    "surface_hover": "#1a1a1a",    # Card hover
-    "border": "#262626",           # Thin neutral gray border
-    "border_hover": "#363636",     # Border hover
-    "text_primary": "#ffffff",     # Pure white high contrast
-    "text_secondary": "#8a8a8a",   # Muted neutral gray
-    "text_muted": "#5a5a5a",       # Subtle neutral gray
-    "accent": "#ffffff",           # Restrained structural accent: pure white
-    "accent_dim": "rgba(255, 255, 255, 0.08)",
-    "danger": "#e5484d",           # Status: Danger / Critical
-    "danger_dim": "rgba(229, 72, 77, 0.12)",
-    "warning": "#e0982b",          # Status: Warning / Caution
-    "warning_dim": "rgba(224, 152, 43, 0.12)",
-    "success": "#2fb872",          # Status: Success / Normal
-    "success_dim": "rgba(47, 184, 114, 0.12)",
+# =============================================================================
+# 1. DESIGN TOKENS (Source of Truth: signal_on_void/DESIGN.md)
+# =============================================================================
 
-    # Backward compatibility aliases for view modules
-    "safe": "#2fb872",
-    "caution": "#e0982b",
-    "critical": "#e5484d",
+TOKENS = {
+    "dark": {
+        # Surface Foundations (Signal on Void)
+        "void": "#0A0D12",
+        "surface": "#111319",
+        "surface_dim": "#111319",
+        "surface_bright": "#36393f",
+        "surface_lowest": "#0b0e13",
+        "surface_low": "#191c21",
+        "surface_card": "#12161D",
+        "surface_container": "#1d2025",
+        "surface_high": "#272a30",
+        "surface_highest": "#32353b",
+        "overlay": "#18202A",
+
+        # Telemetry Emitter Signals
+        "primary": "#39FF88",           # Nominal Signal
+        "on_primary": "#003918",
+        "primary_container": "#39FF88",
+        "primary_fixed_dim": "#00e473",
+        "primary_subtle": "rgba(57, 255, 136, 0.12)",
+
+        "secondary": "#FF3B5C",         # Critical Threat / Anomaly
+        "on_secondary": "#68001a",
+        "secondary_container": "#c7003a",
+        "secondary_subtle": "rgba(255, 59, 92, 0.14)",
+
+        "tertiary": "#FFB84D",          # Caution / Suspicious / Dispersion
+        "on_tertiary": "#452b00",
+        "tertiary_container": "#ffdaab",
+        "tertiary_fixed_dim": "#ffb951",
+        "tertiary_subtle": "rgba(255, 184, 77, 0.14)",
+
+        # Borders & Grid
+        "border": "#1E2633",
+        "border_subtle": "#283344",
+        "outline": "#849584",
+        "outline_variant": "#3b4a3d",
+
+        # Text & Telemetry Layers
+        "text_high": "#F3F4F6",
+        "text_secondary": "#A0AEC0",
+        "text_muted": "#7E8B9B",
+        "text_variant": "#bacbb9",
+    },
+    "light": {
+        # Light mode derived using tonal relationships (same emitter signals)
+        "void": "#f5f6f8",
+        "surface": "#ffffff",
+        "surface_dim": "#eef1f5",
+        "surface_bright": "#ffffff",
+        "surface_lowest": "#f0f2f6",
+        "surface_low": "#ffffff",
+        "surface_card": "#ffffff",
+        "surface_container": "#e8ecf2",
+        "surface_high": "#dfe4eb",
+        "surface_highest": "#d3d9e2",
+        "overlay": "#e8edf5",
+
+        "primary": "#00A84D",
+        "on_primary": "#ffffff",
+        "primary_container": "#00A84D",
+        "primary_fixed_dim": "#00873d",
+        "primary_subtle": "rgba(0, 168, 77, 0.10)",
+
+        "secondary": "#D61B3C",
+        "on_secondary": "#ffffff",
+        "secondary_container": "#b01330",
+        "secondary_subtle": "rgba(214, 27, 60, 0.12)",
+
+        "tertiary": "#D97706",
+        "on_tertiary": "#ffffff",
+        "tertiary_container": "#fbbf24",
+        "tertiary_fixed_dim": "#b45309",
+        "tertiary_subtle": "rgba(217, 119, 6, 0.12)",
+
+        "border": "#cbd5e1",
+        "border_subtle": "#94a3b8",
+        "outline": "#64748b",
+        "outline_variant": "#94a3b8",
+
+        "text_high": "#0f172a",
+        "text_secondary": "#334155",
+        "text_muted": "#64748b",
+        "text_variant": "#475569",
+    },
 }
 
-CUSTOM_CSS = """
-<style>
-    /* Offline / Air-Gapped Base Reset - System Font Stack & True Near-Black Base */
-    html, body, [class*="css"], [data-testid="stAppViewContainer"], .stApp, section.main, [data-testid="stHeader"] {
-        background-color: #0d0d0d !important;
-        background: #0d0d0d !important;
-        color: #ffffff !important;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
-    }
-
-    /* Target all Streamlit view containers to eliminate any blue tint */
-    .stApp > header {
-        background: transparent !important;
-    }
-
-    [data-testid="stAppViewContainer"] {
-        background-color: #0d0d0d !important;
-    }
-
-    .main .block-container {
-        background-color: #0d0d0d !important;
-    }
-
-    /* Links: Crisp Neutral White */
-    a, [data-testid="stMarkdownContainer"] a {
-        color: #ffffff !important;
-        text-decoration: underline !important;
-    }
-
-    a:hover, [data-testid="stMarkdownContainer"] a:hover {
-        color: #d4d4d4 !important;
-    }
-
-    /* Main Container Padding */
-    .block-container {
-        padding-top: 1.2rem !important;
-        padding-bottom: 2.5rem !important;
-        max-width: 1340px !important;
-    }
-
-    /* Slim Persistent Top Bar Header */
-    .slim-header-bar {
-        background: #141414 !important;
-        border: 1px solid #262626 !important;
-        border-radius: 8px !important;
-        padding: 10px 18px !important;
-        margin-bottom: 18px !important;
-        display: flex !important;
-        justify-content: space-between !important;
-        align-items: center !important;
-        box-shadow: none !important;
-    }
-
-    .slim-header-brand {
-        font-size: 1.15rem !important;
-        font-weight: 800 !important;
-        color: #ffffff !important;
-        letter-spacing: 0.02em !important;
-    }
-
-    /* Neutral SOC Cards */
-    .glass-card, .cyber-card, .card {
-        background: #141414 !important;
-        border: 1px solid #262626 !important;
-        border-radius: 8px !important;
-        padding: 18px 20px !important;
-        margin-bottom: 18px !important;
-        box-shadow: none !important;
-        transition: background-color 0.15s ease, border-color 0.15s ease !important;
-        position: relative !important;
-    }
-
-    .glass-card:hover, .cyber-card:hover, .card:hover {
-        background: #181818 !important;
-        border-color: #333333 !important;
-        box-shadow: none !important;
-        transform: none !important;
-    }
-
-    /* Section Labels - Sentence Case, Secondary Gray, No Letter Spacing */
-    .card-title {
-        font-size: 0.88rem !important;
-        font-weight: 600 !important;
-        color: #8a8a8a !important;
-        text-transform: none !important;
-        letter-spacing: normal !important;
-        margin-bottom: 12px !important;
-        display: flex !important;
-        align-items: center !important;
-        gap: 10px !important;
-    }
-
-    /* Clean Neutral Badges */
-    .badge, span.badge, .card-title span.badge {
-        font-size: 0.72rem !important;
-        padding: 2px 8px !important;
-        border-radius: 4px !important;
-        background: #1a1a1a !important;
-        border: 1px solid #2a2a2a !important;
-        color: #8a8a8a !important;
-        font-weight: 500 !important;
-        text-transform: none !important;
-        letter-spacing: normal !important;
-    }
-
-    /* High-Impact Stat Display */
-    .metric-value-huge {
-        font-size: 2.1rem !important;
-        font-weight: 700 !important;
-        font-family: 'JetBrains Mono', monospace !important;
-        letter-spacing: -0.02em !important;
-        line-height: 1.1 !important;
-        margin: 4px 0 !important;
-        color: #ffffff !important;
-    }
-
-    .metric-label {
-        font-size: 0.74rem !important;
-        font-weight: 500 !important;
-        color: #8a8a8a !important;
-        text-transform: none !important;
-        letter-spacing: normal !important;
-    }
-
-    /* Status Badges */
-    .badge-offline {
-        background: rgba(255, 255, 255, 0.05) !important;
-        color: #d4d4d4 !important;
-        border: 1px solid #2a2a2a !important;
-        padding: 4px 10px !important;
-        border-radius: 4px !important;
-        font-size: 0.72rem !important;
-        font-weight: 600 !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        gap: 6px !important;
-    }
-
-    .status-dot {
-        width: 6px !important;
-        height: 6px !important;
-        border-radius: 50% !important;
-        background-color: #2fb872 !important;
-        display: inline-block !important;
-    }
-
-    /* MITRE Pipeline Cards */
-    .mitre-pipeline {
-        display: grid !important;
-        grid-template-columns: repeat(4, 1fr) !important;
-        gap: 12px !important;
-        margin: 12px 0 16px 0 !important;
-    }
-
-    .mitre-card-observed {
-        background: #141414 !important;
-        border: 1px solid #262626 !important;
-        border-left: 3px solid #2fb872 !important;
-        border-radius: 6px !important;
-        padding: 14px 16px !important;
-        min-height: 125px !important;
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: space-between !important;
-    }
-
-    .mitre-card-predicted {
-        background: #141414 !important;
-        border: 1px solid #262626 !important;
-        border-left: 3px solid #e0982b !important;
-        border-radius: 6px !important;
-        padding: 14px 16px !important;
-        min-height: 125px !important;
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: space-between !important;
-    }
-
-    .mitre-card-downstream {
-        background: #111111 !important;
-        border: 1px solid #222222 !important;
-        border-radius: 6px !important;
-        padding: 14px 16px !important;
-        min-height: 125px !important;
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: space-between !important;
-    }
-
-    /* Streamlit Native Metric Card Overrides */
-    [data-testid="stMetric"] {
-        background: #141414 !important;
-        border: 1px solid #262626 !important;
-        border-radius: 8px !important;
-        padding: 16px 18px !important;
-        box-shadow: none !important;
-        transition: background-color 0.15s ease, border-color 0.15s ease !important;
-    }
-
-    [data-testid="stMetric"]:hover {
-        background: #181818 !important;
-        border-color: #333333 !important;
-    }
-
-    [data-testid="stMetricValue"] {
-        font-size: 1.9rem !important;
-        font-weight: 700 !important;
-        color: #ffffff !important;
-        font-family: 'JetBrains Mono', monospace !important;
-        letter-spacing: -0.02em !important;
-    }
-
-    [data-testid="stMetricLabel"] {
-        font-size: 0.74rem !important;
-        font-weight: 500 !important;
-        color: #8a8a8a !important;
-        text-transform: none !important;
-        letter-spacing: normal !important;
-    }
-
-    [data-testid="stMetricDelta"] {
-        font-size: 0.8rem !important;
-        font-weight: 500 !important;
-    }
-
-    /* Streamlit Interactive Radio & Pill Controls */
-    div[data-testid="stRadio"] > div {
-        background: #111111 !important;
-        border: 1px solid #262626 !important;
-        border-radius: 6px !important;
-        padding: 4px !important;
-        gap: 6px !important;
-    }
-
-    div[data-testid="stRadio"] label {
-        background: transparent !important;
-        border-radius: 4px !important;
-        padding: 6px 12px !important;
-        color: #8a8a8a !important;
-        font-size: 0.82rem !important;
-        transition: all 0.15s ease !important;
-    }
-
-    div[data-testid="stRadio"] label:hover {
-        background: #1a1a1a !important;
-        color: #ffffff !important;
-    }
-
-    /* Radio button active dot / selection: Pure White (No Cyan) */
-    div[data-testid="stRadio"] input[type="radio"] {
-        accent-color: #ffffff !important;
-    }
-
-    div[data-testid="stRadio"] [role="radiogroup"] label div[data-checked="true"],
-    div[data-testid="stRadio"] [role="radiogroup"] label[data-checked="true"] div {
-        border-color: #ffffff !important;
-    }
-
-    div[data-testid="stRadio"] svg {
-        fill: #ffffff !important;
-    }
-
-    /* Streamlit Slider: Crisp White Thumb & Neutral Gray Track (No Cyan) */
-    div[data-testid="stSlider"] [data-baseweb="slider"] {
-        accent-color: #ffffff !important;
-    }
-
-    div[data-testid="stSlider"] [data-baseweb="slider"] > div {
-        background: #262626 !important;
-    }
-
-    div[data-testid="stSlider"] [data-baseweb="slider"] div[role="slider"] {
-        background-color: #ffffff !important;
-        border: 2px solid #141414 !important;
-        box-shadow: 0 0 6px rgba(255, 255, 255, 0.4) !important;
-    }
-
-    div[data-testid="stSlider"] div[data-testid="stThumbValue"] {
-        color: #ffffff !important;
-        font-family: 'JetBrains Mono', monospace !important;
-        font-weight: 700 !important;
-    }
-
-    /* Streamlit Tabs: Neutral Underline (No Cyan) */
-    button[data-baseweb="tab"] {
-        color: #8a8a8a !important;
-        background: transparent !important;
-    }
-
-    button[data-baseweb="tab"][aria-selected="true"] {
-        color: #ffffff !important;
-        border-bottom-color: #ffffff !important;
-    }
-
-    div[data-baseweb="tab-highlight"] {
-        background-color: #ffffff !important;
-    }
-
-    div[data-baseweb="tab-border"] {
-        background-color: #262626 !important;
-    }
-
-    /* Streamlit Buttons: Secondary Default vs Primary Accent */
-    div[data-testid="stButton"] button, .stButton > button {
-        background: #181818 !important;
-        border: 1px solid #2a2a2a !important;
-        color: #ffffff !important;
-        font-weight: 600 !important;
-        font-size: 0.84rem !important;
-        letter-spacing: normal !important;
-        border-radius: 6px !important;
-        padding: 8px 16px !important;
-        box-shadow: none !important;
-        transition: background-color 0.15s ease, border-color 0.15s ease !important;
-    }
-
-    div[data-testid="stButton"] button:hover, .stButton > button:hover {
-        background: #222222 !important;
-        border-color: #383838 !important;
-        color: #ffffff !important;
-        transform: none !important;
-    }
-
-    /* Primary CTA Button: High-Contrast Crisp Clean White on Dark */
-    button[kind="primary"], div[data-testid="stButton"] button[kind="primary"] {
-        background: #ffffff !important;
-        border: 1px solid #ffffff !important;
-        color: #0d0d0d !important;
-        font-weight: 700 !important;
-        font-size: 0.86rem !important;
-        border-radius: 6px !important;
-        box-shadow: none !important;
-        transition: background-color 0.15s ease !important;
-    }
-
-    button[kind="primary"]:hover, div[data-testid="stButton"] button[kind="primary"]:hover {
-        background: #e5e5e5 !important;
-        border-color: #e5e5e5 !important;
-        color: #0d0d0d !important;
-        transform: none !important;
-    }
-
-    /* Data Table Styling - Neutral Dark Surface with Hairline Borders */
-    [data-testid="stDataFrame"],
-    [data-testid="stDataFrame"] > div,
-    [data-testid="stTable"],
-    table,
-    .dataframe {
-        border: 1px solid #262626 !important;
-        border-radius: 6px !important;
-        overflow: hidden !important;
-        background: #141414 !important;
-        background-color: #141414 !important;
-        box-shadow: none !important;
-        color: #ffffff !important;
-    }
-
-    table th, .dataframe th {
-        background-color: #181818 !important;
-        color: #ffffff !important;
-        border-bottom: 1px solid #262626 !important;
-        font-weight: 700 !important;
-        font-size: 0.78rem !important;
-        text-transform: uppercase !important;
-        letter-spacing: 0.04em !important;
-        padding: 8px 12px !important;
-    }
-
-    table td, .dataframe td {
-        background-color: #141414 !important;
-        color: #e4e4e7 !important;
-        border-bottom: 1px solid #1f1f1f !important;
-        font-size: 0.82rem !important;
-        padding: 8px 12px !important;
-    }
-
-    table tr:hover td, .dataframe tr:hover td {
-        background-color: #1a1a1a !important;
-    }
-
-    [data-testid="stDataFrame"] canvas {
-        background-color: #141414 !important;
-    }
-
-    /* Neutral Scrollbars (No Cyan / Blue) */
-    ::-webkit-scrollbar {
-        width: 6px;
-        height: 6px;
-    }
-
-    ::-webkit-scrollbar-track {
-        background: #0d0d0d;
-    }
-
-    ::-webkit-scrollbar-thumb {
-        background: #262626;
-        border-radius: 3px;
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-        background: #383838;
-    }
-
-    /* Clean Neutral Sidebar */
-    section[data-testid="stSidebar"] {
-        background: #0f0f0f !important;
-        border-right: 1px solid #222222 !important;
-    }
-
-    /* Expanders */
-    [data-testid="stExpander"] {
-        background: #141414 !important;
-        border: 1px solid #262626 !important;
-        border-radius: 6px !important;
-        margin-bottom: 12px !important;
-        box-shadow: none !important;
-    }
-
-    /* Code and Pre typography */
-    code, pre {
-        font-family: 'JetBrains Mono', Consolas, monospace !important;
-        background: #111111 !important;
-        border: 1px solid #222222 !important;
-        color: #8a8a8a !important;
-        border-radius: 4px !important;
-        font-size: 0.82rem !important;
-    }
-
-    /* Header & Sidebar Collapse / Expand Control */
-    header[data-testid="stHeader"] {
-        background: transparent !important;
-        color: #ffffff !important;
-        pointer-events: auto !important;
-    }
-
-    [data-testid="stToolbar"] {
-        background: transparent !important;
-        visibility: visible !important;
-        display: flex !important;
-    }
-
-    /* Sidebar reopen/expand button */
-    [data-testid="stExpandSidebarButton"],
-    button[data-testid="stExpandSidebarButton"] {
-        visibility: visible !important;
-        display: flex !important;
-        color: #8a8a8a !important;
-        background: #141414 !important;
-        border: 1px solid #262626 !important;
-        border-radius: 6px !important;
-        box-shadow: none !important;
-        cursor: pointer !important;
-    }
-
-    [data-testid="stExpandSidebarButton"]:hover {
-        background: #1a1a1a !important;
-        border-color: #333333 !important;
-        color: #ffffff !important;
-    }
-
-    [data-testid="stSidebarCollapseButton"] button {
-        visibility: visible !important;
-        color: #8a8a8a !important;
-        background: #141414 !important;
-        border: 1px solid #262626 !important;
-        border-radius: 6px !important;
-    }
-
-    [data-testid="stSidebarCollapseButton"] button:hover {
-        background: #1a1a1a !important;
-        border-color: #333333 !important;
-        color: #ffffff !important;
-    }
-
-    /* Sidebar Layout */
-    section[data-testid="stSidebar"] {
-        position: relative !important;
-    }
-
-    [data-testid="stSidebarContent"] {
-        display: flex !important;
-        flex-direction: column !important;
-        padding-top: 0 !important;
-    }
-
-    [data-testid="stSidebarHeader"] {
-        position: absolute !important;
-        top: 14px !important;
-        right: 14px !important;
-        z-index: 100 !important;
-        background: transparent !important;
-        padding: 0 !important;
-        margin: 0 !important;
-    }
-
-    [data-testid="stSidebarUserContent"] {
-        order: -1 !important;
-        padding-top: 16px !important;
-        padding-bottom: 0px !important;
-        padding-left: 16px !important;
-        padding-right: 16px !important;
-    }
-
-    [data-testid="stSidebarNav"] {
-        padding-top: 4px !important;
-        padding-bottom: 8px !important;
-        padding-left: 8px !important;
-        padding-right: 8px !important;
-        margin-top: 0 !important;
-    }
-
-    [data-testid="stSidebarNavSeparator"] {
-        display: none !important;
-    }
-
-    [data-testid="stSidebarNavItems"] {
-        padding-top: 0 !important;
-        margin-top: 0 !important;
-    }
-
-    /* Sidebar Navigation Section Headers */
-    [data-testid="stSidebarNavSectionHeader"],
-    div[data-testid="stSidebarNav"] span[data-testid="stWidgetLabel"],
-    div[data-testid="stSidebarNav"] h2 {
-        font-size: 0.72rem !important;
-        font-weight: 700 !important;
-        letter-spacing: 0.08em !important;
-        text-transform: uppercase !important;
-        color: #5a5a5a !important;
-        padding-top: 12px !important;
-        padding-bottom: 2px !important;
-        margin-top: 6px !important;
-        border-top: 1px solid #222222 !important;
-    }
-
-    /* Sidebar Links: Neutral Restrained Palette */
-    div[data-testid="stSidebarNav"] a {
-        font-weight: 500 !important;
-        color: #8a8a8a !important;
-        border-left: 3px solid transparent !important;
-        border-radius: 4px !important;
-        padding: 6px 12px !important;
-        transition: all 0.15s ease !important;
-    }
-
-    div[data-testid="stSidebarNav"] a:hover {
-        background: #181818 !important;
-        color: #ffffff !important;
-    }
-
-    div[data-testid="stSidebarNav"] a[aria-current="page"] {
-        color: #ffffff !important;
-        background: rgba(255, 255, 255, 0.08) !important;
-        border-left: 3px solid #ffffff !important;
-        font-weight: 700 !important;
-    }
-
-    /* Hide ONLY unwanted Streamlit chrome */
-    [data-testid="stAppDeployButton"] { visibility: hidden !important; display: none !important; }
-    [data-testid="stMainMenu"] { visibility: hidden !important; display: none !important; }
-    [data-testid="stMainMenuButton"] { visibility: hidden !important; display: none !important; }
-    #MainMenu { visibility: hidden !important; display: none !important; }
-    footer { visibility: hidden !important; display: none !important; }
-    [data-testid="stDecoration"] { display: none !important; }
-    [data-testid="stStatusWidget"] { visibility: hidden !important; display: none !important; }
-</style>
+# =============================================================================
+# BACKWARD COMPATIBILITY PALETTE (For components importing COLORS)
+# =============================================================================
+COLORS = {
+    "bg": TOKENS["dark"]["void"],
+    "surface": TOKENS["dark"]["surface_card"],
+    "surface_hover": TOKENS["dark"]["surface_container"],
+    "border": TOKENS["dark"]["border"],
+    "border_hover": TOKENS["dark"]["border_subtle"],
+    "text_primary": TOKENS["dark"]["text_high"],
+    "text_secondary": TOKENS["dark"]["text_secondary"],
+    "text_muted": TOKENS["dark"]["text_muted"],
+    "accent": "#ffffff",
+    "accent_dim": "rgba(255, 255, 255, 0.08)",
+    "danger": TOKENS["dark"]["secondary"],
+    "danger_dim": TOKENS["dark"]["secondary_subtle"],
+    "warning": TOKENS["dark"]["tertiary"],
+    "warning_dim": TOKENS["dark"]["tertiary_subtle"],
+    "success": TOKENS["dark"]["primary"],
+    "success_dim": TOKENS["dark"]["primary_subtle"],
+    "safe": TOKENS["dark"]["primary"],
+    "caution": TOKENS["dark"]["tertiary"],
+    "critical": TOKENS["dark"]["secondary"],
+    "primary": TOKENS["dark"]["primary"],
+    "secondary": TOKENS["dark"]["secondary"],
+    "neutral": TOKENS["dark"]["text_secondary"],
+}
+
+# =============================================================================
+# 2. BRAND EMBLEM SVG ASSET (From shadowcat_soc_emblem)
+# =============================================================================
+
+EMBLEM_SVG = """
+<svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" style="height: 32px; width: 32px; vertical-align: middle;">
+  <rect width="120" height="120" rx="16" fill="#0A0D12"/>
+  <rect x="1" y="1" width="118" height="118" rx="15" stroke="#1E2633" stroke-width="2"/>
+  <!-- Stylized radar/threat cat feline geometric nodes & vector lines -->
+  <circle cx="60" cy="64" r="28" stroke="#39FF88" stroke-width="2.5" stroke-dasharray="4 3" opacity="0.6"/>
+  <circle cx="60" cy="64" r="14" stroke="#39FF88" stroke-width="2" opacity="0.9"/>
+  <circle cx="60" cy="64" r="3.5" fill="#39FF88"/>
+  <!-- Pointed sleek geometric ears connected by signal vectors -->
+  <path d="M38 48 L46 22 L60 38 L74 22 L82 48" stroke="#39FF88" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Eye nodes with pulse dots -->
+  <circle cx="48" cy="58" r="3" fill="#39FF88"/>
+  <circle cx="72" cy="58" r="3" fill="#39FF88"/>
+  <!-- Threat scan crosshairs -->
+  <line x1="60" y1="36" x2="60" y2="44" stroke="#39FF88" stroke-width="2"/>
+  <line x1="60" y1="84" x2="60" y2="92" stroke="#39FF88" stroke-width="2"/>
+  <line x1="32" y1="64" x2="40" y2="64" stroke="#39FF88" stroke-width="2"/>
+  <line x1="80" y1="64" x2="88" y2="64" stroke="#39FF88" stroke-width="2"/>
+</svg>
 """
 
+# =============================================================================
+# 3. GLOBAL CSS GENERATOR
+# =============================================================================
 
-def safe_html(html_str: str) -> str:
-    """Strips leading/trailing whitespace preventing verbatim code blocks."""
-    return "\n".join(line.strip() for line in html_str.splitlines() if line.strip())
+def get_custom_css(theme: Literal["dark", "light"] = "dark") -> str:
+    """
+    Returns full CSS stylesheet implementing the Signal on Void design system.
+    Strict 4px radii, 1px tonal borders, no drop shadows, dual-typeface font rules.
+    """
+    t = TOKENS.get(theme, TOKENS["dark"])
+
+    return f"""
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+
+    <style>
+    /* Reset & Base Canvas */
+    html, body, [data-testid="stAppViewContainer"], .stApp {{
+        background-color: {t["void"]} !important;
+        color: {t["text_high"]} !important;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+        font-size: 14px !important;
+        line-height: 1.4 !important;
+        letter-spacing: 0em !important;
+    }}
+
+    header[data-testid="stHeader"] {{
+        background: transparent !important;
+        display: none !important;
+    }}
+
+    .block-container {{
+        padding-top: 1.25rem !important;
+        padding-bottom: 3rem !important;
+        max-width: 1400px !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+    }}
+
+    /* Global Typography Protocols */
+    .font-mono, .telemetry, code, pre, .font-code-telemetry {{
+        font-family: 'JetBrains Mono', monospace !important;
+        font-variant-numeric: tabular-nums !important;
+    }}
+    .font-prose, p, .font-body {{
+        font-family: 'Inter', sans-serif !important;
+    }}
+
+    /* Top Shell Navigation Bar */
+    .soc-topbar {{
+        background-color: {t["surface_low"]};
+        border-bottom: 1px solid {t["border"]};
+        padding: 0.6rem 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1.25rem;
+        border-radius: 4px;
+    }}
+    .soc-topbar-brand {{
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: 0.95rem;
+        letter-spacing: 0.05em;
+        color: {t["text_high"]};
+    }}
+    .soc-topbar-tag {{
+        font-size: 0.6875rem;
+        font-weight: 600;
+        padding: 0.15rem 0.45rem;
+        background: {t["surface_highest"]};
+        color: {t["outline"]};
+        border-radius: 4px;
+        text-transform: uppercase;
+    }}
+    .soc-live-badge {{
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.6875rem;
+        font-weight: 600;
+        padding: 0.25rem 0.6rem;
+        border-radius: 9999px;
+        background: {t["surface_highest"]};
+        color: {t["primary"]};
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }}
+    .soc-pulse-dot {{
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background-color: {t["primary"]};
+        animation: socPulse 1.5s infinite;
+    }}
+    @keyframes socPulse {{
+        0% {{ opacity: 0.4; transform: scale(0.9); }}
+        50% {{ opacity: 1; transform: scale(1.15); }}
+        100% {{ opacity: 0.4; transform: scale(0.9); }}
+    }}
+
+    /* Tonal Stacking Cards (Elevation without drop shadow) */
+    .soc-card {{
+        background-color: {t["surface_card"]};
+        border: 1px solid {t["border"]};
+        border-radius: 4px;
+        padding: 1rem 1.25rem;
+        margin-bottom: 1rem;
+        position: relative;
+    }}
+    .soc-card-nested {{
+        background-color: {t["surface_lowest"]};
+        border: 1px solid {t["border"]};
+        border-radius: 4px;
+        padding: 0.75rem 1rem;
+    }}
+    .soc-card-interactive:hover {{
+        background-color: {t["overlay"]};
+        border-color: {t["border_subtle"]};
+        transition: background 0.15s ease, border-color 0.15s ease;
+    }}
+
+    /* Stat Cards */
+    .soc-stat-card {{
+        background-color: {t["surface_card"]};
+        border: 1px solid {t["border"]};
+        border-radius: 4px;
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 105px;
+    }}
+    .soc-stat-label {{
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.6875rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        color: {t["text_muted"]};
+        letter-spacing: 0.04em;
+        margin-bottom: 0.25rem;
+    }}
+    .soc-stat-val {{
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 1.75rem;
+        font-weight: 700;
+        line-height: 2.25rem;
+        color: {t["text_high"]};
+        letter-spacing: -0.02em;
+        font-variant-numeric: tabular-nums;
+    }}
+    .soc-stat-delta {{
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.75rem;
+        font-weight: 500;
+        margin-top: 0.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+    }}
+    .delta-nominal {{ color: {t["primary"]}; }}
+    .delta-threat {{ color: {t["secondary"]}; }}
+    .delta-caution {{ color: {t["tertiary"]}; }}
+
+    /* Status Badges & Pills */
+    .soc-badge {{
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.2rem 0.55rem;
+        border-radius: 9999px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.6875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }}
+    .badge-critical {{
+        background: {t["secondary_subtle"]};
+        border: 1px solid {t["secondary"]};
+        color: {t["secondary"]};
+    }}
+    .badge-caution {{
+        background: {t["tertiary_subtle"]};
+        border: 1px solid {t["tertiary"]};
+        color: {t["tertiary"]};
+    }}
+    .badge-nominal {{
+        background: {t["primary_subtle"]};
+        border: 1px solid {t["primary"]};
+        color: {t["primary"]};
+    }}
+    .badge-neutral {{
+        background: {t["surface_highest"]};
+        border: 1px solid {t["border"]};
+        color: {t["text_secondary"]};
+    }}
+
+    /* Buttons */
+    .stButton > button {{
+        font-family: 'Inter', sans-serif !important;
+        font-size: 0.8125rem !important;
+        font-weight: 600 !important;
+        border-radius: 4px !important;
+        border: 1px solid {t["border"]} !important;
+        background: {t["surface_high"]} !important;
+        color: {t["text_high"]} !important;
+        padding: 0.45rem 1rem !important;
+        transition: all 0.15s ease !important;
+        box-shadow: none !important;
+    }}
+    .stButton > button:hover {{
+        background: {t["surface_highest"]} !important;
+        border-color: {t["border_subtle"]} !important;
+        color: {t["text_high"]} !important;
+    }}
+    .stButton > button:active {{
+        transform: scale(0.98);
+    }}
+    /* Primary button — covers ALL Streamlit versions */
+    .stButton > button[kind="primary"],
+    .stButton > button[data-testid="stBaseButton-primary"],
+    .stButton > button[data-testid*="primary"],
+    button[kind="primary"],
+    [data-testid="stBaseButton-primary"] {{
+        background: {t["primary"]} !important;
+        color: #000000 !important;
+        border: 2px solid {t["primary"]} !important;
+        font-weight: 700 !important;
+        font-size: 0.875rem !important;
+        min-height: 48px !important;
+        letter-spacing: 0.02em !important;
+        text-shadow: none !important;
+    }}
+    .stButton > button[kind="primary"]:hover,
+    .stButton > button[data-testid="stBaseButton-primary"]:hover,
+    .stButton > button[data-testid*="primary"]:hover,
+    button[kind="primary"]:hover,
+    [data-testid="stBaseButton-primary"]:hover {{
+        background: {t["primary_fixed_dim"]} !important;
+        border-color: {t["primary_fixed_dim"]} !important;
+        color: #000000 !important;
+    }}
+    /* Also force p inside primary buttons to be dark */
+    .stButton > button[kind="primary"] p,
+    .stButton > button[data-testid="stBaseButton-primary"] p,
+    .stButton > button[data-testid*="primary"] p,
+    button[kind="primary"] p,
+    [data-testid="stBaseButton-primary"] p {{
+        color: #000000 !important;
+    }}
+
+    /* Header Nav Button Overrides - Prevent Text Truncation and Dots */
+    div[data-testid="stHorizontalBlock"] .stButton > button {{
+        padding: 0.35rem 0.3rem !important;
+        font-size: 0.76rem !important;
+        font-family: 'JetBrains Mono', monospace !important;
+        white-space: nowrap !important;
+        letter-spacing: -0.01em !important;
+    }}
+    div[data-testid="stHorizontalBlock"] .stButton > button p {{
+        font-size: 0.76rem !important;
+        white-space: nowrap !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
+        margin: 0 !important;
+    }}
+
+    /* Streamlit Metric Overrides */
+    [data-testid="stMetricValue"] {{
+        font-family: 'JetBrains Mono', monospace !important;
+        font-size: 1.75rem !important;
+        font-weight: 700 !important;
+        color: {t["text_high"]} !important;
+        font-variant-numeric: tabular-nums !important;
+    }}
+    [data-testid="stMetricLabel"] {{
+        font-family: 'JetBrains Mono', monospace !important;
+        font-size: 0.6875rem !important;
+        text-transform: uppercase !important;
+        color: {t["text_muted"]} !important;
+        letter-spacing: 0.04em !important;
+    }}
+
+    /* Input & Text Fields */
+    input, textarea, select, .stTextInput > div > div > input {{
+        background-color: {t["surface_lowest"]} !important;
+        border: 1px solid {t["border"]} !important;
+        color: {t["text_high"]} !important;
+        border-radius: 4px !important;
+        font-family: 'JetBrains Mono', monospace !important;
+        font-size: 0.8125rem !important;
+    }}
+    input:focus, .stTextInput > div > div > input:focus {{
+        border-color: {t["primary"]} !important;
+        box-shadow: none !important;
+    }}
+
+    /* Streamlit Tabs (Pill Tabs) */
+    .stTabs [data-baseweb="tab-list"] {{
+        gap: 0.35rem !important;
+        background: {t["surface_lowest"]} !important;
+        border: 1px solid {t["border"]} !important;
+        padding: 3px !important;
+        border-radius: 9999px !important;
+        margin-bottom: 1.25rem !important;
+    }}
+    .stTabs [data-baseweb="tab"] {{
+        border-radius: 9999px !important;
+        padding: 0.35rem 0.95rem !important;
+        color: {t["text_muted"]} !important;
+        font-family: 'Inter', sans-serif !important;
+        font-size: 0.75rem !important;
+        font-weight: 500 !important;
+        background: transparent !important;
+        border: none !important;
+    }}
+    .stTabs [aria-selected="true"] {{
+        background: {t["surface_high"]} !important;
+        color: {t["primary"]} !important;
+        border: 1px solid {t["border_subtle"]} !important;
+        font-weight: 600 !important;
+    }}
+
+    /* Tables */
+    table, [data-testid="stDataFrame"] {{
+        border-collapse: collapse !important;
+        width: 100% !important;
+        font-family: 'JetBrains Mono', monospace !important;
+        font-size: 0.8125rem !important;
+    }}
+    th {{
+        background: {t["overlay"]} !important;
+        color: {t["text_muted"]} !important;
+        font-size: 0.6875rem !important;
+        text-transform: uppercase !important;
+        padding: 0.5rem 0.75rem !important;
+        border-bottom: 1px solid {t["border"]} !important;
+        text-align: left !important;
+    }}
+    td {{
+        background: {t["surface_card"]} !important;
+        color: {t["text_secondary"]} !important;
+        padding: 0.5rem 0.75rem !important;
+        border-bottom: 1px solid {t["border"]} !important;
+    }}
+    tr:hover td {{
+        background: {t["overlay"]} !important;
+        color: {t["text_high"]} !important;
+    }}
+
+    /* Progress & Sliders */
+    .stProgress > div > div > div > div {{
+        background-color: {t["primary"]} !important;
+    }}
+    .stSlider [data-baseweb="slider"] {{
+        font-family: 'JetBrains Mono', monospace !important;
+    }}
+
+    /* Custom Terminal Log */
+    .soc-terminal {{
+        background-color: {t["surface_lowest"]};
+        border: 1px solid {t["border"]};
+        border-radius: 4px;
+        padding: 0.75rem 1rem;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.75rem;
+        line-height: 1.6;
+        color: {t["text_secondary"]};
+        max-height: 260px;
+        overflow-y: auto;
+    }}
+    .soc-terminal-time {{ color: {t["text_muted"]}; margin-right: 0.5rem; }}
+    .soc-terminal-info {{ color: {t["text_high"]}; font-weight: 600; margin-right: 0.5rem; }}
+    .soc-terminal-warn {{ color: {t["tertiary"]}; font-weight: 600; margin-right: 0.5rem; }}
+    .soc-terminal-error {{ color: {t["secondary"]}; font-weight: 600; margin-right: 0.5rem; }}
+
+    /* Caution Banner */
+    .soc-caution-banner {{
+        background: {t["tertiary_subtle"]};
+        border: 1px solid {t["tertiary"]};
+        border-radius: 4px;
+        padding: 0.65rem 1rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.75rem;
+    }}
+    .soc-caution-title {{
+        font-weight: 700;
+        color: {t["tertiary"]};
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }}
+
+    /* Section Headers */
+    .soc-section-header {{
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.25rem;
+    }}
+    .soc-section-title {{
+        font-family: 'Inter', sans-serif;
+        font-weight: 600;
+        font-size: 1.125rem;
+        color: {t["text_high"]};
+        letter-spacing: 0em;
+        text-transform: uppercase;
+    }}
+    .soc-subsystem-tag {{
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.6875rem;
+        color: {t["primary"]};
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }}
+    </style>
+    """
+
+def apply_custom_css(theme: Literal["dark", "light"] = "dark") -> None:
+    """Injects the custom CSS into the Streamlit session."""
+    import streamlit as st
+    st.markdown(get_custom_css(theme), unsafe_allow_html=True)
 
 
-def render_html(html_str: str):
-    """Safely renders HTML in Streamlit with zero code-block triggers."""
-    st.markdown(safe_html(html_str), unsafe_allow_html=True)
-
-
-def apply_custom_css():
-    """Inject the neutral high-contrast SOC CSS into Streamlit."""
-    st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
-
-
-def render_sidebar(data=None):
-    """Render clean executive sidebar header."""
-    with st.sidebar:
-        render_html("""
-        <div style="padding-bottom: 8px; border-bottom: 1px solid #222222; margin-bottom: 8px; padding-right: 36px;">
-            <div style="font-size: 1.25rem; font-weight: 800; letter-spacing: 0.02em; color: #ffffff;">
-                SHADOWCAT
-            </div>
-        </div>
-        <div style="margin-bottom: 8px;">
-            <span class="badge-offline">
-                <span class="status-dot"></span>
-                Air-Gapped System
-            </span>
-        </div>
-        """)
-
-
-def render_footer():
-    """Renders the persistent executive SHADOWCAT footer with single global disclaimer."""
-    render_html("""
-    <div style="margin-top: 36px; padding: 14px 18px; border-top: 1px solid #262626; display: flex; justify-content: space-between; align-items: center; font-size: 0.74rem; color: #5a5a5a; flex-wrap: wrap; gap: 8px;">
-        <div>
-            <b style="color: #8a8a8a;">SHADOWCAT v1.0</b> &nbsp;·&nbsp; Autonomous Cyber Threat Forecasting Engine &nbsp;·&nbsp; <span style="color: #666666; font-style: italic;">Illustrative analyst guidance — not a system recommendation.</span>
-        </div>
-        <div>
-            <span style="color: #8a8a8a; font-weight: 600;">● Active (Air-Gapped)</span>
-        </div>
-    </div>
-    """)
+def render_html(html_str: str) -> None:
+    """Safely renders HTML without markdown indentation block formatting.
+    Strips leading whitespace from every line so CommonMark never treats 4-space indented lines
+    as preformatted code blocks.
+    """
+    import streamlit as st
+    cleaned = "\n".join(line.strip() for line in html_str.strip().splitlines() if line.strip())
+    st.markdown(cleaned, unsafe_allow_html=True)
