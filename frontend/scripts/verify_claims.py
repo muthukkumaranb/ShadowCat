@@ -7,7 +7,7 @@ FAIL CONDITIONS:
 1. "5-Fold" or "38-fold" appearing anywhere in frontend code (must be authoritative 37-fold LOEO).
 2. "Action:" appearing in output cards (prescriptive language prohibited).
 3. Bare "Recommended:" appearing without the required "Illustrative analyst guidance" framing.
-4. Absence of "LOEO 37-Fold" in views/03_Validation.py or mock_data.py.
+4. Absence of "LOEO 37-Fold" in views/07_Validation_Trust.py or mock_data.py.
 """
 
 import os
@@ -83,7 +83,7 @@ def main():
                         all_violations.extend(verify_file(fpath))
 
     # Check that 37-fold LOEO is explicitly present in validation view
-    validation_view = os.path.join(WORKSPACE_ROOT, "views", "03_Validation.py")
+    validation_view = os.path.join(WORKSPACE_ROOT, "views", "07_Validation_Trust.py")
     if os.path.isfile(validation_view):
         with open(validation_view, "r", encoding="utf-8") as fp:
             content = fp.read()

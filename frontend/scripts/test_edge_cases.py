@@ -58,19 +58,21 @@ def test_forecast_view_edge_cases():
     print("\n--- 2. Testing Forecast View Rendering Under Edge Cases ---")
     
     # Test rendering default view
-    at = AppTest.from_file(str(ROOT / "views" / "01_Forecast.py"), default_timeout=30)
+    at = AppTest.from_file(str(ROOT / "views" / "03_Forecast.py"), default_timeout=30)
     at.run()
     assert not at.exception, f"Forecast view failed with exception: {at.exception}"
     print("[PASS] Forecast view renders with zero exceptions.")
 
     # Test with simulated session state edge cases
-    at2 = AppTest.from_file(str(ROOT / "views" / "01_Forecast.py"), default_timeout=30)
+    at2 = AppTest.from_file(str(ROOT / "views" / "03_Forecast.py"), default_timeout=30)
+    at2.session_state["forecast_k_step"] = 0
     at2.session_state["selected_horizon_idx"] = 0
     at2.run()
     assert not at2.exception, f"Horizon index 0 failed: {at2.exception}"
     print("[PASS] Horizon index 0 (immediate horizon) renders cleanly.")
 
-    at3 = AppTest.from_file(str(ROOT / "views" / "01_Forecast.py"), default_timeout=30)
+    at3 = AppTest.from_file(str(ROOT / "views" / "03_Forecast.py"), default_timeout=30)
+    at3.session_state["forecast_k_step"] = 3
     at3.session_state["selected_horizon_idx"] = 3
     at3.run()
     assert not at3.exception, f"Horizon index 3 (cutoff horizon t+4) failed: {at3.exception}"
@@ -78,11 +80,11 @@ def test_forecast_view_edge_cases():
 
 
 def test_evidence_view_edge_cases():
-    print("\n--- 3. Testing Evidence View Rendering Under Edge Cases ---")
-    at = AppTest.from_file(str(ROOT / "views" / "02_Evidence.py"), default_timeout=30)
+    print("\n--- 3. Testing Explainability / Evidence View Rendering Under Edge Cases ---")
+    at = AppTest.from_file(str(ROOT / "views" / "06_Explainability.py"), default_timeout=30)
     at.run()
-    assert not at.exception, f"Evidence view failed with exception: {at.exception}"
-    print("[PASS] Evidence view renders with zero exceptions.")
+    assert not at.exception, f"Explainability view failed with exception: {at.exception}"
+    print("[PASS] Explainability view renders with zero exceptions.")
 
 
 def main():

@@ -99,6 +99,34 @@ TOKENS = {
 }
 
 # =============================================================================
+# BACKWARD COMPATIBILITY PALETTE (For components importing COLORS)
+# =============================================================================
+COLORS = {
+    "bg": TOKENS["dark"]["void"],
+    "surface": TOKENS["dark"]["surface_card"],
+    "surface_hover": TOKENS["dark"]["surface_container"],
+    "border": TOKENS["dark"]["border"],
+    "border_hover": TOKENS["dark"]["border_subtle"],
+    "text_primary": TOKENS["dark"]["text_high"],
+    "text_secondary": TOKENS["dark"]["text_secondary"],
+    "text_muted": TOKENS["dark"]["text_muted"],
+    "accent": "#ffffff",
+    "accent_dim": "rgba(255, 255, 255, 0.08)",
+    "danger": TOKENS["dark"]["secondary"],
+    "danger_dim": TOKENS["dark"]["secondary_subtle"],
+    "warning": TOKENS["dark"]["tertiary"],
+    "warning_dim": TOKENS["dark"]["tertiary_subtle"],
+    "success": TOKENS["dark"]["primary"],
+    "success_dim": TOKENS["dark"]["primary_subtle"],
+    "safe": TOKENS["dark"]["primary"],
+    "caution": TOKENS["dark"]["tertiary"],
+    "critical": TOKENS["dark"]["secondary"],
+    "primary": TOKENS["dark"]["primary"],
+    "secondary": TOKENS["dark"]["secondary"],
+    "neutral": TOKENS["dark"]["text_secondary"],
+}
+
+# =============================================================================
 # 2. BRAND EMBLEM SVG ASSET (From shadowcat_soc_emblem)
 # =============================================================================
 

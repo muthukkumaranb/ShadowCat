@@ -276,7 +276,7 @@ def get_forecast_trajectory(window_id: str = None) -> dict:
     """
     Returns multi-step forward trajectory simulation across K=1..4 horizons,
     including risk probabilities, stage mapping, calibrated uncertainty, and protocol metadata.
-    Consumed by: views/01_Forecast.py, components/forecast.py
+    Consumed by: views/03_Forecast.py, components/forecast.py
     """
     pred = _get_live_prediction()
     fc = pred.get("forecast_trajectory", {})
@@ -299,7 +299,7 @@ def get_comparison_table() -> list[dict]:
     """
     Returns mandated PS benchmark results comparing the World Model against
     the Logistic Regression baseline, Lagged baseline, and Signature IDS.
-    Consumed by: views/03_Validation.py
+    Consumed by: views/07_Validation_Trust.py
     """
     json_path = PROJECT_ROOT / "models" / "baseline_benchmarks.json"
     if json_path.exists():
@@ -534,7 +534,7 @@ def get_host_risk_graph(episode_id: str = None, k_step: int = 2) -> dict:
 def get_attributions(window_id: str = None) -> list[dict]:
     """
     Returns deletion-tested feature attribution rankings and percentage weights.
-    Consumed by: views/02_Evidence.py, components/explanation.py
+    Consumed by: views/06_Explainability.py, components/explanation.py
     """
     pred = _get_live_prediction()
     items = pred.get("attributions", [])
@@ -547,7 +547,7 @@ def get_novelty_score(window_id: str = None) -> dict:
     """
     Returns current observed network state S(t) telemetry, novelty score,
     behavioral envelope classification, and sparkline metrics.
-    Consumed by: views/01_Forecast.py, views/02_Evidence.py, components/state.py
+    Consumed by: views/03_Forecast.py, views/06_Explainability.py, components/state.py
     """
     pred = _get_live_prediction()
     nv = pred.get("novelty_score", {})
@@ -558,7 +558,7 @@ def get_novelty_score(window_id: str = None) -> dict:
 def get_flagged_flows(window_id: str = None, limit: int = None) -> list[dict]:
     """
     Returns flagged suspicious network flows driving the forecast.
-    Consumed by: views/02_Evidence.py, components/evidence.py
+    Consumed by: views/06_Explainability.py, components/evidence.py
     """
     pred = _get_live_prediction()
     flows = pred.get("flagged_flows", [])
@@ -573,7 +573,7 @@ def get_validation_data() -> dict:
     """
     Returns authoritative validation benchmarks, LOEO 37-fold cross-validation metrics,
     horizon stability data, and leakage audit checklist.
-    Consumed by: views/03_Validation.py
+    Consumed by: views/07_Validation_Trust.py
     """
     json_path = PROJECT_ROOT / "models" / "loeo_37fold_results.json"
     if json_path.exists():
@@ -615,7 +615,7 @@ def get_validation_data() -> dict:
 def get_mitre_data() -> list[dict]:
     """
     Returns MITRE ATT&CK progression stages and IDs.
-    Consumed by: views/01_Forecast.py, components/explanation.py
+    Consumed by: views/03_Forecast.py, components/explanation.py
     """
     json_path = PROJECT_ROOT / "models" / "mitre_mapper.json"
     if json_path.exists():
@@ -637,7 +637,7 @@ def get_mitre_data() -> list[dict]:
 def get_audit_chain_status() -> dict:
     """
     Returns the status and entries of the blockchain-inspired tamper-evident audit chain.
-    Consumed by: views/03_Validation.py
+    Consumed by: views/07_Validation_Trust.py
     """
     chain_file = REPO_ROOT / "backend" / "audit_chain.json"
     if chain_file.exists():

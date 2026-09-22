@@ -339,7 +339,6 @@ def render_page():
 
     if st.button("EXECUTE CORE ML INFERENCE AND PREDICT", type="primary", use_container_width=True, help="Trigger live feature extraction and autoregressive world model inference"):
         with st.spinner("Executing UCSExtractor (406-dim continuous tensor) & LSTM Gaussian World Model..."):
-            from data_provider import run_core_ml_inference
             pred_result = run_core_ml_inference(active_df, source_type="csv")
             st.session_state["ml_prediction_result"] = pred_result
             st.session_state["ml_prediction_timestamp"] = time.strftime("%H:%M:%S UTC")

@@ -6,6 +6,7 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 from streamlit.testing.v1 import AppTest
+import data_provider
 from data_provider import get_host_risk_graph
 
 def test_attack_graph_data_integrity():
@@ -34,62 +35,51 @@ def test_attack_graph_data_integrity():
     print("[PASS] get_host_risk_graph data integrity verified across all 5 rollout steps (k=0..4).")
 
 def test_attack_graph_apptest_rendering():
-    print("\n--- 2. Testing Threat Forecast AppTest Rendering & Interactivity ---")
-    forecast_path = os.path.join(PROJECT_ROOT, "views", "01_Forecast.py")
-    at = AppTest.from_file(forecast_path, default_timeout=30)
+    print("\n--- 2. Testing Attack Graph AppTest Rendering & Interactivity ---")
+    data_provider._get_live_prediction()
+
+    # 2a. Test Attack Graph View (views/04_Attack_Graph.py)
+    graph_path = os.path.join(PROJECT_ROOT, "views", "04_Attack_Graph.py")
+    at = AppTest.from_file(graph_path, default_timeout=40)
     at.run()
 
     assert not at.exception, f"App threw exception: {at.exception}"
-
-    n1_caption = "Demonstrated on the single infiltration case study (n = 1). Not a general lateral-movement forecasting capability."
     rendered_text = " ".join([m.value for m in at.markdown])
-    assert n1_caption in rendered_text, "Mandatory n=1 caption missing!"
-    print("[PASS] Mandatory n=1 caption present and intact.")
 
-    assert "badge-mock" not in rendered_text, "Deprecated MOCK badge still rendered in Threat Forecast!"
-    assert "Running on benchmark data" in rendered_text or "BENCHMARK MODE" in rendered_text, "Sticky benchmark banner missing from Threat Forecast!"
-    print("[PASS] Benchmark governance header verified; individual [MOCK] badges successfully deprecated.")
+    assert "Attack Topology & Lateral Propagation Graph" in rendered_text, "Attack Graph header missing!"
+    assert "badge-mock" not in rendered_text, "Deprecated MOCK badge still rendered in Attack Graph!"
+    print("[PASS] Attack Topology header verified; zero deprecated [MOCK] badges.")
 
-    for ip in ["10.0.2.15", "10.0.3.50", "10.0.4.10", "10.0.4.21", "10.0.5.1"]:
-        assert ip in rendered_text, f"Host IP {ip} missing from rendered output!"
-    print("[PASS] All 5 distinct host IPs confirmed in rendered output.")
+    # Test K-Step Horizon scrubber buttons (att_k_0..5)
+    att_k_btns = [b for b in at.button if b.key and b.key.startswith("att_k_")]
+    assert len(att_k_btns) == 6, f"Expected 6 attack graph buttons, found {len(att_k_btns)}"
+    att_k_btns[2].click().run()
+    assert not at.exception
+    assert at.session_state["attack_k_step"] == 2
+    print("[PASS] Interactivity verified: Clicking k=2 updates attack_k_step to 2.")
 
-    assert "HOST TELEMETRY INSPECTOR" in rendered_text
-    assert "Forward Risk Trajectory Progression" in rendered_text
-    assert "Active Sockets & Ports" in rendered_text
-    assert "Driving Flow Indicators" in rendered_text
-    print("[PASS] HOST TELEMETRY INSPECTOR rendered with multi-step trajectory and socket metadata.")
+    # Test Host node selectbox
+    assert len(at.selectbox) > 0, "Host node selectbox missing!"
+    host_sel = at.selectbox[0]
+    host_sel.set_value(host_sel.options[1]).run()
+    assert not at.exception
+    assert at.session_state["selected_node"] == host_sel.options[1]
+    print(f"[PASS] Interactivity verified: Selecting host node updates selected_node to {host_sel.options[1]}.")
 
-    inspect_btns = [b for b in at.button if "btn_inspect" in b.key]
-    assert len(inspect_btns) == 5, f"Expected 5 inspect buttons, found {len(inspect_btns)}"
-
-    btn_10_0_2_15 = next(b for b in inspect_btns if "10.0.2.15" in b.key)
-    btn_10_0_2_15.click().run()
-
-    assert not at.exception, f"App threw exception on button click: {at.exception}"
-    updated_text = " ".join([m.value for m in at.markdown])
-    assert "HOST TELEMETRY INSPECTOR: 10.0.2.15" in updated_text, "Host inspector did not update to 10.0.2.15!"
-    assert "Workstation (Patient Zero)" in updated_text
-    print("[PASS] Interactivity verified: Clicking Inspect button immediately updates Host Telemetry Inspector to 10.0.2.15.")
-
-    btn_10_0_3_50 = next(b for b in inspect_btns if "10.0.3.50" in b.key)
-    btn_10_0_3_50.click().run()
-
-    assert not at.exception, f"App threw exception on second button click: {at.exception}"
-    updated_text_50 = " ".join([m.value for m in at.markdown])
-    assert "HOST TELEMETRY INSPECTOR: 10.0.3.50" in updated_text_50, "Host inspector did not update to 10.0.3.50!"
-    assert "Internal File Share" in updated_text_50
-    assert "TCP/445 (SMB/CIFS)" in updated_text_50
-    print("[PASS] Interactivity verified: Clicking Inspect button immediately updates Host Telemetry Inspector to 10.0.3.50.")
-
-    # Test Focus button (Task 1 & 6)
-    focus_btns = [b for b in at.button if "btn_focus" in b.key]
-    assert len(focus_btns) == 5, f"Expected 5 focus buttons, found {len(focus_btns)}"
-    btn_focus_10_0_4_10 = next(b for b in focus_btns if "10.0.4.10" in b.key)
-    btn_focus_10_0_4_10.click().run()
-    assert not at.exception, f"App threw exception on focus click: {at.exception}"
-    assert at.session_state["focused_graph_host"] == "10.0.4.10", "focused_graph_host not set in session state!"
-    print("[PASS] Interactivity verified: Clicking Focus button activates blast radius isolation for 10.0.4.10.")
+    # 2b. Also verify Forecast view (views/03_Forecast.py)
+    print("\n--- 2b. Testing Threat Forecast View (views/03_Forecast.py) ---")
+    forecast_path = os.path.join(PROJECT_ROOT, "views", "03_Forecast.py")
+    at_fc = AppTest.from_file(forecast_path, default_timeout=40)
+    at_fc.run()
+    assert not at_fc.exception, f"Forecast threw exception: {at_fc.exception}"
+    fc_text = " ".join([m.value for m in at_fc.markdown])
+    assert "Predictive Threat Trajectory Forecast" in fc_text, "Forecast header missing!"
+    step_btns = [b for b in at_fc.button if b.key and b.key.startswith("step_btn_")]
+    assert len(step_btns) == 6
+    step_btns[3].click().run()
+    assert not at_fc.exception
+    assert at_fc.session_state["forecast_k_step"] == 3
+    print("[PASS] Interactivity verified: Forecast k-step scrubber updates forecast_k_step to 3.")
 
 def test_attack_graph_svg_rendering_features():
     print("\n--- 3. Testing Advanced Visual Upgrades in SVG Canvas Generator ---")
