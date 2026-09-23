@@ -182,9 +182,22 @@ class UCSExtractor:
 
         df = raw_input.copy()
 
-        # Step 1: Mapping to canonical schema
+        # Step 1: Validation and Mapping to canonical schema
         if source_type == "csv":
-            df, _ = map_to_canonical_schema(df, mapping_config=self.canonical_mapping)
+            # [DEFENSIVE INPUT-VALIDATION LAYER]
+            from src.csv_validator import CICFlowMeterValidator, ValidationStatus
+            validator = CICFlowMeterValidator()
+            val_result = validator.validate(df)
+            
+            if val_result.status == ValidationStatus.REJECTED:
+                missing_str = ", ".join(val_result.missing_required_columns)
+                err_msg = f"Expected {len(validator.expected_raw_columns)} columns matching UCS schema, got {len(df.columns)}; missing critical fields: [{missing_str}]"
+                if val_result.errors:
+                    err_msg += f". Details: {val_result.errors}"
+                raise SchemaValidationError(err_msg)
+            
+            # Map the validated DataFrame to canonical schema
+            df, _ = map_to_canonical_schema(val_result.mapped_df, mapping_config=self.canonical_mapping)
 
         # Step 2: Cleaning & timestamp normalization
         if source_type in ("csv", "pcap"):

@@ -239,7 +239,12 @@ def run_core_ml_inference(input_df: pd.DataFrame, source_type: str = "csv") -> D
     except Exception as e:
         import traceback
         tb = traceback.format_exc()
-        # Still fall back to cached prediction, but attach error info so UI can show it
+        
+        # [DEFENSIVE UI BEHAVIOR] If it's a schema validation error, do NOT fallback to confident cached data.
+        if "SchemaValidationError" in str(type(e)):
+            return {"_inference_error": str(e), "_inference_traceback": tb, "_critical_schema_failure": True}
+        
+        # Still fall back to cached prediction for other runtime errors, but attach error info so UI can show it
         fallback = _get_live_prediction()
         fallback["_inference_error"] = str(e)
         fallback["_inference_traceback"] = tb

@@ -358,9 +358,15 @@ def render_page():
 
         # Show inference error if the ML model failed
         if "_inference_error" in p_res:
-            st.warning(f"ML Inference Error — showing fallback cached prediction: {p_res['_inference_error']}")
-            with st.expander("View Full Error Traceback", expanded=False):
-                st.code(p_res.get("_inference_traceback", "No traceback"), language="python")
+            if p_res.get("_critical_schema_failure"):
+                st.error(f"🛑 INGESTION BLOCKED: SCHEMA MISMATCH\n\n{p_res['_inference_error']}")
+                with st.expander("View Full Error Traceback", expanded=False):
+                    st.code(p_res.get("_inference_traceback", "No traceback"), language="python")
+                st.stop()
+            else:
+                st.warning(f"ML Inference Error — showing fallback cached prediction: {p_res['_inference_error']}")
+                with st.expander("View Full Error Traceback", expanded=False):
+                    st.code(p_res.get("_inference_traceback", "No traceback"), language="python")
         fc_res = p_res.get("forecast_trajectory", {})
         nov_res = p_res.get("novelty_score", {})
         ts_str = st.session_state.get("ml_prediction_timestamp", "Recent")
