@@ -104,10 +104,12 @@ def main():
                 for _, r in h_sub.iterrows():
                     print(f"{r['subset']:<24} | {r['f1_v3']:<7.4f} -> {r['f1_v4']:<7.4f} | {r['roc_auc_v3']:<7.4f} -> {r['roc_auc_v4']:<7.4f} | {r['pr_auc_v3']:<7.4f} -> {r['pr_auc_v4']:<7.4f}")
     else:
-        target_dir = Path(args.dir) if args.dir else repo_root / "ml1" / "artifacts" / "lstm" / "hazard_head_v4"
-        if not target_dir.exists():
-            target_dir = repo_root / "ml1" / "artifacts" / "lstm" / "hazard_head_v3"
-        evaluate_hazard_dir(target_dir, tag=args.tag)
+        v5_default = repo_root / "ml1" / "artifacts" / "lstm" / "hazard_head_v5"
+        v4_default = repo_root / "ml1" / "artifacts" / "lstm" / "hazard_head_v4"
+        v3_default = repo_root / "ml1" / "artifacts" / "lstm" / "hazard_head_v3"
+        target_dir = Path(args.dir) if args.dir else (v5_default if v5_default.exists() else (v4_default if v4_default.exists() else v3_default))
+        tag = args.tag or target_dir.name.split("_")[-1]
+        evaluate_hazard_dir(target_dir, tag=tag)
 
 if __name__ == "__main__":
     main()

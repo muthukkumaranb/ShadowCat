@@ -300,6 +300,9 @@ class ShadowcatPipeline:
                         pass
 
         self.hazard_heads_loaded = any(len(models) > 0 for models in self.hazard_models.values())
+        self.hazard_head_dir = hz_dir
+        import logging
+        logging.info(f"Loaded hazard head ensemble from {hz_dir} (loaded {sum(len(m) for m in self.hazard_models.values())} fold models)")
 
         # 5. Load Fitted 32-dim PCA for Hazard Models
         self.pca = None
