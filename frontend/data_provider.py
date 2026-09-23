@@ -614,21 +614,49 @@ def get_validation_data() -> dict:
 
 def get_mitre_data() -> list[dict]:
     """
-    Returns MITRE ATT&CK progression stages and IDs.
-    Consumed by: views/03_Forecast.py, components/explanation.py
+    Returns MITRE ATT&CK progression stages and IDs grounded against the real STIX 2.1 corpus.
+    Consumed by: views/02_Overview.py, views/03_Forecast.py, components/explanation.py
     """
     json_path = PROJECT_ROOT / "models" / "mitre_mapper.json"
     if json_path.exists():
         with open(json_path, "r", encoding="utf-8") as f:
             stages = json.load(f)
     else:
-        stages = [
-            {"stage": "Reconnaissance", "id": "TA0043", "tactic_id": "TA0043", "description": "Port scanning and service enumeration (ports 22, 80, 443)", "confidence": 0.89, "status": "Historical"},
-            {"stage": "Initial Access", "id": "TA0001", "tactic_id": "TA0001", "description": "Boundary authentication probing and credential spray against DMZ jump host", "confidence": 0.78, "status": "Active (Current)"},
-            {"stage": "Credential Access", "id": "TA0006", "tactic_id": "TA0006", "description": "SSH credential brute-force and Kerberos ticket request anomaly", "confidence": 0.67, "status": "Forecast (t+1)"},
-            {"stage": "Lateral Movement", "id": "TA0008", "tactic_id": "TA0008", "description": "Anticipated internal jump host session pivot to Auth Cluster (10.0.4.21)", "confidence": 0.54, "status": "Forecast (t+2)"},
-            {"stage": "Impact", "id": "TA0040", "tactic_id": "TA0040", "description": "Domain controller replication traffic / service compromise risk", "confidence": 0.38, "status": "Forecast (t+4)"},
-        ]
+        try:
+            from backend.mitre_kb import get_mitre_kb
+            kb = get_mitre_kb()
+            stages = []
+            for name, conf, status in [
+                ("Reconnaissance", 0.89, "Historical"),
+                ("Initial Access", 0.78, "Active (Current)"),
+                ("Credential Access", 0.67, "Forecast (t+1)"),
+                ("Lateral Movement", 0.54, "Forecast (t+2)"),
+                ("Impact", 0.38, "Forecast (t+4)"),
+            ]:
+                res = kb.resolve_stage(name)
+                stages.append({
+                    "stage": name,
+                    "id": res["technique_id"],
+                    "tactic_id": res["tactic_id"],
+                    "tactic_name": res["tactic_name"],
+                    "tactic_url": res["url"],
+                    "technique_id": res["technique_id"],
+                    "technique_name": res["technique_name"],
+                    "technique_full_name": res["technique_full_name"],
+                    "technique_url": res["technique_url"],
+                    "description": res["technique_description"],
+                    "confidence": conf,
+                    "status": status,
+                    "is_mock": False,
+                })
+        except Exception:
+            stages = [
+                {"stage": "Reconnaissance", "id": "T1046", "tactic_id": "TA0043", "technique_id": "T1046", "technique_name": "Network Service Discovery", "technique_full_name": "Network Service Discovery", "technique_url": "https://attack.mitre.org/techniques/T1046", "description": "Port scanning and service enumeration (ports 22, 80, 443)", "confidence": 0.89, "status": "Historical"},
+                {"stage": "Initial Access", "id": "T1190", "tactic_id": "TA0001", "technique_id": "T1190", "technique_name": "Exploit Public-Facing Application", "technique_full_name": "Exploit Public-Facing Application", "technique_url": "https://attack.mitre.org/techniques/T1190", "description": "Boundary authentication probing and credential spray against DMZ jump host", "confidence": 0.78, "status": "Active (Current)"},
+                {"stage": "Credential Access", "id": "T1110.001", "tactic_id": "TA0006", "technique_id": "T1110.001", "technique_name": "Password Guessing", "technique_full_name": "Brute Force: Password Guessing", "technique_url": "https://attack.mitre.org/techniques/T1110/001", "description": "SSH credential brute-force and Kerberos ticket request anomaly", "confidence": 0.67, "status": "Forecast (t+1)"},
+                {"stage": "Lateral Movement", "id": "T1021.002", "tactic_id": "TA0008", "technique_id": "T1021.002", "technique_name": "SMB/Windows Admin Shares", "technique_full_name": "Remote Services: SMB/Windows Admin Shares", "technique_url": "https://attack.mitre.org/techniques/T1021/002", "description": "Anticipated internal jump host session pivot to Auth Cluster (10.0.4.21)", "confidence": 0.54, "status": "Forecast (t+2)"},
+                {"stage": "Impact", "id": "T1498.001", "tactic_id": "TA0040", "technique_id": "T1498.001", "technique_name": "Direct Network Flood", "technique_full_name": "Network Denial of Service: Direct Network Flood", "technique_url": "https://attack.mitre.org/techniques/T1498/001", "description": "Domain controller replication traffic / service compromise risk", "confidence": 0.38, "status": "Forecast (t+4)"},
+            ]
     for s in stages:
         s["is_mock"] = is_using_mock_data("mitre_data")
     return stages

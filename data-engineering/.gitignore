@@ -18,6 +18,7 @@ data/intermediate/
 # Generated experiment outputs
 *.txt
 *.json
+!data/mitre/*.json
 
 # Scratch / diagnostic scripts
 scratch/

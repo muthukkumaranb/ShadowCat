@@ -57,6 +57,43 @@ def run_smoke_test():
     for f in output["flagged_flows"][:3]:
         print(f"    - {f['id']}: {f['source']}:{f['sport']} -> {f['destination']}:{f['dport']} ({f['protocol']}) | {f['reason']}")
 
+    print("\n[6] MITRE ATT&CK Knowledge Base Verification:")
+    from backend.mitre_kb import get_mitre_kb
+    kb = get_mitre_kb()
+    meta = kb.get_corpus_metadata()
+    print(f"    - Corpus Name: {meta.get('name')}")
+    print(f"    - Version: {meta.get('version')} (Modified: {meta.get('modified')})")
+    print(f"    - Total STIX Tactics: {len(kb.tactics_by_id)}")
+    print(f"    - Total STIX Techniques: {len(kb.techniques_by_id)} (Active: {meta.get('active_techniques')})")
+
+    # Assertions on real counts
+    assert len(kb.tactics_by_id) == 15, f"Expected 15 tactics, got {len(kb.tactics_by_id)}"
+    assert len(kb.techniques_by_id) >= 600, f"Expected >=600 techniques, got {len(kb.techniques_by_id)}"
+    assert meta.get("active_techniques", 0) >= 500, f"Expected >=500 active techniques, got {meta.get('active_techniques')}"
+
+    # Verify 6 attack_tactics_mapping.yaml technique IDs
+    target_yaml_ids = ["T1110.001", "T1498.001", "T1071.001", "T1190", "T1189", "T1046"]
+    for tid in target_yaml_ids:
+        t_info = kb.get_technique(tid)
+        assert t_info is not None, f"Technique {tid} not found in real STIX corpus!"
+        assert t_info["url"].startswith("https://attack.mitre.org/"), f"Technique {tid} has invalid URL: {t_info['url']}"
+        print(f"    - Verified {tid}: {t_info['full_name']} -> {t_info['url']}")
+
+    # Verify predict() output contains real MITRE metadata
+    assert "mitre_details" in fc, "Forecast trajectory missing 'mitre_details'!"
+    assert len(fc["mitre_details"]) == 4, f"Expected 4 mitre_details entries, got {len(fc['mitre_details'])}"
+    for idx, md in enumerate(fc["mitre_details"]):
+        assert md["tactic_id"].startswith("TA"), f"Step {idx} invalid tactic_id: {md['tactic_id']}"
+        assert md["technique_id"].startswith("T"), f"Step {idx} invalid technique_id: {md['technique_id']}"
+        assert len(md["technique_description"]) > 20, f"Step {idx} empty technique description!"
+        assert "is_heuristic_progression" in md, f"Step {idx} missing heuristic flag!"
+        assert "attribution_source" in md, f"Step {idx} missing attribution source!"
+    print(f"    - Trajectory MITRE Tactics: {fc.get('tactic_id')}")
+    print(f"    - Trajectory Techniques: {fc.get('technique_id')}")
+    print(f"    - Heuristic Progression Flags: {fc.get('is_heuristic_progression')}")
+    print(f"    - Stage Attribution Sources: {fc.get('stage_attribution_source')}")
+    print("    [PASS] MITRE ATT&CK Knowledge Base offline query layer verified.")
+
     print("\n" + "=" * 60)
     print("SMOKE TEST COMPLETED SUCCESSFULLY WITH ZERO DEFECTS")
     print("=" * 60)

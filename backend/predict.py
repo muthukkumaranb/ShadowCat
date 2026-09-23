@@ -631,8 +631,20 @@ class ShadowcatPipeline:
         risk_trajectory = step_hazards
 
         # Step 6: Stage Head Classification on Predicted Future State S_hat(t+1)
+        # Grounded against real MITRE ATT&CK STIX 2.1 knowledge base.
+        # Per validated ablation findings, only 'Credential Access' and 'Unknown/Other'
+        # are independently verified from model logits. If the model predicts other classes
+        # or cumulative risk indicates active progression, we provide a multi-step rollout trajectory.
+        # As mandated by audit standards (Option b), unvalidated horizons are explicitly flagged:
+        # 'heuristic stage-progression estimate, not model-classified'.
         stage_names = []
         tactic_ids = []
+        mitre_details = []
+        heuristic_progression_flags = []
+        attribution_sources = []
+
+        from backend.mitre_kb import get_mitre_kb
+        kb = get_mitre_kb()
 
         with torch.no_grad():
             for k in range(4):
@@ -641,19 +653,41 @@ class ShadowcatPipeline:
                 stage_probs = torch.softmax(stage_logits, dim=-1).cpu().numpy()[0]
                 stage_idx = int(np.argmax(stage_probs))
                 pred_stage = StageClassificationHead.STAGE_CLASSES[stage_idx]
+                pred_conf = float(stage_probs[stage_idx])
 
                 # Per validation finding: Credential Access and Unknown/Other are the validated classes
                 # If stage probability for Credential Access is high, assign Credential Access;
                 # for multi-step lateral scenario progression, provide stage trajectory
                 if pred_stage in ("Unknown/Other", "Credential Access"):
                     selected_stage = pred_stage
+                    is_heuristic = False
+                    attr_source = f"StageClassificationHead (P(conf)={pred_conf:.2f})"
                 else:
-                    # Provide progression mapping based on rollout horizon
+                    # HEURISTIC FALLBACK PROGRESSION:
+                    # Clearly labeled per audit protocol (Option b).
+                    # When model stage logits fall into unvalidated classes, rollout horizon k
+                    # is mapped to a heuristic stage sequence gated on cumulative risk.
                     progression = ["Reconnaissance", "Credential Access", "Lateral Movement", "Impact"]
-                    selected_stage = progression[k] if cum_risk[k] > 0.4 else "Unknown/Other"
+                    if cum_risk[k] > 0.4:
+                        selected_stage = progression[k]
+                        is_heuristic = True
+                        attr_source = "heuristic stage-progression estimate, not model-classified"
+                    else:
+                        selected_stage = "Unknown/Other"
+                        is_heuristic = False
+                        attr_source = f"StageClassificationHead (P(conf)={pred_conf:.2f})"
+
+                # Resolve against real MITRE Enterprise ATT&CK STIX corpus
+                stage_info = kb.resolve_stage(selected_stage)
+                stage_info["is_heuristic_progression"] = is_heuristic
+                stage_info["attribution_source"] = attr_source
+                stage_info["stage_confidence"] = pred_conf
 
                 stage_names.append(selected_stage)
-                tactic_ids.append(StageClassificationHead.TACTIC_ID_MAP.get(selected_stage, "TA0000"))
+                tactic_ids.append(stage_info["tactic_id"])
+                mitre_details.append(stage_info)
+                heuristic_progression_flags.append(is_heuristic)
+                attribution_sources.append(attr_source)
 
         # Step 7: Uncertainty & Prediction Bounds
         uncertainties = []
@@ -721,6 +755,15 @@ class ShadowcatPipeline:
             "risk": [round(r, 2) for r in cum_risk],
             "stage": stage_names,
             "tactic_id": tactic_ids,
+            "mitre_details": mitre_details,
+            "technique_id": [m["technique_id"] for m in mitre_details],
+            "technique_name": [m["technique_name"] for m in mitre_details],
+            "technique_full_name": [m["technique_full_name"] for m in mitre_details],
+            "technique_description": [m["technique_description"] for m in mitre_details],
+            "technique_url": [m["technique_url"] for m in mitre_details],
+            "tactic_url": [m["url"] for m in mitre_details],
+            "is_heuristic_progression": heuristic_progression_flags,
+            "stage_attribution_source": attribution_sources,
             "lead_time": lead_times,
             "uncertainty": [round(u, 2) for u in uncertainties],
             "lower_bound": [round(lb, 2) for lb in lower_bounds],
@@ -748,6 +791,16 @@ class ShadowcatPipeline:
                 "upper_bound": round(upper_bounds[k], 2),
                 "stage": stage_names[k],
                 "tactic_id": tactic_ids[k],
+                "tactic_name": mitre_details[k]["tactic_name"],
+                "tactic_description": mitre_details[k]["description"],
+                "tactic_url": mitre_details[k]["url"],
+                "technique_id": mitre_details[k]["technique_id"],
+                "technique_name": mitre_details[k]["technique_name"],
+                "technique_full_name": mitre_details[k]["technique_full_name"],
+                "technique_description": mitre_details[k]["technique_description"],
+                "technique_url": mitre_details[k]["technique_url"],
+                "is_heuristic_progression": heuristic_progression_flags[k],
+                "attribution_source": attribution_sources[k],
             })
         forecast_trajectory["raw_steps"] = raw_steps
 

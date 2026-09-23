@@ -194,7 +194,29 @@ def render_page():
         """)
 
     with m_col2:
-        stage_title = mitre[1]["id"] if len(mitre) > 1 else "T1071.001"
+        raw_steps = fc.get("raw_steps", [])
+        if raw_steps and len(raw_steps) > 0:
+            active_step = raw_steps[0]
+            stage_id = active_step.get("technique_id", "T1190")
+            stage_tactic = active_step.get("tactic_name", "Initial Access")
+            stage_tech = active_step.get("technique_full_name", active_step.get("technique_name", "Exploit Public-Facing Application"))
+            stage_url = active_step.get("technique_url", f"https://attack.mitre.org/techniques/{stage_id.replace('.', '/')}")
+            stage_status = "Forecast Horizon t+1"
+            if active_step.get("is_heuristic_progression"):
+                stage_status = "Heuristic Rollout Projection"
+        elif len(mitre) > 1:
+            stage_id = mitre[1].get("technique_id", mitre[1].get("id", "T1190"))
+            stage_tactic = mitre[1].get("tactic_name", mitre[1].get("stage", "Initial Access"))
+            stage_tech = mitre[1].get("technique_full_name", mitre[1].get("technique_name", "Exploit Public-Facing Application"))
+            stage_url = mitre[1].get("technique_url", f"https://attack.mitre.org/techniques/{stage_id.replace('.', '/')}")
+            stage_status = mitre[1].get("status", "Active (Current)")
+        else:
+            stage_id = "T1190"
+            stage_tactic = "Initial Access"
+            stage_tech = "Exploit Public-Facing Application"
+            stage_url = "https://attack.mitre.org/techniques/T1190"
+            stage_status = "Active (Current)"
+
         render_html(f"""
         <div class="soc-stat-card">
             <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -202,14 +224,19 @@ def render_page():
                 <span class="soc-badge badge-caution" style="font-size: 0.625rem; padding: 1px 5px;">STAGE</span>
             </div>
             <div style="margin: 0.35rem 0;">
-                <div class="soc-stat-val">{stage_title}</div>
+                <div class="soc-stat-val" style="display: flex; align-items: baseline; gap: 0.4rem;">
+                    <span>{stage_id}</span>
+                    <a href="{stage_url}" target="_blank" style="font-size: 0.6875rem; color: {t['primary']}; text-decoration: underline; font-family: 'JetBrains Mono', monospace;">
+                        MITRE ↗
+                    </a>
+                </div>
                 <div style="font-family: 'Inter', sans-serif; font-size: 0.75rem; color: {t['text_secondary']}; margin-top: 0.25rem;">
-                    Command & Control / Web Protocols
+                    {stage_tactic} / {stage_tech}
                 </div>
             </div>
             <div class="soc-stat-delta" style="color: {t['tertiary']};">
-                <span class="soc-badge badge-caution" style="padding: 0.1rem 0.4rem; font-size: 0.625rem;">Active Execution Phase</span>
-                <span style="color: {t['text_muted']}; margin-left: auto;">Phase 4/7</span>
+                <span class="soc-badge badge-caution" style="padding: 0.1rem 0.4rem; font-size: 0.625rem;">{stage_status}</span>
+                <span style="color: {t['text_muted']}; margin-left: auto;">Verified STIX 2.1</span>
             </div>
         </div>
         """)

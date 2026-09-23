@@ -62,14 +62,21 @@ def create_attribution_chart(explanation_data):
 def render_attack_stepper(mitre_data, current_step_idx=2):
     """
     Renders an executive horizontal MITRE ATT&CK killchain pipeline as a single continuous track.
-    Compact by default with click-to-expand details per Task 10.
+    Compact by default with click-to-expand details and official MITRE ATT&CK reference links.
     """
     segments_html = []
     for i, item in enumerate(mitre_data):
-        item_id = item.get("id", item.get("tactic_id", f"TA000{i+1}")) if isinstance(item, dict) else getattr(item, "id", f"TA000{i+1}")
+        item_id = item.get("technique_id", item.get("id", item.get("tactic_id", f"TA000{i+1}"))) if isinstance(item, dict) else getattr(item, "id", f"TA000{i+1}")
         item_stage = item.get("stage", "Unknown Stage") if isinstance(item, dict) else getattr(item, "stage", "Unknown Stage")
+        item_tech_name = item.get("technique_full_name", item.get("technique_name", "")) if isinstance(item, dict) else ""
+        item_url = item.get("technique_url", item.get("tactic_url", f"https://attack.mitre.org/techniques/{item_id.replace('.', '/')}")) if isinstance(item, dict) else f"https://attack.mitre.org/techniques/{item_id.replace('.', '/')}"
         item_desc = item.get("description", "No detailed description available.") if isinstance(item, dict) else getattr(item, "description", "No detailed description available.")
+        is_heuristic = item.get("is_heuristic_progression", False) if isinstance(item, dict) else False
         border_right = "border-right: 1px solid #262626;" if i < len(mitre_data) - 1 else ""
+
+        heuristic_badge = '<span style="font-size:0.60rem; color:#E0982B; border:1px solid #E0982B; padding:1px 4px; border-radius:3px; margin-left:4px;">HEURISTIC</span>' if is_heuristic else ''
+        tech_sub = f'<div style="font-size: 0.72rem; color: #8A8A8A; font-family: \'Inter\', sans-serif; margin-bottom: 2px;">{item_tech_name}</div>' if item_tech_name else ''
+
         if i < current_step_idx:
             segment = f"""
             <div style="flex: 1; padding: 14px 16px; {border_right} border-top: 3px solid #2FB872; background: #141414;">
@@ -78,21 +85,27 @@ def render_attack_stepper(mitre_data, current_step_idx=2):
                         [OBSERVED]
                     </span>
                     <span style="font-size: 0.70rem; color: #8A8A8A; font-family: 'JetBrains Mono', monospace;">
-                        {item_id}
+                        {item_id}{heuristic_badge}
                     </span>
                 </div>
-                <div style="font-size: 0.95rem; font-weight: 700; color: #FFFFFF; margin-bottom: 3px;">
+                <div style="font-size: 0.95rem; font-weight: 700; color: #FFFFFF; margin-bottom: 2px;">
                     {item_stage}
                 </div>
+                {tech_sub}
                 <div style="font-size: 0.68rem; color: #2FB872; font-weight: 600; margin-top: 2px;">
                     Historical Stage
                 </div>
                 <details style="margin-top: 6px; cursor: pointer;">
                     <summary style="font-size: 0.70rem; color: #2FB872; font-weight: 600; outline: none; user-select: none;">
-                        Details
+                        MITRE KB Details
                     </summary>
-                    <div style="font-size: 0.74rem; color: #8A8A8A; line-height: 1.35; margin-top: 4px; padding-top: 4px; border-top: 1px dashed rgba(255, 255, 255, 0.1);">
+                    <div style="font-size: 0.74rem; color: #AAAAAA; line-height: 1.35; margin-top: 4px; padding-top: 4px; border-top: 1px dashed rgba(255, 255, 255, 0.1);">
                         {item_desc}
+                    </div>
+                    <div style="margin-top: 6px;">
+                        <a href="{item_url}" target="_blank" style="color: #4DAAF8; font-size: 0.68rem; font-family: 'JetBrains Mono', monospace; text-decoration: underline;">
+                            Verify on attack.mitre.org ↗
+                        </a>
                     </div>
                 </details>
             </div>
@@ -106,21 +119,27 @@ def render_attack_stepper(mitre_data, current_step_idx=2):
                         PREDICTED THREAT
                     </span>
                     <span style="font-size: 0.72rem; color: #FFFFFF; font-weight: 700; font-family: 'JetBrains Mono', monospace;">
-                        {item_id} · t+3
+                        {item_id} · t+3{heuristic_badge}
                     </span>
                 </div>
-                <div style="font-size: 1.05rem; font-weight: 800; color: #FFFFFF; margin-bottom: 3px;">
+                <div style="font-size: 1.05rem; font-weight: 800; color: #FFFFFF; margin-bottom: 2px;">
                     {item_stage}
                 </div>
+                {tech_sub}
                 <div style="display: inline-block; background: rgba(229, 72, 77, 0.2); border: 1px solid #E5484D; border-radius: 4px; padding: 2px 6px; font-size: 0.70rem; color: #FFFFFF; font-weight: 700; margin-top: 2px; font-family: 'JetBrains Mono', monospace;">
                     Elevated Risk · Horizon t+3
                 </div>
                 <details style="margin-top: 6px; cursor: pointer;">
                     <summary style="font-size: 0.70rem; color: #E5484D; font-weight: 600; outline: none; user-select: none;">
-                        Details
+                        MITRE KB Details
                     </summary>
                     <div style="font-size: 0.74rem; color: #FFFFFF; line-height: 1.35; margin-top: 4px; padding-top: 4px; border-top: 1px dashed rgba(255, 255, 255, 0.1);">
                         {item_desc}
+                    </div>
+                    <div style="margin-top: 6px;">
+                        <a href="{item_url}" target="_blank" style="color: #4DAAF8; font-size: 0.68rem; font-family: 'JetBrains Mono', monospace; text-decoration: underline;">
+                            Verify on attack.mitre.org ↗
+                        </a>
                     </div>
                 </details>
             </div>
@@ -133,21 +152,27 @@ def render_attack_stepper(mitre_data, current_step_idx=2):
                         ○ DOWNSTREAM
                     </span>
                     <span style="font-size: 0.70rem; color: #666666; font-family: 'JetBrains Mono', monospace;">
-                        {item_id}
+                        {item_id}{heuristic_badge}
                     </span>
                 </div>
-                <div style="font-size: 0.95rem; font-weight: 600; color: #8A8A8A; margin-bottom: 3px;">
+                <div style="font-size: 0.95rem; font-weight: 600; color: #8A8A8A; margin-bottom: 2px;">
                     {item_stage}
                 </div>
+                {tech_sub}
                 <div style="font-size: 0.68rem; color: #666666; margin-top: 2px;">
                     Horizon t+4 (Rollout)
                 </div>
                 <details style="margin-top: 6px; cursor: pointer;">
                     <summary style="font-size: 0.70rem; color: #666666; font-weight: 600; outline: none; user-select: none;">
-                        Details
+                        MITRE KB Details
                     </summary>
-                    <div style="font-size: 0.74rem; color: #666666; line-height: 1.35; margin-top: 4px; padding-top: 4px; border-top: 1px dashed rgba(255, 255, 255, 0.1);">
+                    <div style="font-size: 0.74rem; color: #888888; line-height: 1.35; margin-top: 4px; padding-top: 4px; border-top: 1px dashed rgba(255, 255, 255, 0.1);">
                         {item_desc}
+                    </div>
+                    <div style="margin-top: 6px;">
+                        <a href="{item_url}" target="_blank" style="color: #4DAAF8; font-size: 0.68rem; font-family: 'JetBrains Mono', monospace; text-decoration: underline;">
+                            Verify on attack.mitre.org ↗
+                        </a>
                     </div>
                 </details>
             </div>

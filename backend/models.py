@@ -129,6 +129,47 @@ class LSTMClassifier(nn.Module):
             return self.forward(x)
 
 
+class _DynamicTacticMap(dict):
+    """
+    Dynamic dictionary resolving tactic IDs directly against the real MITRE ATT&CK STIX 2.1 corpus.
+    Maintains dict interface for backward compatibility while backing lookups with real STIX data.
+    """
+    _FALLBACK = {
+        "Command and Control": "TA0011",
+        "Credential Access": "TA0006",
+        "Discovery": "TA0007",
+        "Impact": "TA0040",
+        "Initial Access": "TA0001",
+        "Unknown/Other": "TA0000",
+        "Reconnaissance": "TA0043",
+        "Lateral Movement": "TA0008",
+    }
+
+    def __init__(self) -> None:
+        super().__init__(self._FALLBACK)
+        self._kb = None
+
+    def _get_kb(self):
+        if self._kb is None:
+            try:
+                from backend.mitre_kb import get_mitre_kb
+                self._kb = get_mitre_kb()
+            except Exception:
+                pass
+        return self._kb
+
+    def __getitem__(self, key: str) -> str:
+        return self.get(key, "TA0000")
+
+    def get(self, key: str, default: str = "TA0000") -> str:
+        kb = self._get_kb()
+        if kb is not None:
+            tac = kb.get_tactic(key)
+            if tac:
+                return tac["id"]
+        return super().get(key, default)
+
+
 class StageClassificationHead(nn.Module):
     """
     Stage Classifier operating on predicted future state S_hat(t+1) (406 dims).
@@ -144,14 +185,13 @@ class StageClassificationHead(nn.Module):
         "Unknown/Other",
     ]
 
-    TACTIC_ID_MAP = {
-        "Command and Control": "TA0011",
-        "Credential Access": "TA0006",
-        "Discovery": "TA0007",
-        "Impact": "TA0040",
-        "Initial Access": "TA0001",
-        "Unknown/Other": "TA0000",
-    }
+    TACTIC_ID_MAP = _DynamicTacticMap()
+
+    @classmethod
+    def get_tactic_details(cls, stage_name: str) -> dict:
+        """Resolves stage name to full MITRE ATT&CK STIX tactic and canonical technique metadata."""
+        from backend.mitre_kb import get_mitre_kb
+        return get_mitre_kb().resolve_stage(stage_name)
 
     def __init__(
         self,

@@ -1,42 +1,77 @@
 [
   {
     "stage": "Reconnaissance",
-    "id": "TA0043",
+    "id": "T1046",
     "tactic_id": "TA0043",
-    "description": "Port scanning and service enumeration (ports 22, 80, 443)",
+    "tactic_name": "Reconnaissance",
+    "tactic_url": "https://attack.mitre.org/tactics/TA0043",
+    "technique_id": "T1046",
+    "technique_name": "Network Service Discovery",
+    "technique_full_name": "Network Service Discovery",
+    "technique_url": "https://attack.mitre.org/techniques/T1046",
+    "description": "Adversaries may attempt to get a listing of services running on remote hosts and local network infrastructure devices, including those that may be vulnerable to remote software exploitation. Common methods to acquire this information include port, vulnerability, and/or wordlist scans using tools that are brought onto a system. Within cloud environments, adversaries may attempt to discover services running on other cloud hosts. Additionally, if the cloud environment is connected to a on-premises environment, adversaries may be able to identify services running on non-cloud systems as well. Within macOS environments, adversaries may use the native Bonjour application to discover services running on other macOS hosts within a network. The Bonjour mDNSResponder daemon automatically registers and advertises a host\u2019s registered services on the network. For example, adversaries can use a mDNS query (such as <code>dns-sd -B _ssh._tcp .</code>) to find other systems broadcasting the ssh service.",
     "confidence": 0.89,
-    "status": "Historical"
+    "status": "Historical",
+    "is_mock": false
   },
   {
     "stage": "Initial Access",
-    "id": "TA0001",
+    "id": "T1190",
     "tactic_id": "TA0001",
-    "description": "Boundary authentication probing and credential spray against DMZ jump host",
+    "tactic_name": "Initial Access",
+    "tactic_url": "https://attack.mitre.org/tactics/TA0001",
+    "technique_id": "T1190",
+    "technique_name": "Exploit Public-Facing Application",
+    "technique_full_name": "Exploit Public-Facing Application",
+    "technique_url": "https://attack.mitre.org/techniques/T1190",
+    "description": "Adversaries may attempt to exploit a weakness in an Internet-facing host or system to initially access a network. The weakness in the system can be a software bug, a temporary glitch, or a misconfiguration. Exploited applications are often websites/web servers, but can also include databases (like SQL), standard services (like SMB or SSH), network device administration and management protocols (like SNMP and Smart Install), and any other system with Internet-accessible open sockets. On ESXi infrastructure, adversaries may exploit exposed OpenSLP services; they may alternatively exploit exposed VMware vCenter servers. Depending on the flaw being exploited, this may also involve Exploitation for Stealth or Exploitation for Client Execution. If an application is hosted on cloud-based infrastructure and/or is containerized, then exploiting it may lead to compromise of the underlying instance or container. This can allow an adversary a path to access the cloud or container APIs (e.g., via the Cloud Instance Metadata API), exploit container host access via Escape to Host, or take advantage of weak identity and access management policies. Adversaries may also exploit edge network infrastructure and related appliances, specifically targeting devices that do not support robust host-based defenses. For websites and databases, the OWASP top 10 and CWE top 25 highlight the most common web-based vulnerabilities.",
     "confidence": 0.78,
-    "status": "Active (Current)"
+    "status": "Active (Current)",
+    "is_mock": false
   },
   {
     "stage": "Credential Access",
-    "id": "TA0006",
+    "id": "T1110.001",
     "tactic_id": "TA0006",
-    "description": "SSH credential brute-force and Kerberos ticket request anomaly",
+    "tactic_name": "Credential Access",
+    "tactic_url": "https://attack.mitre.org/tactics/TA0006",
+    "technique_id": "T1110.001",
+    "technique_name": "Password Guessing",
+    "technique_full_name": "Brute Force: Password Guessing",
+    "technique_url": "https://attack.mitre.org/techniques/T1110/001",
+    "description": "Adversaries with no prior knowledge of legitimate credentials within the system or environment may guess passwords to attempt access to accounts. Without knowledge of the password for an account, an adversary may opt to systematically guess the password using a repetitive or iterative mechanism. An adversary may guess login credentials without prior knowledge of system or environment passwords during an operation by using a list of common passwords. Password guessing may or may not take into account the target's policies on password complexity or use policies that may lock accounts out after a number of failed attempts. Guessing passwords can be a risky option because it could cause numerous authentication failures and account lockouts, depending on the organization's login failure policies. Typically, management services over commonly used ports are used when guessing passwords. Commonly targeted services include the following: * SSH (22/TCP) * Telnet (23/TCP) * FTP (21/TCP) * NetBIOS / SMB / Samba (139/TCP & 445/TCP) * LDAP (389/TCP) * Kerberos (88/TCP) * RDP / Terminal Services (3389/TCP) * HTTP/HTTP Management Services (80/TCP & 443/TCP) * MSSQL (1433/TCP) * Oracle (1521/TCP) * MySQL (3306/TCP) * VNC (5900/TCP) * SNMP (161/UDP and 162/TCP/UDP) In addition to management services, adversaries may \"target single sign-on (SSO) and cloud-based applications utilizing federated authentication protocols,\" as well as externally facing email applications, such as Office 365.. Further, adversaries may abuse network device interfaces (such as `wlanAPI`) to brute force accessible wifi-router(s) via wireless authentication protocols. In default environments, LDAP and Kerberos connection attempts are less likely to trigger events over SMB, which creates Windows \"logon failure\" event ID 4625.",
     "confidence": 0.67,
-    "status": "Forecast (t+1)"
+    "status": "Forecast (t+1)",
+    "is_mock": false
   },
   {
     "stage": "Lateral Movement",
-    "id": "TA0008",
+    "id": "T1021.002",
     "tactic_id": "TA0008",
-    "description": "Anticipated internal jump host session pivot to Auth Cluster (10.0.4.21)",
+    "tactic_name": "Lateral Movement",
+    "tactic_url": "https://attack.mitre.org/tactics/TA0008",
+    "technique_id": "T1021.002",
+    "technique_name": "SMB/Windows Admin Shares",
+    "technique_full_name": "Remote Services: SMB/Windows Admin Shares",
+    "technique_url": "https://attack.mitre.org/techniques/T1021/002",
+    "description": "Adversaries may use Valid Accounts to interact with a remote network share using Server Message Block (SMB). The adversary may then perform actions as the logged-on user. SMB is a file, printer, and serial port sharing protocol for Windows machines on the same network or domain. Adversaries may use SMB to interact with file shares, allowing them to move laterally throughout a network. Linux and macOS implementations of SMB typically use Samba. Windows systems have hidden network shares that are accessible only to administrators and provide the ability for remote file copy and other administrative functions. Example network shares include `C$`, `ADMIN$`, and `IPC$`. Adversaries may use this technique in conjunction with administrator-level Valid Accounts to remotely access a networked system over SMB, to interact with systems using remote procedure calls (RPCs), transfer files, and run transferred binaries through remote Execution. Example execution techniques that rely on authenticated sessions over SMB/RPC are Scheduled Task/Job, Service Execution, and Windows Management Instrumentation. Adversaries can also use NTLM hashes to access administrator shares on systems with Pass the Hash and certain configuration and patch levels.",
     "confidence": 0.54,
-    "status": "Forecast (t+2)"
+    "status": "Forecast (t+2)",
+    "is_mock": false
   },
   {
     "stage": "Impact",
-    "id": "TA0040",
+    "id": "T1498.001",
     "tactic_id": "TA0040",
-    "description": "Domain controller replication traffic / service compromise risk",
+    "tactic_name": "Impact",
+    "tactic_url": "https://attack.mitre.org/tactics/TA0040",
+    "technique_id": "T1498.001",
+    "technique_name": "Direct Network Flood",
+    "technique_full_name": "Network Denial of Service: Direct Network Flood",
+    "technique_url": "https://attack.mitre.org/techniques/T1498/001",
+    "description": "Adversaries may attempt to cause a denial of service (DoS) by directly sending a high-volume of network traffic to a target. This DoS attack may also reduce the availability and functionality of the targeted system(s) and network. Direct Network Floods are when one or more systems are used to send a high-volume of network packets towards the targeted service's network. Almost any network protocol may be used for flooding. Stateless protocols such as UDP or ICMP are commonly used but stateful protocols such as TCP can be used as well. Botnets are commonly used to conduct network flooding attacks against networks and services. Large botnets can generate a significant amount of traffic from systems spread across the global Internet. Adversaries may have the resources to build out and control their own botnet infrastructure or may rent time on an existing botnet to conduct an attack. In some of the worst cases for distributed DoS (DDoS), so many systems are used to generate the flood that each one only needs to send out a small amount of traffic to produce enough volume to saturate the target network. In such circumstances, distinguishing DDoS traffic from legitimate clients becomes exceedingly difficult. Botnets have been used in some of the most high-profile DDoS flooding attacks, such as the 2012 series of incidents that targeted major US banks.",
     "confidence": 0.38,
-    "status": "Forecast (t+4)"
+    "status": "Forecast (t+4)",
+    "is_mock": false
   }
 ]
