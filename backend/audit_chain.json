@@ -138,5 +138,15 @@
     "artifact_hash": "3b283cae1dbc40a7c73ce9ae27357fd1216ad7902059bc036ca370a987d86dfd",
     "prev_entry_hash": "cf6af1770b681b72d75b648b1b158e8f9f9e57b9a74978a7d08dba26ca2186fd",
     "entry_hash": "bd72326cccd02fb72b6371db2e1f2995f1fbe4b760cd88d97fedbb1f71b13f02"
+  },
+  {
+    "index": 14,
+    "timestamp": "2026-09-23T11:00:29.632559+00:00",
+    "artifact_path": "alerts/alert_d722220f65abdbb7.json",
+    "artifact_type": "hazard_alert",
+    "description": "Hazard alert d722220f65abdbb7 [HIGH] (SHA-256 fallback)",
+    "artifact_hash": "2f29e7c48689f0b76a73120aec4df9740d78efea1f70cb7ba81d7ec1461b6a01",
+    "prev_entry_hash": "bd72326cccd02fb72b6371db2e1f2995f1fbe4b760cd88d97fedbb1f71b13f02",
+    "entry_hash": "da36c1ff4f86507207836f56b886abdbfb540bdc9e262b323be41e49c4280f68"
   }
 ]

@@ -276,14 +276,24 @@ class ShadowcatPipeline:
             hz_dir = Path(ML1_DIR / "artifacts" / "lstm" / "hazard_head")
         self.hazard_models: Dict[int, List[LSTMClassifier]] = {1: [], 2: [], 5: []}
 
-        # Calibrated operational thresholds (Option B Global with Option A Type-Aware capability, FPR <= 5% ceiling)
-        self.calibrated_threshold_global = 0.45
-        self.calibrated_thresholds_by_type = {
-            "SSH-Bruteforce": 0.40,
-            "DDOS-LOIC-UDP": 0.40,
-            "Botnet": 0.45,
-            "Default": 0.45,
-        }
+        # Leakage-free validation-derived calibrated thresholds (Option B Global with Option A Type-Aware capability)
+        # Replaces leaked test-derived thresholds (tau=0.45/0.40) with median across validation folds
+        if "v5" in hz_dir.name:
+            self.calibrated_threshold_global = 0.15
+            self.calibrated_thresholds_by_type = {
+                "SSH-Bruteforce": 0.15,
+                "DDOS-LOIC-UDP": 0.15,
+                "Botnet": 0.18,
+                "Default": 0.15,
+            }
+        else:
+            self.calibrated_threshold_global = 0.22
+            self.calibrated_thresholds_by_type = {
+                "SSH-Bruteforce": 0.35,
+                "DDOS-LOIC-UDP": 0.12,
+                "Botnet": 0.30,
+                "Default": 0.22,
+            }
 
         for h_val in (1, 2, 5):
             h_sub = hz_dir / f"H{h_val}"
