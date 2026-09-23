@@ -1,0 +1,4 @@
+StartTime,Dur,Proto,SrcAddr,Sport,Dir,DstAddr,Dport,State,sTos,dTos,TotPkts,TotBytes,SrcBytes,Label
+2011/08/10 09:46:53.047277,3587.569824,tcp,147.32.84.164,54392,  <->,147.32.80.9,53,CON,0,0,10,634,312,flow=Background-UDP-Established
+2011/08/10 09:46:53.047277,3587.569824,tcp,147.32.84.164,54393,  <->,147.32.80.9,53,CON,0,0,10,634,312,flow=Background-UDP-Established
+2011/08/10 09:46:53.047277,3587.569824,tcp,147.32.84.164,54394,  <->,147.32.80.9,53,CON,0,0,10,634,312,flow=Background-UDP-Established

@@ -148,5 +148,25 @@
     "artifact_hash": "2f29e7c48689f0b76a73120aec4df9740d78efea1f70cb7ba81d7ec1461b6a01",
     "prev_entry_hash": "bd72326cccd02fb72b6371db2e1f2995f1fbe4b760cd88d97fedbb1f71b13f02",
     "entry_hash": "da36c1ff4f86507207836f56b886abdbfb540bdc9e262b323be41e49c4280f68"
+  },
+  {
+    "index": 15,
+    "timestamp": "2026-09-23T22:39:47.029160+00:00",
+    "artifact_path": "alerts/alert_3afaa738da8f3cfd.json",
+    "artifact_type": "hazard_alert",
+    "description": "Hazard alert 3afaa738da8f3cfd [HIGH] (SHA-256 fallback)",
+    "artifact_hash": "fa58413208d92680c31c19d2e7014dd6f34b528eb3656c3b004f0b9720d29635",
+    "prev_entry_hash": "da36c1ff4f86507207836f56b886abdbfb540bdc9e262b323be41e49c4280f68",
+    "entry_hash": "c198cf8234320ef261059aa233c6167e55c24cb16a8827101914b22ab86867be"
+  },
+  {
+    "index": 16,
+    "timestamp": "2026-09-23T22:45:44.246619+00:00",
+    "artifact_path": "alerts/alert_9a00313980d240a6.json",
+    "artifact_type": "hazard_alert",
+    "description": "Hazard alert 9a00313980d240a6 [HIGH] (SHA-256 fallback)",
+    "artifact_hash": "6cf3380bd31e4bd8217d9a97e0717dded52cc74150582dc7e1e3870b8bcd6001",
+    "prev_entry_hash": "c198cf8234320ef261059aa233c6167e55c24cb16a8827101914b22ab86867be",
+    "entry_hash": "fa4fec93ecfd81bca7ab403b10c1a687090c4b45a2c15c0a54fab10bebf9d7c8"
   }
 ]
