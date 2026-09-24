@@ -112,6 +112,8 @@ def run_stacked_target(
     base_features = validate_ucs_windows(df, config=config)
 
     fold_metrics = []
+    pooled_val_preds = []
+    pooled_val_targets = []
     print(f"\n{'='*70}\nRunning Stacked & Calibrated Residual LSTM: {target_name.upper()} ({target_col})\n{'='*70}", flush=True)
 
     for fold in manifest_folds:
@@ -287,6 +289,72 @@ def run_stacked_target(
         tn, fp, fn, tp = cm.ravel()
         fpr = float(fp / (tn + fp)) if (tn + fp) > 0 else 0.0
 
+        # Step 6: Save Checkpoint & Metadata Sidecar for Live Deployment
+        target_artifacts_dir = output_dir / "lstm_stacked" / target_name
+        target_artifacts_dir.mkdir(parents=True, exist_ok=True)
+        ckpt_path = target_artifacts_dir / f"model_fold_{fold_id}.pt"
+        sidecar_path = target_artifacts_dir / f"sidecar_fold_{fold_id}.json"
+
+        checkpoint_data = {
+            "fold_id": fold_id,
+            "held_out_episode_id": held_out_episode,
+            "attack_type": attack_type,
+            "target": target_col,
+            "target_name": target_name,
+            "model_state_dict": best_state,
+            "temperature": float(T),
+            "lr_coef": lr_full.coef_.tolist(),
+            "lr_intercept": lr_full.intercept_.tolist(),
+            "scaler_mean": scaler_full.mean_.tolist(),
+            "scaler_scale": scaler_full.scale_.tolist(),
+            "lr_features": lr_features,
+            "pca_components": pca.pca.components_.tolist(),
+            "pca_mean": pca.pca.mean_.tolist() if pca.pca.mean_ is not None else None,
+            "pca_columns": pca.columns,
+            "val_predictions": val_probs_cal.tolist(),
+            "val_targets": y_val.tolist(),
+            "val_logits": v_logits.tolist(),
+        }
+        torch.save(checkpoint_data, ckpt_path)
+
+        sidecar_data = {
+            "fold_id": fold_id,
+            "held_out_episode_id": held_out_episode,
+            "attack_type": attack_type,
+            "target": target_col,
+            "target_name": target_name,
+            "checkpoint_file": f"model_fold_{fold_id}.pt",
+            "temperature": float(T),
+            "lr_coef": lr_full.coef_.tolist(),
+            "lr_intercept": lr_full.intercept_.tolist(),
+            "scaler_mean": scaler_full.mean_.tolist(),
+            "scaler_scale": scaler_full.scale_.tolist(),
+            "lr_features": lr_features,
+            "pca_columns": pca.columns,
+            "val_predictions": [float(x) for x in val_probs_cal],
+            "val_targets": [int(x) for x in y_val],
+            "val_ece_raw": float(val_ece_raw),
+            "val_ece_cal": float(val_ece_cal),
+            "test_f1": float(f1),
+            "test_precision": float(prec),
+            "test_recall": float(rec),
+            "test_fpr": float(fpr),
+            "test_roc_auc": float(roc_auc) if roc_auc is not None else None,
+            "test_pr_auc": float(pr_auc) if pr_auc is not None else None,
+        }
+        with open(sidecar_path, "w", encoding="utf-8") as f:
+            json.dump(sidecar_data, f, indent=2)
+
+        # Save canonical PCA artifact from first valid fold
+        canonical_pca_path = output_dir / "lstm_stacked" / "pca_32_stacked.pkl"
+        if not canonical_pca_path.exists():
+            import pickle
+            with open(canonical_pca_path, "wb") as pf:
+                pickle.dump({"pca": pca, "features": base_features}, pf)
+
+        pooled_val_preds.extend(val_probs_cal.tolist())
+        pooled_val_targets.extend(y_val.tolist())
+
         fold_metrics.append({
             "fold_id": fold_id,
             "held_out_episode_id": held_out_episode,
@@ -306,19 +374,38 @@ def run_stacked_target(
             "test_ece_raw": test_ece_raw,
             "test_ece_cal": test_ece_cal,
             "temperature": T,
+            "checkpoint_path": str(ckpt_path),
         })
 
         print(
             f"Fold {fold_id:02d} ({held_out_episode:30s} | {attack_type:15s}): "
             f"F1={f1:.4f} | Prec={prec:.4f} | Rec={rec:.4f} | FPR={fpr:.4f} | "
-            f"T={T:.2f} | Val ECE: {val_ece_raw:.4f}->{val_ece_cal:.4f}",
+            f"T={T:.2f} | Val ECE: {val_ece_raw:.4f}->{val_ece_cal:.4f} [Saved: {ckpt_path.name}]",
             flush=True,
         )
+
+    # Save pooled validation residuals for real conformal prediction calibration
+    pooled_val_arr_p = np.array(pooled_val_preds, dtype=float)
+    pooled_val_arr_y = np.array(pooled_val_targets, dtype=float)
+    residuals = np.abs(pooled_val_arr_y - pooled_val_arr_p)
+    pooled_conformal_meta = {
+        "target": target_col,
+        "target_name": target_name,
+        "n_samples": int(len(residuals)),
+        "mean_residual": float(np.mean(residuals)),
+        "median_residual": float(np.median(residuals)),
+        "q90_residual": float(np.quantile(residuals, 0.90)),
+        "q95_residual": float(np.quantile(residuals, 0.95)),
+        "val_predictions": pooled_val_preds,
+        "val_targets": pooled_val_targets,
+    }
+    with open(target_artifacts_dir / "val_residuals_pooled.json", "w", encoding="utf-8") as f:
+        json.dump(pooled_conformal_meta, f, indent=2)
 
     out_df = pd.DataFrame(fold_metrics)
     out_csv = output_dir / f"lstm_{target_name}_loeo_folds.csv"
     out_df.to_csv(out_csv, index=False)
-    print(f"\nSaved {len(out_df)} folds to {out_csv}", flush=True)
+    print(f"\nSaved {len(out_df)} folds and checkpoints to {target_artifacts_dir}", flush=True)
     return out_df
 
 def main():
@@ -359,6 +446,25 @@ def main():
         target_name="onset",
         epochs=10,
     )
+
+    # 3. Create Master Conformal Calibration Artifact
+    stacked_dir = output_dir / "lstm_stacked"
+    det_res_file = stacked_dir / "detection" / "val_residuals_pooled.json"
+    onset_res_file = stacked_dir / "onset" / "val_residuals_pooled.json"
+    if det_res_file.exists() and onset_res_file.exists():
+        with open(det_res_file) as f:
+            det_conformal = json.load(f)
+        with open(onset_res_file) as f:
+            onset_conformal = json.load(f)
+        master_conformal = {
+            "description": "Validation-split empirical residuals pooled across 37 LOEO folds with zero test-set leakage.",
+            "onset": onset_conformal,
+            "detection": det_conformal,
+        }
+        master_path = stacked_dir / "conformal_calibration_residuals.json"
+        with open(master_path, "w", encoding="utf-8") as f:
+            json.dump(master_conformal, f, indent=2)
+        print(f"Master conformal calibration artifact created at: {master_path}", flush=True)
 
     print("\nAll stacked LOEO evaluations completed successfully!")
 

@@ -129,6 +129,63 @@ class LSTMClassifier(nn.Module):
             return self.forward(x)
 
 
+class ResidualLSTMClassifier(nn.Module):
+    """
+    Stacked & Temperature-Calibrated Residual LSTM.
+    Predicts an additive correction on top of a logistic regression base logit:
+        z = base_logit + residual
+    and applies calibrated temperature scaling:
+        p = sigmoid(z / T)
+    """
+
+    def __init__(
+        self,
+        input_size: int = 32,
+        hidden_size: int = 64,
+        dropout: float = 0.20,
+    ) -> None:
+        super().__init__()
+        self.input_size = input_size
+        self.hidden_size = hidden_size
+        self.lstm = nn.LSTM(
+            input_size=input_size,
+            hidden_size=hidden_size,
+            num_layers=1,
+            batch_first=True,
+            dropout=0.0,
+        )
+        self.dropout = nn.Dropout(p=dropout)
+        self.fc = nn.Linear(hidden_size, 1)
+        nn.init.zeros_(self.fc.bias)
+        nn.init.normal_(self.fc.weight, std=0.01)
+
+    def forward_residual(self, x: torch.Tensor) -> torch.Tensor:
+        if not isinstance(x, torch.Tensor):
+            x = torch.as_tensor(x, dtype=torch.float32)
+        if x.ndim != 3 or x.size(-1) != self.input_size:
+            raise ValueError(f"Expected input shape (batch, seq, {self.input_size}), got {tuple(x.shape)}")
+        output, _ = self.lstm(x)
+        last_step = self.dropout(output[:, -1, :])
+        residual = self.fc(last_step).squeeze(-1)
+        return residual
+
+    def forward_logits(self, x: torch.Tensor, base_logit: torch.Tensor) -> torch.Tensor:
+        residual = self.forward_residual(x)
+        if not isinstance(base_logit, torch.Tensor):
+            base_logit = torch.as_tensor(base_logit, dtype=torch.float32, device=x.device)
+        return base_logit + residual
+
+    def forward(self, x: torch.Tensor, base_logit: torch.Tensor, temperature: float = 1.0) -> torch.Tensor:
+        logits = self.forward_logits(x, base_logit)
+        return torch.sigmoid(logits / float(temperature))
+
+    def predict_proba(self, x: torch.Tensor, base_logit: torch.Tensor, temperature: float = 1.0) -> torch.Tensor:
+        self.eval()
+        with torch.no_grad():
+            return self.forward(x, base_logit, temperature=temperature)
+
+
+
 class _DynamicTacticMap(dict):
     """
     Dynamic dictionary resolving tactic IDs directly against the real MITRE ATT&CK STIX 2.1 corpus.

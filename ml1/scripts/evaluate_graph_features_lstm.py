@@ -271,6 +271,60 @@ def run_graph_augmented_target(
         tn, fp, fn, tp = cm.ravel()
         fpr = float(fp / (tn + fp)) if (tn + fp) > 0 else 0.0
 
+        # Save checkpoint and sidecar
+        target_artifacts_dir = output_dir / "lstm_graph" / target_name
+        target_artifacts_dir.mkdir(parents=True, exist_ok=True)
+        ckpt_path = target_artifacts_dir / f"model_fold_{fold_id}.pt"
+        sidecar_path = target_artifacts_dir / f"sidecar_fold_{fold_id}.json"
+
+        checkpoint_data = {
+            "fold_id": fold_id,
+            "held_out_episode_id": held_out_episode,
+            "attack_type": attack_type,
+            "target": target_col,
+            "target_name": target_name,
+            "model_state_dict": best_state,
+            "temperature": float(T),
+            "lr_coef": lr_full.coef_.tolist(),
+            "lr_intercept": lr_full.intercept_.tolist(),
+            "scaler_mean": scaler_full.mean_.tolist(),
+            "scaler_scale": scaler_full.scale_.tolist(),
+            "lr_features": lr_features,
+            "graph_scaler_mean": graph_scaler.mean_.tolist(),
+            "graph_scaler_scale": graph_scaler.scale_.tolist(),
+            "graph_features": graph_feature_cols,
+            "pca_components": pca.pca.components_.tolist(),
+            "pca_mean": pca.pca.mean_.tolist() if pca.pca.mean_ is not None else None,
+            "pca_columns": pca.columns,
+            "val_predictions": (1.0 / (1.0 + np.exp(-v_logits / T))).tolist(),
+            "val_targets": y_val.tolist(),
+        }
+        torch.save(checkpoint_data, ckpt_path)
+
+        sidecar_data = {
+            "fold_id": fold_id,
+            "held_out_episode_id": held_out_episode,
+            "attack_type": attack_type,
+            "target": target_col,
+            "target_name": target_name,
+            "checkpoint_file": f"model_fold_{fold_id}.pt",
+            "temperature": float(T),
+            "lr_coef": lr_full.coef_.tolist(),
+            "lr_intercept": lr_full.intercept_.tolist(),
+            "scaler_mean": scaler_full.mean_.tolist(),
+            "scaler_scale": scaler_full.scale_.tolist(),
+            "graph_scaler_mean": graph_scaler.mean_.tolist(),
+            "graph_scaler_scale": graph_scaler.scale_.tolist(),
+            "test_f1": float(f1),
+            "test_precision": float(prec),
+            "test_recall": float(rec),
+            "test_fpr": float(fpr),
+            "test_roc_auc": float(roc_auc) if roc_auc is not None else None,
+            "test_pr_auc": float(pr_auc) if pr_auc is not None else None,
+        }
+        with open(sidecar_path, "w", encoding="utf-8") as f:
+            json.dump(sidecar_data, f, indent=2)
+
         fold_metrics.append({
             "fold_id": fold_id,
             "held_out_episode_id": held_out_episode,
@@ -286,16 +340,17 @@ def run_graph_augmented_target(
             "fpr": fpr,
             "roc_auc": roc_auc,
             "temperature": T,
+            "checkpoint_path": str(ckpt_path),
         })
         print(
-            f"Fold {fold_id:02d} ({attack_type:15s}): F1={f1:.4f} | Prec={prec:.4f} | Rec={rec:.4f} | FPR={fpr:.4f} | T={T:.2f}",
+            f"Fold {fold_id:02d} ({attack_type:15s}): F1={f1:.4f} | Prec={prec:.4f} | Rec={rec:.4f} | FPR={fpr:.4f} | T={T:.2f} [Saved: {ckpt_path.name}]",
             flush=True,
         )
 
     out_df = pd.DataFrame(fold_metrics)
     out_csv = output_dir / f"lstm_graph_{target_name}_loeo_folds.csv"
     out_df.to_csv(out_csv, index=False)
-    print(f"\nSaved {len(out_df)} folds to {out_csv}", flush=True)
+    print(f"\nSaved {len(out_df)} folds and checkpoints to {target_artifacts_dir}", flush=True)
     return out_df
 
 def main():

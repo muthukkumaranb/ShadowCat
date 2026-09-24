@@ -94,6 +94,37 @@ def run_smoke_test():
     print(f"    - Stage Attribution Sources: {fc.get('stage_attribution_source')}")
     print("    [PASS] MITRE ATT&CK Knowledge Base offline query layer verified.")
 
+    print("\n[7] Stacked Residual Model & Real Conformal Calibration Verification:")
+    print(f"    - Model Architecture: {fc.get('model_architecture')}")
+    print(f"    - Active Checkpoint Dir: {fc.get('checkpoint_dir')}")
+    print(f"    - Active Model Folds: {fc.get('active_model_folds')}")
+    print(f"    - Source Branch: {fc.get('source_branch')}")
+    print(f"    - Detection Probability: {output.get('detection_probability')}")
+    print(f"    - Detection Alert: {output.get('detection_alert')}")
+
+    # Assertions on stacked model loading
+    assert fc.get("model_architecture") == "Stacked & Calibrated Residual LSTM (Phase 1 Verified)", \
+        f"Unexpected model architecture: {fc.get('model_architecture')}"
+    assert fc.get("active_model_folds", 0) > 0, "No stacked model folds loaded!"
+    assert "lstm_stacked" in fc.get("checkpoint_dir", ""), f"Checkpoints not loaded from lstm_stacked: {fc.get('checkpoint_dir')}"
+
+    # Assertions on Conformal Prediction with real residuals
+    cf = output.get("conformal_forecast", {})
+    print(f"    - Conformal Calibration Source: {cf.get('calibration_source')}")
+    print(f"    - Conformal Sample Size: {cf.get('sample_size')}")
+    print(f"    - Conformal Quantile: {cf.get('quantile')}")
+    print(f"    - Conformal Coverage: {cf.get('coverage')}")
+    print(f"    - Conformal Intervals [t+1..t+4]: {cf.get('intervals')}")
+
+    assert cf.get("sample_size", 0) > 1000, f"Expected >1000 empirical residuals, got {cf.get('sample_size')} (placeholder detected!)"
+    assert cf.get("quantile") is not None and 0.0 < cf.get("quantile") < 1.0, f"Invalid quantile: {cf.get('quantile')}"
+    assert "Pooled validation residuals" in str(cf.get("calibration_source", "")), f"Expected real residuals, got: {cf.get('calibration_source')}"
+    assert len(cf.get("intervals", [])) == 4, "Expected 4 conformal intervals"
+    for iv in cf.get("intervals", []):
+        assert len(iv) == 2, f"Invalid interval format: {iv}"
+        assert 0.0 <= iv[0] <= iv[1] <= 1.0, f"Invalid interval bounds: {iv}"
+    print("    [PASS] Stacked Residual Model & Real Conformal Prediction verified.")
+
     print("\n" + "=" * 60)
     print("SMOKE TEST COMPLETED SUCCESSFULLY WITH ZERO DEFECTS")
     print("=" * 60)
