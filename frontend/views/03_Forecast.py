@@ -461,7 +461,63 @@ def render_page():
         </div>
         """)
 
-    render_html("<div style='height: 1rem;'></div>")
+    # STIX 2.1 MINED LIKELY NEXT TECHNIQUES SECTION
+    mitre_list = fc.get("mitre_details", [])
+    step_idx = min(max(0, curr_k - 1), len(mitre_list) - 1) if mitre_list else 0
+    step_mitre = mitre_list[step_idx] if mitre_list else {}
+    likely_next = step_mitre.get("likely_next_techniques", [])
+
+    if not likely_next:
+        from backend.mitre_kb import get_mitre_kb
+        kb = get_mitre_kb()
+        current_stage = ml_stages[min(curr_k, len(ml_stages) - 1)] if ml_stages else "Credential Access"
+        likely_next = kb.predict_likely_next_techniques(current_stage)
+
+    tech_cards_html = ""
+    for tech in likely_next[:3]:
+        tech_cards_html += f"""
+        <div class="soc-card-nested" style="flex: 1; min-width: 220px; border-left: 2px solid {t['primary']}; padding: 0.6rem 0.85rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; font-weight: 700; color: {t['primary']};">
+                    {tech.get('technique_id')}
+                </span>
+                <span class="soc-badge badge-neutral" style="font-size: 0.625rem; padding: 1px 4px;">
+                    {tech.get('transition_type', 'Tactic Sequencing')}
+                </span>
+            </div>
+            <div style="font-family: 'Inter', sans-serif; font-size: 0.8125rem; font-weight: 600; color: {t['text_high']}; margin-bottom: 0.25rem;">
+                {tech.get('technique_name')}
+            </div>
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_muted']};">
+                Next Tactic: <b style="color:{t['secondary']};">{tech.get('target_tactic')}</b>
+            </div>
+            <div style="margin-top: 0.35rem;">
+                <a href="{tech.get('url', '#')}" target="_blank" style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['primary']}; text-decoration: none;">
+                    STIX Documentation &rarr;
+                </a>
+            </div>
+        </div>
+        """
+
+    render_html(f"""
+    <div class="soc-card" style="margin-top: 1rem; margin-bottom: 1rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span class="soc-badge badge-neutral">MITRE ATT&CK STIX 2.1</span>
+                <span class="soc-section-title">Corpus-Mined Likely Next Technique Progression</span>
+            </div>
+            <span class="soc-badge badge-caution">HEURISTIC / CORPUS-DERIVED (NON-TRAINED)</span>
+        </div>
+        <div style="font-family: 'Inter', sans-serif; font-size: 0.75rem; color: {t['text_secondary']}; margin-bottom: 0.75rem;">
+            Technique transition trajectories mined from official MITRE STIX 2.1 relationship graphs and documented Enterprise ATT&CK kill-chain tactic sequencing.
+        </div>
+        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            {tech_cards_html}
+        </div>
+    </div>
+    """)
+
+    render_html("<div style='height: 0.5rem;'></div>")
 
     # Initialize quarantine state
     if "quarantine_active" not in st.session_state:

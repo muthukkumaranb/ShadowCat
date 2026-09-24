@@ -548,6 +548,25 @@ def get_attributions(window_id: str = None) -> list[dict]:
     return items
 
 
+def get_temporal_attributions() -> dict:
+    """
+    Returns TimeSHAP / Temporal Integrated Gradients attributions across lookback windows.
+    Consumed by: views/06_Explainability.py
+    """
+    pred = _get_live_prediction()
+    return pred.get("temporal_attributions", {})
+
+
+def get_conformal_forecast() -> dict:
+    """
+    Returns finite-sample calibrated split conformal prediction intervals and coverage.
+    Consumed by: views/03_Forecast.py, views/06_Explainability.py
+    """
+    pred = _get_live_prediction()
+    return pred.get("conformal_forecast", {})
+
+
+
 def get_novelty_score(window_id: str = None) -> dict:
     """
     Returns current observed network state S(t) telemetry, novelty score,
