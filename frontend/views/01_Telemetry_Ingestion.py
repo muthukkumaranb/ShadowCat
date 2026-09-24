@@ -54,7 +54,7 @@ def render_page():
     t = TOKENS.get(st.session_state.get("theme", "dark"), TOKENS["dark"])
     meta = get_analysis_metadata()
     novelty = get_novelty_score()
-    audit_chain = get_audit_chain_status()
+    audit_chain = get_audit_chain_status() or {}
     chain_entries = audit_chain.get("entries", [])
     latest_block = chain_entries[-1] if chain_entries else {}
     chain_len = audit_chain.get("length", len(chain_entries))
@@ -367,14 +367,43 @@ def render_page():
                 st.warning(f"ML Inference Error — showing fallback cached prediction: {p_res['_inference_error']}")
                 with st.expander("View Full Error Traceback", expanded=False):
                     st.code(p_res.get("_inference_traceback", "No traceback"), language="python")
-        fc_res = p_res.get("forecast_trajectory", {})
-        nov_res = p_res.get("novelty_score", {})
+        fc_res = p_res.get("forecast_trajectory") or {}
+        nov_res = p_res.get("novelty_score") or {}
         ts_str = st.session_state.get("ml_prediction_timestamp", "Recent")
 
-        risks = fc_res.get("risk", [0.05, 0.08, 0.12, 0.15])
+        risks = fc_res.get("risk") or [0.05, 0.08, 0.12, 0.15]
         max_r = max(risks) if risks else 0.05
-        stage_first = fc_res.get("stage", ["Reconnaissance"])[0] if fc_res.get("stage") else "Reconnaissance"
+        stage_list = fc_res.get("stage") or ["Reconnaissance"]
+        stage_first = stage_list[0] if stage_list else "Reconnaissance"
         nov_score = nov_res.get("novelty_score", 0.12)
+        if nov_score is None:
+            nov_score = 0.12
+
+        # Robust check for optional GNN Multimodal Fusion output
+        fusion_res = p_res.get("fusion_experimental")
+        is_fusion_active = (
+            isinstance(fusion_res, dict)
+            and fusion_res.get("status") in ("active_fused", "active", "baseline_temporal")
+        )
+
+        if is_fusion_active:
+            nodes_c = fusion_res.get("nodes_count", 0)
+            edges_c = fusion_res.get("edges_count", 0)
+            fusion_badge_html = '<span class="soc-badge badge-nominal">MULTIMODAL FUSION ACTIVE</span>'
+            branch2_badge_html = '<span class="soc-badge badge-caution" style="padding:0 4px; font-size:0.6rem;">GRAPHSAGE GNN</span>'
+            branch2_value_html = f"g(t) ∈ ℝ⁶⁴ <span style=\"font-size:0.75rem; color:{t['primary']}; font-weight:400;\">({nodes_c} Nodes, {edges_c} Edges)</span>"
+            branch2_desc = "Dynamic host interaction topology & message-passing embeddings"
+            branch3_badge_html = '<span class="soc-badge badge-nominal" style="padding:0 4px; font-size:0.6rem;">FUSED PROJECTION</span>'
+            branch3_value_html = "z'(t) = [g(t) ∥ z(t)] ∈ ℝ⁶⁴"
+            branch3_desc = "Fused dynamics state feeding hazard forecasting & stage classification"
+        else:
+            fusion_badge_html = '<span class="soc-badge badge-neutral" style="opacity:0.85;">GNN FUSION: NOT ACTIVE THIS SESSION</span>'
+            branch2_badge_html = '<span class="soc-badge badge-neutral" style="padding:0 4px; font-size:0.6rem;">OFFLINE / OPTIONAL</span>'
+            branch2_value_html = f'<span style="font-size:0.85rem; color:{t["text_muted"]}; font-weight:600;">NOT ACTIVE (GNN UNLOADED)</span>'
+            branch2_desc = "Topological GNN branch unavailable or dependency uninstalled. System running temporal-only baseline."
+            branch3_badge_html = '<span class="soc-badge badge-neutral" style="padding:0 4px; font-size:0.6rem;">TEMPORAL BYPASS</span>'
+            branch3_value_html = "z'(t) = z(t) ∈ ℝ⁶⁴"
+            branch3_desc = "Temporal dynamics state passed directly to hazard forecasting (unfused mode)."
 
         if max_r >= 0.75:
             badge_cls = "badge-critical"
@@ -451,7 +480,7 @@ def render_page():
                     <div style="font-family:'JetBrains Mono', monospace; font-size:0.75rem; font-weight:700; color:{t['text_high']}; text-transform:uppercase;">
                         Dual-Branch Multimodal Architecture Status
                     </div>
-                    <span class="soc-badge badge-nominal">MULTIMODAL FUSION ACTIVE</span>
+                    {fusion_badge_html}
                 </div>
                 <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem;">
                     <div class="soc-card-nested" style="border-left: 2px solid {t['primary']};">
@@ -466,28 +495,28 @@ def render_page():
                             Continuous autoregressive state over L=30 windows (406-dim UCS)
                         </div>
                     </div>
-                    <div class="soc-card-nested" style="border-left: 2px solid {t['secondary']};">
+                    <div class="soc-card-nested" style="border-left: 2px solid {t['secondary'] if is_fusion_active else t.get('border', '#1E2633')};">
                         <div style="display:flex; justify-content:space-between;">
                             <span style="font-family:'JetBrains Mono', monospace; font-size:0.6875rem; color:{t['text_muted']};">BRANCH 2: GRAPH NEURAL NETWORK</span>
-                            <span class="soc-badge badge-caution" style="padding:0 4px; font-size:0.6rem;">GRAPHSAGE GNN</span>
+                            {branch2_badge_html}
                         </div>
                         <div style="font-family:'JetBrains Mono', monospace; font-size:1.1rem; font-weight:700; color:{t['text_high']}; margin-top:2px;">
-                            g(t) ∈ ℝ⁶⁴ <span style="font-size:0.75rem; color:{t['primary']}; font-weight:400;">({p_res.get('fusion_experimental', {}).get('nodes_count', 12)} Nodes, {p_res.get('fusion_experimental', {}).get('edges_count', 40)} Edges)</span>
+                            {branch2_value_html}
                         </div>
                         <div style="font-family:'Inter', sans-serif; font-size:0.6875rem; color:{t['text_secondary']}; margin-top:2px;">
-                            Dynamic host interaction topology & message-passing embeddings
+                            {branch2_desc}
                         </div>
                     </div>
-                    <div class="soc-card-nested" style="border-left: 2px solid {t.get('tertiary', '#FFB84D')};">
+                    <div class="soc-card-nested" style="border-left: 2px solid {t.get('tertiary', '#FFB84D') if is_fusion_active else t.get('border', '#1E2633')};">
                         <div style="display:flex; justify-content:space-between;">
                             <span style="font-family:'JetBrains Mono', monospace; font-size:0.6875rem; color:{t['text_muted']};">MULTIMODAL FUSION ENGINE</span>
-                            <span class="soc-badge badge-nominal" style="padding:0 4px; font-size:0.6rem;">FUSED PROJECTION</span>
+                            {branch3_badge_html}
                         </div>
                         <div style="font-family:'JetBrains Mono', monospace; font-size:1.1rem; font-weight:700; color:{t['text_high']}; margin-top:2px;">
-                            z'(t) = [g(t) ∥ z(t)] ∈ ℝ⁶⁴
+                            {branch3_value_html}
                         </div>
                         <div style="font-family:'Inter', sans-serif; font-size:0.6875rem; color:{t['text_secondary']}; margin-top:2px;">
-                            Fused dynamics state feeding hazard forecasting & stage classification
+                            {branch3_desc}
                         </div>
                     </div>
                 </div>

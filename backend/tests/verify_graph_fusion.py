@@ -13,7 +13,7 @@ def test_graph_fusion():
     pipeline = ShadowcatPipeline()
     print("--- Benign Sequence ---")
     r1 = pipeline.predict(ben_seq, source_type="flows")
-    f1 = r1.get("fusion_experimental", {})
+    f1 = r1.get("fusion_experimental") or {}
     print(f"Status: {f1.get('status')}")
     print(f"Note: {f1.get('note')}")
     z1 = f1.get("z_prime_t", [[0]*64])[0]
@@ -21,7 +21,7 @@ def test_graph_fusion():
     
     print("--- Malicious Sequence ---")
     r2 = pipeline.predict(mal_seq, source_type="flows")
-    f2 = r2.get("fusion_experimental", {})
+    f2 = r2.get("fusion_experimental") or {}
     print(f"Status: {f2.get('status')}")
     print(f"Note: {f2.get('note')}")
     z2 = f2.get("z_prime_t", [[0]*64])[0]
