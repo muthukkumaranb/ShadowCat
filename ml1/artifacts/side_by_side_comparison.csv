@@ -3,15 +3,31 @@ Logistic Regression,Detection,Aggregate (All),0.972973,0.972973,0.972973,0.0,Cor
 Logistic Regression,Detection,Botnet,1.0,1.0,1.0,0.0,Corrected 37-fold LOEO
 Logistic Regression,Detection,DDOS-LOIC-UDP,1.0,1.0,1.0,0.0,Corrected 37-fold LOEO
 Logistic Regression,Detection,SSH-Bruteforce,0.888889,0.888889,0.888889,0.0,Corrected 37-fold LOEO
-LSTM + UCS,Detection,Aggregate (All),0.845917,0.791156,1.0,0.250983,Corrected 37-fold LOEO
-LSTM + UCS,Detection,Botnet,0.577965,0.447533,1.0,0.784524,Corrected 37-fold LOEO
-LSTM + UCS,Detection,DDOS-LOIC-UDP,0.953704,0.935185,1.0,0.032323,Corrected 37-fold LOEO
-LSTM + UCS,Detection,SSH-Bruteforce,0.928066,0.884899,1.0,0.095479,Corrected 37-fold LOEO
+LSTM Baseline (Pre-Phase 1),Detection,Aggregate (All),0.845917,0.791156,1.0,0.250983,Corrected 37-fold LOEO
+LSTM Baseline (Pre-Phase 1),Detection,Botnet,0.577965,0.447533,1.0,0.784524,Corrected 37-fold LOEO
+LSTM Baseline (Pre-Phase 1),Detection,DDOS-LOIC-UDP,0.953704,0.935185,1.0,0.032323,Corrected 37-fold LOEO
+LSTM Baseline (Pre-Phase 1),Detection,SSH-Bruteforce,0.928066,0.884899,1.0,0.095479,Corrected 37-fold LOEO
+Stacked & Calibrated LSTM,Detection,Aggregate (All),0.996231,0.992887,1.0,0.008026,Corrected 37-fold LOEO
+Stacked & Calibrated LSTM,Detection,Botnet,0.987546,0.976623,1.0,0.026667,Corrected 37-fold LOEO
+Stacked & Calibrated LSTM,Detection,DDOS-LOIC-UDP,1.0,1.0,1.0,0.0,Corrected 37-fold LOEO
+Stacked & Calibrated LSTM,Detection,SSH-Bruteforce,0.998342,0.996732,1.0,0.003367,Corrected 37-fold LOEO
+Graph-Augmented Residual LSTM,Detection,Aggregate (All),0.997229,0.994669,1.0,0.005774,Corrected 37-fold LOEO
+Graph-Augmented Residual LSTM,Detection,Botnet,0.991238,0.983217,1.0,0.018333,Corrected 37-fold LOEO
+Graph-Augmented Residual LSTM,Detection,DDOS-LOIC-UDP,1.0,1.0,1.0,0.0,Corrected 37-fold LOEO
+Graph-Augmented Residual LSTM,Detection,SSH-Bruteforce,0.998342,0.996732,1.0,0.003367,Corrected 37-fold LOEO
 Logistic Regression,Onset,Aggregate (All),0.888031,0.945946,0.878378,0.0,Corrected 37-fold LOEO
 Logistic Regression,Onset,Botnet,0.928571,1.0,0.916667,0.0,Corrected 37-fold LOEO
 Logistic Regression,Onset,DDOS-LOIC-UDP,0.904762,0.944444,0.898148,0.0,Corrected 37-fold LOEO
 Logistic Regression,Onset,SSH-Bruteforce,0.809524,0.888889,0.796296,0.0,Corrected 37-fold LOEO
-LSTM + UCS,Onset,Aggregate (All),0.750163,0.715905,0.896396,0.31335,Corrected 37-fold LOEO
-LSTM + UCS,Onset,Botnet,0.619417,0.482354,1.0,0.832857,Corrected 37-fold LOEO
-LSTM + UCS,Onset,DDOS-LOIC-UDP,0.765432,0.749206,0.833333,0.109259,Corrected 37-fold LOEO
-LSTM + UCS,Onset,SSH-Bruteforce,0.864898,0.908802,0.907407,0.1443,Corrected 37-fold LOEO
+LSTM Baseline (Pre-Phase 1),Onset,Aggregate (All),0.750163,0.715905,0.896396,0.31335,Corrected 37-fold LOEO
+LSTM Baseline (Pre-Phase 1),Onset,Botnet,0.619417,0.482354,1.0,0.832857,Corrected 37-fold LOEO
+LSTM Baseline (Pre-Phase 1),Onset,DDOS-LOIC-UDP,0.765432,0.749206,0.833333,0.109259,Corrected 37-fold LOEO
+LSTM Baseline (Pre-Phase 1),Onset,SSH-Bruteforce,0.864898,0.908802,0.907407,0.1443,Corrected 37-fold LOEO
+Stacked & Calibrated LSTM,Onset,Aggregate (All),0.91269,0.968437,0.905405,0.009459,Corrected 37-fold LOEO
+Stacked & Calibrated LSTM,Onset,Botnet,0.91981,0.983217,0.916667,0.018333,Corrected 37-fold LOEO
+Stacked & Calibrated LSTM,Onset,DDOS-LOIC-UDP,0.904762,0.944444,0.898148,0.009259,Corrected 37-fold LOEO
+Stacked & Calibrated LSTM,Onset,SSH-Bruteforce,0.920635,1.0,0.907407,0.0,Corrected 37-fold LOEO
+Graph-Augmented Residual LSTM,Onset,Aggregate (All),0.91269,0.968437,0.905405,0.009459,Corrected 37-fold LOEO
+Graph-Augmented Residual LSTM,Onset,Botnet,0.91981,0.983217,0.916667,0.018333,Corrected 37-fold LOEO
+Graph-Augmented Residual LSTM,Onset,DDOS-LOIC-UDP,0.904762,0.944444,0.898148,0.009259,Corrected 37-fold LOEO
+Graph-Augmented Residual LSTM,Onset,SSH-Bruteforce,0.920635,1.0,0.907407,0.0,Corrected 37-fold LOEO

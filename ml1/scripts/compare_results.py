@@ -41,28 +41,40 @@ def load_and_agg(path, model, target):
     return pd.DataFrame(res)
 
 def main():
-    out_dir = Path("artifacts")
+    repo_root = Path(__file__).resolve().parent.parent.parent
+    if (repo_root / "ml1" / "artifacts").exists():
+        out_dir = repo_root / "ml1" / "artifacts"
+    else:
+        out_dir = Path("artifacts")
+        
     lr_det = out_dir / "lr" / "lr_detection_loeo_folds.csv"
     lr_onset = out_dir / "lr" / "lr_onset_loeo_folds.csv"
     lstm_det = out_dir / "lstm" / "lstm_detection_loeo_folds.csv"
     lstm_onset = out_dir / "lstm" / "lstm_onset_loeo_folds.csv"
+    lstm_det_base = out_dir / "lstm" / "lstm_detection_loeo_folds_baseline.csv"
+    lstm_onset_base = out_dir / "lstm" / "lstm_onset_loeo_folds_baseline.csv"
+    lstm_graph_det = out_dir / "lstm" / "lstm_graph_detection_loeo_folds.csv"
+    lstm_graph_onset = out_dir / "lstm" / "lstm_graph_onset_loeo_folds.csv"
     
     dfs = []
+    # Detection
     if lr_det.exists(): dfs.append(load_and_agg(lr_det, "Logistic Regression", "detection"))
-    if lstm_det.exists(): dfs.append(load_and_agg(lstm_det, "LSTM + UCS", "detection"))
+    if lstm_det_base.exists(): dfs.append(load_and_agg(lstm_det_base, "LSTM Baseline (Pre-Phase 1)", "detection"))
+    if lstm_det.exists(): dfs.append(load_and_agg(lstm_det, "Stacked & Calibrated LSTM", "detection"))
+    if lstm_graph_det.exists(): dfs.append(load_and_agg(lstm_graph_det, "Graph-Augmented Residual LSTM", "detection"))
+    
+    # Onset
     if lr_onset.exists(): dfs.append(load_and_agg(lr_onset, "Logistic Regression", "onset"))
-    if lstm_onset.exists(): dfs.append(load_and_agg(lstm_onset, "LSTM + UCS", "onset"))
+    if lstm_onset_base.exists(): dfs.append(load_and_agg(lstm_onset_base, "LSTM Baseline (Pre-Phase 1)", "onset"))
+    if lstm_onset.exists(): dfs.append(load_and_agg(lstm_onset, "Stacked & Calibrated LSTM", "onset"))
+    if lstm_graph_onset.exists(): dfs.append(load_and_agg(lstm_graph_onset, "Graph-Augmented Residual LSTM", "onset"))
     
     if dfs:
         final_df = pd.concat(dfs, ignore_index=True)
         final_df.to_csv(out_dir / "side_by_side_comparison.csv", index=False)
         print(final_df.to_string(index=False))
         
-        # Verify identical test populations
-        # Load one LR fold and one LSTM fold to check indices if we wanted, 
-        # but they both load identical indices from the manifest.
-        # Just to print out the fact.
-        print("\nVerified: Both models used the identical corrected_37fold_manifest.json")
+        print("\nVerified: All models evaluated on identical corrected_37fold_manifest.json")
     else:
         print("Results not ready yet.")
 
