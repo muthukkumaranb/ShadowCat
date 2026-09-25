@@ -1,0 +1,8 @@
+{
+  "alert_hash": "51694e57bea54324",
+  "window_id": "W_unknown_20260918_140000",
+  "window_start": "2026-09-18 14:00:00+00:00",
+  "max_risk": 0.9582,
+  "severity": "HIGH",
+  "notarized_via": "sha256_fallback"
+}
