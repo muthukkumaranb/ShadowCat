@@ -105,6 +105,8 @@ def run_graph_augmented_target(
         "graph_degree_anomaly",
     ]
 
+    pooled_val_preds = []
+    pooled_val_targets = []
     fold_metrics = []
     print(f"\n{'='*70}\nRunning Graph-Augmented LSTM (36 inputs): {target_name.upper()}\n{'='*70}", flush=True)
 
@@ -255,9 +257,13 @@ def run_graph_augmented_target(
             te_logits = model.forward_logits(torch.from_numpy(X_test).to(device), torch.from_numpy(base_test).to(device)).cpu().numpy()
 
         T = fit_temperature(v_logits, y_val)
+        val_probs_cal = 1.0 / (1.0 + np.exp(-v_logits / T))
         te_probs_cal = 1.0 / (1.0 + np.exp(-te_logits / T))
         pred_cal = (te_probs_cal >= 0.5).astype(int)
         y_test_int = y_test.astype(int)
+
+        pooled_val_preds.extend(val_probs_cal.tolist())
+        pooled_val_targets.extend(y_val.tolist())
 
         f1 = float(f1_score(y_test_int, pred_cal, zero_division=0))
         prec = float(precision_score(y_test_int, pred_cal, zero_division=0))
@@ -296,7 +302,7 @@ def run_graph_augmented_target(
             "pca_components": pca.pca.components_.tolist(),
             "pca_mean": pca.pca.mean_.tolist() if pca.pca.mean_ is not None else None,
             "pca_columns": pca.columns,
-            "val_predictions": (1.0 / (1.0 + np.exp(-v_logits / T))).tolist(),
+            "val_predictions": val_probs_cal.tolist(),
             "val_targets": y_val.tolist(),
         }
         torch.save(checkpoint_data, ckpt_path)
@@ -325,6 +331,19 @@ def run_graph_augmented_target(
         with open(sidecar_path, "w", encoding="utf-8") as f:
             json.dump(sidecar_data, f, indent=2)
 
+        # Save canonical artifacts from first fold
+        canonical_pca_path = output_dir / "lstm_graph" / "pca_32_stacked.pkl"
+        if not canonical_pca_path.exists():
+            import pickle
+            with open(canonical_pca_path, "wb") as pf:
+                pickle.dump({"pca": pca, "features": base_features}, pf)
+
+        canonical_graph_scaler_path = output_dir / "lstm_graph" / "graph_scaler_canonical.pkl"
+        if not canonical_graph_scaler_path.exists():
+            import pickle
+            with open(canonical_graph_scaler_path, "wb") as pf:
+                pickle.dump({"scaler": graph_scaler, "columns": graph_feature_cols}, pf)
+
         fold_metrics.append({
             "fold_id": fold_id,
             "held_out_episode_id": held_out_episode,
@@ -346,6 +365,16 @@ def run_graph_augmented_target(
             f"Fold {fold_id:02d} ({attack_type:15s}): F1={f1:.4f} | Prec={prec:.4f} | Rec={rec:.4f} | FPR={fpr:.4f} | T={T:.2f} [Saved: {ckpt_path.name}]",
             flush=True,
         )
+
+    # Save pooled validation residuals for target
+    res_file = target_artifacts_dir / "val_residuals_pooled.json"
+    with open(res_file, "w", encoding="utf-8") as f:
+        json.dump({
+            "target": target_name,
+            "pooled_sample_size": len(pooled_val_preds),
+            "val_predictions": pooled_val_preds,
+            "val_targets": pooled_val_targets,
+        }, f, indent=2)
 
     out_df = pd.DataFrame(fold_metrics)
     out_csv = output_dir / f"lstm_graph_{target_name}_loeo_folds.csv"
@@ -396,6 +425,25 @@ def main():
         target_name="onset",
         epochs=10,
     )
+
+    # 3. Create Master Conformal Calibration Artifact
+    graph_dir = output_dir / "lstm_graph"
+    det_res_file = graph_dir / "detection" / "val_residuals_pooled.json"
+    onset_res_file = graph_dir / "onset" / "val_residuals_pooled.json"
+    if det_res_file.exists() and onset_res_file.exists():
+        with open(det_res_file) as f:
+            det_conformal = json.load(f)
+        with open(onset_res_file) as f:
+            onset_conformal = json.load(f)
+        master_conformal = {
+            "description": "Validation-split empirical residuals pooled across 37 LOEO folds with zero test-set leakage (graph-augmented).",
+            "onset": onset_conformal,
+            "detection": det_conformal,
+        }
+        master_path = graph_dir / "conformal_calibration_residuals.json"
+        with open(master_path, "w", encoding="utf-8") as f:
+            json.dump(master_conformal, f, indent=2)
+        print(f"Master conformal calibration artifact created at: {master_path}", flush=True)
 
     print("\nGraph-augmented evaluation completed!")
 

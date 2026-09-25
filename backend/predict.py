@@ -36,14 +36,12 @@ from src.ucs_extractor import UCSExtractor
 try:
     from backend.models import (
         LSTMGaussianWorldModel,
-        LSTMClassifier,
         ResidualLSTMClassifier,
         StageClassificationHead,
     )
 except ImportError:
     from models import (
         LSTMGaussianWorldModel,
-        LSTMClassifier,
         ResidualLSTMClassifier,
         StageClassificationHead,
     )
@@ -406,61 +404,25 @@ class ShadowcatPipeline:
 
         self.stacked_models_loaded = (len(self.stacked_onset_models) > 0)
         import logging
-        if self.stacked_models_loaded:
-            logging.info(
-                f"[DEPLOYED WINNING MODEL] Loaded Stacked & Temperature-Calibrated Residual LSTM ensemble: "
-                f"{len(self.stacked_onset_models)} onset fold models, {len(self.stacked_detection_models)} detection fold models "
-                f"from {stacked_base_dir}"
+        if not self.stacked_models_loaded:
+            raise RuntimeError(
+                f"CRITICAL: Stacked & Calibrated Residual LSTM ensemble failed to load from {stacked_base_dir}! "
+                "Silent degradation to legacy hazard heads has been completely removed."
             )
-        else:
-            logging.info("Stacked models not found, loading legacy hazard heads as fallback.")
-
-        # Legacy Hazard Heads (LOEO Fold Ensemble for H=1, H=2, H=5)
-        hz_dir = Path(hazard_head_dir or (ML1_DIR / "artifacts" / "lstm" / "hazard_head_v5"))
-        if not hz_dir.exists():
-            hz_dir = Path(ML1_DIR / "artifacts" / "lstm" / "hazard_head_v4")
-        if not hz_dir.exists():
-            hz_dir = Path(ML1_DIR / "artifacts" / "lstm" / "hazard_head_v3")
-        if not hz_dir.exists():
-            hz_dir = Path(ML1_DIR / "artifacts" / "lstm" / "hazard_head")
-        self.hazard_models: Dict[int, List[LSTMClassifier]] = {1: [], 2: [], 5: []}
+        logging.info(
+            f"[DEPLOYED WINNING MODEL] Loaded Stacked & Temperature-Calibrated Residual LSTM ensemble: "
+            f"{len(self.stacked_onset_models)} onset fold models, {len(self.stacked_detection_models)} detection fold models "
+            f"from {stacked_base_dir}"
+        )
 
         # Leakage-free validation-derived calibrated thresholds
-        if "v5" in hz_dir.name or self.stacked_models_loaded:
-            self.calibrated_threshold_global = 0.15
-            self.calibrated_thresholds_by_type = {
-                "SSH-Bruteforce": 0.15,
-                "DDOS-LOIC-UDP": 0.15,
-                "Botnet": 0.18,
-                "Default": 0.15,
-            }
-        else:
-            self.calibrated_threshold_global = 0.22
-            self.calibrated_thresholds_by_type = {
-                "SSH-Bruteforce": 0.35,
-                "DDOS-LOIC-UDP": 0.12,
-                "Botnet": 0.30,
-                "Default": 0.22,
-            }
-
-        for h_val in (1, 2, 5):
-            h_sub = hz_dir / f"H{h_val}"
-            if h_sub.exists():
-                for fold_file in sorted(h_sub.glob("model_fold_*.pt")):
-                    model = LSTMClassifier(input_size=32, hidden_size=64, num_layers=1, dropout=0.2)
-                    try:
-                        f_ckpt = torch.load(fold_file, map_location=self.device, weights_only=True)
-                        model.load_state_dict(f_ckpt)
-                        model.to(self.device)
-                        model.eval()
-                        self.hazard_models[h_val].append(model)
-                    except Exception:
-                        pass
-
-        self.hazard_heads_loaded = any(len(models) > 0 for models in self.hazard_models.values())
-        self.hazard_head_dir = hz_dir
-        if not self.stacked_models_loaded:
-            logging.info(f"Loaded hazard head ensemble from {hz_dir} (loaded {sum(len(m) for m in self.hazard_models.values())} fold models)")
+        self.calibrated_threshold_global = 0.15
+        self.calibrated_thresholds_by_type = {
+            "SSH-Bruteforce": 0.15,
+            "DDOS-LOIC-UDP": 0.15,
+            "Botnet": 0.18,
+            "Default": 0.15,
+        }
 
         # 5. Load Fitted 32-dim PCA for Hazard & Stacked Models
         self.pca = None
@@ -573,39 +535,13 @@ class ShadowcatPipeline:
                 return hazards
             except Exception as e:
                 import logging
-                logging.warning(f"Stacked hazard ensemble inference error: {e}")
+                logging.error(f"Stacked hazard ensemble inference error: {e}")
+                raise RuntimeError(f"CRITICAL: Stacked hazard ensemble inference failed: {e}")
 
-        # Path B: Legacy Hazard Model Ensemble
-        if self.pca_available and self.pca is not None and self.hazard_heads_loaded:
-            try:
-                cols = self.pca_features if (self.pca_features is not None and len(self.pca_features) == sequence_30x406.shape[1]) else [f"f_{i}" for i in range(sequence_30x406.shape[1])]
-                seq_df = pd.DataFrame(sequence_30x406, columns=cols)
-                if getattr(self, "pca_scaler", None) is not None:
-                    scaled_values = self.pca_scaler.transform(seq_df[cols].to_numpy(dtype=np.float64))
-                    seq_df = pd.DataFrame(scaled_values, columns=cols)
-                transformed = self.pca.transform(seq_df)
-                pca_cols = [f"pca_{i}" for i in range(32)]
-                seq_32 = transformed[pca_cols].to_numpy(dtype=np.float32)
-                seq_tensor = torch.as_tensor(seq_32, dtype=torch.float32).unsqueeze(0).to(self.device)
-
-                for h_val in (1, 2, 5):
-                    models = self.hazard_models.get(h_val, [])
-                    if models:
-                        probs = []
-                        with torch.no_grad():
-                            for m in models:
-                                p = m.predict_proba(seq_tensor).item()
-                                probs.append(p)
-                        hazards[h_val] = float(np.mean(probs))
-                    else:
-                        hazards[h_val] = 0.08
-                return hazards
-            except Exception as e:
-                import logging
-                logging.warning(f"Hazard model ensemble inference error: {e}")
-
-        # Fallback if hazard models not loaded
-        return {1: 0.08, 2: 0.12, 5: 0.18}
+        raise RuntimeError(
+            "CRITICAL: Stacked & Calibrated Residual LSTM ensemble is not loaded or PCA is unavailable! "
+            "Silent degradation to legacy models is strictly prohibited."
+        )
 
     def _predict_detection_ensemble(self, sequence_30x406: np.ndarray) -> Optional[float]:
         """
@@ -1089,12 +1025,12 @@ class ShadowcatPipeline:
             "calibrated_threshold": self.calibrated_threshold_global,
             "hazard_alert": any(r >= self.calibrated_threshold_global for r in cum_risk),
             "calibrated_uncertainty": True,
-            "model_architecture": "Stacked & Calibrated Residual LSTM (Phase 1 Verified)" if (self.use_stacked_model and self.stacked_models_loaded) else "Legacy Hazard Head Ensemble",
-            "active_model_folds": len(self.stacked_onset_models) if (self.use_stacked_model and self.stacked_models_loaded) else sum(len(m) for m in self.hazard_models.values()),
-            "checkpoint_dir": str(self.stacked_base_dir / "onset") if (self.use_stacked_model and self.stacked_models_loaded) else str(self.hazard_head_dir),
-            "source_branch": "37-Fold Stacked Calibrated Residual LSTM Ensemble + 32-dim PCA (Active)" if (self.use_stacked_model and self.stacked_models_loaded) else ("37-Fold LOEO Hazard Ensemble + 32-dim PCA Representation (Active)" if self.pca_available else "Nominal Baseline"),
+            "model_architecture": "Stacked & Calibrated Residual LSTM (Phase 1 Verified)",
+            "active_model_folds": len(self.stacked_onset_models),
+            "checkpoint_dir": str(self.stacked_base_dir / "onset"),
+            "source_branch": "37-Fold Stacked Calibrated Residual LSTM Ensemble + 32-dim PCA (Active)",
             "protocol": "Chronological Split (K=1..3 Validated, K=4 Exploratory)",
-            "hazard_epistemic_note": "37-fold LOEO Stacked Residual LSTM ensemble actively evaluating input sequence across 32 PCA dimensions with behavioral drift modulation." if (self.use_stacked_model and self.stacked_models_loaded) else "Hazard models using nominal baseline.",
+            "hazard_epistemic_note": "37-fold LOEO Stacked Residual LSTM ensemble actively evaluating input sequence across 32 PCA dimensions with behavioral drift modulation.",
             "is_mock": False,
         }
 

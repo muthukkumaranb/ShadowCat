@@ -36,12 +36,12 @@ def compute_scalar_graph_features(
         unique_dst=("dst_node_id", "nunique"),
     )
 
-    # Total unique endpoints (nodes) per window
-    nodes_per_win = df_edges.groupby("window_id").apply(
-        lambda g: len(set(g["src_node_id"]).union(set(g["dst_node_id"]))),
-        include_groups=False,
-    )
-    win_summary["total_nodes"] = nodes_per_win
+    # Total unique endpoints (nodes) per window (vectorized for speed)
+    stacked_nodes = pd.concat([
+        df_edges[["window_id", "src_node_id"]].rename(columns={"src_node_id": "node_id"}),
+        df_edges[["window_id", "dst_node_id"]].rename(columns={"dst_node_id": "node_id"}),
+    ])
+    win_summary["total_nodes"] = stacked_nodes.groupby("window_id")["node_id"].nunique()
 
     # Degree Centrality: average degree across active nodes in window
     win_summary["graph_degree_centrality"] = 2.0 * win_summary["total_edges"] / np.maximum(win_summary["total_nodes"], 1)
