@@ -1,3 +1,22 @@
+"""
+=============================================================================
+RETIRED VERIFICATION SCRIPT — REFERENCE-ONLY
+=============================================================================
+FEATURE STATUS: RETIRED / ARCHITECTURAL NO-GO
+RATIONALE:
+During 37-fold Leave-One-Episode-Out (LOEO) cross-validation evaluation across
+all MITRE attack categories, the GraphSAGE neural fusion model suffered a
+catastrophic 54.4% macro F1 collapse on DDOS-LOIC-UDP due to message-passing
+over-smoothing across dense star topologies.
+
+The production pipeline replaces neural graph fusion with:
+1. Pure stacked residual LSTM dynamics for temporal risk.
+2. Decoupled, deterministic BFS/diffusion graph propagation on network topology
+   (backend/graph_traversal.py).
+Do NOT run this script as part of production pipeline test suites.
+=============================================================================
+"""
+
 import sys
 import os
 import torch
@@ -25,9 +44,6 @@ def test_fused_compatibility():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model_data = torch.load(checkpoint_path, map_location=device, weights_only=False)
     
-    # We might need to inspect the model's initialization parameters from the checkpoint
-    # FusedModel defaults: z_dim=64, node_feature_dim=11, graph_embedding_dim=64, output_dim=11
-    # We can just instantiate FusedModel and load state_dict
     try:
         fused_model = FusedModel(z_dim=64, output_dim=64)
         if 'model_state_dict' in model_data:
@@ -60,14 +76,10 @@ def test_fused_compatibility():
         z_t = torch.cat([z_t, z_t], dim=0)
         
     # 3. Create dummy graph matching the batch size
-    # FusedModel expects: x, edge_index, batch, z_t
-    # node_feature_dim=11 is the default
     B = z_t.shape[0]
     node_feature_dim = 11
     
-    # Create 1 node per graph in batch for dummy check
     x = torch.randn(B, node_feature_dim, device=device)
-    # No edges (self loop)
     edge_index = torch.zeros((2, B), dtype=torch.long, device=device)
     edge_index[0, :] = torch.arange(B)
     edge_index[1, :] = torch.arange(B)
@@ -81,10 +93,6 @@ def test_fused_compatibility():
             
         print(f'    Fused output shape: {fused_out.shape}')
         print(f"    Output contains NaN: {torch.isnan(fused_out).any().item()}")
-        
-        # Check non-degenerate output
-        print(f"    First window output:\n{fused_out[0].cpu().numpy()}")
-        print(f"    Second window output:\n{fused_out[1].cpu().numpy()}")
         
         diff = torch.abs(fused_out[0] - fused_out[1]).sum().item()
         print(f"    Diff between W0 and W1: {diff:.4f}")

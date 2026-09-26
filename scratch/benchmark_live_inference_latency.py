@@ -1,3 +1,20 @@
+"""
+SUPERSEDED / DEPRECATED BENCHMARK SCRIPT
+=========================================
+WARNING: This script is preserved for historical reference only.
+Methodology Flaws:
+1. Evaluated an untrained GraphBranch (GraphSAGE) with random edge index (randint)
+   and synthetic random Gaussian features (np.random.randn), which does not reflect
+   real pipeline data distribution or real topological structure.
+2. Tested the retired GraphSAGE fusion architecture rather than the deployed
+   production pipeline.
+
+Replacement:
+Use `backend/benchmark_real_latency.py` which benchmarks the real deployed
+pipeline (Stacked LSTM ensemble + real graph topology construction + real
+graph-propagation traversal) on real UCS benchmark windows.
+"""
+
 import time
 import numpy as np
 import pandas as pd

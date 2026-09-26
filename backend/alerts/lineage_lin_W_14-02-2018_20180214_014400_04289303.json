@@ -1,0 +1,12 @@
+{
+  "lineage_id": "lin_W_14-02-2018_20180214_014400_04289303",
+  "raw_data_hash": "04289303e310c6f8f65f6d765a6451790e2134219db734d61d77b3c43d37a5a5",
+  "feature_hash": "24e9d5e4f31372a944ae5fe349b5a16303cb7186ab1c3e50b05dab6a5c24575d",
+  "feature_vector_type": "406-dim canonical engineered features (loss-free audit baseline)",
+  "model_id": "lstm_world_model_v4",
+  "prediction_hash": "84d2ddddfa396c611ad5378b4d97638ae2dd6973d24c9a18f14a4c334c27cc54",
+  "severity": "HIGH",
+  "target_node": "Client_Proto6_Win64240",
+  "timestamp": "2018-02-14 01:44:00+00:00",
+  "notarized_via": "sha256_fallback"
+}

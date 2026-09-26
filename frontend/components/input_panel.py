@@ -1,11 +1,12 @@
 """
-SHADOWCAT - Telemetry Ingestion & Input Selector Component
-Supports PCAP upload, CSV flow ingestion, and 1-click Bundled Sample demo run.
-
-PIPELINE INDICATORS:
-- PCAP: [Active Pipeline: Full Unified Cyber State (UCS)]
-- CSV:  [Active Pipeline: Flow-Only Features]
-- Sample: [Active Pipeline: Bundled Reference Case (UCS)]
+=============================================================================
+DEPRECATED / UNUSED COMPONENT — REFERENCE-ONLY
+=============================================================================
+This component previously claimed Scapy/PyShark PCAP extraction, which was
+never wired into the active ingestion engine. Real pipeline ingestion operates
+through validated flow CSVs / Parquet datasets via views/01_Telemetry_Ingestion.py.
+Do NOT use this component in active pages. Kept solely for design reference.
+=============================================================================
 """
 
 import streamlit as st
@@ -14,7 +15,7 @@ from styles import render_html
 
 def render_input_panel():
     """
-    Renders the telemetry input and dataset selection panel with active pipeline indicators.
+    [UNUSED / REFERENCE-ONLY] Renders deprecated input selector panel.
     """
     if "input_mode" not in st.session_state:
         st.session_state["input_mode"] = "Bundled Sample (Infiltration Case)"

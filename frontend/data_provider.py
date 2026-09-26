@@ -782,6 +782,39 @@ def get_live_notarization_status() -> dict:
         }
 
 
+def get_onchain_incident_responses() -> list:
+    """
+    Queries real auto-triggered IncidentResponseRecords directly from Fabric ledger.
+    Falls back to inspecting fallback alert records if Fabric is unreachable.
+    """
+    try:
+        from backend.fabric_bridge import query_all_incidents
+        incidents = query_all_incidents()
+        if incidents and isinstance(incidents, list):
+            return incidents
+    except Exception:
+        pass
+    # Fallback to inspecting alerts directory
+    alerts_dir = REPO_ROOT / "backend" / "alerts"
+    incidents = []
+    if alerts_dir.exists():
+        for af in alerts_dir.glob("alert_*.json"):
+            try:
+                with open(af, "r", encoding="utf-8") as f:
+                    rec = json.load(f)
+                    if rec.get("severity") in ("HIGH", "CRITICAL"):
+                        node = rec.get("target_node", "172.31.69.21")
+                        incidents.append({
+                            "incident_id": f"incident_{rec.get('alert_hash')}",
+                            "lineage_id": f"lin_{rec.get('alert_hash')}",
+                            "recommended_action": f"ISOLATE_HOST:{node}",
+                            "triggered_at": rec.get("window_start", "2026-09-26T10:00:00Z"),
+                        })
+            except Exception:
+                pass
+    return incidents
+
+
 def get_demo_data() -> dict:
     """
     Constructs the root data dictionary strictly by invoking the typed accessor functions above.

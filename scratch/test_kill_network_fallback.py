@@ -32,16 +32,19 @@ def run_fallback_test():
     def mock_fabric_fail(*args, **kwargs):
         raise ConnectionError("Fabric peer/orderer unreachable: Connection refused (network simulated down)")
 
-    # Monkeypatch both notarize_alert and notarize_model in fabric_bridge AND predict_module
     orig_notarize_alert = fabric_bridge.notarize_alert
     orig_notarize_model = fabric_bridge.notarize_model
+    orig_record_lineage = getattr(fabric_bridge, "record_prediction_lineage", None)
     orig_pm_alert = getattr(predict_module, "notarize_alert", None)
     orig_pm_model = getattr(predict_module, "notarize_model", None)
+    orig_pm_lineage = getattr(predict_module, "record_prediction_lineage", None)
 
     fabric_bridge.notarize_alert = mock_fabric_fail
     fabric_bridge.notarize_model = mock_fabric_fail
+    fabric_bridge.record_prediction_lineage = mock_fabric_fail
     setattr(predict_module, "notarize_alert", mock_fabric_fail)
     setattr(predict_module, "notarize_model", mock_fabric_fail)
+    setattr(predict_module, "record_prediction_lineage", mock_fabric_fail)
 
     try:
         # 3. Load sample data that triggers hazard alert
@@ -69,6 +72,7 @@ def run_fallback_test():
         assert hazard_alert is True, "Expected hazard alert to trigger on high-risk sequence"
         assert notarized_via == "sha256_fallback", f"Expected 'sha256_fallback', got: {notarized_via}"
         assert mechanism == "sha256_fallback", f"Expected mechanism 'sha256_fallback', got: {mechanism}"
+        assert output["lineage"]["notarized_via"] == "sha256_fallback", f"Expected lineage 'sha256_fallback', got: {output['lineage']['notarized_via']}"
         print("    [PASS] Fallback to sha256_fallback confirmed upon Fabric network failure.")
 
         # 5. Verify audit chain was updated and is 100% cryptographically intact
@@ -94,10 +98,14 @@ def run_fallback_test():
         # Restore original functions
         fabric_bridge.notarize_alert = orig_notarize_alert
         fabric_bridge.notarize_model = orig_notarize_model
+        if orig_record_lineage is not None:
+            fabric_bridge.record_prediction_lineage = orig_record_lineage
         if orig_pm_alert is not None:
             setattr(predict_module, "notarize_alert", orig_pm_alert)
         if orig_pm_model is not None:
             setattr(predict_module, "notarize_model", orig_pm_model)
+        if orig_pm_lineage is not None:
+            setattr(predict_module, "record_prediction_lineage", orig_pm_lineage)
 
 if __name__ == "__main__":
     run_fallback_test()

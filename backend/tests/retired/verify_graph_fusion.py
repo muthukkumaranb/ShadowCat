@@ -1,3 +1,19 @@
+"""
+RETIRED TEST SCRIPT - REFERENCE ONLY
+====================================
+Original Path: backend/tests/verify_graph_fusion.py
+Status: RETIRED / DEPRECATED
+
+Reason for Retirement:
+GraphSAGE feature fusion (FusedModel / fusion_experimental) was retired following
+rigorous 37-fold Leave-One-Entity-Out (LOEO) cross-validation evaluation. Under LOEO,
+GraphSAGE suffered catastrophic failure on unseen topologies (notably collapsing
+macro F1 to 54.4% on DDOS-LOIC-UDP due to severe over-smoothing across dense attack
+subgraphs). In production, spatial graph propagation is performed via decoupled,
+topologically-grounded blast-radius propagation rather than end-to-end latent fusion.
+
+This script is preserved for historical auditability and reference only.
+"""
 
 import os, sys, pandas as pd, logging
 logging.basicConfig(level=logging.DEBUG)
@@ -32,4 +48,3 @@ def test_graph_fusion():
 
 if __name__ == "__main__":
     test_graph_fusion()
-

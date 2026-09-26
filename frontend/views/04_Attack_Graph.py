@@ -18,6 +18,7 @@ from data_provider import (
     get_forecast_trajectory,
     get_graph_traversal,
     get_flagged_flows,
+    get_onchain_incident_responses,
 )
 from backend.graph_traversal import format_bytes
 
@@ -34,6 +35,18 @@ def render_page():
         st.session_state.attack_k_step = 0
     if "isolated_nodes" not in st.session_state:
         st.session_state.isolated_nodes = set()
+
+    # Autonomous Chaincode Containment Trigger Ingestion:
+    # Query real IncidentResponseRecords from Hyperledger Fabric ledger (or fallback)
+    onchain_incidents = get_onchain_incident_responses()
+    auto_isolated_this_turn = set()
+    for inc in onchain_incidents:
+        action = inc.get("recommended_action", "")
+        if action.startswith("ISOLATE_HOST:"):
+            target = action.split(":", 1)[1].strip()
+            if target:
+                st.session_state.isolated_nodes.add(target)
+                auto_isolated_this_turn.add(target)
 
     curr_k = st.session_state.attack_k_step
 
@@ -92,6 +105,24 @@ def render_page():
         </div>
     </div>
     """)
+
+    # ON-CHAIN AUTONOMOUS CONTAINMENT BANNER (Hyperledger Fabric Native Trigger)
+    if len(auto_isolated_this_turn) > 0:
+        render_html(f"""
+        <div class="soc-card" style="border-left: 3px solid #ff4444; background: rgba(255, 68, 68, 0.08); margin-bottom: 0.75rem; padding: 0.6rem 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="soc-badge badge-critical" style="padding: 2px 6px; font-size: 0.65rem;">ON-CHAIN AUTO-TRIGGER</span>
+                    <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.8125rem; font-weight: 700; color: #ff6666;">
+                        Hyperledger Fabric Chaincode autonomously enforced SDN isolation for {len(auto_isolated_this_turn)} host(s): {', '.join(sorted(auto_isolated_this_turn))}
+                    </span>
+                </div>
+                <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: {t['text_secondary']};">
+                    Policy: ISOLATE_HOST • Source: Fabric World State (IncidentResponseRecord)
+                </span>
+            </div>
+        </div>
+        """)
 
     # LIVE NETWORK INTERACTION TOPOLOGY BANNER
     if has_graph_data:

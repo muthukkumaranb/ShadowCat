@@ -47,9 +47,9 @@ except ImportError:
     )
 
 try:
-    from backend.fabric_bridge import notarize_model, notarize_alert
+    from backend.fabric_bridge import notarize_model, notarize_alert, record_prediction_lineage
 except ImportError:
-    from fabric_bridge import notarize_model, notarize_alert
+    from fabric_bridge import notarize_model, notarize_alert, record_prediction_lineage
 
 try:
     from backend.audit_chain import append_entry as append_audit_entry
@@ -1106,7 +1106,101 @@ class ShadowcatPipeline:
             payload["notarization_mechanism"] = "none"
             payload["notarized_via"] = "none"
 
-        forecast_trajectory["notarized_via"] = payload["notarized_via"]
+        # Real 4-Stage Pipeline Lineage (Atomic Ledger Record + Chaincode Auto-Trigger)
+        # Stage 1: raw_data_hash (SHA-256 of raw input data)
+        # Stage 2: feature_hash (SHA-256 of 406-dim canonical normalized feature sequence)
+        #          RATIONALE: We select the 406-dim base engineered feature sequence (seq_30x406)
+        #          because it is the foundational, loss-free engineered representation consumed by the
+        #          primary pipeline (World Model, Stage Head, Novelty, Attributor), guaranteeing complete
+        #          forensic auditability without PCA projection loss.
+        # Stage 3: model_id ("lstm_world_model_v4", referencing the on-chain model provenance record)
+        # Stage 4: prediction_hash (SHA-256 of risk forecast, predicted stages, and novelty score)
+        import hashlib
+        import logging
+
+        raw_csv_bytes = raw_input.to_csv(index=False).encode("utf-8") if isinstance(raw_input, pd.DataFrame) else str(raw_input).encode("utf-8")
+        raw_data_hash = hashlib.sha256(raw_csv_bytes).hexdigest()
+        feature_hash = hashlib.sha256(seq_30x406.tobytes()).hexdigest()
+        model_id = "lstm_world_model_v4"
+        pred_dict = {
+            "risk": [round(float(r), 4) for r in cum_risk],
+            "stages": stage_names,
+            "novelty": round(float(novelty_score), 4),
+        }
+        prediction_hash = hashlib.sha256(json.dumps(pred_dict, sort_keys=True).encode("utf-8")).hexdigest()
+
+        # Determine severity and target node
+        max_r = max(cum_risk) if len(cum_risk) > 0 else 0.0
+        if max_r > 0.8:
+            lineage_severity = "HIGH"
+        elif max_r > 0.4:
+            lineage_severity = "MEDIUM"
+        else:
+            lineage_severity = "LOW"
+
+        target_node = "172.31.69.21"
+        if len(flagged_flows) > 0 and flagged_flows[0].get("src_ip"):
+            target_node = str(flagged_flows[0]["src_ip"])
+        elif graph_traversal.get("start_node"):
+            target_node = str(graph_traversal["start_node"])
+
+        lineage_id = f"lin_{window_id}_{raw_data_hash[:8]}"
+
+        # Record atomic lineage on Fabric ledger
+        # Go chaincode autonomously creates an IncidentResponseRecord if severity is HIGH or CRITICAL
+        lineage_ok = False
+        try:
+            lineage_ok = bool(record_prediction_lineage(
+                lineage_id=lineage_id,
+                raw_data_hash=raw_data_hash,
+                feature_hash=feature_hash,
+                model_id=model_id,
+                prediction_hash=prediction_hash,
+                severity=lineage_severity,
+                timestamp=window_start,
+                target_node=target_node,
+            ))
+        except Exception as e:
+            logging.warning(f"Fabric Lineage Notarization Failed: {e}")
+            lineage_ok = False
+
+        lineage_payload = {
+            "lineage_id": lineage_id,
+            "raw_data_hash": raw_data_hash,
+            "feature_hash": feature_hash,
+            "feature_vector_type": "406-dim canonical engineered features (loss-free audit baseline)",
+            "model_id": model_id,
+            "prediction_hash": prediction_hash,
+            "severity": lineage_severity,
+            "target_node": target_node,
+            "timestamp": window_start,
+            "notarized_via": "fabric" if lineage_ok else "sha256_fallback",
+        }
+
+        if not lineage_ok:
+            # Fall back to SHA-256 hash chaining in backend/alerts and audit_chain
+            try:
+                alerts_dir = Path(BACKEND_DIR) / "alerts"
+                alerts_dir.mkdir(parents=True, exist_ok=True)
+                lin_file = alerts_dir / f"lineage_{lineage_id}.json"
+                with open(lin_file, "w", encoding="utf-8") as f:
+                    json.dump(lineage_payload, f, indent=2)
+
+                from audit_chain import _load_chain
+                existing = _load_chain()
+                already_in_chain = any(lineage_id in e.get("description", "") for e in existing)
+                if not already_in_chain:
+                    append_audit_entry(
+                        artifact_path=str(lin_file),
+                        artifact_type="prediction_lineage",
+                        description=f"Prediction lineage {lineage_id} [{lineage_severity}] (SHA-256 fallback)",
+                    )
+                logging.info(f"Lineage {lineage_id} notarized via: sha256_fallback")
+            except Exception as e:
+                logging.warning(f"SHA-256 fallback lineage notarization failed: {e}")
+
+        payload["lineage"] = lineage_payload
+        forecast_trajectory["lineage"] = lineage_payload
 
         return payload
 

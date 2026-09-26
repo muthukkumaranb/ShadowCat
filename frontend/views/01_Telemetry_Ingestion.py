@@ -127,8 +127,8 @@ def render_page():
 
     # Active File Upload / Drop Area
     uploaded_file = st.file_uploader(
-        "Drop network telemetry (CSV, Parquet, PCAP, or JSON) or click to browse",
-        type=["csv", "parquet", "pcap", "json"],
+        "Drop network telemetry (CSV, Parquet, or JSON) or click to browse",
+        type=["csv", "parquet", "json"],
         key="telemetry_uploader",
         help="Upload enterprise network telemetry for live feature extraction and hazard scoring."
     )
@@ -145,10 +145,6 @@ def render_page():
                     df = pd.read_parquet(uploaded_file)
                 elif fname.endswith(".json"):
                     df = pd.read_json(uploaded_file)
-                elif fname.endswith(".pcap"):
-                    pcap_bytes = uploaded_file.read()
-                    pkt_count = max(100, len(pcap_bytes) // 256)
-                    df = get_canonical_benchmark_df()
                 st.session_state.ingested_df = df
                 st.session_state["_last_uploaded_name"] = fname
                 # Auto-execute live ML pipeline on newly uploaded data

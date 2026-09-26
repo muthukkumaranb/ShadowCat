@@ -228,5 +228,15 @@
     "artifact_hash": "b3eb38fad9d6484c6658a97ff4c4b0aac795b746fc2ba355efb77af633df84b0",
     "prev_entry_hash": "d497f9866b0295821724cb6e09209ba8e1d157dfbc5a820224f12c81e227054b",
     "entry_hash": "68d84d50594829128307752b3a86946696cba6bcb9749a74c54611a3b287e477"
+  },
+  {
+    "index": 23,
+    "timestamp": "2026-09-26T05:11:03.388476+00:00",
+    "artifact_path": "alerts/lineage_lin_W_14-02-2018_20180214_014400_04289303.json",
+    "artifact_type": "prediction_lineage",
+    "description": "Prediction lineage lin_W_14-02-2018_20180214_014400_04289303 [HIGH] (SHA-256 fallback)",
+    "artifact_hash": "54570a693f1e1cef21285691fc9b54c16c405bce6d1bd11228c2f455a06bb7ed",
+    "prev_entry_hash": "68d84d50594829128307752b3a86946696cba6bcb9749a74c54611a3b287e477",
+    "entry_hash": "21d3c8df24e096a3964ffec11dc710a7a00792c6bb2bae105aea80348d21e247"
   }
 ]
