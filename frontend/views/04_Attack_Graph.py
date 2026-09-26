@@ -11,12 +11,12 @@ import importlib
 import components.cytoscape_attack_graph
 importlib.reload(components.cytoscape_attack_graph)
 from components.cytoscape_attack_graph import render_cytoscape_graph
-from data_provider import get_host_risk_graph, get_fusion_experimental, get_forecast_trajectory
+from data_provider import get_host_risk_graph, get_graph_topology, get_forecast_trajectory
 
 def render_page():
     t = TOKENS.get(st.session_state.get("theme", "dark"), TOKENS["dark"])
     host_graph = get_host_risk_graph()
-    fusion = get_fusion_experimental()
+    topology = get_graph_topology()
     fc = get_forecast_trajectory()
     ml_risks = fc.get("risk", [])
 
@@ -29,8 +29,8 @@ def render_page():
 
     curr_k = st.session_state.attack_k_step
 
-    custom_nodes = fusion.get("graph_nodes", []) if fusion else []
-    custom_edges = fusion.get("graph_edges", []) if fusion else []
+    custom_nodes = topology.get("graph_nodes", []) if topology else []
+    custom_edges = topology.get("graph_edges", []) if topology else []
     total_nodes = len(custom_nodes) if (custom_nodes and len(custom_nodes) > 0) else 19
     ml_stages = fc.get("stage", [])
 
@@ -57,48 +57,25 @@ def render_page():
     </div>
     """)
 
-    # DYNAMIC GRAPH FUSION BANNER (GraphSAGE GNN + World Model)
-    fus_status = fusion.get("status", "held_back") if fusion else "held_back"
-    nodes_c = fusion.get("nodes_count", total_nodes) if fusion else total_nodes
-    edges_c = fusion.get("edges_count", len(custom_edges) if custom_edges else 40) if fusion else len(custom_edges)
-    is_fused_active = fus_status in ("active_fused", "active")
-
-    if is_fused_active:
-        render_html(f"""
-        <div class="soc-card" style="border-left: 3px solid {t['primary']}; margin-bottom: 0.75rem; padding: 0.5rem 1rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <span class="soc-badge badge-nominal" style="padding: 1px 5px; font-size: 0.65rem;">MULTIMODAL FUSION</span>
-                    <div>
-                        <span style="font-family:'JetBrains Mono', monospace; font-size:0.75rem; font-weight:700; color:{t['text_high']};">GRAPHSAGE GNN BRANCH ACTIVELY EVALUATED & FUSED</span>
-                        <span style="color: {t['text_muted']}; margin: 0 0.35rem;">//</span>
-                        <span style="font-family:'Inter', sans-serif; font-size:0.75rem; color: {t['text_secondary']};">Topological GNN evaluated on {nodes_c} host nodes and {edges_c} interaction edges, projected alongside LSTM state z(t) → z'(t).</span>
-                    </div>
-                </div>
-                <div class="soc-badge badge-nominal" style="shrink: 0;">
-                    <span class="soc-pulse-dot" style="background:{t['primary']};"></span>
-                    FUSED MODEL ACTIVE (64-DIM)
-                </div>
-            </div>
-        </div>
-        """)
-    else:
-        render_html(f"""
-        <div class="soc-caution-banner">
+    # LIVE NETWORK INTERACTION TOPOLOGY BANNER
+    render_html(f"""
+    <div class="soc-card" style="border-left: 3px solid {t['primary']}; margin-bottom: 0.75rem; padding: 0.5rem 1rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
             <div style="display: flex; align-items: center; gap: 0.5rem;">
-                <span class="soc-badge badge-caution" style="padding: 1px 5px; font-size: 0.65rem;">CAUTION</span>
+                <span class="soc-badge badge-nominal" style="padding: 1px 5px; font-size: 0.65rem;">NETWORK TOPOLOGY</span>
                 <div>
-                    <span class="soc-caution-title">EXPERIMENTAL — GRAPH FUSION SIGNAL (HELD BACK FROM PRIMARY FORECAST)</span>
+                    <span style="font-family:'JetBrains Mono', monospace; font-size:0.75rem; font-weight:700; color:{t['text_high']};">LIVE INTERACTION TOPOLOGY ACTIVE</span>
                     <span style="color: {t['text_muted']}; margin: 0 0.35rem;">//</span>
-                    <span style="color: {t['text_secondary']};">Secondary topological GNN signal calibrated for analyst review only. Not factored into automated containment playbooks.</span>
+                    <span style="font-family:'Inter', sans-serif; font-size:0.75rem; color: {t['text_secondary']};">Dynamic host interaction graph extracted from telemetry flows ({total_nodes} nodes, {len(custom_edges) if custom_edges else 19} directional flows).</span>
                 </div>
             </div>
-            <div class="soc-badge badge-caution" style="shrink: 0;">
-                <span class="soc-pulse-dot" style="background:{t['tertiary']};"></span>
-                EPISTEMIC SIGMA: 0.28
+            <div class="soc-badge badge-nominal" style="shrink: 0;">
+                <span class="soc-pulse-dot" style="background:{t['primary']};"></span>
+                CANONICAL FLOW TOPOLOGY
             </div>
         </div>
-        """)
+    </div>
+    """)
 
     # K-STEP SCRUBBER PANEL
     render_html(f"""

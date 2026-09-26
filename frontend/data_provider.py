@@ -291,12 +291,19 @@ def get_forecast_trajectory(window_id: str = None) -> dict:
     return fc
 
 
-def get_fusion_experimental() -> Optional[dict]:
+def get_graph_topology() -> Optional[dict]:
     """
-    Returns experimental GraphSAGE fusion outputs if available.
+    Returns real network graph topology (nodes and edges) constructed from flow data.
     """
     pred = _get_live_prediction()
-    return pred.get("fusion_experimental")
+    return pred.get("graph_topology")
+
+
+def get_fusion_experimental() -> Optional[dict]:
+    """
+    Deprecated alias: returns graph_topology for backward compatibility.
+    """
+    return get_graph_topology()
 
 
 
@@ -797,5 +804,6 @@ def get_demo_data() -> dict:
             "comparison_table": get_comparison_table(),
         },
         "validation": validation,
+        "graph_topology": get_graph_topology(),
         "fusion_experimental": get_fusion_experimental(),
     }

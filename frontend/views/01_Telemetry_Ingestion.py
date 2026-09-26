@@ -379,31 +379,14 @@ def render_page():
         if nov_score is None:
             nov_score = 0.12
 
-        # Robust check for optional GNN Multimodal Fusion output
-        fusion_res = p_res.get("fusion_experimental")
-        is_fusion_active = (
-            isinstance(fusion_res, dict)
-            and fusion_res.get("status") in ("active_fused", "active", "baseline_temporal")
-        )
+        # Check for real Network Topology output
+        topology_res = p_res.get("graph_topology") or p_res.get("fusion_experimental")
+        nodes_c = topology_res.get("nodes_count", 0) if isinstance(topology_res, dict) else 0
+        edges_c = topology_res.get("edges_count", 0) if isinstance(topology_res, dict) else 0
+        has_topology = (isinstance(topology_res, dict) and nodes_c > 0)
 
-        if is_fusion_active:
-            nodes_c = fusion_res.get("nodes_count", 0)
-            edges_c = fusion_res.get("edges_count", 0)
-            fusion_badge_html = '<span class="soc-badge badge-nominal">MULTIMODAL FUSION ACTIVE</span>'
-            branch2_badge_html = '<span class="soc-badge badge-caution" style="padding:0 4px; font-size:0.6rem;">GRAPHSAGE GNN</span>'
-            branch2_value_html = f"g(t) ∈ ℝ⁶⁴ <span style=\"font-size:0.75rem; color:{t['primary']}; font-weight:400;\">({nodes_c} Nodes, {edges_c} Edges)</span>"
-            branch2_desc = "Dynamic host interaction topology & message-passing embeddings"
-            branch3_badge_html = '<span class="soc-badge badge-nominal" style="padding:0 4px; font-size:0.6rem;">FUSED PROJECTION</span>'
-            branch3_value_html = "z'(t) = [g(t) ∥ z(t)] ∈ ℝ⁶⁴"
-            branch3_desc = "Fused dynamics state feeding hazard forecasting & stage classification"
-        else:
-            fusion_badge_html = '<span class="soc-badge badge-neutral" style="opacity:0.85;">GNN FUSION: NOT ACTIVE THIS SESSION</span>'
-            branch2_badge_html = '<span class="soc-badge badge-neutral" style="padding:0 4px; font-size:0.6rem;">OFFLINE / OPTIONAL</span>'
-            branch2_value_html = f'<span style="font-size:0.85rem; color:{t["text_muted"]}; font-weight:600;">NOT ACTIVE (GNN UNLOADED)</span>'
-            branch2_desc = "Topological GNN branch unavailable or dependency uninstalled. System running temporal-only baseline."
-            branch3_badge_html = '<span class="soc-badge badge-neutral" style="padding:0 4px; font-size:0.6rem;">TEMPORAL BYPASS</span>'
-            branch3_value_html = "z'(t) = z(t) ∈ ℝ⁶⁴"
-            branch3_desc = "Temporal dynamics state passed directly to hazard forecasting (unfused mode)."
+        topology_badge_html = '<span class="soc-badge badge-nominal" style="padding:0 4px; font-size:0.6rem;">ACTIVE FLOW TOPOLOGY</span>' if has_topology else '<span class="soc-badge badge-neutral" style="padding:0 4px; font-size:0.6rem;">STANDALONE TEMPORAL</span>'
+        arch_badge_html = '<span class="soc-badge badge-nominal" style="opacity:0.9;">TEMPORAL WORLD MODEL + CANONICAL TOPOLOGY</span>'
 
         if max_r >= 0.75:
             badge_cls = "badge-critical"
@@ -474,13 +457,13 @@ def render_page():
                 {"".join([f"<span style='background:{t['surface_lowest']}; padding:2px 8px; border:1px solid {t['border']}; border-radius:3px;'>t+{i+1}m: <b style='color:{t['secondary'] if r >= 0.75 else t['primary']}'>{r:.2f}</b></span>" for i, r in enumerate(risks)])}
             </div>
 
-            <!-- Dual-Branch Multimodal Architecture: Temporal + Graph Neural Network Fusion -->
+            <!-- Verified Architecture: Temporal World Model + Real Network Interaction Topology -->
             <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid {t['border']};">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem; flex-wrap:wrap; gap:0.5rem;">
                     <div style="font-family:'JetBrains Mono', monospace; font-size:0.75rem; font-weight:700; color:{t['text_high']}; text-transform:uppercase;">
-                        Dual-Branch Multimodal Architecture Status
+                        Telemetry Dynamics & Network Topology Architecture Status
                     </div>
-                    {fusion_badge_html}
+                    {arch_badge_html}
                 </div>
                 <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem;">
                     <div class="soc-card-nested" style="border-left: 2px solid {t['primary']};">
@@ -495,28 +478,28 @@ def render_page():
                             Continuous autoregressive state over L=30 windows (406-dim UCS)
                         </div>
                     </div>
-                    <div class="soc-card-nested" style="border-left: 2px solid {t['secondary'] if is_fusion_active else t.get('border', '#1E2633')};">
+                    <div class="soc-card-nested" style="border-left: 2px solid {t['primary'] if has_topology else t.get('border', '#1E2633')};">
                         <div style="display:flex; justify-content:space-between;">
-                            <span style="font-family:'JetBrains Mono', monospace; font-size:0.6875rem; color:{t['text_muted']};">BRANCH 2: GRAPH NEURAL NETWORK</span>
-                            {branch2_badge_html}
+                            <span style="font-family:'JetBrains Mono', monospace; font-size:0.6875rem; color:{t['text_muted']};">BRANCH 2: REAL NETWORK TOPOLOGY</span>
+                            {topology_badge_html}
                         </div>
                         <div style="font-family:'JetBrains Mono', monospace; font-size:1.1rem; font-weight:700; color:{t['text_high']}; margin-top:2px;">
-                            {branch2_value_html}
+                            {nodes_c} Nodes, {edges_c} Edges
                         </div>
                         <div style="font-family:'Inter', sans-serif; font-size:0.6875rem; color:{t['text_secondary']}; margin-top:2px;">
-                            {branch2_desc}
+                            Canonical host interaction topology constructed from real telemetry flows
                         </div>
                     </div>
-                    <div class="soc-card-nested" style="border-left: 2px solid {t.get('tertiary', '#FFB84D') if is_fusion_active else t.get('border', '#1E2633')};">
+                    <div class="soc-card-nested" style="border-left: 2px solid {t.get('tertiary', '#FFB84D')};">
                         <div style="display:flex; justify-content:space-between;">
-                            <span style="font-family:'JetBrains Mono', monospace; font-size:0.6875rem; color:{t['text_muted']};">MULTIMODAL FUSION ENGINE</span>
-                            {branch3_badge_html}
+                            <span style="font-family:'JetBrains Mono', monospace; font-size:0.6875rem; color:{t['text_muted']};">HAZARD FORECASTING PIPELINE</span>
+                            <span class="soc-badge badge-nominal" style="padding:0 4px; font-size:0.6rem;">37-FOLD LOEO ENSEMBLE</span>
                         </div>
                         <div style="font-family:'JetBrains Mono', monospace; font-size:1.1rem; font-weight:700; color:{t['text_high']}; margin-top:2px;">
-                            {branch3_value_html}
+                            z'(t) = z(t) ∈ ℝ⁶⁴
                         </div>
                         <div style="font-family:'Inter', sans-serif; font-size:0.6875rem; color:{t['text_secondary']}; margin-top:2px;">
-                            {branch3_desc}
+                            Calibrated temporal dynamics state feeding hazard forecasting & stage classification
                         </div>
                     </div>
                 </div>

@@ -64,28 +64,25 @@ def test_missing_gnn_gui_resilience():
     all_text = " ".join([getattr(m, "value", "") for m in at.markdown])
 
     has_summary = "LSTM GAUSSIAN WORLD MODEL PREDICTION SUMMARY" in all_text
-    has_dual_branch = "Dual-Branch Multimodal Architecture Status" in all_text
-    has_gnn_inactive = "GNN FUSION: NOT ACTIVE THIS SESSION" in all_text
-    has_gnn_unloaded = "NOT ACTIVE (GNN UNLOADED)" in all_text
-    has_temporal_bypass = "TEMPORAL BYPASS" in all_text
+    has_arch_status = "Telemetry Dynamics & Network Topology Architecture Status" in all_text
+    has_canonical = "TEMPORAL WORLD MODEL + CANONICAL TOPOLOGY" in all_text
+    has_temporal_bypass = "z'(t) = z(t) ∈ ℝ⁶⁴" in all_text
     has_fake_numbers = "12 Nodes, 40 Edges" in all_text
 
     print("\n--- UI State Assertions ---")
     print(f"  Does 'LSTM GAUSSIAN WORLD MODEL PREDICTION SUMMARY' render? {has_summary}")
-    print(f"  Does 'Dual-Branch Multimodal Architecture Status' render?   {has_dual_branch}")
-    print(f"  Does 'GNN FUSION: NOT ACTIVE THIS SESSION' badge render?   {has_gnn_inactive}")
-    print(f"  Does 'NOT ACTIVE (GNN UNLOADED)' text render?              {has_gnn_unloaded}")
-    print(f"  Does 'TEMPORAL BYPASS' badge render?                       {has_temporal_bypass}")
+    print(f"  Does 'Telemetry Dynamics & Network Topology Architecture Status' render? {has_arch_status}")
+    print(f"  Does 'TEMPORAL WORLD MODEL + CANONICAL TOPOLOGY' badge render? {has_canonical}")
+    print(f"  Does 'z'(t) = z(t) ∈ ℝ⁶⁴' render?                          {has_temporal_bypass}")
     print(f"  Are deceptive placeholder numbers ('12 Nodes, 40 Edges') present? {has_fake_numbers}")
 
     # Core verifications:
     assert len(at.exception) == 0, f"AppTest raised unexpected exception: {[e.value for e in at.exception]}"
     assert len(at.error) == 0, f"AppTest raised unexpected error: {[err.value for err in at.error]}"
-    assert has_summary, "Prediction summary MUST render on valid data even without GNN"
-    assert has_dual_branch, "Architecture status panel MUST render"
-    assert has_gnn_inactive, "Must display 'GNN FUSION: NOT ACTIVE THIS SESSION' when GNN is unavailable"
-    assert has_gnn_unloaded, "Must display 'NOT ACTIVE (GNN UNLOADED)'"
-    assert has_temporal_bypass, "Must display 'TEMPORAL BYPASS'"
+    assert has_summary, "Prediction summary MUST render on valid data"
+    assert has_arch_status, "Architecture status panel MUST render"
+    assert has_canonical, "Must display 'TEMPORAL WORLD MODEL + CANONICAL TOPOLOGY' badge"
+    assert has_temporal_bypass, "Must display 'z'(t) = z(t) ∈ ℝ⁶⁴'"
     assert not has_fake_numbers, "Must NOT display deceptive fake numbers (12 Nodes, 40 Edges)"
 
     print("\n[+] SUCCESS: Dashboard safely degraded to clear 'not active' state with 0 crashes!")

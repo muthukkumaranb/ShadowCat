@@ -31,7 +31,7 @@
 | :--- | :--- | :--- |
 | `forecast_trajectory` | `models/world_model.pt` | PyTorch sequence model (LSTM / Transformer) checkpoint |
 | `comparison_table` | `models/baseline_benchmarks.json` | JSON containing empirical evaluation metrics vs baselines |
-| `host_risk_graph` | `models/gnn_topology.pt` | Graph Neural Network (GraphSAGE) model checkpoint |
+| `host_risk_graph` | `models/graph_topology.parquet` | Canonical network interaction topology edgelist/lookup |
 | `attributions` | `models/integrated_gradients.npz` | Pre-computed or dynamic feature attribution weights |
 | `novelty_score` | `models/novelty_detector.pt` | Latent space reconstruction / Mahalanobis novelty head |
 | `flagged_flows` | `models/flow_classifier.pt` | Flow scoring module identifying top anomalous flows |
@@ -305,7 +305,7 @@ Returns authoritative LOEO 37-fold cross-validation metrics, horizon stability d
 ## 3. Step-by-Step Integration Workflow for Backend Teammate
 
 1. **Step 1: Train & Save Checkpoint Artifacts**  
-   Export your trained PyTorch weights / GNN models into the `models/` directory using the filenames listed in §1 (e.g. `models/world_model.pt`).
+   Export your trained PyTorch weights into the `models/` directory using the filenames listed in §1 (e.g. `models/world_model.pt`).
 2. **Step 2: Implement Inference in `data_provider.py`**  
    Replace the internal mock dictionary reading in the relevant accessor function with your `model.predict()` or tensor extraction call.
 3. **Step 3: Confirm Output Contract Compliance**  

@@ -37,8 +37,8 @@ I read every word on all 6 slides. Here is **every feature and claim** from the 
 | Feature Extraction: Flow + Packet (Scapy) | ❌ Backend only | — |
 | Unified Cyber State S(t): flow + packet features + masks | ✅ State ID + feature summary | State component |
 | LSTM Encoder Z(t), L=30 | ❌ Backend only | — |
-| GraphSAGE Encoder g(t), 2-layer, fused with z(t) | ❌ Backend only | — |
-| Z'(t) = [Z(t) : g(t)] | ❌ Backend only | — |
+| Network Flow Topology Builder (Canonical Graphs) | ❌ Backend only | — |
+| Z'(t) = Z(t) Pass-Through (GNN retired after 37-fold LOEO) | ❌ Backend only | — |
 | Dynamics Head — Next-State Prediction + K-Step Rollout | ✅ Label as data source | "Source: dynamics head" |
 | **Hazard + Stage → Risk Score + ATT&CK Stage + Uncertainty Bands** | ✅ All three outputs | 3 UI elements |
 | **Explainable Dashboard** (Streamlit-offline) | ✅ This IS the dashboard | Entire app |
@@ -358,7 +358,7 @@ data = DEMO_DATA
 data = predict(input_data)
 ```
 
-The frontend consumes `data["forecast"]`, `data["counterfactual"]`, etc. It does NOT care about LSTM/GNN/PyTorch internals.
+The frontend consumes `data["forecast"]`, `data["counterfactual"]`, etc. It does NOT care about LSTM/PyTorch internals.
 
 ---
 

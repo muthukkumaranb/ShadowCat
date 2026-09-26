@@ -71,18 +71,18 @@ def verify_gui_ingestion():
     # Check halting behavior (st.stop())
     ctu13_all_text = " ".join([getattr(m, "value", "") for m in at_ctu13.markdown])
     has_summary_ctu13 = "LSTM GAUSSIAN WORLD MODEL PREDICTION SUMMARY" in ctu13_all_text
-    has_fusion_ctu13 = "Dual-Branch Multimodal Architecture Status" in ctu13_all_text
+    has_fusion_ctu13 = "Telemetry Dynamics & Network Topology Architecture Status" in ctu13_all_text
     has_terminal_ctu13 = "Ingestion Event & System Log Stream" in ctu13_all_text
 
     print("\n--- CTU-13 Halting & Non-Rendering Verification ---")
     print(f"  Does 'LSTM GAUSSIAN WORLD MODEL PREDICTION SUMMARY' render? {has_summary_ctu13}")
-    print(f"  Does 'Dual-Branch Multimodal Architecture Status' render?   {has_fusion_ctu13}")
+    print(f"  Does 'Telemetry Dynamics & Network Topology Architecture Status' render?   {has_fusion_ctu13}")
     print(f"  Does 'Ingestion Event & System Log Stream' render?         {has_terminal_ctu13}")
 
     assert len(at_ctu13.error) == 1, f"Expected exactly 1 error, got {len(at_ctu13.error)}"
     assert "INGESTION BLOCKED: SCHEMA MISMATCH" in at_ctu13.error[0].value, "Error text missing block message"
     assert not has_summary_ctu13, "World model prediction summary should NOT render on CTU-13"
-    assert not has_fusion_ctu13, "Dual-branch fusion status should NOT render on CTU-13"
+    assert not has_fusion_ctu13, "Architecture status should NOT render on CTU-13"
     assert not has_terminal_ctu13, "Terminal log stream should NOT render on CTU-13"
     print("[+] CTU-13 Rejection & GUI Halting Confirmed!")
 
@@ -116,17 +116,17 @@ def verify_gui_ingestion():
     # Check dashboard rendering
     cicids_all_text = " ".join([getattr(m, "value", "") for m in at_cicids.markdown])
     has_summary_cicids = "LSTM GAUSSIAN WORLD MODEL PREDICTION SUMMARY" in cicids_all_text
-    has_fusion_cicids = "Dual-Branch Multimodal Architecture Status" in cicids_all_text
+    has_fusion_cicids = "Telemetry Dynamics & Network Topology Architecture Status" in cicids_all_text
     has_terminal_cicids = "Ingestion Event & System Log Stream" in cicids_all_text
 
     print("\n--- CIC-IDS-2018 Dashboard Rendering Verification ---")
     print(f"  Does 'LSTM GAUSSIAN WORLD MODEL PREDICTION SUMMARY' render? {has_summary_cicids}")
-    print(f"  Does 'Dual-Branch Multimodal Architecture Status' render?   {has_fusion_cicids}")
+    print(f"  Does 'Telemetry Dynamics & Network Topology Architecture Status' render?   {has_fusion_cicids}")
     print(f"  Does 'Ingestion Event & System Log Stream' render?         {has_terminal_cicids}")
 
     assert len(at_cicids.error) == 0, f"Expected 0 errors on valid dataset, got {len(at_cicids.error)}"
     assert has_summary_cicids, "World model prediction summary MUST render on valid CIC-IDS-2018"
-    assert has_fusion_cicids, "Dual-branch fusion status MUST render on valid CIC-IDS-2018"
+    assert has_fusion_cicids, "Architecture status MUST render on valid CIC-IDS-2018"
     assert has_terminal_cicids, "Terminal log stream MUST render on valid CIC-IDS-2018"
     print("[+] CIC-IDS-2018 Normal Dashboard Rendering Confirmed (No Regression)!")
 

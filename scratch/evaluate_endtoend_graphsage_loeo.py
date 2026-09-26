@@ -420,7 +420,8 @@ def train_eval_graphsage(
 # Section 4: Main Evaluation
 # ═══════════════════════════════════════════════════════════════════════
 
-def run_evaluation(target_choice: str = "both", subset_choice: str = "all", max_folds: int = None, epochs: int = 10):
+def run_evaluation(target_choice: str = "both", subset_choice: str = "all", max_folds: int = None, epochs: int = 10, resume: bool = False):
+    t0_total = time.time()
     set_seed(42)
     device = get_device()
     config = UCSConfig()
@@ -469,6 +470,18 @@ def run_evaluation(target_choice: str = "both", subset_choice: str = "all", max_
         print(f"{'=' * 70}", flush=True)
 
         fold_results = []
+        existing_by_ep = {}
+        if resume and results_file.exists():
+            try:
+                with open(results_file) as f:
+                    prior = json.load(f)
+                if target_name in prior and isinstance(prior[target_name], list):
+                    for r in prior[target_name]:
+                        existing_by_ep[r.get("held_out_episode")] = r
+                print(f"  Resuming: found {len(existing_by_ep)} completed folds for {target_name}", flush=True)
+            except Exception as e:
+                print(f"  Warning loading prior results for resume: {e}", flush=True)
+
         folds_to_run = manifest["folds"]
         if subset_choice == "botnet":
             folds_to_run = [f for f in folds_to_run if df.loc[df["episode_id"] == f["held_out_episode_id"], "label_attack_type"].iloc[0] == "Botnet"]
@@ -482,9 +495,23 @@ def run_evaluation(target_choice: str = "both", subset_choice: str = "all", max_
         for fold in folds_to_run:
             fold_id = fold["fold_id"]
             held_out = fold["held_out_episode_id"]
+            attack_type = df.loc[df["episode_id"] == held_out, "label_attack_type"].iloc[0]
+
+            if resume and held_out in existing_by_ep:
+                r = existing_by_ep[held_out]
+                fold_results.append(r)
+                delta = r["graphsage_f1"] - r["scalar_f1"]
+                marker = "+" if delta > 0.001 else ("-" if delta < -0.001 else "=")
+                print(
+                    f"  Fold {fold_id:2d} ({attack_type:16s}) | "
+                    f"Plain={r['plain_f1']:.4f}  Scalar={r['scalar_f1']:.4f}  GraphSAGE={r['graphsage_f1']:.4f} {marker}  "
+                    f"[resumed {r.get('elapsed_sec', 0.0):.1f}s]",
+                    flush=True,
+                )
+                continue
+
             train_indices = fold["train_indices"]
             test_indices = fold["test_indices"]
-            attack_type = df.loc[df["episode_id"] == held_out, "label_attack_type"].iloc[0]
             t0_fold = time.time()
 
             train_df = df.iloc[train_indices].copy().reset_index()
@@ -717,6 +744,11 @@ def run_evaluation(target_choice: str = "both", subset_choice: str = "all", max_
                       f"(Delta={delta:+.4f}) -> NO IMPROVEMENT over scalar features. "
                       f"Graph topology does not add signal beyond cheap graph statistics for this task.")
 
+    total_elapsed = time.time() - t0_total
+    print(f"\n{'=' * 70}")
+    print(f"  TOTAL EVALUATION WALL-CLOCK RUNTIME: {total_elapsed:.1f}s ({total_elapsed / 60:.2f} min)")
+    print(f"{'=' * 70}\n", flush=True)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="End-to-End GraphSAGE LOEO Evaluation")
@@ -728,5 +760,7 @@ if __name__ == "__main__":
                         help="Maximum number of folds to run")
     parser.add_argument("--epochs", type=int, default=10,
                         help="Number of epochs to train (default: 10)")
+    parser.add_argument("--resume", action="store_true", default=False,
+                        help="Resume from existing results in results_file if present")
     args = parser.parse_args()
-    run_evaluation(target_choice=args.target, subset_choice=args.subset, max_folds=args.max_folds, epochs=args.epochs)
+    run_evaluation(target_choice=args.target, subset_choice=args.subset, max_folds=args.max_folds, epochs=args.epochs, resume=args.resume)

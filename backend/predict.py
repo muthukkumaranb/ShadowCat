@@ -262,52 +262,18 @@ class ShadowcatPipeline:
         else:
             self.world_model_loaded = False
 
-        # 2b. [EXPERIMENTAL] Load GNN Fused Model if available
+        # 2b. Canonical graph topology metadata for dynamic topology views
         self.fused_model_loaded = False
         self.fused_model = None
-        try:
-            import sys
-            import os
-            ml2_path = os.path.abspath('ml2-full/GNN_FINAL')
-            if ml2_path not in sys.path:
-                sys.path.insert(0, ml2_path)
-            import torch_geometric
-            from ml2.models.fusion import FusedModel
-            
-            fused_ckpt_path = 'ml2-full/GNN_FINAL/ml2/results/ablation/fused/best_model.pt'
-            if os.path.exists(fused_ckpt_path):
-                fused_ckpt = torch.load(fused_ckpt_path, map_location=self.device, weights_only=False)
-                self.fused_model = FusedModel(z_dim=64, output_dim=64)
-                if 'model_state_dict' in fused_ckpt:
-                    state_dict = fused_ckpt['model_state_dict']
-                else:
-                    state_dict = fused_ckpt
-                    
-                missing_keys, unexpected_keys = self.fused_model.load_state_dict(state_dict, strict=False)
-                import logging
-                if missing_keys:
-                    logging.info(f"FusedModel missing keys: {missing_keys}")
-                if unexpected_keys:
-                    logging.info(f"FusedModel unexpected keys: {unexpected_keys}")
-                self.fused_model.to(self.device)
-                self.fused_model.eval()
-                self.fused_model_loaded = True
-
-                # Load canonical graph edges for live windows
-                dat_path = Path(dat_dir)
-                edges_path = dat_path / "ucs_graph_edgelists.parquet"
-                lookup_path = dat_path / "node_lookup.parquet"
-                if edges_path.exists() and lookup_path.exists():
-                    self.ucs_edges = pd.read_parquet(edges_path)
-                    self.node_lookup = pd.read_parquet(lookup_path)
-                else:
-                    self.ucs_edges = None
-                    self.node_lookup = None
-        except Exception as e:
-            import logging
-            logging.warning(f"Failed to load experimental FusedModel: {e}")
-            self.fused_model_loaded = False
-            self.fused_model = None
+        dat_path = Path(dat_dir)
+        edges_path = dat_path / "ucs_graph_edgelists.parquet"
+        lookup_path = dat_path / "node_lookup.parquet"
+        if edges_path.exists() and lookup_path.exists():
+            self.ucs_edges = pd.read_parquet(edges_path)
+            self.node_lookup = pd.read_parquet(lookup_path)
+        else:
+            self.ucs_edges = None
+            self.node_lookup = None
 
         # 3. Load Stage Head (ATT&CK Stage Classifier)
         st_path = stage_head_path or (
@@ -621,174 +587,118 @@ class ShadowcatPipeline:
             pred_mean_t1, pred_std_t1 = self.world_model(seq_tensor)
             z_t = self.world_model.extract_latent_z(seq_tensor)  # 64-dim latent
 
-        # [MULTIMODAL FUSION] GraphSAGE GNN + LSTM Gaussian World Model
-        fusion_experimental_result = None
-        if getattr(self, 'fused_model_loaded', False) and self.fused_model is not None:
-            try:
-                B = z_t.shape[0]
-                node_feature_dim = 11
-                
-                # Default fallback
-                x = torch.zeros((B, node_feature_dim), device=self.device)
-                edge_index = torch.zeros((2, 0), dtype=torch.long, device=self.device)
-                batch = torch.zeros(B, dtype=torch.long, device=self.device)
-                nodes_info = []
-                edges_info = []
-                graph_built = False
+        # Network Topology Construction (real host & interaction topology independent of neural model)
+        nodes_info = []
+        edges_info = []
+        graph_built = False
+        try:
+            has_ip_flows = isinstance(raw_input, pd.DataFrame) and any(
+                c in raw_input.columns for c in ("Src IP", "src_ip", "Dst IP", "dst_ip")
+            )
 
-                has_ip_flows = isinstance(raw_input, pd.DataFrame) and any(
-                    c in raw_input.columns for c in ("Src IP", "src_ip", "Dst IP", "dst_ip")
-                )
-
-                # Path B (Preferred for raw flows): Live Dynamic Topology Construction from input flows (GraphTopologyBuilder)
-                if has_ip_flows and len(raw_input) > 0:
-                    from src.graph_builder import GraphTopologyBuilder
-                    gtb = GraphTopologyBuilder()
-                    flows_df = raw_input.copy()
-                    if "timestamp_utc" not in flows_df.columns:
-                        if "Timestamp" in flows_df.columns:
-                            flows_df["timestamp_utc"] = pd.to_datetime(flows_df["Timestamp"], errors="coerce", utc=True)
-                        elif "timestamp" in flows_df.columns:
-                            flows_df["timestamp_utc"] = pd.to_datetime(flows_df["timestamp"], errors="coerce", utc=True)
-                        else:
-                            base_ref = pd.Timestamp("2026-09-18 14:00:00", tz="UTC")
-                            flows_df["timestamp_utc"] = [base_ref + pd.Timedelta(seconds=i*15) for i in range(len(flows_df))]
-                    if flows_df["timestamp_utc"].isna().any():
+            # Path B (Preferred for raw flows): Live Dynamic Topology Construction from input flows (GraphTopologyBuilder)
+            if has_ip_flows and len(raw_input) > 0:
+                from src.graph_builder import GraphTopologyBuilder
+                gtb = GraphTopologyBuilder()
+                flows_df = raw_input.copy()
+                if "timestamp_utc" not in flows_df.columns:
+                    if "Timestamp" in flows_df.columns:
+                        flows_df["timestamp_utc"] = pd.to_datetime(flows_df["Timestamp"], errors="coerce", utc=True)
+                    elif "timestamp" in flows_df.columns:
+                        flows_df["timestamp_utc"] = pd.to_datetime(flows_df["timestamp"], errors="coerce", utc=True)
+                    else:
                         base_ref = pd.Timestamp("2026-09-18 14:00:00", tz="UTC")
-                        flows_df["timestamp_utc"] = flows_df["timestamp_utc"].fillna(
-                            pd.Series([base_ref + pd.Timedelta(seconds=i*15) for i in range(len(flows_df))])
-                        )
-                    
-                    edge_df, node_lookup_df, _ = gtb.build_window_edge_lists(flows_df, interval_sec=60)
-                    if len(node_lookup_df) > 0 and len(edge_df) > 0:
-                        lookup_order = {nid: idx for idx, nid in enumerate(node_lookup_df["node_id"])}
-                        node_ids = sorted(
-                            set(edge_df["src_node_id"]).union(edge_df["dst_node_id"]),
-                            key=lookup_order.__getitem__,
-                        )
-                        node_to_idx = {node_id: idx for idx, node_id in enumerate(node_ids)}
-                        x_np = np.zeros((len(node_ids), 11), dtype=np.float32)
-                        for edge in edge_df.itertuples(index=False):
-                            src = node_to_idx[edge.src_node_id]
-                            dst = node_to_idx[edge.dst_node_id]
-                            x_np[src, 1] += 1
-                            x_np[dst, 0] += 1
-                            x_np[src, 3] += 1
-                            x_np[dst, 3] += 1
-                            x_np[src, 6] += float(edge.byte_count_sum)
-                            x_np[dst, 6] += float(edge.byte_count_sum)
-                            x_np[src, 8] += float(edge.packet_count_sum)
-                            x_np[dst, 8] += float(edge.packet_count_sum)
+                        flows_df["timestamp_utc"] = [base_ref + pd.Timedelta(seconds=i*15) for i in range(len(flows_df))]
+                if flows_df["timestamp_utc"].isna().any():
+                    base_ref = pd.Timestamp("2026-09-18 14:00:00", tz="UTC")
+                    flows_df["timestamp_utc"] = flows_df["timestamp_utc"].fillna(
+                        pd.Series([base_ref + pd.Timedelta(seconds=i*15) for i in range(len(flows_df))])
+                    )
+                
+                edge_df, node_lookup_df, _ = gtb.build_window_edge_lists(flows_df, interval_sec=60)
+                if len(node_lookup_df) > 0 and len(edge_df) > 0:
+                    id_to_ep = dict(zip(node_lookup_df["node_id"], node_lookup_df["endpoint_identifier"]))
+                    nodes_info = []
+                    for ep in node_lookup_df["endpoint_identifier"][:30]:
+                        ep_str = str(ep)
+                        if any(p in ep_str for p in ("443", "80", "web", "http")):
+                            role = "Web / Ingress Gateway"
+                        elif any(p in ep_str for p in ("22", "ssh")):
+                            role = "SSH Jump Host"
+                        elif any(p in ep_str for p in ("53", "dns")):
+                            role = "Core DNS Resolver"
+                        elif any(p in ep_str for p in ("88", "389", "auth", "kerberos", "ldap")):
+                            role = "Identity / Auth Cluster"
+                        elif ep_str.startswith("10.") or ep_str.startswith("192.168.") or ep_str.startswith("172."):
+                            role = "Enclave Workstation / Internal Host"
+                        else:
+                            role = "External / Remote Endpoint"
+                        nodes_info.append({
+                            "id": ep_str,
+                            "name": ep_str,
+                            "ip": ep_str,
+                            "role": role,
+                        })
 
-                        src_idx = [node_to_idx[e] for e in edge_df["src_node_id"]]
-                        dst_idx = [node_to_idx[e] for e in edge_df["dst_node_id"]]
-                        edge_index = torch.tensor([src_idx, dst_idx], dtype=torch.long, device=self.device)
-                        x = torch.from_numpy(x_np).to(self.device)
-                        batch = torch.zeros(x.shape[0], dtype=torch.long, device=self.device)
-                        graph_built = True
+                    edges_info = []
+                    for row in edge_df.head(45).itertuples(index=False):
+                        src_ep = str(id_to_ep.get(row.src_node_id, row.src_node_id))
+                        dst_ep = str(id_to_ep.get(row.dst_node_id, row.dst_node_id))
+                        edges_info.append({
+                            "source": src_ep,
+                            "target": dst_ep,
+                            "flow_count": int(row.flow_count),
+                            "byte_count": float(row.byte_count_sum),
+                            "packet_count": float(row.packet_count_sum),
+                            "label": f"{int(row.flow_count)} flows ({float(row.byte_count_sum)/1024:.1f} KB)",
+                        })
+                    graph_built = True
 
-                        id_to_ep = dict(zip(node_lookup_df["node_id"], node_lookup_df["endpoint_identifier"]))
-                        nodes_info = []
-                        for ep in node_lookup_df["endpoint_identifier"][:30]:
-                            ep_str = str(ep)
-                            if any(p in ep_str for p in ("443", "80", "web", "http")):
-                                role = "Web / Ingress Gateway"
-                            elif any(p in ep_str for p in ("22", "ssh")):
-                                role = "SSH Jump Host"
-                            elif any(p in ep_str for p in ("53", "dns")):
-                                role = "Core DNS Resolver"
-                            elif any(p in ep_str for p in ("88", "389", "auth", "kerberos", "ldap")):
-                                role = "Identity / Auth Cluster"
-                            elif ep_str.startswith("10.") or ep_str.startswith("192.168.") or ep_str.startswith("172."):
-                                role = "Enclave Workstation / Internal Host"
-                            else:
-                                role = "External / Remote Endpoint"
-                            nodes_info.append({
-                                "id": ep_str,
-                                "name": ep_str,
-                                "ip": ep_str,
-                                "role": role,
-                            })
+            # Path A: Pre-computed canonical UCS graph edgelists (for windowed parquet datasets)
+            if not graph_built and getattr(self, 'ucs_edges', None) is not None and getattr(self, 'node_lookup', None) is not None:
+                w_df = window_df.tail(1).copy()
+                w_id = w_df["window_id"].iloc[0]
+                window_edges = self.ucs_edges[self.ucs_edges["window_id"] == w_id]
+                if len(window_edges) > 0:
+                    id_to_ep = dict(zip(self.node_lookup["node_id"], self.node_lookup["endpoint_identifier"]))
+                    node_ids = sorted(set(window_edges["src_node_id"]).union(window_edges["dst_node_id"]))
+                    nodes_info = []
+                    for nid in node_ids[:30]:
+                        ep_str = str(id_to_ep.get(nid, f"node-{nid}"))
+                        role = "External Service Port" if "SvcPort" in ep_str else "Enclave Host Node"
+                        nodes_info.append({
+                            "id": ep_str,
+                            "name": ep_str,
+                            "ip": ep_str,
+                            "role": role,
+                        })
+                    edges_info = []
+                    for row in window_edges.head(45).itertuples(index=False):
+                        src_ep = str(id_to_ep.get(row.src_node_id, row.src_node_id))
+                        dst_ep = str(id_to_ep.get(row.dst_node_id, row.dst_node_id))
+                        fc = int(getattr(row, "flow_count", 1))
+                        bc = float(getattr(row, "byte_count_sum", 0.0))
+                        pk = float(getattr(row, "packet_count_sum", 0.0))
+                        edges_info.append({
+                            "source": src_ep,
+                            "target": dst_ep,
+                            "flow_count": fc,
+                            "byte_count": bc,
+                            "packet_count": pk,
+                            "label": f"{fc} flows ({bc/1024:.1f} KB)" if bc > 0 else f"{fc} flows",
+                        })
+                    graph_built = True
+        except Exception as e:
+            import logging
+            logging.warning(f"Graph topology construction failed at runtime: {e}")
 
-                        edges_info = []
-                        for row in edge_df.head(45).itertuples(index=False):
-                            src_ep = str(id_to_ep.get(row.src_node_id, row.src_node_id))
-                            dst_ep = str(id_to_ep.get(row.dst_node_id, row.dst_node_id))
-                            edges_info.append({
-                                "source": src_ep,
-                                "target": dst_ep,
-                                "flow_count": int(row.flow_count),
-                                "byte_count": float(row.byte_count_sum),
-                                "packet_count": float(row.packet_count_sum),
-                                "label": f"{int(row.flow_count)} flows ({float(row.byte_count_sum)/1024:.1f} KB)",
-                            })
-
-                # Path A: Pre-computed canonical UCS graph edgelists (for windowed parquet datasets)
-                if not graph_built and getattr(self, 'ucs_edges', None) is not None and getattr(self, 'node_lookup', None) is not None:
-                    from ml2.data.canonical_ucs import build_canonical_graphs
-                    w_df = window_df.tail(1).copy()
-                    if "split" not in w_df.columns:
-                        w_df["split"] = "test"
-                    if "label_binary" not in w_df.columns:
-                        w_df["label_binary"] = 0
-                    w_id = w_df["window_id"].iloc[0]
-                    window_edges = self.ucs_edges[self.ucs_edges["window_id"] == w_id]
-                    if len(window_edges) > 0:
-                        graphs = build_canonical_graphs(w_df, window_edges, self.node_lookup)
-                        if len(graphs) > 0:
-                            g = graphs[0]
-                            x = g.x.to(self.device)
-                            edge_index = g.edge_index.to(self.device)
-                            batch = torch.zeros(x.shape[0], dtype=torch.long, device=self.device)
-                            graph_built = True
-
-                            id_to_ep = dict(zip(self.node_lookup["node_id"], self.node_lookup["endpoint_identifier"]))
-                            node_ids = sorted(set(window_edges["src_node_id"]).union(window_edges["dst_node_id"]))
-                            nodes_info = []
-                            for nid in node_ids[:30]:
-                                ep_str = str(id_to_ep.get(nid, f"node-{nid}"))
-                                role = "External Service Port" if "SvcPort" in ep_str else "Enclave Host Node"
-                                nodes_info.append({
-                                    "id": ep_str,
-                                    "name": ep_str,
-                                    "ip": ep_str,
-                                    "role": role,
-                                })
-                            edges_info = []
-                            for row in window_edges.head(45).itertuples(index=False):
-                                src_ep = str(id_to_ep.get(row.src_node_id, row.src_node_id))
-                                dst_ep = str(id_to_ep.get(row.dst_node_id, row.dst_node_id))
-                                fc = int(getattr(row, "flow_count", 1))
-                                bc = float(getattr(row, "byte_count_sum", 0.0))
-                                pk = float(getattr(row, "packet_count_sum", 0.0))
-                                edges_info.append({
-                                    "source": src_ep,
-                                    "target": dst_ep,
-                                    "flow_count": fc,
-                                    "byte_count": bc,
-                                    "packet_count": pk,
-                                    "label": f"{fc} flows ({bc/1024:.1f} KB)" if bc > 0 else f"{fc} flows",
-                                })
-
-                with torch.no_grad():
-                    fused_out = self.fused_model(x, edge_index, z_t, batch)
-
-                fusion_experimental_result = {
-                    "status": "active_fused" if graph_built else "baseline_temporal",
-                    "nodes_count": int(x.shape[0]),
-                    "edges_count": int(edge_index.shape[1]),
-                    "graph_embedding_dim": 64,
-                    "temporal_embedding_dim": 64,
-                    "fused_embedding_dim": int(fused_out.shape[-1]),
-                    "z_prime_t": fused_out.cpu().numpy().tolist(),
-                    "note": f"GraphSAGE GNN branch computed from {x.shape[0]} interaction nodes and {edge_index.shape[1]} edges, fused with LSTM World Model z(t).",
-                    "graph_nodes": nodes_info,
-                    "graph_edges": edges_info,
-                }
-            except Exception as e:
-                import logging
-                logging.warning(f"Experimental fusion branch failed at runtime: {e}")
-                fusion_experimental_result = {"status": "error", "message": str(e)}
+        graph_topology = {
+            "status": "active" if graph_built else "empty",
+            "nodes_count": len(nodes_info),
+            "edges_count": len(edges_info),
+            "graph_nodes": nodes_info,
+            "graph_edges": edges_info,
+        }
 
         # 4-step forward simulation (Rollout K=1..4)
         rollout_means = []
@@ -1117,7 +1027,7 @@ class ShadowcatPipeline:
             "flagged_flows": flagged_flows,
             "stage_predictions": stage_names,
             "risk_scores": [round(r, 2) for r in cum_risk],
-            "fusion_experimental": fusion_experimental_result,
+            "graph_topology": graph_topology,
             "temporal_attributions": temporal_attributions,
             "conformal_forecast": {
                 "coverage": conformal_coverage,
