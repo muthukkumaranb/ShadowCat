@@ -66,6 +66,11 @@ try:
 except ImportError:
     from temporal_attribution import TemporalAttributor
 
+try:
+    from backend.graph_traversal import classify_endpoint_role, compute_graph_traversal
+except ImportError:
+    from graph_traversal import classify_endpoint_role, compute_graph_traversal
+
 
 
 def get_feature_category(feat_name: str) -> Optional[str]:
@@ -624,18 +629,7 @@ class ShadowcatPipeline:
                     for nid in active_nids:
                         ep = id_to_ep.get(nid, f"node-{nid}")
                         ep_str = str(ep)
-                        if any(p in ep_str for p in ("443", "80", "web", "http")):
-                            role = "Web / Ingress Gateway"
-                        elif any(p in ep_str for p in ("22", "ssh")):
-                            role = "SSH Jump Host"
-                        elif any(p in ep_str for p in ("53", "dns")):
-                            role = "Core DNS Resolver"
-                        elif any(p in ep_str for p in ("88", "389", "auth", "kerberos", "ldap")):
-                            role = "Identity / Auth Cluster"
-                        elif ep_str.startswith("10.") or ep_str.startswith("192.168.") or ep_str.startswith("172."):
-                            role = "Enclave Workstation / Internal Host"
-                        else:
-                            role = "External / Remote Endpoint"
+                        role = classify_endpoint_role(ep_str)
                         nodes_info.append({
                             "id": ep_str,
                             "name": ep_str,
@@ -669,7 +663,7 @@ class ShadowcatPipeline:
                     nodes_info = []
                     for nid in active_nids:
                         ep_str = str(id_to_ep.get(nid, f"node-{nid}"))
-                        role = "External Service Port" if "SvcPort" in ep_str else "Enclave Host Node"
+                        role = classify_endpoint_role(ep_str)
                         nodes_info.append({
                             "id": ep_str,
                             "name": ep_str,
