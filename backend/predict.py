@@ -618,8 +618,11 @@ class ShadowcatPipeline:
                 edge_df, node_lookup_df, _ = gtb.build_window_edge_lists(flows_df, interval_sec=60)
                 if len(node_lookup_df) > 0 and len(edge_df) > 0:
                     id_to_ep = dict(zip(node_lookup_df["node_id"], node_lookup_df["endpoint_identifier"]))
+                    edge_subset = edge_df.head(45)
+                    active_nids = sorted(set(edge_subset["src_node_id"]).union(set(edge_subset["dst_node_id"])))
                     nodes_info = []
-                    for ep in node_lookup_df["endpoint_identifier"][:30]:
+                    for nid in active_nids:
+                        ep = id_to_ep.get(nid, f"node-{nid}")
                         ep_str = str(ep)
                         if any(p in ep_str for p in ("443", "80", "web", "http")):
                             role = "Web / Ingress Gateway"
@@ -641,7 +644,7 @@ class ShadowcatPipeline:
                         })
 
                     edges_info = []
-                    for row in edge_df.head(45).itertuples(index=False):
+                    for row in edge_subset.itertuples(index=False):
                         src_ep = str(id_to_ep.get(row.src_node_id, row.src_node_id))
                         dst_ep = str(id_to_ep.get(row.dst_node_id, row.dst_node_id))
                         edges_info.append({
@@ -661,9 +664,10 @@ class ShadowcatPipeline:
                 window_edges = self.ucs_edges[self.ucs_edges["window_id"] == w_id]
                 if len(window_edges) > 0:
                     id_to_ep = dict(zip(self.node_lookup["node_id"], self.node_lookup["endpoint_identifier"]))
-                    node_ids = sorted(set(window_edges["src_node_id"]).union(window_edges["dst_node_id"]))
+                    edge_subset = window_edges.head(45)
+                    active_nids = sorted(set(edge_subset["src_node_id"]).union(set(edge_subset["dst_node_id"])))
                     nodes_info = []
-                    for nid in node_ids[:30]:
+                    for nid in active_nids:
                         ep_str = str(id_to_ep.get(nid, f"node-{nid}"))
                         role = "External Service Port" if "SvcPort" in ep_str else "Enclave Host Node"
                         nodes_info.append({
@@ -673,7 +677,7 @@ class ShadowcatPipeline:
                             "role": role,
                         })
                     edges_info = []
-                    for row in window_edges.head(45).itertuples(index=False):
+                    for row in edge_subset.itertuples(index=False):
                         src_ep = str(id_to_ep.get(row.src_node_id, row.src_node_id))
                         dst_ep = str(id_to_ep.get(row.dst_node_id, row.dst_node_id))
                         fc = int(getattr(row, "flow_count", 1))
@@ -896,6 +900,15 @@ class ShadowcatPipeline:
         # Step 10: Flagged Suspicious Flows from raw_input
         flagged_flows = self._extract_flagged_flows(raw_input, source_type)
 
+        # Step 10b: Real Graph-Propagation Traversal over Actual Edge Data
+        from backend.graph_traversal import compute_graph_traversal
+        graph_traversal = compute_graph_traversal(
+            graph_nodes=nodes_info,
+            graph_edges=edges_info,
+            flagged_flows=flagged_flows,
+            max_k=5,
+        )
+
         # Step 11: Construct Output Payload per INTERFACE.md
         lead_times = ["1m 00s", "2m 00s", "3m 00s", "4m 00s"]
         labels = [
@@ -1028,6 +1041,7 @@ class ShadowcatPipeline:
             "stage_predictions": stage_names,
             "risk_scores": [round(r, 2) for r in cum_risk],
             "graph_topology": graph_topology,
+            "graph_traversal": graph_traversal,
             "temporal_attributions": temporal_attributions,
             "conformal_forecast": {
                 "coverage": conformal_coverage,

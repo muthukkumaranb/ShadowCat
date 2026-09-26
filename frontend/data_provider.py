@@ -299,6 +299,29 @@ def get_graph_topology() -> Optional[dict]:
     return pred.get("graph_topology")
 
 
+def get_graph_traversal(max_k: int = 5) -> dict:
+    """
+    Returns real, explainable, weight-based attack propagation traversal over actual network graph edges.
+    Consumed by: views/04_Attack_Graph.py, components/cytoscape_attack_graph.py
+    """
+    pred = _get_live_prediction()
+    if "graph_traversal" in pred and pred["graph_traversal"] is not None:
+        return pred["graph_traversal"]
+
+    topology = pred.get("graph_topology") or {}
+    nodes = topology.get("graph_nodes", [])
+    edges = topology.get("graph_edges", [])
+    flagged_flows = pred.get("flagged_flows", [])
+
+    from backend.graph_traversal import compute_graph_traversal
+    return compute_graph_traversal(
+        graph_nodes=nodes,
+        graph_edges=edges,
+        flagged_flows=flagged_flows,
+        max_k=max_k,
+    )
+
+
 def get_fusion_experimental() -> Optional[dict]:
     """
     Deprecated alias: returns graph_topology for backward compatibility.

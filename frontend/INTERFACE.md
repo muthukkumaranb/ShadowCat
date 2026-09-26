@@ -302,6 +302,61 @@ Returns authoritative LOEO 37-fold cross-validation metrics, horizon stability d
 
 ---
 
+### 2.8 `get_graph_topology() -> dict`
+Returns real network graph topology (nodes and edges) constructed from flow data.
+
+* **Consuming UI File:** `views/04_Attack_Graph.py` & `components/cytoscape_attack_graph.py`
+* **Return Schema:**
+```json
+{
+  "status": "active",
+  "nodes_count": 30,
+  "edges_count": 45,
+  "graph_nodes": [{"id": "10.0.2.15", "name": "10.0.2.15", "ip": "10.0.2.15", "role": "Enclave Host Node"}],
+  "graph_edges": [{"source": "10.0.2.15", "target": "10.0.4.21", "flow_count": 5, "byte_count": 8250.0, "packet_count": 40.0, "label": "5 flows (8.1 KB)"}]
+}
+```
+
+---
+
+### 2.9 `get_graph_traversal(max_k: int = 5) -> dict`
+Returns real, explainable, weight-based attack propagation traversal over actual network graph edges.
+
+* **Consuming UI File:** `views/04_Attack_Graph.py` & `components/cytoscape_attack_graph.py`
+* **Return Schema:**
+```json
+{
+  "status": "success",
+  "status_message": "Real graph-propagation walk computed successfully.",
+  "start_node": "10.0.2.15",
+  "start_reason": "Alert driver: Source endpoint of flagged flow FLW-10490",
+  "total_nodes": 30,
+  "total_edges": 45,
+  "steps": [
+    {
+      "k": 1,
+      "frontier": ["10.0.2.15", "10.0.4.10"],
+      "frontier_size": 2,
+      "added_node": "10.0.4.10",
+      "source_node": "10.0.2.15",
+      "edge_byte_count": 7500.0,
+      "edge_flow_count": 5,
+      "candidate_degree": 3,
+      "step_surge_bytes": 7500.0,
+      "cumulative_surge_bytes": 7500.0,
+      "step_surge_flows": 5,
+      "cumulative_surge_flows": 5,
+      "stopped_early": false,
+      "stop_reason": null,
+      "explanation": "Compromised 10.0.4.10 from 10.0.2.15: 7.3 KB (5 flows) on connecting edge; candidate degree = 3"
+    }
+  ],
+  "walked_edges": [...]
+}
+```
+
+---
+
 ## 3. Step-by-Step Integration Workflow for Backend Teammate
 
 1. **Step 1: Train & Save Checkpoint Artifacts**  

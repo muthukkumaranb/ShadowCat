@@ -198,5 +198,35 @@
     "artifact_hash": "2b7765efae77306851db9b9040a473fba8316b6dcbdf6a0abe70256de92324fa",
     "prev_entry_hash": "22f94b33e2ae4215d3614f87c90e8ab9b522015cb5cb2c1c9c4d2b1228fe1aa1",
     "entry_hash": "4a317e767f64f506fe05b2bc71742237ab5fdc9551752284e8fded3e90ff0d37"
+  },
+  {
+    "index": 20,
+    "timestamp": "2026-09-26T02:17:31.321623+00:00",
+    "artifact_path": "alerts/alert_20180b6d26842271.json",
+    "artifact_type": "hazard_alert",
+    "description": "Hazard alert 20180b6d26842271 [HIGH] (SHA-256 fallback)",
+    "artifact_hash": "25dd6b084809c89412fe8fbdb5a96c31ae7282409cd53ec523e2eb3fc25fa245",
+    "prev_entry_hash": "4a317e767f64f506fe05b2bc71742237ab5fdc9551752284e8fded3e90ff0d37",
+    "entry_hash": "3d65846589d7b1af8d35f51f3f98b9bf73d61f32a59229960c37bf58f0038a55"
+  },
+  {
+    "index": 21,
+    "timestamp": "2026-09-26T02:26:56.458132+00:00",
+    "artifact_path": "alerts/alert_cd08735369cc1a27.json",
+    "artifact_type": "hazard_alert",
+    "description": "Hazard alert cd08735369cc1a27 [HIGH] (SHA-256 fallback)",
+    "artifact_hash": "01984e01eb0094df314728f1ced9237dd6f694278077a19ed65e4a80f70c57fc",
+    "prev_entry_hash": "3d65846589d7b1af8d35f51f3f98b9bf73d61f32a59229960c37bf58f0038a55",
+    "entry_hash": "d497f9866b0295821724cb6e09209ba8e1d157dfbc5a820224f12c81e227054b"
+  },
+  {
+    "index": 22,
+    "timestamp": "2026-09-26T02:26:57.231596+00:00",
+    "artifact_path": "alerts/alert_1d95ef27bca69bec.json",
+    "artifact_type": "hazard_alert",
+    "description": "Hazard alert 1d95ef27bca69bec [HIGH] (SHA-256 fallback)",
+    "artifact_hash": "b3eb38fad9d6484c6658a97ff4c4b0aac795b746fc2ba355efb77af633df84b0",
+    "prev_entry_hash": "d497f9866b0295821724cb6e09209ba8e1d157dfbc5a820224f12c81e227054b",
+    "entry_hash": "68d84d50594829128307752b3a86946696cba6bcb9749a74c54611a3b287e477"
   }
 ]

@@ -1,0 +1,8 @@
+{
+  "alert_hash": "1d95ef27bca69bec",
+  "window_id": "W_unknown_20180214_090000",
+  "window_start": "2018-02-14 09:00:00+00:00",
+  "max_risk": 0.8784,
+  "severity": "HIGH",
+  "notarized_via": "sha256_fallback"
+}
