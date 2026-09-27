@@ -5,7 +5,7 @@ import glob
 from pathlib import Path
 import traceback
 
-workspace_dir = Path("c:/Users/Vicky/Documents/SIH_2026/LSTM-type-model-CICIDS2018-UCS")
+workspace_dir = Path(__file__).resolve().parent
 verification_dir = workspace_dir / "verification"
 verification_dir.mkdir(parents=True, exist_ok=True)
 
