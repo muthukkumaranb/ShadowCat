@@ -17,6 +17,6 @@ Initial audit identified 9 packet features; subsequent complete inventory expand
 ### Q3: Did removing the fabricated packet features degrade downstream detection or state forecasting?
 **Answer**:
 No. Retraining and re-evaluating across all downstream heads confirmed:
-1. **LR Baseline LOEO Detection**: Held steady at F1 = 0.8889 (0.0000 delta across all 9 SSH-Bruteforce evaluation folds).
-2. **Stage Classification Head**: Maintains strong ATT&CK stage separation across Initial Access, Discovery, Command & Control, and Impact.
+1. **LR Baseline LOEO Detection**: Held steady at F1 = 0.8889 on SSH-Bruteforce across all 9 evaluation folds (full 37-fold LOEO aggregate is F1 = 0.9730 for detection and F1 = 0.8880 for onset forecasting).
+2. **Stage Classification Head**: Validated for high-fidelity discrimination on *Credential Access / Brute Force* vs. background (Precision = 95.2%, F1 = 0.645 in 37-fold LOEO; 2 false positives out of 285 background windows). Multi-stage classification across Discovery, Command & Control, and Impact is exploratory / not yet validated at production quality (support in test splits is either zero or collapsed to Unknown/Other fallback).
 3. **PC2 Significance Test**: Statistical advantage over persistence baseline remains significant ($p < 0.05$ at $K=1, 2$).
