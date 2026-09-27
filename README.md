@@ -132,6 +132,24 @@ streamlit run frontend/app.py
 ```
 *The dashboard will automatically open in your default web browser at `http://localhost:8501`. Here you can view the live risk trajectories and forensic benchmark panels.*
 
+### Optional: Reproducing the Hyperledger Fabric Layer
+
+**Note:** This step is purely optional and for advanced verification. The full SHADOWCAT deliverable (world model, inference, explainability, offline demo, and benchmarks) works completely out-of-the-box via the automatic SHA-256 fallback mechanism.
+
+By default, the backend scripts map the Windows host path `D:\sih2026` to the Fabric Docker containers. You can configure this path by setting the `SHADOWCAT_FABRIC_HOST_ROOT` environment variable. If unset, it gracefully defaults to `D:\sih2026` (preserving byte-for-byte identical behavior).
+
+To stand up the real Fabric test-network layer yourself:
+1. Ensure **Docker Desktop** is installed and running.
+2. From within a bash-compatible terminal, navigate to the test-network directory and bring up the network with CA nodes and the required channel:
+   ```bash
+   cd fabric-experiment/fabric-samples/test-network
+   ./network.sh up createChannel -c shadowcat-notary-channel -ca
+   ```
+3. Deploy the `shadowcat_notary` Go chaincode to the channel:
+   ```bash
+   ./network.sh deployCC -ccn shadowcat_notary -ccp ../../chaincode/shadowcat_notary -ccl go -c shadowcat-notary-channel
+   ```
+
 ---
 
 ## Benchmark: Production Model vs. Logistic Regression Baseline

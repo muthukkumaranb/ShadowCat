@@ -6,7 +6,16 @@ import sys
 from typing import Optional, List, Dict, Any
 
 # The base directory where the fabric experiment resides on the Windows host
-FABRIC_DIR = r"D:\sih2026\fabric-experiment"
+FABRIC_HOST_ROOT = os.environ.get("SHADOWCAT_FABRIC_HOST_ROOT", r"D:\sih2026")
+FABRIC_DIR = os.path.join(FABRIC_HOST_ROOT, "fabric-experiment")
+
+def _to_container_path(host_root: str) -> str:
+    """Converts 'D:\\sih2026' -> '/d/sih2026' (the existing git-bash/MSYS convention this script already assumes)."""
+    drive, _, rest = host_root.partition(":")
+    rest = rest.replace("\\", "/")
+    return f"/{drive.lower()}{rest}"
+
+FABRIC_CONTAINER_ROOT = _to_container_path(FABRIC_HOST_ROOT)
 
 def _run_fabric_command(fcn, args):
     """
@@ -19,7 +28,7 @@ def _run_fabric_command(fcn, args):
 
     # The shell script that will be executed inside the container
     script_content = f"""#!/bin/bash
-cd /d/sih2026/fabric-experiment/fabric-samples/test-network
+cd {FABRIC_CONTAINER_ROOT}/fabric-experiment/fabric-samples/test-network
 export PATH=$PWD/../bin:$PATH
 export FABRIC_CFG_PATH=$PWD/../config/
 
@@ -44,9 +53,9 @@ peer chaincode invoke -o orderer.example.com:7050 --ordererTLSHostnameOverride o
         "--add-host", "orderer.example.com:host-gateway",
         "--add-host", "peer0.org1.example.com:host-gateway",
         "--add-host", "peer0.org2.example.com:host-gateway",
-        "-v", r"d:\sih2026:/d/sih2026",
+        "-v", f"{FABRIC_HOST_ROOT}:{FABRIC_CONTAINER_ROOT}",
         "ubuntu", "sh", "-c",
-        "sed -i 's/\r$//' /d/sih2026/fabric-experiment/invoke_temp.sh && bash /d/sih2026/fabric-experiment/invoke_temp.sh"
+        f"sed -i 's/\\r$//' {FABRIC_CONTAINER_ROOT}/fabric-experiment/invoke_temp.sh && bash {FABRIC_CONTAINER_ROOT}/fabric-experiment/invoke_temp.sh"
     ]
     
     try:
@@ -64,7 +73,7 @@ def _query_fabric_command(fcn, args):
     args_json = json.dumps(chaincode_args)
 
     script_content = f"""#!/bin/bash
-cd /d/sih2026/fabric-experiment/fabric-samples/test-network
+cd {FABRIC_CONTAINER_ROOT}/fabric-experiment/fabric-samples/test-network
 export PATH=$PWD/../bin:$PATH
 export FABRIC_CFG_PATH=$PWD/../config/
 
@@ -85,9 +94,9 @@ peer chaincode query -C shadowcat-notary-channel -n shadowcat_notary -c '{args_j
     cmd = [
         "docker", "run", "--rm", 
         "--add-host", "peer0.org1.example.com:host-gateway",
-        "-v", r"d:\sih2026:/d/sih2026",
+        "-v", f"{FABRIC_HOST_ROOT}:{FABRIC_CONTAINER_ROOT}",
         "ubuntu", "sh", "-c",
-        "sed -i 's/\r$//' /d/sih2026/fabric-experiment/query_temp.sh && bash /d/sih2026/fabric-experiment/query_temp.sh"
+        f"sed -i 's/\\r$//' {FABRIC_CONTAINER_ROOT}/fabric-experiment/query_temp.sh && bash {FABRIC_CONTAINER_ROOT}/fabric-experiment/query_temp.sh"
     ]
     
     try:
