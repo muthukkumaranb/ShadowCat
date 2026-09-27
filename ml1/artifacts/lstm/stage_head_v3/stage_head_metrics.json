@@ -93,8 +93,8 @@
     ]
   },
   "loeo_split_metrics": {
-    "overall_accuracy": 0.8626943005181347,
-    "total_eval_samples": 386,
+    "overall_accuracy": 0.0,
+    "total_eval_samples": 0,
     "per_class_metrics": {
       "Command and Control": {
         "precision": 0.0,
@@ -103,10 +103,10 @@
         "support": 0
       },
       "Credential Access": {
-        "precision": 1.0,
-        "recall": 0.5853658536585366,
-        "f1": 0.7384615384615384,
-        "support": 82
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 0
       },
       "Discovery": {
         "precision": 0.0,
@@ -118,7 +118,7 @@
         "precision": 0.0,
         "recall": 0.0,
         "f1": 0.0,
-        "support": 19
+        "support": 0
       },
       "Initial Access": {
         "precision": 0.0,
@@ -127,10 +127,10 @@
         "support": 0
       },
       "Unknown/Other": {
-        "precision": 0.8431952662721893,
-        "recall": 1.0,
-        "f1": 0.9149277688603531,
-        "support": 285
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 0
       }
     },
     "confusion_matrix": [
@@ -144,11 +144,11 @@
       ],
       [
         0,
-        48,
         0,
         0,
         0,
-        34
+        0,
+        0
       ],
       [
         0,
@@ -164,7 +164,7 @@
         0,
         0,
         0,
-        19
+        0
       ],
       [
         0,
@@ -180,7 +180,7 @@
         0,
         0,
         0,
-        285
+        0
       ]
     ]
   },

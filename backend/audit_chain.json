@@ -25,9 +25,9 @@
     "artifact_path": "../ml1/artifacts/lstm/gaussian_next_state_best_v3.pt",
     "artifact_type": "model_checkpoint",
     "description": "LSTM world model v3 (trained on genuine PCAP packet telemetry)",
-    "artifact_hash": "beedf6f9fb2779e3f3b9d3158993ade75142e84eba3e0d85edc331b29569f1f4",
+    "artifact_hash": "cff8aa8ab2a5221a4d8bb512671994d90fc8e9c6a8b5c3832539e817fcceab05",
     "prev_entry_hash": "c51ff38fe97f426a1ef4afe66216fb3014ed215c026a67ed3221d6528621f054",
-    "entry_hash": "1cf5eac557ba4f38bb8ce3e8494835f701508271347f656d9f0f6b453ca8c73c"
+    "entry_hash": "a9ba51961edc4d03c6f1359859d7a2fee43494e358b7454b6baa221250edf320"
   },
   {
     "index": 3,
@@ -36,8 +36,8 @@
     "artifact_type": "evaluation_report",
     "description": "Hazard head v3 evaluation report (restored discriminative power under real packet telemetry)",
     "artifact_hash": "848492a408decf2d4a965c74f0068247ba9bd647d2af628a218339e1243de251",
-    "prev_entry_hash": "1cf5eac557ba4f38bb8ce3e8494835f701508271347f656d9f0f6b453ca8c73c",
-    "entry_hash": "4b2492c87288cc3b453762b5fa0f1dfe8d2b3d8ef58407b41a7a79021cb32e5a"
+    "prev_entry_hash": "a9ba51961edc4d03c6f1359859d7a2fee43494e358b7454b6baa221250edf320",
+    "entry_hash": "094041a5426bb04203aad3300f80a418a9ee5fef7b4fd2ca06e2e065c9415fdb"
   },
   {
     "index": 4,
@@ -46,8 +46,8 @@
     "artifact_type": "evaluation_report",
     "description": "Hazard head v4 multi-day evaluation & threshold calibration report across all attack types",
     "artifact_hash": "278625d121f9240e63265fe17242435721b1e0b79f5975f765d959bcb69844a1",
-    "prev_entry_hash": "4b2492c87288cc3b453762b5fa0f1dfe8d2b3d8ef58407b41a7a79021cb32e5a",
-    "entry_hash": "f4d7fde423a7c9f81d1738f7078bae0ad1f096115be103ccdaca683e907b8fc3"
+    "prev_entry_hash": "094041a5426bb04203aad3300f80a418a9ee5fef7b4fd2ca06e2e065c9415fdb",
+    "entry_hash": "7733bf9c5f5aea79ca6d7ec28e1cac1bc4ea13cdc4c485149db78f313eb8c972"
   },
   {
     "index": 5,
@@ -56,8 +56,8 @@
     "artifact_type": "evaluation_dataset",
     "description": "Full 37-fold LOEO threshold sweep matrix across SSH, DDOS, and Botnet",
     "artifact_hash": "d3b796a6364f1c72cd67380981475982d808d5a0074743e043e3f891c6a79a0a",
-    "prev_entry_hash": "f4d7fde423a7c9f81d1738f7078bae0ad1f096115be103ccdaca683e907b8fc3",
-    "entry_hash": "356a305604989216c879bb414e71eabfb7491cb8a911f5dd9d889d4cf5c63c7d"
+    "prev_entry_hash": "7733bf9c5f5aea79ca6d7ec28e1cac1bc4ea13cdc4c485149db78f313eb8c972",
+    "entry_hash": "d0e334dbdf4c087f58aab21159119c226c523ebcb0d0f3624cff0f3dc062c80a"
   },
   {
     "index": 6,
@@ -65,9 +65,9 @@
     "artifact_path": "../ml1/artifacts/lstm/stage_head_v3/stage_head_report.md",
     "artifact_type": "evaluation_report",
     "description": "Stage head v3 evaluation report",
-    "artifact_hash": "2b59ce51541add233ab4a4f890971c8249873f0791fc142deb0590fadeec4837",
-    "prev_entry_hash": "356a305604989216c879bb414e71eabfb7491cb8a911f5dd9d889d4cf5c63c7d",
-    "entry_hash": "575123b4c972c3ebe2b69b6493c855defea0ac9f805548e868d663707778e213"
+    "artifact_hash": "fa538ac7159f0ec3acca401ada6604dc401dff94720cddcf2eed85d1b44c470b",
+    "prev_entry_hash": "d0e334dbdf4c087f58aab21159119c226c523ebcb0d0f3624cff0f3dc062c80a",
+    "entry_hash": "307c526d991aa7534655625a690fb741ca0ae1eccd75fcb1acb5d8e256ea89aa"
   },
   {
     "index": 7,
@@ -76,8 +76,8 @@
     "artifact_type": "evaluation_report",
     "description": "PC2 significance test report (evaluated on v3 checkpoint)",
     "artifact_hash": "374ac0d3a87c1b99199b8918a6a54755d2d3679d4b9cb2cc546a5fa0ae4a04fb",
-    "prev_entry_hash": "575123b4c972c3ebe2b69b6493c855defea0ac9f805548e868d663707778e213",
-    "entry_hash": "b1744b4124d66f95dccc2802d4b444c9947f13cdb1acc33b1a8a5f0364fa92cd"
+    "prev_entry_hash": "307c526d991aa7534655625a690fb741ca0ae1eccd75fcb1acb5d8e256ea89aa",
+    "entry_hash": "8b80988257073aaaa66c5ea92184b29c757f74805094bfcfa93f7957e5ab4734"
   },
   {
     "index": 8,
@@ -86,8 +86,8 @@
     "artifact_type": "architecture_decision",
     "description": "GNN fusion adopt/hold decision \u2014 HOLD, v3 sync addendum",
     "artifact_hash": "bf7802ea41b97c4703577b0637a765158014e0ab3ea6e679b2fc3e1e5f863969",
-    "prev_entry_hash": "b1744b4124d66f95dccc2802d4b444c9947f13cdb1acc33b1a8a5f0364fa92cd",
-    "entry_hash": "0442ecd330cc4c7e79c66eeff4d931b99a7ab34e02ae5b7cc9c5f1978a211fac"
+    "prev_entry_hash": "8b80988257073aaaa66c5ea92184b29c757f74805094bfcfa93f7957e5ab4734",
+    "entry_hash": "a78630184d3584f673cddc3839a38c62b5d7765e43ebd1e979b7f2913d5ccd78"
   },
   {
     "index": 9,
@@ -96,8 +96,8 @@
     "artifact_type": "leakage_audit",
     "description": "Packet-feature label-leak exposure audit",
     "artifact_hash": "3bd79bf9be73ee72ad631ccd63f3f0bf7cf923f855661196ec9199c1789b7483",
-    "prev_entry_hash": "0442ecd330cc4c7e79c66eeff4d931b99a7ab34e02ae5b7cc9c5f1978a211fac",
-    "entry_hash": "3ed70261434d03281abd0e88accfe5c7a0a262c771ec0dc7b905b44c8041f57f"
+    "prev_entry_hash": "a78630184d3584f673cddc3839a38c62b5d7765e43ebd1e979b7f2913d5ccd78",
+    "entry_hash": "681a2ff2d44ae4d98525b29f2a6ccaacbfaa56b2ac7101970730b2c39fed52f3"
   },
   {
     "index": 10,
@@ -105,9 +105,9 @@
     "artifact_path": "../ml1/artifacts/lstm/gaussian_next_state_best_v3.pt",
     "artifact_type": "model_checkpoint",
     "description": "LSTM world model v3 loaded into predict pipeline (SHA-256 fallback)",
-    "artifact_hash": "beedf6f9fb2779e3f3b9d3158993ade75142e84eba3e0d85edc331b29569f1f4",
-    "prev_entry_hash": "3ed70261434d03281abd0e88accfe5c7a0a262c771ec0dc7b905b44c8041f57f",
-    "entry_hash": "ff91785a32bf878d0fc175e9899ba39776784ca93b0a6b2167f06f8ea7677f90"
+    "artifact_hash": "cff8aa8ab2a5221a4d8bb512671994d90fc8e9c6a8b5c3832539e817fcceab05",
+    "prev_entry_hash": "681a2ff2d44ae4d98525b29f2a6ccaacbfaa56b2ac7101970730b2c39fed52f3",
+    "entry_hash": "5ffdbc040cb1b45d26f507a637c1e399b99ea07342abfc7a27cbba26925d9159"
   },
   {
     "index": 11,
@@ -115,9 +115,9 @@
     "artifact_path": "../ml1/artifacts/lstm/gaussian_next_state_best_v3.pt",
     "artifact_type": "model_checkpoint",
     "description": "LSTM world model v3 loaded into predict pipeline (SHA-256 fallback)",
-    "artifact_hash": "beedf6f9fb2779e3f3b9d3158993ade75142e84eba3e0d85edc331b29569f1f4",
-    "prev_entry_hash": "ff91785a32bf878d0fc175e9899ba39776784ca93b0a6b2167f06f8ea7677f90",
-    "entry_hash": "6bb0251f02b043e43b41ef88587fdd8d944b4b0561b0af54374547d1e9d9e593"
+    "artifact_hash": "cff8aa8ab2a5221a4d8bb512671994d90fc8e9c6a8b5c3832539e817fcceab05",
+    "prev_entry_hash": "5ffdbc040cb1b45d26f507a637c1e399b99ea07342abfc7a27cbba26925d9159",
+    "entry_hash": "865db108f67962f2ee68c13198695515b7b22c999a1ef7078f37e0615d47fb19"
   },
   {
     "index": 12,
@@ -126,8 +126,8 @@
     "artifact_type": "hazard_alert",
     "description": "Hazard alert cb27ee5379a75a82 [HIGH] (SHA-256 fallback)",
     "artifact_hash": "0d172bb66c344a4b4a715c1724afb381187eceade5fa99f797ca78bf29496642",
-    "prev_entry_hash": "6bb0251f02b043e43b41ef88587fdd8d944b4b0561b0af54374547d1e9d9e593",
-    "entry_hash": "cc415d7c60c9d2338b3ad1caf5db0db16471f3bf45f6ae7feac75c02d4005a25"
+    "prev_entry_hash": "865db108f67962f2ee68c13198695515b7b22c999a1ef7078f37e0615d47fb19",
+    "entry_hash": "cf6af1770b681b72d75b648b1b158e8f9f9e57b9a74978a7d08dba26ca2186fd"
   },
   {
     "index": 13,
@@ -136,8 +136,8 @@
     "artifact_type": "hazard_alert",
     "description": "Hazard alert ae487f87ab0677a3 [HIGH] (SHA-256 fallback)",
     "artifact_hash": "3b283cae1dbc40a7c73ce9ae27357fd1216ad7902059bc036ca370a987d86dfd",
-    "prev_entry_hash": "cc415d7c60c9d2338b3ad1caf5db0db16471f3bf45f6ae7feac75c02d4005a25",
-    "entry_hash": "2ea6a63c2ddcc97f9efd21038a754b795a1c2625ed634f333a7b6ec2b5e894ae"
+    "prev_entry_hash": "cf6af1770b681b72d75b648b1b158e8f9f9e57b9a74978a7d08dba26ca2186fd",
+    "entry_hash": "bd72326cccd02fb72b6371db2e1f2995f1fbe4b760cd88d97fedbb1f71b13f02"
   },
   {
     "index": 14,
@@ -146,8 +146,8 @@
     "artifact_type": "hazard_alert",
     "description": "Hazard alert d722220f65abdbb7 [HIGH] (SHA-256 fallback)",
     "artifact_hash": "2f29e7c48689f0b76a73120aec4df9740d78efea1f70cb7ba81d7ec1461b6a01",
-    "prev_entry_hash": "2ea6a63c2ddcc97f9efd21038a754b795a1c2625ed634f333a7b6ec2b5e894ae",
-    "entry_hash": "9542b1837112f6da1c428704fdf624b853577889e9bfea0af66768f9326c0acc"
+    "prev_entry_hash": "bd72326cccd02fb72b6371db2e1f2995f1fbe4b760cd88d97fedbb1f71b13f02",
+    "entry_hash": "da36c1ff4f86507207836f56b886abdbfb540bdc9e262b323be41e49c4280f68"
   },
   {
     "index": 15,
@@ -156,8 +156,8 @@
     "artifact_type": "hazard_alert",
     "description": "Hazard alert 3afaa738da8f3cfd [HIGH] (SHA-256 fallback)",
     "artifact_hash": "fa58413208d92680c31c19d2e7014dd6f34b528eb3656c3b004f0b9720d29635",
-    "prev_entry_hash": "9542b1837112f6da1c428704fdf624b853577889e9bfea0af66768f9326c0acc",
-    "entry_hash": "296a538a4cc054677a90bfe5e583726b776893d336afd2a260d7df8e3a703162"
+    "prev_entry_hash": "da36c1ff4f86507207836f56b886abdbfb540bdc9e262b323be41e49c4280f68",
+    "entry_hash": "c198cf8234320ef261059aa233c6167e55c24cb16a8827101914b22ab86867be"
   },
   {
     "index": 16,
@@ -166,8 +166,8 @@
     "artifact_type": "hazard_alert",
     "description": "Hazard alert 9a00313980d240a6 [HIGH] (SHA-256 fallback)",
     "artifact_hash": "6cf3380bd31e4bd8217d9a97e0717dded52cc74150582dc7e1e3870b8bcd6001",
-    "prev_entry_hash": "296a538a4cc054677a90bfe5e583726b776893d336afd2a260d7df8e3a703162",
-    "entry_hash": "44f072a3a552931b4dc53bdd46c0808750a744402a2cd2e5794c77c75e7db126"
+    "prev_entry_hash": "c198cf8234320ef261059aa233c6167e55c24cb16a8827101914b22ab86867be",
+    "entry_hash": "fa4fec93ecfd81bca7ab403b10c1a687090c4b45a2c15c0a54fab10bebf9d7c8"
   },
   {
     "index": 17,
@@ -176,8 +176,8 @@
     "artifact_type": "hazard_alert",
     "description": "Hazard alert 6ccfbd874608c8c5 [HIGH] (SHA-256 fallback)",
     "artifact_hash": "de836b85647c07b9352ad608f547ad2c9425295de8702ac733c49b49fd9f6e9f",
-    "prev_entry_hash": "44f072a3a552931b4dc53bdd46c0808750a744402a2cd2e5794c77c75e7db126",
-    "entry_hash": "497a372d07308dc7463b26f2dbaae41150a4f854a3cab2840b7296a825aff921"
+    "prev_entry_hash": "fa4fec93ecfd81bca7ab403b10c1a687090c4b45a2c15c0a54fab10bebf9d7c8",
+    "entry_hash": "16af64fbba2155bf493d573a87759c061f59f242011f3cc14e09f6767507eb9e"
   },
   {
     "index": 18,
@@ -186,8 +186,8 @@
     "artifact_type": "hazard_alert",
     "description": "Hazard alert 9702aff24b8819c7 [HIGH] (SHA-256 fallback)",
     "artifact_hash": "f88e8069283bae4cedad8976a831a5ddac47e4f1841b8e071907ec4ef1c9490d",
-    "prev_entry_hash": "497a372d07308dc7463b26f2dbaae41150a4f854a3cab2840b7296a825aff921",
-    "entry_hash": "1a05c4ebe318f512c4196e64abefe0acc0a67c18f1e28c4996e2bdeeae7b90b0"
+    "prev_entry_hash": "16af64fbba2155bf493d573a87759c061f59f242011f3cc14e09f6767507eb9e",
+    "entry_hash": "22f94b33e2ae4215d3614f87c90e8ab9b522015cb5cb2c1c9c4d2b1228fe1aa1"
   },
   {
     "index": 19,
@@ -196,8 +196,8 @@
     "artifact_type": "hazard_alert",
     "description": "Hazard alert 51694e57bea54324 [HIGH] (SHA-256 fallback)",
     "artifact_hash": "2b7765efae77306851db9b9040a473fba8316b6dcbdf6a0abe70256de92324fa",
-    "prev_entry_hash": "1a05c4ebe318f512c4196e64abefe0acc0a67c18f1e28c4996e2bdeeae7b90b0",
-    "entry_hash": "e2baca99f22087ace47e32679ac56106eb4bec673af2fb0e001651ab8432d515"
+    "prev_entry_hash": "22f94b33e2ae4215d3614f87c90e8ab9b522015cb5cb2c1c9c4d2b1228fe1aa1",
+    "entry_hash": "4a317e767f64f506fe05b2bc71742237ab5fdc9551752284e8fded3e90ff0d37"
   },
   {
     "index": 20,
@@ -206,8 +206,8 @@
     "artifact_type": "hazard_alert",
     "description": "Hazard alert 20180b6d26842271 [HIGH] (SHA-256 fallback)",
     "artifact_hash": "25dd6b084809c89412fe8fbdb5a96c31ae7282409cd53ec523e2eb3fc25fa245",
-    "prev_entry_hash": "e2baca99f22087ace47e32679ac56106eb4bec673af2fb0e001651ab8432d515",
-    "entry_hash": "06e5ad3e8373afaf759bbef455d1c4eed38ec7e52d1985c9678f777a6ae95b68"
+    "prev_entry_hash": "4a317e767f64f506fe05b2bc71742237ab5fdc9551752284e8fded3e90ff0d37",
+    "entry_hash": "3d65846589d7b1af8d35f51f3f98b9bf73d61f32a59229960c37bf58f0038a55"
   },
   {
     "index": 21,
@@ -216,8 +216,8 @@
     "artifact_type": "hazard_alert",
     "description": "Hazard alert cd08735369cc1a27 [HIGH] (SHA-256 fallback)",
     "artifact_hash": "01984e01eb0094df314728f1ced9237dd6f694278077a19ed65e4a80f70c57fc",
-    "prev_entry_hash": "06e5ad3e8373afaf759bbef455d1c4eed38ec7e52d1985c9678f777a6ae95b68",
-    "entry_hash": "a600c3c2ef8eb86f197dfa71eb26e65ef24d2c6664a94528e8efa3050914d82e"
+    "prev_entry_hash": "3d65846589d7b1af8d35f51f3f98b9bf73d61f32a59229960c37bf58f0038a55",
+    "entry_hash": "d497f9866b0295821724cb6e09209ba8e1d157dfbc5a820224f12c81e227054b"
   },
   {
     "index": 22,
@@ -226,8 +226,8 @@
     "artifact_type": "hazard_alert",
     "description": "Hazard alert 1d95ef27bca69bec [HIGH] (SHA-256 fallback)",
     "artifact_hash": "b3eb38fad9d6484c6658a97ff4c4b0aac795b746fc2ba355efb77af633df84b0",
-    "prev_entry_hash": "a600c3c2ef8eb86f197dfa71eb26e65ef24d2c6664a94528e8efa3050914d82e",
-    "entry_hash": "23e81264d157049c8574b940177f1fcc1d6bda6a6ec90cdddd340ee8afa2c9d6"
+    "prev_entry_hash": "d497f9866b0295821724cb6e09209ba8e1d157dfbc5a820224f12c81e227054b",
+    "entry_hash": "68d84d50594829128307752b3a86946696cba6bcb9749a74c54611a3b287e477"
   },
   {
     "index": 23,
@@ -236,97 +236,7 @@
     "artifact_type": "prediction_lineage",
     "description": "Prediction lineage lin_W_14-02-2018_20180214_014400_04289303 [HIGH] (SHA-256 fallback)",
     "artifact_hash": "54570a693f1e1cef21285691fc9b54c16c405bce6d1bd11228c2f455a06bb7ed",
-    "prev_entry_hash": "23e81264d157049c8574b940177f1fcc1d6bda6a6ec90cdddd340ee8afa2c9d6",
-    "entry_hash": "0c8959024ff5f7cde6b48a54f9d1e36f10d7df93fd997601aee469b932bbe3e0"
-  },
-  {
-    "index": 24,
-    "timestamp": "2026-09-27T09:11:48.073319+00:00",
-    "artifact_path": "alerts/alert_3dd6fae5c27a9c7f.json",
-    "artifact_type": "hazard_alert",
-    "description": "Hazard alert 3dd6fae5c27a9c7f [HIGH] (SHA-256 fallback)",
-    "artifact_hash": "c8abc63d2b9a1f66015bc2d9417da0a3b35f8d790b6a5de8e14d65d5cfaca70a",
-    "prev_entry_hash": "0c8959024ff5f7cde6b48a54f9d1e36f10d7df93fd997601aee469b932bbe3e0",
-    "entry_hash": "9bdf3753252f14ba4250e5f654d98e6c8c3d9e1221bc61c1076706f428ae8807"
-  },
-  {
-    "index": 25,
-    "timestamp": "2026-09-27T09:11:50.806250+00:00",
-    "artifact_path": "alerts/lineage_lin_W_14-02-2018_20180214_012900_a2710d1d.json",
-    "artifact_type": "prediction_lineage",
-    "description": "Prediction lineage lin_W_14-02-2018_20180214_012900_a2710d1d [HIGH] (SHA-256 fallback)",
-    "artifact_hash": "652a0002e326f16921518dabffb6ff3b9a89f8dc6cbdb7054a7a61b9870e2ac7",
-    "prev_entry_hash": "9bdf3753252f14ba4250e5f654d98e6c8c3d9e1221bc61c1076706f428ae8807",
-    "entry_hash": "9b0e5e4cf4ae9abc2c01aa3fcb9465ca611e554c874c2c4b9035d486fb2752fe"
-  },
-  {
-    "index": 26,
-    "timestamp": "2026-09-27T09:12:16.583576+00:00",
-    "artifact_path": "alerts/alert_e94bb31e7b964a5a.json",
-    "artifact_type": "hazard_alert",
-    "description": "Hazard alert e94bb31e7b964a5a [HIGH] (SHA-256 fallback)",
-    "artifact_hash": "1b7a89a83bf086bdaf66332bf80efbd3b84dcb8f2463828eeb59a688031c09bd",
-    "prev_entry_hash": "9b0e5e4cf4ae9abc2c01aa3fcb9465ca611e554c874c2c4b9035d486fb2752fe",
-    "entry_hash": "3594a3406086b923b9c616fa86773296c72c7e00b8e3557eb0eb811bd9f3ec97"
-  },
-  {
-    "index": 27,
-    "timestamp": "2026-09-27T09:12:18.776169+00:00",
-    "artifact_path": "alerts/lineage_lin_W_unknown_20180302_112500_db2890d3.json",
-    "artifact_type": "prediction_lineage",
-    "description": "Prediction lineage lin_W_unknown_20180302_112500_db2890d3 [HIGH] (SHA-256 fallback)",
-    "artifact_hash": "cc1d5b5159026cf3ca8491945b2d71c1accf4dbcf2129849eee6b242ccdb630f",
-    "prev_entry_hash": "3594a3406086b923b9c616fa86773296c72c7e00b8e3557eb0eb811bd9f3ec97",
-    "entry_hash": "245e58d8c8e5d2da6c7d435fdc5212006757d94b86440345e859079fe5c18580"
-  },
-  {
-    "index": 28,
-    "timestamp": "2026-09-27T09:12:28.310507+00:00",
-    "artifact_path": "alerts/alert_89254793af2243f2.json",
-    "artifact_type": "hazard_alert",
-    "description": "Hazard alert 89254793af2243f2 [HIGH] (SHA-256 fallback)",
-    "artifact_hash": "a86502b32f6ca66f8747a4e215b64b54fd3e161678df0eaf9f7e499efe43ba1d",
-    "prev_entry_hash": "245e58d8c8e5d2da6c7d435fdc5212006757d94b86440345e859079fe5c18580",
-    "entry_hash": "51ebe0dc363b4d7a81f43434de3a581d4ff09d0f7452d89ea4b90704ac33d1d9"
-  },
-  {
-    "index": 29,
-    "timestamp": "2026-09-27T09:12:30.081933+00:00",
-    "artifact_path": "alerts/lineage_lin_W_14-02-2018_20180214_013900_ecf11455.json",
-    "artifact_type": "prediction_lineage",
-    "description": "Prediction lineage lin_W_14-02-2018_20180214_013900_ecf11455 [HIGH] (SHA-256 fallback)",
-    "artifact_hash": "7446150dcb60c979c06eb26971442472d84ee20c48ef933efce908d47daf6f20",
-    "prev_entry_hash": "51ebe0dc363b4d7a81f43434de3a581d4ff09d0f7452d89ea4b90704ac33d1d9",
-    "entry_hash": "3d3c0ac1c9561eb0e287900d1498e4286a81f40540636e67c8f286bdc11936d4"
-  },
-  {
-    "index": 30,
-    "timestamp": "2026-09-27T09:12:38.515463+00:00",
-    "artifact_path": "alerts/alert_e3705bbc5ab48589.json",
-    "artifact_type": "hazard_alert",
-    "description": "Hazard alert e3705bbc5ab48589 [HIGH] (SHA-256 fallback)",
-    "artifact_hash": "1da17e61d34acd78aef1e7a6088eb4eece13c7525ce2401aaf16173c3f551d38",
-    "prev_entry_hash": "3d3c0ac1c9561eb0e287900d1498e4286a81f40540636e67c8f286bdc11936d4",
-    "entry_hash": "1f38c478cb8ae7f12ac30842a640839f60c1fe0518b335e79664094d37df9217"
-  },
-  {
-    "index": 31,
-    "timestamp": "2026-09-27T09:12:40.456078+00:00",
-    "artifact_path": "alerts/lineage_lin_W_unknown_20180214_090000_308396d5.json",
-    "artifact_type": "prediction_lineage",
-    "description": "Prediction lineage lin_W_unknown_20180214_090000_308396d5 [HIGH] (SHA-256 fallback)",
-    "artifact_hash": "5d08b6202b5c0213d04f733575e751613cd95832977f7d36219010461ed50cb0",
-    "prev_entry_hash": "1f38c478cb8ae7f12ac30842a640839f60c1fe0518b335e79664094d37df9217",
-    "entry_hash": "257e829fe985b192cbef28fc21eb5a714f33ca8eb72e187b2eb5ed5d45c4a581"
-  },
-  {
-    "index": 32,
-    "timestamp": "2026-09-27T09:57:29.080174+00:00",
-    "artifact_path": "../ml1/artifacts/lstm/gaussian_next_state_best_v3.pt",
-    "artifact_type": "model_retrain_event",
-    "description": "Extended packet coverage (SSH-Bruteforce, Botnet, DDOS-LOIC-UDP) full retrain (World Model + Stage Head + Stacked Ensemble)",
-    "artifact_hash": "beedf6f9fb2779e3f3b9d3158993ade75142e84eba3e0d85edc331b29569f1f4",
-    "prev_entry_hash": "257e829fe985b192cbef28fc21eb5a714f33ca8eb72e187b2eb5ed5d45c4a581",
-    "entry_hash": "3cbffaeadd233bce29c4886ac2045e70ef9d104212fc5754be956822e8ae0825"
+    "prev_entry_hash": "68d84d50594829128307752b3a86946696cba6bcb9749a74c54611a3b287e477",
+    "entry_hash": "21d3c8df24e096a3964ffec11dc710a7a00792c6bb2bae105aea80348d21e247"
   }
 ]

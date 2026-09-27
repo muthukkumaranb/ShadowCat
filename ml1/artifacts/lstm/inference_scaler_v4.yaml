@@ -1,5 +1,5 @@
 version: v4.0
-created_at: 2026-09-27 09:12:59 UTC
+created_at: 2026-09-21 07:08:49 UTC
 total_features: 400
 features:
   duration_microsec_mean:
@@ -2331,28 +2331,28 @@ features:
     q25: 3.0
     q75: 3.0
   pkt_ttl_min:
-    median: 36.0
-    scale: 11.0
+    median: 35.0
+    scale: 26.0
     is_log1p: false
-    q25: 33.0
-    q75: 44.0
+    q25: 16.0
+    q75: 42.0
   pkt_ttl_max:
     median: 231.0
-    scale: 5.0
-    is_log1p: false
-    q25: 230.0
-    q75: 235.0
-  pkt_ttl_std:
-    median: 58.39545149847572
-    scale: 46.43348949631769
-    is_log1p: false
-    q25: 24.102570893088057
-    q75: 70.53606038940575
-  pkt_ttl_mode:
-    median: 64.0
-    scale: 32.34187523612904
+    scale: 169.0
     is_log1p: false
     q25: 64.0
+    q75: 233.0
+  pkt_ttl_std:
+    median: 47.15660492772385
+    scale: 67.11627838995696
+    is_log1p: false
+    q25: 0.9364039997383087
+    q75: 68.05268238969526
+  pkt_ttl_mode:
+    median: 64.0
+    scale: 1.0
+    is_log1p: false
+    q25: 63.0
     q75: 64.0
   pkt_frag_mf_count:
     median: 0.0
@@ -2361,44 +2361,44 @@ features:
     q25: 0.0
     q75: 0.0
   pkt_frag_df_count:
-    median: 36.0
-    scale: 94.0
+    median: 26.0
+    scale: 93.75
     is_log1p: false
-    q25: 11.0
-    q75: 105.0
+    q25: 1.0
+    q75: 94.75
   pkt_payload_size_p25:
     median: 20.0
-    scale: 23.469955731912503
+    scale: 26.52642332212387
     is_log1p: false
     q25: 20.0
     q75: 20.0
   pkt_payload_size_p50:
-    median: 22.0
+    median: 20.0
     scale: 12.0
     is_log1p: false
     q25: 20.0
     q75: 32.0
   pkt_payload_size_p75:
-    median: 55.75
-    scale: 84.0
+    median: 40.0
+    scale: 86.25
     is_log1p: false
-    q25: 32.0
-    q75: 116.0
+    q25: 20.0
+    q75: 106.25
   pkt_payload_size_p95:
-    median: 536.0
-    scale: 496.0
+    median: 329.75
+    scale: 516.0
     is_log1p: false
-    q25: 40.0
+    q25: 20.0
     q75: 536.0
   pkt_tcp_retrans_count:
-    median: 6.0
-    scale: 16.0
+    median: 2.0
+    scale: 12.0
     is_log1p: false
-    q25: 2.0
-    q75: 18.0
+    q25: 0.0
+    q75: 12.0
   pkt_port_scan_seq_score:
-    median: 0.29977350811950176
-    scale: 0.02451124978365321
+    median: 0.28806891535740914
+    scale: 0.299999999999068
     is_log1p: false
-    q25: 0.2754887502154812
-    q75: 0.2999999999991344
+    q25: 0.0
+    q75: 0.299999999999068

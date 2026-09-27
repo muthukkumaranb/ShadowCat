@@ -25,8 +25,7 @@ def check_scalers():
     print("1. SCALER SANITY CHECK (POST-FIX VERIFICATION)")
     print("=" * 60)
     de_scaler_path = WORKSPACE / "data-engineering" / "data" / "ucs" / "scaler_params.yaml"
-    ml1_scaler_v4 = WORKSPACE / "ml1" / "artifacts" / "lstm" / "inference_scaler_v4.yaml"
-    ml1_scaler_path = ml1_scaler_v4 if ml1_scaler_v4.exists() else (WORKSPACE / "ml1" / "artifacts" / "lstm" / "inference_scaler_v2.yaml")
+    ml1_scaler_path = WORKSPACE / "ml1" / "artifacts" / "lstm" / "inference_scaler_v2.yaml"
 
     with open(de_scaler_path, "r", encoding="utf-8") as f:
         de_scaler = yaml.safe_load(f)

@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 """
-Interactive Terminal Progress Monitor & Dashboard for Cyber World Model Architecture.
-Supports dual-mode real-time visualization:
-1. PCAP Ingestion & Decompression Monitor (CSE-CIC-IDS2018 S3 Streaming Extraction)
-2. GraphSAGE LOEO Full 37-Fold Evaluation & Benchmark Scoreboard
-
-Auto-detects the currently active process (download_pcap_*.py, run_extraction_*.py, or evaluate_endtoend_*.py).
+Interactive Terminal Progress Monitor for End-to-End Trainable GraphSAGE LOEO Evaluation.
+Displays real-time visual progress bars, attack-cohort progression (Botnet, SSH-Bruteforce, DDOS-LOIC-UDP),
+model benchmark scoreboard with per-attack-type breakdown (Plain vs Scalar vs GraphSAGE),
+process telemetry, fold-level loss curves, Go/No-Go assessment, and accurate ETA.
 """
 
 import os
@@ -14,7 +12,6 @@ import time
 import re
 import json
 import glob
-import shutil
 import argparse
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -29,69 +26,8 @@ if os.name == "nt":
 
 # Default paths
 REPO_ROOT = Path(r"d:\sih2026")
-PCAP_2102_DIR = REPO_ROOT / "data-engineering" / "data" / "raw_pcap" / "21022018"
 DEFAULT_RESULTS_JSON = REPO_ROOT / "scratch" / "endtoend_graphsage_results.json"
 MANIFEST_PATH = REPO_ROOT / "ml1" / "artifacts" / "loeo" / "corrected_37fold_manifest.json"
-
-# Wednesday 21-02-2018 S3 PCAP Members Catalog
-PCAP_CATALOG_2102 = [
-    {
-        "member": "pcap/UCAP172.31.69.15",
-        "clean_name": "UCAP172.31.69.15.pcap",
-        "role": "Auxiliary Server (.15)",
-        "comp_mb": 0.32,
-        "uncomp_mb": 0.80,
-    },
-    {
-        "member": "pcap/UCAP172.31.69.18",
-        "clean_name": "UCAP172.31.69.18.pcap",
-        "role": "Auxiliary Server (.18)",
-        "comp_mb": 0.58,
-        "uncomp_mb": 1.74,
-    },
-    {
-        "member": "pcap/UCAP172.31.69.21",
-        "clean_name": "UCAP172.31.69.21.pcap",
-        "role": "Auxiliary Server (.21)",
-        "comp_mb": 11.78,
-        "uncomp_mb": 12.45,
-    },
-    {
-        "member": "pcap/UCAP172.31.69.22",
-        "clean_name": "UCAP172.31.69.22.pcap",
-        "role": "Auxiliary Server (.22)",
-        "comp_mb": 0.57,
-        "uncomp_mb": 1.71,
-    },
-    {
-        "member": "pcap/UCAP172.31.69.25",
-        "clean_name": "UCAP172.31.69.25.pcap",
-        "role": "Ubuntu Victim Svr (.25)",
-        "comp_mb": 4.29,
-        "uncomp_mb": 5.10,
-    },
-    {
-        "member": "pcap/UCAP172.31.69.28 part 1",
-        "clean_name": "UCAP172.31.69.28_part_1.pcap",
-        "role": "DDoS Victim Prim (.28 Pt 1)",
-        "comp_mb": 1956.13,
-        "uncomp_mb": 17428.46,
-    },
-    {
-        "member": "pcap/UCAP172.31.69.28 part 2",
-        "clean_name": "UCAP172.31.69.28_part_2.pcap",
-        "role": "DDoS Victim Sec (.28 Pt 2)",
-        "comp_mb": 252.85,
-        "uncomp_mb": 2025.59,
-    },
-    {
-        "member": "pcap/UCAP172.31.69.7",
-        "clean_name": "UCAP172.31.69.7.pcap",
-        "role": "Auxiliary Server (.7)",
-        "comp_mb": 0.29,
-        "uncomp_mb": 0.88,
-    },
-]
 
 # Colors & ANSI styles
 C_RESET = "\033[0m"
@@ -112,44 +48,10 @@ C_RED = "\033[38;5;196m"
 SPINNER = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
 
 
-def make_bar(percent: float, width: int = 32, fill_color: str = C_GREEN) -> str:
-    """Create a sleek visual progress bar."""
-    percent = max(0.0, min(100.0, percent))
-    filled_len = int(round(width * percent / 100.0))
-    empty_len = width - filled_len
-    bar_fill = "█" * filled_len
-    bar_empty = "░" * empty_len
-    return f"{fill_color}{bar_fill}{C_DARK}{bar_empty}{C_RESET}"
-
-
-def format_duration(seconds: float) -> str:
-    """Format seconds into readable Xh Ym Zs format."""
-    if seconds <= 0:
-        return "0s"
-    s = int(round(seconds))
-    hrs = s // 3600
-    mins = (s % 3600) // 60
-    secs = s % 60
-    if hrs > 0:
-        return f"{hrs}h {mins:02d}m"
-    if mins > 0:
-        return f"{mins}m {secs:02d}s"
-    return f"{secs}s"
-
-
-def format_bytes(bytes_val: float) -> str:
-    """Format bytes into MB or GB."""
-    mb = bytes_val / (1024 * 1024)
-    if mb >= 1024:
-        return f"{mb / 1024:.2f} GB"
-    return f"{mb:.1f} MB"
-
-
-def detect_active_workload(override_pid: int = None):
+def find_active_process(target_script: str = "evaluate_endtoend_graphsage_loeo", override_pid: int = None):
     """
-    Scans running processes to determine the active pipeline:
-    Returns (mode, is_running, pid, cpu_sec, mem_mb, elapsed_sec, cpu_pct, cmdline_str)
-    mode is 'pcap' or 'graphsage' or 'extraction'.
+    Dynamically discover the running evaluation worker process using psutil.
+    Returns (is_running, pid, cpu_sec, mem_mb, elapsed_sec, cpu_pct, cmdline_str).
     """
     try:
         import psutil
@@ -159,324 +61,93 @@ def detect_active_workload(override_pid: int = None):
                 p = psutil.Process(override_pid)
                 if p.is_running() and p.status() != psutil.STATUS_ZOMBIE:
                     with p.oneshot():
-                        cmd_str = " ".join(p.cmdline() or [])
                         cpu_times = p.cpu_times()
                         cpu_sec = cpu_times.user + cpu_times.system
                         mem_mb = p.memory_info().rss / (1024 * 1024)
                         elapsed_sec = max(0, time.time() - p.create_time())
                         cpu_pct = p.cpu_percent(interval=None)
-                        if "download_pcap" in cmd_str:
-                            mode = "pcap"
-                        elif "run_extraction" in cmd_str:
-                            mode = "extraction"
-                        else:
-                            mode = "graphsage"
-                        return mode, True, p.pid, cpu_sec, mem_mb, elapsed_sec, cpu_pct, cmd_str
+                        cmdline_str = " ".join(p.cmdline() or [])
+                        return True, p.pid, cpu_sec, mem_mb, elapsed_sec, cpu_pct, cmdline_str
             except (psutil.NoSuchProcess, psutil.AccessDenied):
-                pass
+                return False, 0, 0.0, 0.0, 0.0, 0.0, ""
 
-        # Inspect candidate processes
-        pcap_candidates = []
-        graphsage_candidates = []
-        extraction_candidates = []
-
+        candidates = []
         for p in psutil.process_iter(["pid", "name", "cmdline"]):
             try:
                 cmdline = p.info.get("cmdline") or []
                 cmd_str = " ".join(cmdline)
+                # Ignore self monitor process
                 if "terminal_progress_monitor" in cmd_str:
                     continue
-                if "download_pcap" in cmd_str:
-                    pcap_candidates.append((p, cmd_str))
-                elif "run_extraction" in cmd_str or "rebuild_ucs" in cmd_str:
-                    extraction_candidates.append((p, cmd_str))
-                elif "evaluate_endtoend_graphsage" in cmd_str or "evaluate_graphsage" in cmd_str:
-                    graphsage_candidates.append((p, cmd_str))
+                if target_script in cmd_str or "evaluate_graphsage" in cmd_str:
+                    candidates.append((p, cmd_str))
             except (psutil.NoSuchProcess, psutil.AccessDenied):
                 continue
 
-        # Prioritize currently active downloading worker
-        if pcap_candidates:
-            best_p, best_cmd = max(pcap_candidates, key=lambda x: (x[0].cpu_times().user + x[0].cpu_times().system) if hasattr(x[0], 'cpu_times') else 0)
-            with best_p.oneshot():
-                return "pcap", True, best_p.pid, (best_p.cpu_times().user + best_p.cpu_times().system), best_p.memory_info().rss / (1024*1024), max(0, time.time() - best_p.create_time()), best_p.cpu_percent(interval=None), best_cmd
+        if not candidates:
+            return False, 0, 0.0, 0.0, 0.0, 0.0, ""
 
-        if extraction_candidates:
-            best_p, best_cmd = max(extraction_candidates, key=lambda x: (x[0].cpu_times().user + x[0].cpu_times().system))
-            with best_p.oneshot():
-                return "extraction", True, best_p.pid, (best_p.cpu_times().user + best_p.cpu_times().system), best_p.memory_info().rss / (1024*1024), max(0, time.time() - best_p.create_time()), best_p.cpu_percent(interval=None), best_cmd
+        # Sort candidates by CPU times to select the primary compute worker
+        best_p = None
+        best_cmd = ""
+        max_cpu = -1.0
+        for p, cmd_str in candidates:
+            try:
+                t = p.cpu_times()
+                cpu_total = t.user + t.system
+                if cpu_total > max_cpu:
+                    max_cpu = cpu_total
+                    best_p = p
+                    best_cmd = cmd_str
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                continue
 
-        if graphsage_candidates:
-            best_p, best_cmd = max(graphsage_candidates, key=lambda x: (x[0].cpu_times().user + x[0].cpu_times().system))
+        if best_p:
             with best_p.oneshot():
-                return "graphsage", True, best_p.pid, (best_p.cpu_times().user + best_p.cpu_times().system), best_p.memory_info().rss / (1024*1024), max(0, time.time() - best_p.create_time()), best_p.cpu_percent(interval=None), best_cmd
-
+                pid = best_p.pid
+                cpu_times = best_p.cpu_times()
+                cpu_sec = cpu_times.user + cpu_times.system
+                mem_mb = best_p.memory_info().rss / (1024 * 1024)
+                create_ts = best_p.create_time()
+                elapsed_sec = max(0, time.time() - create_ts)
+                try:
+                    cpu_pct = best_p.cpu_percent(interval=None)
+                except Exception:
+                    cpu_pct = 0.0
+                return True, pid, cpu_sec, mem_mb, elapsed_sec, cpu_pct, best_cmd
     except Exception:
         pass
 
-    # If no active worker running, detect by recently modified files
-    # If 21022018 folder has files modified in last 24h, default to PCAP mode
-    if PCAP_2102_DIR.exists():
-        recent_pcap = any(time.time() - os.path.getmtime(f) < 86400 for f in PCAP_2102_DIR.glob("*") if f.is_file())
-        if recent_pcap:
-            return "pcap", False, 0, 0.0, 0.0, 0.0, 0.0, ""
-
-    return "graphsage", False, 0, 0.0, 0.0, 0.0, 0.0, ""
+    return False, 0, 0.0, 0.0, 0.0, 0.0, ""
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# PCAP Ingestion & Decompression View
-# ─────────────────────────────────────────────────────────────────────────────
+def find_latest_task_log(active_pid: int = None) -> Path:
+    """Scan brain task directories to locate the most recently modified evaluation log."""
+    search_pattern = r"C:\Users\MUTHUKUMARAN\.gemini\antigravity-ide\brain\*\.system_generated\tasks\task-*.log"
+    logs = glob.glob(search_pattern)
+    if not logs:
+        return Path(r"d:\sih2026\scratch\evaluate.log")
 
-# Speed tracking state across renders
-_SPEED_TRACKER = {
-    "last_check_ts": 0.0,
-    "last_written_bytes": 0,
-    "current_speed_mbs": 0.0,
-}
+    # Sort newest modified first
+    logs.sort(key=lambda p: os.path.getmtime(p), reverse=True)
 
+    # First check logs that have recent evaluation markers
+    for l_path in logs[:30]:
+        try:
+            with open(l_path, "r", encoding="utf-8", errors="ignore") as f:
+                head = f.read(2048)
+                if (
+                    "evaluate_endtoend_graphsage_loeo" in head
+                    or "Building real per-window graph cache" in head
+                    or "TARGET: DETECTION" in head
+                    or "TARGET: ONSET" in head
+                ):
+                    return Path(l_path)
+        except Exception:
+            continue
 
-def scan_pcap_directory(dest_dir: Path):
-    """
-    Inspects destination directory for downloaded and in-progress PCAP files.
-    Returns status dict per catalog item and aggregate metrics.
-    """
-    file_statuses = []
-    total_written_bytes = 0
-    total_expected_uncomp_bytes = sum(int(item["uncomp_mb"] * 1024 * 1024) for item in PCAP_CATALOG_2102)
+    return Path(logs[0])
 
-    active_file_info = None
-
-    for item in PCAP_CATALOG_2102:
-        clean_name = item["clean_name"]
-        expected_size = int(item["uncomp_mb"] * 1024 * 1024)
-        dest_path = dest_dir / clean_name
-        tmp_path = dest_dir / (clean_name + ".tmp")
-
-        if dest_path.exists():
-            actual_size = os.path.getsize(dest_path)
-            total_written_bytes += actual_size
-            pct = 100.0 if expected_size == 0 else min(100.0, (actual_size / expected_size) * 100.0)
-            file_statuses.append({
-                **item,
-                "status": "DONE",
-                "actual_bytes": actual_size,
-                "pct": pct,
-                "path": dest_path,
-            })
-        elif tmp_path.exists():
-            actual_size = os.path.getsize(tmp_path)
-            total_written_bytes += actual_size
-            pct = 0.0 if expected_size == 0 else min(99.9, (actual_size / expected_size) * 100.0)
-            info = {
-                **item,
-                "status": "ACTIVE",
-                "actual_bytes": actual_size,
-                "pct": pct,
-                "path": tmp_path,
-            }
-            file_statuses.append(info)
-            active_file_info = info
-        else:
-            file_statuses.append({
-                **item,
-                "status": "QUEUED",
-                "actual_bytes": 0,
-                "pct": 0.0,
-                "path": dest_path,
-            })
-
-    # Track download/decompression speed
-    now = time.time()
-    dt = now - _SPEED_TRACKER["last_check_ts"]
-    if dt >= 1.0:
-        if _SPEED_TRACKER["last_written_bytes"] > 0 and total_written_bytes >= _SPEED_TRACKER["last_written_bytes"]:
-            delta_bytes = total_written_bytes - _SPEED_TRACKER["last_written_bytes"]
-            speed_mb = (delta_bytes / (1024 * 1024)) / dt
-            # Exponential smoothing
-            _SPEED_TRACKER["current_speed_mbs"] = 0.7 * speed_mb + 0.3 * _SPEED_TRACKER["current_speed_mbs"]
-        _SPEED_TRACKER["last_check_ts"] = now
-        _SPEED_TRACKER["last_written_bytes"] = total_written_bytes
-
-    return file_statuses, total_written_bytes, total_expected_uncomp_bytes, active_file_info, _SPEED_TRACKER["current_speed_mbs"]
-
-
-def render_pcap_dashboard(
-    spinner_char: str,
-    dest_dir: Path,
-    is_running: bool,
-    pid: int,
-    cpu_sec: float,
-    mem_mb: float,
-    wall_elapsed: float,
-    cpu_pct: float,
-    cmdline_str: str,
-) -> str:
-    """Render full ANSI dashboard for PCAP Ingestion & Decompression."""
-    file_statuses, written_bytes, total_bytes, active_file, live_speed_mbs = scan_pcap_directory(dest_dir)
-
-    total_pct = min(100.0, (written_bytes / total_bytes * 100.0)) if total_bytes > 0 else 0.0
-    overall_prog_bar = make_bar(total_pct, width=32, fill_color=C_CYAN)
-
-    done_files = sum(1 for f in file_statuses if f["status"] == "DONE")
-    total_files = len(file_statuses)
-
-    # Disk usage
-    try:
-        du = shutil.disk_usage(str(dest_dir.anchor if dest_dir.anchor else REPO_ROOT))
-        free_gb = du.free / (1024 ** 3)
-        total_disk_gb = du.total / (1024 ** 3)
-        disk_str = f"{free_gb:.1f} GB Free / {total_disk_gb:.1f} GB"
-    except Exception:
-        disk_str = "Available"
-
-    buf = []
-    # Clear screen on initial render, home on refresh
-    buf.append("\033[H")
-
-    # Status Pill
-    if is_running:
-        status_badge = f"{C_GREEN}{C_BOLD}● STREAMING ACTIVE [PID {pid}]{C_RESET}"
-    elif done_files >= total_files:
-        status_badge = f"{C_CYAN}{C_BOLD}✓ ALL 8 PCAPS INGESTED{C_RESET}"
-    else:
-        status_badge = f"{C_YELLOW}◌ IDLE / READY TO RESUME{C_RESET}"
-
-    # Header Box
-    buf.append(f"{C_CYAN}╭─────────────────────────────────────────────────────────────────────────────╮{C_RESET}")
-    title_text = f"📦  CSE-CIC-IDS2018 PCAP INGESTION & DECOMPRESSION MONITOR  {spinner_char}  {status_badge}"
-    buf.append(f"{C_CYAN}│{C_RESET}  {C_BOLD}{C_WHITE}{title_text}{C_RESET}")
-    buf.append(f"{C_CYAN}├─────────────────────────────────────────────────────────────────────────────┤{C_RESET}")
-
-    # Workload Context
-    buf.append(
-        f"{C_CYAN}│{C_RESET}  {C_BOLD}Target Day:{C_RESET} {C_YELLOW}Wednesday-21-02-2018{C_RESET} │ {C_BOLD}Vector:{C_RESET} {C_PURPLE}DDOS-LOIC-UDP / HOIC (Victim 172.31.69.28){C_RESET}"
-    )
-    buf.append(
-        f"{C_CYAN}│{C_RESET}  {C_BOLD}Pipeline Target:{C_RESET} Option B Genuine Packet Extraction (12 Physical Features)"
-    )
-
-    # Overall Progress
-    written_str = format_bytes(written_bytes)
-    total_str = format_bytes(total_bytes)
-    buf.append(
-        f"{C_CYAN}│{C_RESET}  Overall Progress: [{overall_prog_bar}] {C_BOLD}{C_CYAN}{total_pct:5.1f}%{C_RESET} ({written_str} / {total_str})"
-    )
-
-    # Speed & ETA
-    rem_bytes = max(0, total_bytes - written_bytes)
-    if is_running and live_speed_mbs > 0.05:
-        rem_sec = rem_bytes / (live_speed_mbs * 1024 * 1024)
-        eta_time = datetime.now() + timedelta(seconds=rem_sec)
-        eta_str = eta_time.strftime("%H:%M:%S")
-        rem_str = format_duration(rem_sec)
-        speed_str = f"{C_GREEN}{live_speed_mbs:.2f} MB/s{C_RESET}"
-        time_info = f"Speed: {speed_str} │ Rem: {C_YELLOW}{rem_str}{C_RESET} │ ETA: {C_WHITE}{C_BOLD}{eta_str}{C_RESET}"
-    elif done_files >= total_files:
-        time_info = f"{C_GREEN}{C_BOLD}★ All 21-02-2018 captures fully extracted and ready for feature extraction.{C_RESET}"
-    else:
-        rem_mb = rem_bytes / (1024 * 1024)
-        time_info = f"{C_YELLOW}Process paused or awaiting restart. {rem_mb:.1f} MB remaining.{C_RESET}"
-
-    buf.append(f"{C_CYAN}│{C_RESET}  Files: {C_BOLD}{done_files}/{total_files} Ingested{C_RESET} │ {time_info}")
-
-    buf.append(f"{C_CYAN}├─────────────────────────────────────────────────────────────────────────────┤{C_RESET}")
-
-    # Active Stream Card
-    if active_file:
-        act_name = active_file["clean_name"]
-        act_role = active_file["role"]
-        act_bytes = active_file["actual_bytes"]
-        act_total = int(active_file["uncomp_mb"] * 1024 * 1024)
-        act_pct = active_file["pct"]
-        act_bar = make_bar(act_pct, width=28, fill_color=C_YELLOW)
-
-        buf.append(
-            f"{C_CYAN}│{C_RESET}  {C_BOLD}CURRENT STREAMING CAPTURE:{C_RESET} {C_WHITE}{act_name}{C_RESET} ({C_PURPLE}{act_role}{C_RESET})"
-        )
-        buf.append(
-            f"{C_CYAN}│{C_RESET}  [{act_bar}] {C_YELLOW}{C_BOLD}{act_pct:5.1f}%{C_RESET} ({format_bytes(act_bytes)} / {format_bytes(act_total)})"
-        )
-        if is_running and live_speed_mbs > 0.05:
-            file_rem_bytes = max(0, act_total - act_bytes)
-            file_rem_sec = file_rem_bytes / (live_speed_mbs * 1024 * 1024)
-            file_eta_str = (datetime.now() + timedelta(seconds=file_rem_sec)).strftime("%H:%M:%S")
-            buf.append(
-                f"{C_CYAN}│{C_RESET}  {C_DIM}File Pace:{C_RESET} ~{live_speed_mbs:.1f} MB/s │ File Rem: {format_duration(file_rem_sec)} │ File ETA: {C_WHITE}{file_eta_str}{C_RESET}"
-            )
-    elif done_files < total_files:
-        next_queued = next((f for f in file_statuses if f["status"] == "QUEUED"), None)
-        next_name = next_queued["clean_name"] if next_queued else "None"
-        buf.append(
-            f"{C_CYAN}│{C_RESET}  {C_DIM}Next in queue:{C_RESET} {C_WHITE}{next_name}{C_RESET} (Ready to stream via Range-request on restart)"
-        )
-    else:
-        buf.append(
-            f"{C_CYAN}│{C_RESET}  {C_GREEN}{C_BOLD}✓ Complete:{C_RESET} All PCAP captures verified in data/raw_pcap/21022018"
-        )
-
-    buf.append(f"{C_CYAN}├─────────────────────────────────────────────────────────────────────────────┤{C_RESET}")
-
-    # File Queue Matrix
-    buf.append(f"{C_CYAN}│{C_RESET}  {C_BOLD}CAPTURE FILE INGESTION MATRIX (Wednesday 21-02-2018):{C_RESET}")
-    buf.append(
-        f"{C_CYAN}│{C_RESET}  {C_WHITE}┌──────────────────────────────┬──────────────────┬──────────┬────────┬──────────┐{C_RESET}"
-    )
-    buf.append(
-        f"{C_CYAN}│{C_RESET}  {C_WHITE}│{C_RESET} {C_BOLD}Capture File{C_RESET}                 {C_WHITE}│{C_RESET} {C_BOLD}Endpoint / Role{C_RESET}  {C_WHITE}│{C_RESET} {C_BOLD}Uncomp. MB{C_RESET} {C_WHITE}│{C_RESET} {C_BOLD}Prog.%{C_RESET} {C_WHITE}│{C_RESET} {C_BOLD}Status{C_RESET}   {C_WHITE}│{C_RESET}"
-    )
-    buf.append(
-        f"{C_CYAN}│{C_RESET}  {C_WHITE}├──────────────────────────────┼──────────────────┼──────────┼────────┼──────────┤{C_RESET}"
-    )
-
-    for f in file_statuses:
-        name_col = f["clean_name"][:28].ljust(28)
-        role_col = f["role"][:16].ljust(16)
-        uncomp_str = f"{f['uncomp_mb']:8.2f}"
-        pct_str = f"{f['pct']:5.1f}%"
-
-        if f["status"] == "DONE":
-            stat_str = f"{C_GREEN}✓ DONE   {C_RESET}"
-            pct_col = f"{C_GREEN}{pct_str}{C_RESET}"
-        elif f["status"] == "ACTIVE":
-            stat_str = f"{C_YELLOW}▶ STREAM {C_RESET}"
-            pct_col = f"{C_YELLOW}{pct_str}{C_RESET}"
-        else:
-            stat_str = f"{C_DIM}⏳ QUEUED {C_RESET}"
-            pct_col = f"{C_DIM}{pct_str}{C_RESET}"
-
-        buf.append(
-            f"{C_CYAN}│{C_RESET}  {C_WHITE}│{C_RESET} {name_col} {C_WHITE}│{C_RESET} {role_col} {C_WHITE}│{C_RESET} {uncomp_str} {C_WHITE}│{C_RESET} {pct_col} {C_WHITE}│{C_RESET} {stat_str}{C_WHITE}│{C_RESET}"
-        )
-
-    buf.append(
-        f"{C_CYAN}│{C_RESET}  {C_WHITE}└──────────────────────────────┴──────────────────┴──────────┴────────┴──────────┘{C_RESET}"
-    )
-
-    buf.append(f"{C_CYAN}├─────────────────────────────────────────────────────────────────────────────┤{C_RESET}")
-
-    # Telemetry & Storage
-    cpu_hrs = cpu_sec / 3600.0
-    wall_str = format_duration(wall_elapsed)
-    active_pid_str = str(pid) if pid > 0 else "Offline"
-    buf.append(
-        f"{C_CYAN}│{C_RESET}  {C_DIM}Telemetry:{C_RESET} PID: {C_BOLD}{active_pid_str}{C_RESET} │ Worker RAM: {C_MAGENTA}{mem_mb:.0f} MB{C_RESET} │ CPU Time: {C_YELLOW}{cpu_hrs:.2f}h{C_RESET} │ Wall: {C_BLUE}{wall_str}{C_RESET}"
-    )
-    buf.append(
-        f"{C_CYAN}│{C_RESET}  {C_DIM}Storage:{C_RESET} Destination: {C_WHITE}{dest_dir}{C_RESET} │ Drive D: {C_GREEN}{disk_str}{C_RESET}"
-    )
-
-    buf.append(f"{C_CYAN}╰─────────────────────────────────────────────────────────────────────────────╯{C_RESET}")
-    buf.append(
-        f"{C_DIM}Auto-refreshing live dashboard (Ctrl+C to exit monitor — background workers continue){C_RESET}"
-    )
-
-    return "\n".join(buf)
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# GraphSAGE Evaluation View (Preserved for LOEO analysis)
-# ─────────────────────────────────────────────────────────────────────────────
 
 def load_manifest_folds():
     """Load metadata for all folds from manifest file."""
@@ -507,7 +178,7 @@ def load_results_json(path: Path):
     """Safely load incremental results from JSON, retrying on transient file locks."""
     if not path.exists():
         return {}
-    for _ in range(3):
+    for _ in range(4):
         try:
             with open(path, "r", encoding="utf-8") as f:
                 return json.load(f)
@@ -516,10 +187,111 @@ def load_results_json(path: Path):
     return {}
 
 
-def render_graphsage_dashboard(
+def parse_log(log_path: Path):
+    """Parse output stream and progress metadata from the active task log."""
+    default_meta = {
+        "current_target": "DETECTION",
+        "has_onset_queued": False,
+        "detection_planned": 37,
+        "onset_planned": 37,
+        "clean_lines": [],
+        "early_signal_text": "",
+        "assessment_text": "",
+    }
+    if not log_path or not log_path.exists():
+        return default_meta
+
+    try:
+        with open(log_path, "r", encoding="utf-8", errors="ignore") as f:
+            text = f.read()
+    except Exception:
+        return default_meta
+
+    # Target detection
+    has_onset_started = "TARGET: ONSET" in text
+    has_onset_queued = "--target both" in text or "target='both'" in text
+
+    if has_onset_started and text.rfind("TARGET: ONSET") > text.rfind("TARGET: DETECTION"):
+        current_target = "ONSET"
+    else:
+        current_target = "DETECTION"
+
+    # Number of folds per stage
+    det_matches = re.findall(r"Evaluating\s+(\d+)\s+folds for detection", text)
+    detection_planned = int(det_matches[-1]) if det_matches else 37
+
+    onset_matches = re.findall(r"Evaluating\s+(\d+)\s+folds for onset", text)
+    onset_planned = int(onset_matches[-1]) if onset_matches else detection_planned
+
+    # Early signal snippet
+    early_signal_text = ""
+    if "-- EARLY SIGNAL" in text:
+        parts = text.split("-- EARLY SIGNAL")[-1].split("--------------------------------------")
+        if parts:
+            early_signal_text = parts[0].strip()
+
+    # Go/No-Go assessment snippet
+    assessment_text = ""
+    if "GO/NO-GO ASSESSMENT" in text:
+        assessment_part = text.split("GO/NO-GO ASSESSMENT")[-1].strip()
+        lines = [l.strip() for l in assessment_part.splitlines() if l.strip() and not l.startswith("=")]
+        assessment_text = " ".join(lines[:2])
+
+    # Clean recent log lines
+    lines = [l.strip() for l in text.splitlines() if l.strip()]
+    clean_lines = [
+        l
+        for l in lines
+        if not l.startswith("warnings.warn")
+        and "FutureWarning" not in l
+        and "RuntimeWarning" not in l
+        and "torch.jit.script" not in l
+        and "Full results saved to" not in l
+        and "Building real per-window" not in l
+        and not l.startswith("D:\\sih2026")
+    ][-5:]
+
+    return {
+        "current_target": current_target,
+        "has_onset_queued": has_onset_queued,
+        "detection_planned": detection_planned,
+        "onset_planned": onset_planned,
+        "clean_lines": clean_lines,
+        "early_signal_text": early_signal_text,
+        "assessment_text": assessment_text,
+    }
+
+
+def make_bar(percent: float, width: int = 34, fill_color: str = C_GREEN) -> str:
+    """Create a sleek visual progress bar."""
+    percent = max(0.0, min(100.0, percent))
+    filled_len = int(round(width * percent / 100.0))
+    empty_len = width - filled_len
+    bar_fill = "█" * filled_len
+    bar_empty = "░" * empty_len
+    return f"{fill_color}{bar_fill}{C_DARK}{bar_empty}{C_RESET}"
+
+
+def format_duration(seconds: float) -> str:
+    """Format seconds into readable Xh Ym Zs format."""
+    if seconds <= 0:
+        return "0s"
+    s = int(round(seconds))
+    hrs = s // 3600
+    mins = (s % 3600) // 60
+    secs = s % 60
+    if hrs > 0:
+        return f"{hrs}h {mins:02d}m"
+    if mins > 0:
+        return f"{mins}m {secs:02d}s"
+    return f"{secs}s"
+
+
+def render_dashboard(
     spinner_char: str,
     manifest_folds: dict,
     results_path: Path,
+    log_path: Path,
     is_running: bool,
     pid: int,
     cpu_sec: float,
@@ -528,57 +300,180 @@ def render_graphsage_dashboard(
     cpu_pct: float,
     cmdline_str: str,
 ) -> str:
-    """Render full ANSI dashboard for GraphSAGE 37-Fold LOEO Evaluation."""
+    """Render full ANSI dashboard string."""
     results_data = load_results_json(results_path)
-    det_results = results_data.get("detection", [])
-    active_done = len(det_results)
-    active_planned = 37
+    log_data = parse_log(log_path)
 
+    current_target = log_data["current_target"]
+    det_results = results_data.get("detection", [])
+    onset_results = results_data.get("onset", [])
+
+    det_done = len(det_results)
+    det_planned = max(log_data["detection_planned"], det_done, 37)
+
+    onset_done = len(onset_results)
+    onset_planned = max(log_data["onset_planned"], onset_done, 37)
+
+    # Active target calculations
+    if current_target == "ONSET":
+        active_results = onset_results
+        active_done = onset_done
+        active_planned = onset_planned
+        stage_num = "Stage 2/2"
+    else:
+        active_results = det_results
+        active_done = det_done
+        active_planned = det_planned
+        stage_num = "Stage 1/1 (Detection Target)"
+
+    # Pace & ETA estimation
+    durations = [r.get("elapsed_sec", 0.0) for r in active_results if r.get("elapsed_sec", 0.0) > 0]
+    # Use recent folds (last 5) for current pace if available
+    recent_durations = durations[-6:] if len(durations) >= 6 else durations
+    avg_fold_sec = (sum(recent_durations) / len(recent_durations)) if recent_durations else 120.0
+    remaining_folds = max(0, active_planned - active_done)
+
+    # Active fold info
+    active_fold_id = active_done
+    if active_fold_id < active_planned:
+        f_meta = manifest_folds.get(active_fold_id, {})
+        active_ep = f_meta.get("episode_id", f"Fold_{active_fold_id}")
+        active_attack = f_meta.get("attack_type", "Pending")
+    else:
+        active_ep = "All 37 LOEO Folds Complete"
+        active_attack = "Completed"
+
+    # Current fold elapsed time: accurately computed from results file modification timestamp
+    if is_running and active_done < active_planned:
+        if results_path.exists():
+            last_file_mod = os.path.getmtime(results_path)
+            current_fold_elapsed = max(0.0, time.time() - last_file_mod)
+        else:
+            current_fold_elapsed = wall_elapsed % max(1.0, avg_fold_sec)
+    else:
+        current_fold_elapsed = 0.0
+
+    rem_sec = max(0.0, (remaining_folds * avg_fold_sec) - current_fold_elapsed)
+    eta_time = datetime.now() + timedelta(seconds=rem_sec)
+    eta_clock_str = eta_time.strftime("%H:%M:%S")
+
+    # Percentage
     pct = (active_done / active_planned * 100.0) if active_planned > 0 else 0.0
-    prog_bar = make_bar(pct, width=32, fill_color=C_CYAN)
+    prog_bar = make_bar(pct, width=34, fill_color=C_CYAN)
+
+    # Cohort breakdown
+    cohort_counts = {"Botnet": (0, 10), "SSH-Bruteforce": (0, 9), "DDOS-LOIC-UDP": (0, 18)}
+    for r in active_results:
+        atk = r.get("attack_type", "")
+        if atk in cohort_counts:
+            d, tot = cohort_counts[atk]
+            cohort_counts[atk] = (d + 1, tot)
 
     buf = []
+    # Cursor home to prevent terminal flickering
     buf.append("\033[H")
 
-    status_badge = f"{C_GREEN}● RUNNING [PID {pid}]{C_RESET}" if is_running else (f"{C_CYAN}✓ 37/37 COMPLETE{C_RESET}" if active_done >= 37 else f"{C_YELLOW}◌ COMPLETE / VERIFIED{C_RESET}")
+    # Status Pill
+    if is_running:
+        status_badge = f"{C_GREEN}{C_BOLD}● RUNNING [PID {pid}]{C_RESET}"
+    elif active_done >= active_planned and active_done > 0:
+        status_badge = f"{C_CYAN}{C_BOLD}✓ 37/37 FOLDS COMPLETE{C_RESET}"
+    else:
+        status_badge = f"{C_YELLOW}◌ IDLE / COMPLETE{C_RESET}"
 
+    # Banner Header
     buf.append(f"{C_CYAN}╭─────────────────────────────────────────────────────────────────────────────╮{C_RESET}")
-    title_text = f"🛡️  GRAPHSAGE LOEO 37-FOLD EVALUATION SCOREBOARD  {spinner_char}  {status_badge}"
+    title_text = f"🛡️  GRAPHSAGE LOEO FULL 37-FOLD EVALUATION MONITOR  {spinner_char}  {status_badge}"
     buf.append(f"{C_CYAN}│{C_RESET}  {C_BOLD}{C_WHITE}{title_text}{C_RESET}")
     buf.append(f"{C_CYAN}├─────────────────────────────────────────────────────────────────────────────┤{C_RESET}")
-    buf.append(f"{C_CYAN}│{C_RESET}  Overall: [{prog_bar}] {C_BOLD}{C_CYAN}{pct:5.1f}%{C_RESET} ({active_done}/{active_planned} Folds Verified)")
+
+    # Target Phase & Overall Progress Bar
+    target_desc = "Binary Attack Detection Across All 37 Episodes"
+    buf.append(
+        f"{C_CYAN}│{C_RESET}  {C_BOLD}Target Phase [{stage_num}]:{C_RESET} {C_YELLOW}{current_target}{C_RESET} ({target_desc})"
+    )
+    buf.append(
+        f"{C_CYAN}│{C_RESET}  [{prog_bar}] {C_BOLD}{C_CYAN}{pct:5.1f}%{C_RESET} ({C_WHITE}{active_done}/{active_planned}{C_RESET} Folds Done)"
+    )
+
+    # Cohort progression pills
+    b_done, b_tot = cohort_counts["Botnet"]
+    s_done, s_tot = cohort_counts["SSH-Bruteforce"]
+    d_done, d_tot = cohort_counts["DDOS-LOIC-UDP"]
+
+    b_str = f"{C_GREEN}✓ Botnet: {b_done}/{b_tot}{C_RESET}" if b_done >= b_tot else f"{C_YELLOW}● Botnet: {b_done}/{b_tot}{C_RESET}"
+    s_str = f"{C_GREEN}✓ SSH-Brute: {s_done}/{s_tot}{C_RESET}" if s_done >= s_tot else (f"{C_CYAN}▶ SSH-Brute: {s_done}/{s_tot}{C_RESET}" if b_done >= b_tot else f"{C_DIM}SSH-Brute: {s_done}/{s_tot}{C_RESET}")
+    d_str = f"{C_GREEN}✓ DDOS-LOIC: {d_done}/{d_tot}{C_RESET}" if d_done >= d_tot else (f"{C_CYAN}▶ DDOS-LOIC: {d_done}/{d_tot}{C_RESET}" if (b_done >= b_tot and s_done >= s_tot) else f"{C_DIM}DDOS-LOIC: {d_done}/{d_tot}{C_RESET}")
+
+    buf.append(f"{C_CYAN}│{C_RESET}  {C_BOLD}Cohorts:{C_RESET} {b_str}  │  {s_str}  │  {d_str}")
+
+    if active_done < active_planned and is_running:
+        fold_el_str = format_duration(current_fold_elapsed)
+        avg_fold_str = format_duration(avg_fold_sec)
+        rem_str = format_duration(rem_sec)
+        buf.append(
+            f"{C_CYAN}│{C_RESET}  {C_DIM}Active:{C_RESET} {C_BOLD}Fold {active_fold_id:02d}{C_RESET} ({C_PURPLE}{active_attack}{C_RESET}) │ Episode: {active_ep[:23]} │ Time: {C_YELLOW}{fold_el_str}{C_RESET}"
+        )
+        buf.append(
+            f"{C_CYAN}│{C_RESET}  {C_DIM}Pace:{C_RESET} ~{avg_fold_str}/fold │ {C_DIM}Remaining:{C_RESET} {C_YELLOW}{remaining_folds} folds (~{rem_str}){C_RESET} │ {C_DIM}ETA:{C_RESET} {C_WHITE}{C_BOLD}{eta_clock_str}{C_RESET}"
+        )
+    elif active_done >= active_planned:
+        total_time_str = format_duration(sum(durations))
+        buf.append(
+            f"{C_CYAN}│{C_RESET}  {C_GREEN}{C_BOLD}★ All 37 Folds Fully Evaluated!{C_RESET} (Total run time: {total_time_str})"
+        )
+
     buf.append(f"{C_CYAN}├─────────────────────────────────────────────────────────────────────────────┤{C_RESET}")
 
-    # Scoreboard Table
-    buf.append(f"{C_CYAN}│{C_RESET}  {C_BOLD}PER-ATTACK-TYPE SCOREBOARD BREAKDOWN (N={active_done}/37 Folds):{C_RESET}")
-    buf.append(f"{C_CYAN}│{C_RESET}  {C_WHITE}┌──────────────────┬───────┬──────────┬──────────┬──────────┬─────────────┐{C_RESET}")
-    buf.append(f"{C_CYAN}│{C_RESET}  {C_WHITE}│{C_RESET} {C_BOLD}Attack Cohort{C_RESET}    {C_WHITE}│{C_RESET} {C_BOLD}Folds{C_RESET} {C_WHITE}│{C_RESET} {C_BOLD}Plain F1{C_RESET} {C_WHITE}│{C_RESET} {C_BOLD}Scalar F1{C_RESET}{C_WHITE}│{C_RESET} {C_BOLD}G-SAGE F1{C_RESET}{C_WHITE}│{C_RESET} {C_BOLD}Delta (GS-Sc){C_RESET}{C_WHITE}│{C_RESET}")
-    buf.append(f"{C_CYAN}│{C_RESET}  {C_WHITE}├──────────────────┼───────┼──────────┼──────────┼──────────┼─────────────┤{C_RESET}")
+    # Process Telemetry
+    cpu_hrs = cpu_sec / 3600.0
+    wall_str = format_duration(wall_elapsed)
+    active_pid_str = str(pid) if pid > 0 else "N/A"
+    buf.append(
+        f"{C_CYAN}│{C_RESET}  {C_DIM}Telemetry:{C_RESET} PID: {C_BOLD}{active_pid_str}{C_RESET} │ CPU Compute: {C_YELLOW}{cpu_hrs:.2f} hrs{C_RESET} │ RAM: {C_MAGENTA}{mem_mb:.0f} MB{C_RESET} │ Session Wall: {C_BLUE}{wall_str}{C_RESET}"
+    )
+    buf.append(f"{C_CYAN}├─────────────────────────────────────────────────────────────────────────────┤{C_RESET}")
 
-    for atk_name, atk_target_total in [("Botnet", 10), ("SSH-Bruteforce", 9), ("DDOS-LOIC-UDP", 18)]:
-        atk_records = [r for r in det_results if r.get("attack_type") == atk_name]
-        n_atk = len(atk_records)
-        if n_atk > 0:
-            p_f1 = sum(r["plain_f1"] for r in atk_records) / n_atk
-            s_f1 = sum(r["scalar_f1"] for r in atk_records) / n_atk
-            g_f1 = sum(r["graphsage_f1"] for r in atk_records) / n_atk
-            delta = g_f1 - s_f1
-            d_col = C_GREEN if delta > 0.0005 else (C_YELLOW if delta >= -0.0005 else C_RED)
-            d_str = f"{delta:+.4f}"
-            count_str = f"{n_atk:>2}/{atk_target_total:<2}"
-            buf.append(
-                f"{C_CYAN}│{C_RESET}  {C_WHITE}│{C_RESET} {atk_name:<16} {C_WHITE}│{C_RESET} {count_str} {C_WHITE}│{C_RESET}  {C_BLUE}{p_f1:.4f}{C_RESET}  {C_WHITE}│{C_RESET}  {C_YELLOW}{s_f1:.4f}{C_RESET}  {C_WHITE}│{C_RESET}  {d_col}{g_f1:.4f}{C_RESET}  {C_WHITE}│{C_RESET}   {d_col}{d_str:>7}{C_RESET}   {C_WHITE}│{C_RESET}"
-            )
-        else:
-            count_str = f" 0/{atk_target_total:<2}"
-            buf.append(
-                f"{C_CYAN}│{C_RESET}  {C_WHITE}│{C_RESET} {atk_name:<16} {C_WHITE}│{C_RESET} {count_str} {C_WHITE}│{C_RESET}   {C_DIM}Pending evaluation in pipeline...{C_RESET}   {C_WHITE}│{C_RESET}"
-            )
+    # Per-Attack-Type Scoreboard Breakdown
+    buf.append(
+        f"{C_CYAN}│{C_RESET}  {C_BOLD}PER-ATTACK-TYPE SCOREBOARD BREAKDOWN (N={active_done}/37 Folds):{C_RESET}"
+    )
 
     if active_done > 0:
-        all_p_f1 = sum(r["plain_f1"] for r in det_results) / active_done
-        all_s_f1 = sum(r["scalar_f1"] for r in det_results) / active_done
-        all_g_f1 = sum(r["graphsage_f1"] for r in det_results) / active_done
+        buf.append(
+            f"{C_CYAN}│{C_RESET}  {C_WHITE}┌──────────────────┬───────┬──────────┬──────────┬──────────┬─────────────┐{C_RESET}"
+        )
+        buf.append(
+            f"{C_CYAN}│{C_RESET}  {C_WHITE}│{C_RESET} {C_BOLD}Attack Cohort{C_RESET}    {C_WHITE}│{C_RESET} {C_BOLD}Folds{C_RESET} {C_WHITE}│{C_RESET} {C_BOLD}Plain F1{C_RESET} {C_WHITE}│{C_RESET} {C_BOLD}Scalar F1{C_RESET}{C_WHITE}│{C_RESET} {C_BOLD}G-SAGE F1{C_RESET}{C_WHITE}│{C_RESET} {C_BOLD}Delta (GS-Sc){C_RESET}{C_WHITE}│{C_RESET}"
+        )
+        buf.append(
+            f"{C_CYAN}│{C_RESET}  {C_WHITE}├──────────────────┼───────┼──────────┼──────────┼──────────┼─────────────┤{C_RESET}"
+        )
+
+        for atk_name, atk_target_total in [("Botnet", 10), ("SSH-Bruteforce", 9), ("DDOS-LOIC-UDP", 18)]:
+            atk_records = [r for r in active_results if r.get("attack_type") == atk_name]
+            n_atk = len(atk_records)
+            if n_atk > 0:
+                p_f1 = sum(r["plain_f1"] for r in atk_records) / n_atk
+                s_f1 = sum(r["scalar_f1"] for r in atk_records) / n_atk
+                g_f1 = sum(r["graphsage_f1"] for r in atk_records) / n_atk
+                delta = g_f1 - s_f1
+                d_col = C_GREEN if delta > 0.0005 else (C_YELLOW if delta >= -0.0005 else C_RED)
+                d_str = f"{delta:+.4f}"
+                count_str = f"{n_atk:>2}/{atk_target_total:<2}"
+                buf.append(
+                    f"{C_CYAN}│{C_RESET}  {C_WHITE}│{C_RESET} {atk_name:<16} {C_WHITE}│{C_RESET} {count_str} {C_WHITE}│{C_RESET}  {C_BLUE}{p_f1:.4f}{C_RESET}  {C_WHITE}│{C_RESET}  {C_YELLOW}{s_f1:.4f}{C_RESET}  {C_WHITE}│{C_RESET}  {d_col}{g_f1:.4f}{C_RESET}  {C_WHITE}│{C_RESET}   {d_col}{d_str:>7}{C_RESET}   {C_WHITE}│{C_RESET}"
+                )
+            else:
+                count_str = f" 0/{atk_target_total:<2}"
+                buf.append(
+                    f"{C_CYAN}│{C_RESET}  {C_WHITE}│{C_RESET} {atk_name:<16} {C_WHITE}│{C_RESET} {count_str} {C_WHITE}│{C_RESET}   {C_DIM}Pending evaluation in pipeline...{C_RESET}   {C_WHITE}│{C_RESET}"
+                )
+
+        # Aggregate Row
+        all_p_f1 = sum(r["plain_f1"] for r in active_results) / active_done
+        all_s_f1 = sum(r["scalar_f1"] for r in active_results) / active_done
+        all_g_f1 = sum(r["graphsage_f1"] for r in active_results) / active_done
         all_delta = all_g_f1 - all_s_f1
         tot_d_col = C_GREEN if all_delta > 0.0005 else (C_YELLOW if all_delta >= -0.0005 else C_RED)
         tot_d_str = f"{all_delta:+.4f}"
@@ -592,25 +487,93 @@ def render_graphsage_dashboard(
         buf.append(
             f"{C_CYAN}│{C_RESET}  {C_WHITE}└──────────────────┴───────┴──────────┴──────────┴──────────┴─────────────┘{C_RESET}"
         )
+
+        # Verdict Summary
         if all_delta > 0.0005:
-            verdict = f"{C_GREEN}{C_BOLD}🏆 POTENTIAL BENEFIT: GraphSAGE shows +{all_delta:.4f} gain.{C_RESET}"
+            verdict = f"{C_GREEN}{C_BOLD}🏆 POTENTIAL BENEFIT: GraphSAGE shows +{all_delta:.4f} gain. Proceed to latency benchmark.{C_RESET}"
         elif all_delta >= -0.0005:
             verdict = f"{C_YELLOW}{C_BOLD}⚖️  PARITY CONFIRMED ({all_delta:+.4f}): GraphSAGE matches scalar features with no extra signal.{C_RESET}"
         else:
-            verdict = f"{C_RED}{C_BOLD}⚠️  SCALAR SUPERIOR ({all_delta:+.4f}): Scalar preferred (GraphSAGE adds latency).{C_RESET}"
+            verdict = f"{C_RED}{C_BOLD}⚠️  SCALAR SUPERIOR ({all_delta:+.4f}): GNN topological fusion degrades performance.{C_RESET}"
+
         buf.append(f"{C_CYAN}│{C_RESET}  {C_BOLD}Verdict:{C_RESET} {verdict}")
+    else:
+        buf.append(
+            f"{C_CYAN}│{C_RESET}  {C_YELLOW}Training in progress for Fold 00... (Scoreboard populates after Fold 00){C_RESET}"
+        )
+
+    buf.append(f"{C_CYAN}├─────────────────────────────────────────────────────────────────────────────┤{C_RESET}")
+
+    # Recent Fold Breakdown Table (Last 4 folds)
+    buf.append(f"{C_CYAN}│{C_RESET}  {C_BOLD}Recent Completed LOEO Folds:{C_RESET}")
+    buf.append(
+        f"{C_CYAN}│{C_RESET}  {C_DIM}Fold   Attack Type       Plain F1   Scalar F1   GraphSAGE F1   Delta   Duration{C_RESET}"
+    )
+
+    if active_results:
+        for r in active_results[-4:]:
+            fid = r["fold_id"]
+            atk = r.get("attack_type", "Unknown")[:14].ljust(14)
+            p_f1 = f"{r['plain_f1']:.4f}"
+            s_f1 = f"{r['scalar_f1']:.4f}"
+            g_f1 = f"{r['graphsage_f1']:.4f}"
+            delta_val = r["graphsage_f1"] - r["scalar_f1"]
+            d_str = f"{delta_val:+.4f}"
+            d_col = (
+                C_GREEN
+                if delta_val > 0.0005
+                else (C_YELLOW if delta_val >= -0.0005 else C_RED)
+            )
+            t_str = f"{r.get('elapsed_sec', 0.0):.1f}s"
+            buf.append(
+                f"{C_CYAN}│{C_RESET}  Fold {fid:02d} {atk}    {C_BLUE}{p_f1}{C_RESET}     {C_YELLOW}{s_f1}{C_RESET}       {d_col}{g_f1}{C_RESET}     {d_col}{d_str:>7}{C_RESET}   {t_str:>7}"
+            )
+
+        # Loss curve snippet for the most recently completed fold
+        latest_r = active_results[-1]
+        losses = latest_r.get("graphsage_loss_curve", [])
+        if losses and len(losses) >= 2:
+            l_start = f"{losses[0]:.4f}"
+            l_mid = f"{losses[len(losses)//2]:.4f}"
+            l_end = f"{losses[-1]:.4f}"
+            buf.append(
+                f"{C_CYAN}│{C_RESET}  {C_DIM}Latest Fold {latest_r['fold_id']:02d} GraphSAGE Loss Curve:{C_RESET} E1: {l_start} → E{len(losses)//2}: {l_mid} → E{len(losses)}: {l_end}"
+            )
+    else:
+        buf.append(
+            f"{C_CYAN}│{C_RESET}  {C_DIM}(No completed folds recorded yet. Currently executing initial epoch...){C_RESET}"
+        )
+
+    # Formal Assessment Banner if present
+    if log_data["assessment_text"]:
+        buf.append(f"{C_CYAN}├─────────────────────────────────────────────────────────────────────────────┤{C_RESET}")
+        buf.append(f"{C_CYAN}│{C_RESET}  {C_BOLD}Formal Assessment:{C_RESET} {C_WHITE}{log_data['assessment_text'][:70]}{C_RESET}")
+
+    buf.append(f"{C_CYAN}├─────────────────────────────────────────────────────────────────────────────┤{C_RESET}")
+
+    # Live Log Stream
+    buf.append(f"{C_CYAN}│{C_RESET}  {C_BOLD}Latest Task Log Stream:{C_RESET}")
+    clean_lines = log_data.get("clean_lines", [])
+    if clean_lines:
+        for cl in clean_lines[-3:]:
+            trunc_cl = (cl[:68] + "...") if len(cl) > 68 else cl.ljust(71)
+            buf.append(f"{C_CYAN}│{C_RESET}  {C_DIM}> {trunc_cl}{C_RESET}")
+    else:
+        buf.append(
+            f"{C_CYAN}│{C_RESET}  {C_DIM}> Initializing PyTorch Geometric graph cache and LOEO manifest...{C_RESET}"
+        )
 
     buf.append(f"{C_CYAN}╰─────────────────────────────────────────────────────────────────────────────╯{C_RESET}")
+    buf.append(
+        f"{C_DIM}Live auto-refresh every 1.5s (Press Ctrl+C to exit monitor — background evaluation will continue){C_RESET}"
+    )
+
     return "\n".join(buf)
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Main Loop & Entry Point
-# ─────────────────────────────────────────────────────────────────────────────
-
 def main():
     parser = argparse.ArgumentParser(
-        description="Unified Terminal Progress Monitor for Cyber World Model Architecture"
+        description="Live Terminal Progress Monitor for End-to-End GraphSAGE LOEO Evaluation"
     )
     parser.add_argument(
         "--once",
@@ -624,10 +587,16 @@ def main():
         help="Refresh interval in seconds (default: 1.5s)",
     )
     parser.add_argument(
-        "--mode",
-        choices=["auto", "pcap", "graphsage"],
-        default="auto",
-        help="Dashboard mode (auto, pcap, or graphsage)",
+        "--results",
+        type=str,
+        default=str(DEFAULT_RESULTS_JSON),
+        help="Path to endtoend_graphsage_results.json",
+    )
+    parser.add_argument(
+        "--log",
+        type=str,
+        default="",
+        help="Path to task log file (auto-discovered dynamically if not provided)",
     )
     parser.add_argument(
         "--pid",
@@ -637,59 +606,70 @@ def main():
     )
     args = parser.parse_args()
 
+    results_path = Path(args.results)
+    manifest_folds = load_manifest_folds()
+
+    if args.once:
+        is_running, pid, cpu_sec, mem_mb, elapsed_sec, cpu_pct, cmdline_str = find_active_process(
+            override_pid=args.pid
+        )
+        log_path = Path(args.log) if args.log else find_latest_task_log(active_pid=pid)
+        dash = render_dashboard(
+            spinner_char="●",
+            manifest_folds=manifest_folds,
+            results_path=results_path,
+            log_path=log_path,
+            is_running=is_running,
+            pid=pid,
+            cpu_sec=cpu_sec,
+            mem_mb=mem_mb,
+            wall_elapsed=elapsed_sec,
+            cpu_pct=cpu_pct,
+            cmdline_str=cmdline_str,
+        )
+        print(dash)
+        return
+
     # Clear screen on initial startup
     print("\033[2J\033[H", end="", flush=True)
 
     spin_idx = 0
-    manifest_folds = load_manifest_folds()
+    ticks = 0
+    cached_log_path = Path(args.log) if args.log else None
 
     try:
         while True:
             spin_idx = (spin_idx + 1) % len(SPINNER)
             spinner_char = SPINNER[spin_idx]
+            ticks += 1
 
-            detected_mode, is_running, pid, cpu_sec, mem_mb, elapsed_sec, cpu_pct, cmdline_str = detect_active_workload(
+            is_running, pid, cpu_sec, mem_mb, elapsed_sec, cpu_pct, cmdline_str = find_active_process(
                 override_pid=args.pid
             )
 
-            active_mode = args.mode if args.mode != "auto" else detected_mode
+            # Re-discover log file dynamically every 4 ticks (~6s) or if not yet set
+            if not args.log and (cached_log_path is None or not cached_log_path.exists() or ticks % 4 == 0):
+                cached_log_path = find_latest_task_log(active_pid=pid)
 
-            if active_mode == "pcap":
-                dash = render_pcap_dashboard(
-                    spinner_char=spinner_char,
-                    dest_dir=PCAP_2102_DIR,
-                    is_running=is_running,
-                    pid=pid,
-                    cpu_sec=cpu_sec,
-                    mem_mb=mem_mb,
-                    wall_elapsed=elapsed_sec,
-                    cpu_pct=cpu_pct,
-                    cmdline_str=cmdline_str,
-                )
-            else:
-                dash = render_graphsage_dashboard(
-                    spinner_char=spinner_char,
-                    manifest_folds=manifest_folds,
-                    results_path=DEFAULT_RESULTS_JSON,
-                    is_running=is_running,
-                    pid=pid,
-                    cpu_sec=cpu_sec,
-                    mem_mb=mem_mb,
-                    wall_elapsed=elapsed_sec,
-                    cpu_pct=cpu_pct,
-                    cmdline_str=cmdline_str,
-                )
-
+            dash = render_dashboard(
+                spinner_char=spinner_char,
+                manifest_folds=manifest_folds,
+                results_path=results_path,
+                log_path=cached_log_path,
+                is_running=is_running,
+                pid=pid,
+                cpu_sec=cpu_sec,
+                mem_mb=mem_mb,
+                wall_elapsed=elapsed_sec,
+                cpu_pct=cpu_pct,
+                cmdline_str=cmdline_str,
+            )
             print(dash, flush=True)
-
-            if args.once:
-                break
-
             time.sleep(args.interval)
 
     except KeyboardInterrupt:
         print(
-            f"\n{C_GREEN}Monitor exited safely. Any background workers continue running.{C_RESET}\n"
+            f"\n{C_GREEN}Monitor exited safely. Background process (PID {pid if 'pid' in locals() else 'active'}) continues running.{C_RESET}\n"
         )
 
 
