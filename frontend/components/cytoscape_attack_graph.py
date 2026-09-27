@@ -24,7 +24,7 @@ def render_cytoscape_graph(
     Renders an interactive Cytoscape.js attack topology graph driven by real graph-propagation traversal.
     k_step drives dynamic propagation state across k=0..5 horizons.
     step_risk modulates empirical compromise status (no fabrication when nominal).
-    isolated_nodes renders visual SDN isolation and severed edge cuts.
+    isolated_nodes renders visual containment styling and severed edge cuts.
     custom_nodes & custom_edges dynamically render live ingested hosts.
     traversal_data provides explainable, weight-based frontier expansion over real edges.
     """

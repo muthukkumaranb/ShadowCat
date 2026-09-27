@@ -14,7 +14,7 @@ This report documents the architectural overhaul, empirical re-evaluation, and t
 1. **Phase 1: Real On-Chain Pipeline Lineage + Chaincode-Native Auto-Trigger**:
    - Replaced unlinked, independent ledger writes with an atomic 4-stage cryptographic lineage record (`PredictionLineage`) linking raw inputs, canonical feature vectors, model checkpoint IDs, and prediction outputs.
    - Built chaincode-native automated incident response: the Hyperledger Fabric Go chaincode autonomously evaluates alert severity and commits an `IncidentResponseRecord` (`ISOLATE_HOST:<node_id>`) in the exact same transaction without any Python application-layer decision.
-   - Verified end-to-end against live Fabric test network (`shadowcat-notary-channel`) with automated host containment reflected in the Streamlit Attack Graph GUI.
+   - Verified end-to-end against live Fabric test network (`shadowcat-notary-channel`) with automated host containment recommendations recorded on-chain and reflected in the Streamlit Attack Graph GUI.
 
 2. **Phase 2: Honest CTU-13 to Pipeline-Schema Translator**:
    - Addressed the real schema mismatch documented in `docs/ctu13_diagnostic_results.md` where Argus biflow CSVs (15 flow-level columns) were rejected by the 80-column CICFlowMeter UCS validation layer.
@@ -110,7 +110,7 @@ All operations were executed and verified against the running Fabric test networ
 3. **GUI Attack Graph Containment**:
    - In `frontend/views/04_Attack_Graph.py`, on-chain incidents are fetched via `get_onchain_incident_responses()`.
    - Target nodes (`172.31.69.21`) are automatically merged into `st.session_state.isolated_nodes`.
-   - Verified via Streamlit `AppTest`: active isolated nodes updated to `{'172.31.69.21', 'Client_Proto17_Win-1'}` with a prominent warning banner displaying the on-chain incident ID.
+   - Verified via Streamlit `AppTest`: active isolated nodes updated to `{'172.31.69.21', 'Client_Proto17_Win-1'}` with a prominent containment banner displaying the on-chain flagged hosts and policy (`ISOLATE_HOST`).
 4. **Fallback Path Verification**:
    - In `scratch/test_kill_network_fallback.py`, when the Fabric RPC path was severed, the pipeline seamlessly fell back to `sha256_fallback` and hash-chained JSON records in `backend/audit_chain.py` with zero pipeline interruptions.
 
@@ -275,18 +275,18 @@ We replaced this with `backend/benchmark_real_latency.py`, which profiles the **
 ================================================================================
 Pipeline Stage                         | Median (P50) | P95        | Mean ± Std      
 --------------------------------------------------------------------------------
-Feature Extraction                     |   241.83 ms | 1276.19 ms | 436.04 ± 392.81 ms
-PCA Projection                         |    11.64 ms |   47.81 ms |  19.13 ±  17.68 ms
-Stacked LSTM 37 Folds (Ensemble)       |   172.20 ms |  273.44 ms | 179.54 ±  72.60 ms
-World Model Dynamics                   |     1.86 ms |    8.66 ms |   3.47 ±   5.12 ms
-Real Graph Traversal                   |   163.00 ms |  358.83 ms | 202.07 ±  88.67 ms
-Lineage Hashing (SHA-256)              |     1.81 ms |    6.38 ms |   2.77 ±   2.53 ms
+Feature Extraction                     |   561.47 ms |  906.83 ms |  615.00 ± 141.93 ms
+PCA Projection                         |    22.06 ms |   45.43 ms |   25.17 ±   8.13 ms
+Stacked LSTM 37 Folds (Ensemble)       |   197.52 ms |  269.38 ms |  212.29 ±  35.80 ms
+World Model Dynamics                   |     3.95 ms |    5.85 ms |    4.09 ±   0.80 ms
+Real Graph Traversal                   |   366.90 ms |  411.43 ms |  372.19 ±  28.04 ms
+Lineage Hashing (SHA-256)              |     3.60 ms |    6.25 ms |    3.86 ±   1.04 ms
 --------------------------------------------------------------------------------
-TOTAL CORE ML + GRAPH PIPELINE (P50)   |   849.40 ms | 2020.96 ms | 1099.96 ± 529.82 ms
-Min / Max: 675.00 ms / 2577.38 ms
-Core Inference Throughput: 1.18 sequences / second (35.4 windows / second)
+TOTAL CORE ML + GRAPH PIPELINE (P50)   |  1630.87 ms | 2018.46 ms | 1650.95 ± 199.28 ms
+Min / Max: 1421.12 ms / 2203.59 ms
+Core Inference Throughput: 0.61 sequences / second (18.4 windows / second)
 --------------------------------------------------------------------------------
-FABRIC ON-CHAIN COMMIT (REAL DOCKER)   |  2837.69 ms | 3053.49 ms | 2855.89 ± 173.96 ms
+FABRIC COMMIT (3/3 ON-CHAIN CONFIRMED) |  2402.55 ms | 2476.70 ms | 2342.66 ± 146.86 ms
 ================================================================================
 ```
 
@@ -305,7 +305,7 @@ FABRIC ON-CHAIN COMMIT (REAL DOCKER)   |  2837.69 ms | 3053.49 ms | 2855.89 ± 1
 | 5 | Raw CTU-13 still rejected as before | `SchemaValidationError` thrown on raw CTU-13 across backend and GUI `AppTest`. | **PASSED** |
 | 6 | Fake PCAP upload removed | Removed `"pcap"` from `01_Telemetry_Ingestion.py`; deprecated `input_panel.py`. | **PASSED** |
 | 7 | Dead GraphSAGE scripts removed/relabeled | Moved to `backend/tests/retired/`; `pytest backend/tests` passed 9/9. | **PASSED** |
-| 8 | Real latency benchmark number | Wall-clock benchmark: Core ML Median = 849.40 ms; Fabric Commit Median = 2837.69 ms. | **PASSED** |
+| 8 | Real latency benchmark number | Wall-clock benchmark (success-gated): Core ML Median = 1630.87 ms; Fabric Commit Median = 2402.55 ms (3/3 on-chain confirmed). | **PASSED** |
 | 9 | Final write-up document delivered | Delivered in `docs/competitive_edge_final_report.md`. | **PASSED** |
 | 10 | Final test suites passing | `backend/smoke_test.py` PASSED with ZERO DEFECTS; `test_gui_apptest.py` PASSED. | **PASSED** |
 

@@ -173,11 +173,13 @@ def run_benchmark(n_trials: int = 30, n_warmup: int = 5, n_fabric_trials: int = 
     # 5. Measure On-Chain Fabric Ledger Commit Latency
     print(f"\n[5/5] Measuring live Hyperledger Fabric transaction commit latency ({n_fabric_trials} trials)...")
     fabric_latencies = []
+    fabric_success_count = 0
+    fabric_fallback_count = 0
     from backend.fabric_bridge import record_prediction_lineage
     for trial_idx in range(n_fabric_trials):
         t_fab_0 = time.perf_counter()
-        _ = record_prediction_lineage(
-            lineage_id=f"bench_lin_{trial_idx}",
+        commit_ok = record_prediction_lineage(
+            lineage_id=f"bench_lin_{trial_idx}_{int(time.time() * 1000)}",
             raw_data_hash="a1b2c3d4e5f67890",
             feature_hash="f1e2d3c4b5a67890",
             model_id="lstm-stacked-v1",
@@ -187,7 +189,14 @@ def run_benchmark(n_trials: int = 30, n_warmup: int = 5, n_fabric_trials: int = 
             target_node="172.31.69.21",
         )
         t_fab_1 = time.perf_counter()
-        fabric_latencies.append((t_fab_1 - t_fab_0) * 1000.0)
+        dur_ms = (t_fab_1 - t_fab_0) * 1000.0
+        if commit_ok:
+            fabric_success_count += 1
+            fabric_latencies.append(dur_ms)
+            print(f" -> Trial {trial_idx + 1}/{n_fabric_trials}: ON-CHAIN COMMIT CONFIRMED ({dur_ms:.2f} ms)")
+        else:
+            fabric_fallback_count += 1
+            print(f" -> Trial {trial_idx + 1}/{n_fabric_trials}: FELL BACK TO LOCAL/SHA256 (excluded from on-chain commit latency, {dur_ms:.2f} ms)")
 
     # 6. Compute Statistics
     def stats(arr):
@@ -201,6 +210,15 @@ def run_benchmark(n_trials: int = 30, n_warmup: int = 5, n_fabric_trials: int = 
             "min_ms": float(np.min(arr)),
             "max_ms": float(np.max(arr)),
         }
+
+    if fabric_success_count > 0:
+        fabric_commit_stats = stats(fabric_latencies)
+        fabric_commit_stats["trials_attempted"] = n_fabric_trials
+        fabric_commit_stats["trials_committed"] = fabric_success_count
+        fabric_commit_stats["trials_fell_back"] = fabric_fallback_count
+        fabric_commit_stats["status"] = "COMMITTED_ON_CHAIN"
+    else:
+        fabric_commit_stats = f"SKIPPED - Fabric unreachable during this run, {fabric_fallback_count}/{n_fabric_trials} trials fell back to sha256_fallback"
 
     results = {
         "pipeline_name": "Shadowcat Stacked Residual LSTM + Graph Traversal",
@@ -223,7 +241,7 @@ def run_benchmark(n_trials: int = 30, n_warmup: int = 5, n_fabric_trials: int = 
             "5_real_graph_traversal_ms": stats(graph_latencies),
             "6_lineage_hashing_ms": stats(hashing_latencies),
         },
-        "onchain_fabric_commit": stats(fabric_latencies),
+        "onchain_fabric_commit": fabric_commit_stats,
         "ml_throughput_windows_per_sec": float(1000.0 / np.median(total_ml_latencies)),
     }
 
@@ -243,7 +261,11 @@ def run_benchmark(n_trials: int = 30, n_warmup: int = 5, n_fabric_trials: int = 
     print(f"Min / Max: {e2e['min_ms']:.2f} ms / {e2e['max_ms']:.2f} ms")
     print(f"Core Inference Throughput: {results['ml_throughput_windows_per_sec']:.2f} windows / second")
     print("-" * 80)
-    print(f"{'FABRIC ON-CHAIN COMMIT (REAL DOCKER)':<38} | {fab['median_ms']:>8.2f} ms | {fab['p95_ms']:>6.2f} ms | {fab['mean_ms']:>6.2f} ± {fab['std_ms']:<5.2f} ms")
+    if isinstance(fab, dict) and "median_ms" in fab:
+        header_fab = f"FABRIC COMMIT ({fab.get('trials_committed', len(fabric_latencies))}/{n_fabric_trials} ON-CHAIN)"
+        print(f"{header_fab:<38} | {fab['median_ms']:>8.2f} ms | {fab['p95_ms']:>6.2f} ms | {fab['mean_ms']:>6.2f} ± {fab['std_ms']:<5.2f} ms")
+    else:
+        print(f"{'FABRIC ON-CHAIN COMMIT':<38} | {str(fab)}")
     print("=" * 80)
 
     # Save to JSON

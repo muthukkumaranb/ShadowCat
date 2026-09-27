@@ -114,7 +114,7 @@ def render_page():
                 <div style="display: flex; align-items: center; gap: 0.5rem;">
                     <span class="soc-badge badge-critical" style="padding: 2px 6px; font-size: 0.65rem;">ON-CHAIN AUTO-TRIGGER</span>
                     <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.8125rem; font-weight: 700; color: #ff6666;">
-                        Hyperledger Fabric Chaincode autonomously enforced SDN isolation for {len(auto_isolated_this_turn)} host(s): {', '.join(sorted(auto_isolated_this_turn))}
+                        Hyperledger Fabric Chaincode autonomously flagged {len(auto_isolated_this_turn)} host(s) for isolation: {', '.join(sorted(auto_isolated_this_turn))} — recommended action recorded on-chain (`ISOLATE_HOST`), no additional Python decision involved.
                     </span>
                 </div>
                 <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: {t['text_secondary']};">
@@ -460,12 +460,12 @@ def render_page():
             if is_isolated:
                 if st.button(f"Restore Host Connectivity ({sel_node})", use_container_width=True):
                     st.session_state.isolated_nodes.discard(sel_node)
-                    st.success(f"SDN Isolation Policy lifted: {sel_node} restored to VPC interfaces.")
+                    st.success(f"Containment flag lifted: {sel_node} restored to active monitoring.")
                     st.rerun()
             else:
                 if st.button(f"Sever Host Connections & Isolate ({sel_node})", type="primary", use_container_width=True):
                     st.session_state.isolated_nodes.add(sel_node)
-                    st.warning(f"SDN Isolation Policy applied: {sel_node} blocked on all VPC interfaces.")
+                    st.warning(f"Containment flag recorded: {sel_node} marked for isolation in dashboard.")
                     st.rerun()
 
             # Real PCAP Download Button
