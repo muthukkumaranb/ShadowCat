@@ -92,6 +92,20 @@ def main():
                 args.mapping = c
                 break
 
+    if not args.world_model_ckpt.exists():
+        candidates = [
+            Path("ml1/artifacts/lstm") / args.world_model_ckpt.name,
+            workspace_dir / "ml1/artifacts/lstm" / args.world_model_ckpt.name,
+            workspace_dir / "artifacts/lstm" / args.world_model_ckpt.name,
+            Path("artifacts/lstm") / args.world_model_ckpt.name,
+            workspace_dir / args.world_model_ckpt,
+            Path("ml1") / args.world_model_ckpt,
+        ]
+        for c in candidates:
+            if c.exists():
+                args.world_model_ckpt = c
+                break
+
     args.output_dir.mkdir(parents=True, exist_ok=True)
     set_seed(42)
     device = get_device()
@@ -273,7 +287,8 @@ def main():
     with open(manifest_path, 'r', encoding='utf-8') as f:
         manifest_data = json.load(f)
 
-    for fold in manifest_data['folds']:
+    evaluated_folds = 0
+    for fold_idx, fold in enumerate(manifest_data['folds']):
         fold_id = fold['fold_id']
         train_idx = np.array(fold['train_indices'])
         test_idx = np.array(fold['test_indices'])
@@ -343,6 +358,9 @@ def main():
         fold_cm = confusion_matrix(Y_test, p_test, labels=list(range(num_classes)))
         loeo_cm += fold_cm
         loeo_total_samples += len(Y_test)
+        evaluated_folds += 1
+        if (fold_idx + 1) % 5 == 0 or (fold_idx + 1) == len(manifest_data['folds']):
+            print(f"  [Fold {fold_idx + 1:2d}/{len(manifest_data['folds'])}] Fold {fold_id}: {len(Y_test)} test samples (Cumulative: {loeo_total_samples} samples)")
 
     # Compute overall LOEO per-class metrics
     loeo_per_class_summary = {}
@@ -362,6 +380,14 @@ def main():
         }
 
     loeo_overall_acc = float(np.trace(loeo_cm) / loeo_total_samples) if loeo_total_samples > 0 else 0.0
+
+    print(f"\n37-Fold LOEO Evaluation Summary:")
+    print(f"  Total Folds Evaluated: {evaluated_folds}/{len(manifest_data['folds'])}")
+    print(f"  Total Evaluation Samples: {loeo_total_samples}")
+    print(f"  LOEO Overall Accuracy: {loeo_overall_acc:.4f} ({loeo_overall_acc * 100:.2f}%)")
+    for cls_name in stage_classes:
+        m = loeo_per_class_summary[cls_name]
+        print(f"  - {cls_name:<22s}: Precision={m['precision']:.4f}, Recall={m['recall']:.4f}, F1={m['f1']:.4f}, Support={m['support']}")
 
     # Summary metrics dict
     metrics_summary = {
