@@ -30,7 +30,7 @@ Overwriting or deleting `stage_head_report.md` would invalidate Block 6 and requ
 
 ## Verified v3 Re-Evaluation (Unofficial / Working Re-Run)
 
-A real, working re-run of the v3 world model (`gaussian_next_state_best_v3.pt`) through the fixed script was executed across all 37 LOEO folds and produced valid results (0.8109 accuracy, 386 samples). Originally output at `scratch/stage_head_v3_eval/`, the complete verified artifacts are committed directly to the repository at:
+A real, working re-run of the v3 world model (`gaussian_next_state_best_v3.pt`) through the fixed script was executed across all 37 LOEO folds and produced valid results (0.8109 accuracy, 386 samples). The complete verified artifacts are committed directly to the repository at:
 - **Path**: `ml1/artifacts/lstm/stage_head_v3/reeval_unofficial/`
   - `stage_head_report.md`
   - `stage_head_metrics.json`
