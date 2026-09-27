@@ -12,6 +12,7 @@ from data_provider import (
     get_forecast_trajectory,
     get_temporal_attributions,
     get_conformal_forecast,
+    get_counterfactual,
 )
 
 def render_page():
@@ -392,6 +393,94 @@ def render_page():
         </div>
     </div>
     """)
+
+    # 7. Explanatory Counterfactuals (Bounded Perturbation Search)
+    cf = get_counterfactual()
+    cf_status = cf.get("status", "inconclusive")
+    cf_found = cf.get("found", False)
+    cf_honesty = cf.get("honesty_label", "Model-based counterfactual under the hazard model's learned decision boundary — not a guarantee that this change would have prevented the actual attack, and not validated against real intervention data.")
+    cf_summary = cf.get("summary", "No counterfactual analysis available.")
+    init_h = cf.get("initial_hazard", risk_val)
+    cf_h = cf.get("counterfactual_hazard", init_h)
+    thresh = cf.get("calibrated_threshold", 0.15)
+    perturbed_feats = cf.get("perturbed_features", [])
+
+    if cf_status == "feasible" and cf_found:
+        cf_badge = '<span class="soc-badge badge-nominal">FEASIBLE COUNTERFACTUAL IDENTIFIED</span>'
+        cf_border = t["primary"]
+    elif cf_status == "already_below_threshold":
+        cf_badge = '<span class="soc-badge badge-neutral">ALREADY BELOW ALERT THRESHOLD</span>'
+        cf_border = t["border"]
+    else:
+        cf_badge = '<span class="soc-badge badge-caution">INCONCLUSIVE WITHIN EMPIRICAL BOUNDS</span>'
+        cf_border = t["tertiary"]
+
+    cf_rows = ""
+    for pf in perturbed_feats:
+        pct = pf.get("percent_change", 0.0)
+        p_color = t["secondary"] if pct < 0 else t["primary"]
+        cf_rows += f"""
+        <tr>
+            <td style="font-weight: 600; color:{t['text_high']};">{pf.get('feature', 'Unknown')}</td>
+            <td><span class="soc-badge badge-neutral">{pf.get('category', 'Telemetry')}</span></td>
+            <td style="font-family: 'JetBrains Mono', monospace; color:{t['text_high']};">{pf.get('original_value_raw', 0):g} {pf.get('unit', '')}</td>
+            <td style="font-family: 'JetBrains Mono', monospace; font-weight: 700; color:{t['primary']};">{pf.get('perturbed_value_raw', 0):g} {pf.get('unit', '')}</td>
+            <td style="font-family: 'JetBrains Mono', monospace; font-weight: 700; color:{p_color};">{pct:+.1f}%</td>
+            <td><span class="soc-badge badge-nominal">Within [p01, p99]</span></td>
+        </tr>
+        """
+
+    cf_table_html = ""
+    if cf_rows:
+        cf_table_html = f"""
+        <table class="soc-card" style="margin-top: 0.75rem;">
+            <thead>
+                <tr>
+                    <th>Feature Identifier</th>
+                    <th>Subsystem Category</th>
+                    <th>Observed Input</th>
+                    <th>Target Counterfactual</th>
+                    <th>Required Delta</th>
+                    <th>Empirical Bound</th>
+                </tr>
+            </thead>
+            <tbody>
+                {cf_rows}
+            </tbody>
+        </table>
+        """
+
+    render_html(f"""
+    <div class="soc-section-header" style="margin-top: 1.5rem;">
+        <div>
+            <div class="soc-section-title">Explanatory Counterfactual Analysis (Minimal Perturbation Search)</div>
+            <span style="font-family: 'Inter', sans-serif; font-size: 0.75rem; color: {t['text_secondary']};">
+                Identifies minimal, realistic input changes to keep this telemetry window below the calibrated alert threshold ({thresh:.3f})
+            </span>
+        </div>
+        <span class="soc-subsystem-tag">BOUNDED PERTURBATION XAI</span>
+    </div>
+    <div class="soc-card" style="margin-top: 0.5rem; border-left: 3px solid {cf_border};">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                {cf_badge}
+                <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: {t['text_muted']};">
+                    Baseline Hazard: <b>{init_h:.3f}</b> &rarr; Counterfactual: <b>{cf_h:.3f}</b> (Threshold: {thresh:.3f})
+                </span>
+            </div>
+            <span class="soc-badge badge-neutral">Percentile Bounds: [1st, 99th] Strictly Enforced</span>
+        </div>
+        <div style="padding: 0.75rem 1rem; background: {t['surface_card']}; border-radius: 4px; border: 1px solid {t['border']}; font-family: 'Inter', sans-serif; font-size: 0.8125rem; color: {t['text_high']}; line-height: 1.5;">
+            <b style="color: {t['primary']};">Analyst Summary:</b> {cf_summary}
+        </div>
+        {cf_table_html}
+        <!-- Honesty Disclosure -->
+        <div style="margin-top: 0.75rem; padding: 0.5rem 0.75rem; background: {t['surface_highest']}; border-radius: 3px; border-left: 2px solid {t['secondary']}; font-family: 'Inter', sans-serif; font-size: 0.6875rem; color: {t['text_secondary']}; line-height: 1.4;">
+            <b style="color: {t['text_high']};">Honesty & Validation Disclosure:</b> {cf_honesty}
+        </div>
+    </div>
+    """)
+
 
 if __name__ == "__main__":
     render_page()

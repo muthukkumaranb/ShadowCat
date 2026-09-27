@@ -71,6 +71,11 @@ try:
 except ImportError:
     from graph_traversal import classify_endpoint_role, compute_graph_traversal
 
+try:
+    from backend.counterfactual import CounterfactualEngine, get_counterfactual_engine, HONESTY_LABEL
+except ImportError:
+    from counterfactual import CounterfactualEngine, get_counterfactual_engine, HONESTY_LABEL
+
 
 
 def get_feature_category(feat_name: str) -> Optional[str]:
@@ -903,6 +908,28 @@ class ShadowcatPipeline:
             max_k=5,
         )
 
+        # Step 10c: Explanatory Counterfactuals (Bounded Perturbation Search)
+        counterfactual_result = {}
+        try:
+            cf_engine = get_counterfactual_engine()
+            top_cand_names = [a.get("feature", "").lower().replace(" ", "_") for a in attributions[:5]]
+            counterfactual_result = cf_engine.search(
+                pipeline=self,
+                sequence_30x406=seq_30x406,
+                top_features=top_cand_names,
+                threshold=self.calibrated_threshold_global,
+                max_features=5,
+            )
+        except Exception as e:
+            import logging
+            logging.warning(f"Explanatory counterfactual generation failed: {e}")
+            counterfactual_result = {
+                "status": "error",
+                "found": False,
+                "summary": f"Counterfactual generation skipped: {e}",
+                "honesty_label": HONESTY_LABEL,
+            }
+
         # Step 11: Construct Output Payload per INTERFACE.md
         lead_times = ["1m 00s", "2m 00s", "3m 00s", "4m 00s"]
         labels = [
@@ -1048,6 +1075,7 @@ class ShadowcatPipeline:
             },
             "detection_probability": round(self._predict_detection_ensemble(seq_30x406), 4) if (self.use_stacked_model and self.stacked_models_loaded and len(self.stacked_detection_models) > 0) else None,
             "detection_alert": bool(self._predict_detection_ensemble(seq_30x406) >= 0.5) if (self.use_stacked_model and self.stacked_models_loaded and len(self.stacked_detection_models) > 0) else False,
+            "counterfactual": counterfactual_result,
         }
 
         # Fabric Notarization Hook with SHA-256 Fallback

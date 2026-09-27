@@ -596,6 +596,29 @@ def get_conformal_forecast() -> dict:
     return pred.get("conformal_forecast", {})
 
 
+def get_counterfactual(window_id: str = None) -> dict:
+    """
+    Returns explanatory counterfactual recommendations for the current flagged window.
+    Consumed by: views/06_Explainability.py
+    """
+    pred = _get_live_prediction()
+    cf = pred.get("counterfactual")
+    if not cf:
+        return {
+            "status": "inconclusive",
+            "found": False,
+            "summary": "No counterfactual analysis available for this telemetry window.",
+            "honesty_label": (
+                "Model-based counterfactual under the hazard model's learned decision boundary — "
+                "not a guarantee that this change would have prevented the actual attack, "
+                "and not validated against real intervention data."
+            ),
+            "is_mock": False,
+        }
+    cf["is_mock"] = False
+    return cf
+
+
 
 def get_novelty_score(window_id: str = None) -> dict:
     """
