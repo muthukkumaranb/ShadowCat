@@ -108,6 +108,39 @@ def get_mock_badge_html(key: str) -> str:
 
 
 # -----------------------------------------------------------------------------
+# Persistent Reports Database Access (SQLite-backed, survives restarts)
+# -----------------------------------------------------------------------------
+try:
+    from backend.reports_db import query_reports as _query_reports_db
+except ImportError:
+    try:
+        import importlib
+        _reports_db_mod = importlib.import_module("reports_db")
+        _query_reports_db = _reports_db_mod.query_reports
+    except (ImportError, AttributeError):
+        _query_reports_db = None  # reports_db unavailable — get_report_history returns []
+
+
+def get_report_history(
+    severity: Optional[str] = None,
+    record_type: Optional[str] = None,
+    limit: int = 100,
+) -> List[Dict[str, Any]]:
+    """
+    Retrieve durable report history from the SQLite database.
+    Thin wrapper around reports_db.query_reports().
+    Returns [] if the DB is empty, missing, or the module is unavailable.
+    Never crashes the dashboard.
+    """
+    if _query_reports_db is None:
+        return []
+    try:
+        return _query_reports_db(severity=severity, record_type=record_type, limit=limit)
+    except Exception:
+        return []
+
+
+# -----------------------------------------------------------------------------
 # Cached Live Inference Pipeline Invocation
 # -----------------------------------------------------------------------------
 _CACHED_LIVE_PREDICTION: Optional[Dict[str, Any]] = None

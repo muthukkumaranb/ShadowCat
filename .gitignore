@@ -56,6 +56,9 @@ fabric-experiment/*_temp.sh
 raw_pcap/
 data/raw_pcap/
 
+# Runtime-generated SQLite database (reports history)
+backend/data/
+
 # Local experiments & submodules
 fabric-experiment/
 stitich frontend/

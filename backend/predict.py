@@ -76,6 +76,14 @@ try:
 except ImportError:
     from counterfactual import CounterfactualEngine, get_counterfactual_engine, HONESTY_LABEL
 
+try:
+    from backend.reports_db import insert_report as _insert_report_record
+except ImportError:
+    try:
+        from reports_db import insert_report as _insert_report_record
+    except ImportError:
+        _insert_report_record = None  # reports_db unavailable — skip DB writes silently
+
 
 
 def get_feature_category(feat_name: str) -> Optional[str]:
@@ -1109,6 +1117,20 @@ class ShadowcatPipeline:
                 logging.info(f"Alert {alert_hash} notarized via: fabric")
                 payload["notarization_mechanism"] = "fabric"
                 payload["notarized_via"] = "fabric"
+                # Persist alert to reports DB (fabric path)
+                try:
+                    if _insert_report_record is not None:
+                        _fabric_alert_record = {
+                            "alert_hash": alert_hash,
+                            "window_id": str(window_id),
+                            "window_start": str(window_start),
+                            "max_risk": round(float(max(cum_risk)), 4),
+                            "severity": severity,
+                            "notarized_via": "fabric",
+                        }
+                        _insert_report_record("alert", _fabric_alert_record)
+                except Exception as _db_err:
+                    logging.warning(f"reports_db alert insert failed (fabric path): {_db_err}")
             else:
                 # Fall back to SHA-256 hash-chaining in backend/audit_chain.py
                 try:
@@ -1125,6 +1147,13 @@ class ShadowcatPipeline:
                     }
                     with open(alert_file, "w", encoding="utf-8") as f:
                         json.dump(alert_record, f, indent=2)
+
+                    # Persist alert to reports DB (sha256_fallback path)
+                    try:
+                        if _insert_report_record is not None:
+                            _insert_report_record("alert", alert_record)
+                    except Exception as _db_err:
+                        logging.warning(f"reports_db alert insert failed (sha256_fallback path): {_db_err}")
 
                     from audit_chain import _load_chain
                     existing = _load_chain()
@@ -1216,6 +1245,13 @@ class ShadowcatPipeline:
             "timestamp": window_start,
             "notarized_via": "fabric" if lineage_ok else "sha256_fallback",
         }
+
+        # Persist lineage to reports DB (regardless of fabric/sha256 path)
+        try:
+            if _insert_report_record is not None:
+                _insert_report_record("lineage", lineage_payload)
+        except Exception as _db_err:
+            logging.warning(f"reports_db lineage insert failed: {_db_err}")
 
         if not lineage_ok:
             # Fall back to SHA-256 hash chaining in backend/alerts and audit_chain

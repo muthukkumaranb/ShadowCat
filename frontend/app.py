@@ -33,8 +33,9 @@ p4 = st.Page("views/04_Attack_Graph.py", title="Attack Graph", url_path="attack-
 p5 = st.Page("views/05_Alerts.py", title="Alerts", url_path="alerts")
 p6 = st.Page("views/06_Explainability.py", title="Explainability", url_path="explainability")
 p7 = st.Page("views/07_Validation_Trust.py", title="Validation & Trust", url_path="validation-and-trust")
+p8 = st.Page("views/08_Reports_History.py", title="Reports & History", url_path="reports-history")
 
-pages_list = [p1, p2, p3, p4, p5, p6, p7]
+pages_list = [p1, p2, p3, p4, p5, p6, p7, p8]
 pg = st.navigation(pages_list, position="hidden")
 
 # Render Global Persistent Top Header
@@ -54,7 +55,7 @@ with header_col1:
     """)
 
 with header_col2:
-    nav_cols = st.columns(7)
+    nav_cols = st.columns(8)
     nav_titles = [
         ("Overview", p1),
         ("Ingestion", p2),
@@ -62,7 +63,8 @@ with header_col2:
         ("Attack Graph", p4),
         ("Alerts", p5),
         ("Explainability", p6),
-        ("Validation & Trust", p7),
+        ("Trust", p7),
+        ("Reports", p8),
     ]
     for i, (title, page_obj) in enumerate(nav_titles):
         with nav_cols[i]:
