@@ -84,7 +84,7 @@ Follow these steps to set up the environment, verify the models, and launch the 
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/muthukkumaranb/ShadowCat.git
+git clone https://github.com/muthukkumaranb/shadowkutty.git
 cd ShadowCat
 ```
 
@@ -131,6 +131,19 @@ Start the Streamlit operational interface:
 streamlit run frontend/app.py
 ```
 *The dashboard will automatically open in your default web browser at `http://localhost:8501`. Here you can view the live risk trajectories and forensic benchmark panels.*
+
+---
+
+## Benchmark: Production Model vs. Logistic Regression Baseline
+
+| Task | Model | F1 | Precision | Recall | FPR |
+|---|---|---|---|---|---|
+| Detection | Production (Stacked Residual LSTM Ensemble) | **0.9962** | 0.9929 | 1.0000 | 0.0080 |
+| Detection | Logistic Regression baseline (same features) | 0.9730 | 0.9730 | 0.9730 | 0.0000 |
+| Onset (forecasting) | Production (Stacked Residual LSTM Ensemble) | **0.9127** | 0.9684 | 0.9054 | 0.0095 |
+| Onset (forecasting) | Logistic Regression baseline (same features) | 0.8880 | 0.9459 | 0.8784 | 0.0045 |
+
+**Note**: The LR detection F1 of 0.973 is a mean across 37 folds where 36 score a perfect 1.0 and 1 fold (Fold 16, SSH-Bruteforce, 66 test windows) scores 0.0 — 0% recall, every attack window misclassified as benign.
 
 ---
 
