@@ -36,7 +36,7 @@
    │ 3. MULTI-HEAD FORECASTING & EXPLAINABILITY                                  │
    │         ┌────────────────────────────┴────────────────────────────┐         │
    │         ▼                                                         ▼         │
-   │   Hazard Head v2                                            Stage Head v2   │
+   │   Hazard Head v3                                            Stage Head v3   │
    │   Multi-step Risk Trajectory                                MITRE ATT&CK    │
    │   (t+1 .. t+4 Horizons)                                     (Credential)    │
    │         │                                                         │         │
@@ -71,7 +71,7 @@
 | Directory | Track / Ownership | Description |
 | :--- | :--- | :--- |
 | [`/data-engineering`](data-engineering/README.md) | **Data Engineering Track** | Gate 0 protocols, UCS extraction pipeline, 406-D feature normalization, chronological splits, and purge+embargo zones. |
-| [`/ml1`](ml1/README.md) | **ML1 Track** | Causal LSTM world model ($z_t$), probabilistic next-state Gaussian transitions, Hazard Head v2, and Stage Head v2. |
+| [`/ml1`](ml1/README.md) | **ML1 Track** | Causal LSTM world model ($z_t$), probabilistic next-state Gaussian transitions, Hazard Head v3, and Stage Head v3. |
 | [`/ml2-full`](ml2-full/README.md) | **ML2 Track** | Graph representation learning and multimodal fusion ablation (`GNN_FINAL/ml2` is canonical; `gnn/` is exploratory/superseded). |
 | [`/backend`](backend/README.md) | **Backend Track** | Authoritative `predict()` inference boundary, smoke test suite, and blockchain-inspired SHA-256 hash-chain audit ledger. |
 | [`/frontend`](frontend/README.md) | **Frontend Track** | Interactive dark-mode Streamlit dashboard, dual-signal telemetry viewer, and scientific benchmark comparison panels. |
@@ -151,11 +151,11 @@ streamlit run frontend/app.py
 
 | Evaluation Metric / Milestone | Result / Finding | Status & Reference |
 | :--- | :--- | :--- |
-| **Real PCAP Telemetry (Option B)** | Genuine Scapy-extracted packet stats for 14-02-2018; 0 label leakage | [Extraction Report](data-engineering/data/ucs/PACKET_EXTRACTION_VERIFICATION.md) |
+| **Real PCAP Telemetry (Option B)** | Genuine Scapy-extracted packet stats for SSH-Bruteforce (14-02-2018), DDOS-LOIC-UDP (21-02-2018), and Botnet (02-03-2018); 0 label leakage | [Extraction Report](data-engineering/data/ucs/PACKET_EXTRACTION_VERIFICATION.md) |
 | **Hazard Forecasting ROC-AUC (v3)** | **0.789** (H=1), **0.843** (H=2), **0.770** (H=5) across LOEO 37 Folds | [Hazard Report v3](ml1/artifacts/lstm/hazard_head_v3/hazard_head_report_v3.md) |
-| **Lagged Logistic Regression Baseline** | F1: 0.738 — Caveat: heavily degraded on Fold 16 (temporal shift) | [Gate 0 Report](data-engineering/gate0_leakage_report.md) |
+| **Lagged Logistic Regression Baseline** | F1: 0.9730 — Caveat: 0% recall, every attack window misclassified as benign on Fold 16 | [Gate 0 Report](data-engineering/gate0_leakage_report.md) |
 | **GNN Multimodal Fusion Ablation** | Validation Loss: Temporal-Only (1.666) beats Fused (1.932) | **HOLD** — [GNN Decision](ml2-full/GNN_FINAL/ml2/results/gnn_adopt_hold_decision.md) |
-| **Stage-Head Scope (v2)** | Validated on *Credential Access / Brute Force* vs background (v2) | [Stage Report v2](ml1/artifacts/lstm/stage_head/stage_head_report.md) |
+| **Stage-Head Scope (v3)** | Validated on *Credential Access / Brute Force* vs background (v3), 0.8627 accuracy | [Stage Report v3](ml1/artifacts/lstm/stage_head_v3/reeval_packetcov/stage_head_report.md) |
 | **PC2 Significance Test (v3)** | Persistence baseline significantly outperforms autoregressive rollouts on PC2 | [PC2 Report v3](ml1/artifacts/lstm/probabilistic_world_model_v3/pc2_attack_significance_report.md) |
 | **Inference Contract Verification (v3)**| DE vs ML1 Scaler parameters match bit-for-bit (0 mismatches, 406-D) | [Contract Diff v3](data-engineering/data/ucs/CONTRACT_DIFF_REPORT.md) |
 | **Tamper-Evident Hash Chain** | 10 chained blocks covering all verified extraction, v4 models, and FPR-calibrated reports | [Audit Chain](backend/audit_chain.json) |
@@ -180,7 +180,7 @@ In accordance with scientific integrity and engineering transparency:
 3. **Onset Forecasting Limit ($H=5$):** Multi-horizon forecasting at horizon $H=5$ minutes represents an epistemic benchmark limit under Leave-One-Episode-Out cross-validation.
 4. **ATT&CK Stage Granularity:** Stage head currently evaluates high-fidelity discrimination for credential brute-force stages vs background; full 14-tactic multi-stage ATT&CK classification is exploratory: Discovery and Command & Control have zero test support in LOEO splits, while Impact-stage attacks (19 test windows) are not detected by the current Stage Head (0% recall in both v2 and v3 evaluations; the model defaults these to Unknown/Other).
 5. **Rollout Horizon Boundaries:** Autoregressive state rollout is empirically validated for depths $K=1 \dots 3$; depth $K=4$ is classified as informational/exploratory due to compounding drift.
-6. **Telemetry Extraction (Option B):** Packet-level telemetry is now genuinely extracted for the 14-02-2018 and 02-03-2018 PCAPs without label leakage.
+6. **Telemetry Extraction (Option B):** Packet-level telemetry is now genuinely extracted for the SSH-Bruteforce (14-02-2018), DDOS-LOIC-UDP (21-02-2018), and Botnet (02-03-2018) PCAPs without label leakage.
 7. **Hazard FPR Constraints:** Hazard-head calibration is enforced using an explicit False Positive Rate ceiling (global τ=0.15, ≤5% false-alarm rate) to prevent alert fatigue.
 8. **Botnet Detection Shortfall:** Botnet onset detection remains a disclosed, unresolved limitation. Even with real packet telemetry, the signal-to-noise ratio is too weak (ROC-AUC ~0.63), which is insufficient for reliable, low-FPR alerting. This has not been artificially 'solved' via F1-only threshold manipulation.
 9. **Hazard Head Robustness:** Currently running an honest baseline fallback (0.05) due to an unrecoverable per-fold PCA scaler limitation; root cause documented, verified via direct testing, not a guess.
