@@ -216,9 +216,15 @@ class ShadowcatPipeline:
         )
 
         # 2. Load World Model (LSTM Gaussian continuous dynamics)
+        # Prefers the full-packet-coverage retrain (all 3 headline attacks backed by
+        # real extracted telemetry) at its own path; the original v3 checkpoint below
+        # is left untouched on disk because it is hash-pinned by backend/audit_chain.json
+        # (see ml1/artifacts/lstm/stage_head_v3/NOTE.md for why it is never overwritten in place).
         wm_path = world_model_path or (
-            ML1_DIR / "artifacts" / "lstm" / "gaussian_next_state_best_v3.pt"
+            ML1_DIR / "artifacts" / "lstm" / "gaussian_next_state_best_v3_packetcov.pt"
         )
+        if not Path(wm_path).exists():
+            wm_path = ML1_DIR / "artifacts" / "lstm" / "gaussian_next_state_best_v3.pt"
         if not Path(wm_path).exists():
             wm_path = ML1_DIR / "artifacts" / "lstm" / "probabilistic_world_model_v3" / "gaussian_next_state_best.pt"
         if not Path(wm_path).exists():
@@ -257,12 +263,13 @@ class ShadowcatPipeline:
                 try:
                     from audit_chain import _load_chain
                     existing = _load_chain()
-                    already_in_chain = any(e.get("artifact_type") == "model_checkpoint" and "gaussian_next_state_best_v3.pt" in e.get("artifact_path", "") for e in existing)
+                    wm_filename = Path(wm_path).name
+                    already_in_chain = any(e.get("artifact_type") == "model_checkpoint" and wm_filename in e.get("artifact_path", "") for e in existing)
                     if not already_in_chain:
                         append_audit_entry(
                             artifact_path=str(wm_path),
                             artifact_type="model_checkpoint",
-                            description="LSTM world model v3 loaded into predict pipeline (SHA-256 fallback)",
+                            description=f"LSTM world model ({wm_filename}) loaded into predict pipeline (SHA-256 fallback)",
                         )
                     import logging
                     logging.info("World model notarized via: sha256_fallback")
@@ -286,9 +293,14 @@ class ShadowcatPipeline:
             self.node_lookup = None
 
         # 3. Load Stage Head (ATT&CK Stage Classifier)
+        # Prefers the full-packet-coverage re-evaluation (paired with the world model
+        # above); stage_head_v3/stage_head_best.pt and its report are left untouched
+        # because stage_head_report.md is hash-pinned by backend/audit_chain.json.
         st_path = stage_head_path or (
-            ML1_DIR / "artifacts" / "lstm" / "stage_head_v3" / "stage_head_best.pt"
+            ML1_DIR / "artifacts" / "lstm" / "stage_head_v3" / "reeval_packetcov" / "stage_head_best.pt"
         )
+        if not Path(st_path).exists():
+            st_path = ML1_DIR / "artifacts" / "lstm" / "stage_head_v3" / "stage_head_best.pt"
         if not Path(st_path).exists():
             st_path = ML1_DIR / "artifacts" / "lstm" / "stage_head" / "stage_head_best.pt"
 

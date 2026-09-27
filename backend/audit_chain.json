@@ -238,5 +238,35 @@
     "artifact_hash": "54570a693f1e1cef21285691fc9b54c16c405bce6d1bd11228c2f455a06bb7ed",
     "prev_entry_hash": "68d84d50594829128307752b3a86946696cba6bcb9749a74c54611a3b287e477",
     "entry_hash": "21d3c8df24e096a3964ffec11dc710a7a00792c6bb2bae105aea80348d21e247"
+  },
+  {
+    "index": 24,
+    "timestamp": "2026-09-27T10:34:09.789660+00:00",
+    "artifact_path": "../data-engineering/data/ucs/PACKET_VERIFICATION_REPORT_V5.md",
+    "artifact_type": "extraction_verification",
+    "description": "Real Scapy/binary PCAP extraction verification for Botnet + DDOS-LOIC-UDP (full 3-attack packet coverage, Option A)",
+    "artifact_hash": "f65b2afd55f1e9f9f2fbe250eb2a71bfb5e8191934efe707fbd1c707ccaa3483",
+    "prev_entry_hash": "21d3c8df24e096a3964ffec11dc710a7a00792c6bb2bae105aea80348d21e247",
+    "entry_hash": "f48656022d9f2f5a87cfd9cd453a1db0657f389fafc7cb8dc96e936a2474ac8f"
+  },
+  {
+    "index": 25,
+    "timestamp": "2026-09-27T10:34:09.792541+00:00",
+    "artifact_path": "../ml1/artifacts/lstm/gaussian_next_state_best_v3_packetcov.pt",
+    "artifact_type": "model_checkpoint",
+    "description": "LSTM world model retrained on full real packet-level telemetry across all 3 headline attacks (SSH-Bruteforce, Botnet, DDOS-LOIC-UDP)",
+    "artifact_hash": "beedf6f9fb2779e3f3b9d3158993ade75142e84eba3e0d85edc331b29569f1f4",
+    "prev_entry_hash": "f48656022d9f2f5a87cfd9cd453a1db0657f389fafc7cb8dc96e936a2474ac8f",
+    "entry_hash": "f496a289d58dbde9119c9f3756dbfb06349e48637574e3a23895784b330002f6"
+  },
+  {
+    "index": 26,
+    "timestamp": "2026-09-27T10:34:09.793284+00:00",
+    "artifact_path": "../ml1/artifacts/lstm/stage_head_v3/reeval_packetcov/stage_head_report.md",
+    "artifact_type": "evaluation_report",
+    "description": "Stage Head 37-fold LOEO evaluation on full-packet-coverage retrain: 0.8627 accuracy, 386 samples (supersedes v2 and reeval_unofficial)",
+    "artifact_hash": "2b59ce51541add233ab4a4f890971c8249873f0791fc142deb0590fadeec4837",
+    "prev_entry_hash": "f496a289d58dbde9119c9f3756dbfb06349e48637574e3a23895784b330002f6",
+    "entry_hash": "f611da2dfba567409dd9d9e3d76fbf3a400b5e7504da6dece0b77b4129b8e48e"
   }
 ]
