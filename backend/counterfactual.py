@@ -339,6 +339,11 @@ class CounterfactualEngine:
         raw_pert = self.invert_units(feature_name, pert_norm)
         raw_baseline = self.invert_units(feature_name, baseline_norm)
 
+        bound_meta = self.bounds.get(feature_name, {"p01": 0.0, "median": 0.0, "p99": 0.0})
+        p01_raw = self.invert_units(feature_name, bound_meta.get("p01", 0.0))
+        p99_raw = self.invert_units(feature_name, bound_meta.get("p99", 0.0))
+        range_display = f"[{p01_raw:g} – {p99_raw:g} {unit_lbl}]"
+
         raw_delta = raw_pert - raw_orig
         pct_change = (
             (raw_delta / (abs(raw_orig) + 1e-6)) * 100.0
@@ -358,6 +363,9 @@ class CounterfactualEngine:
             "percent_change": round(float(pct_change), 1),
             "original_value_normalized": round(float(orig_norm), 4),
             "perturbed_value_normalized": round(float(pert_norm), 4),
+            "empirical_p01_raw": round(float(p01_raw), 2),
+            "empirical_p99_raw": round(float(p99_raw), 2),
+            "empirical_range_display": range_display,
         }
 
     def _generate_summary(

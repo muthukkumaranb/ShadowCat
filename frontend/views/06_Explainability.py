@@ -426,7 +426,7 @@ def render_page():
             <td style="font-family: 'JetBrains Mono', monospace; color:{t['text_high']};">{pf.get('original_value_raw', 0):g} {pf.get('unit', '')}</td>
             <td style="font-family: 'JetBrains Mono', monospace; font-weight: 700; color:{t['primary']};">{pf.get('perturbed_value_raw', 0):g} {pf.get('unit', '')}</td>
             <td style="font-family: 'JetBrains Mono', monospace; font-weight: 700; color:{p_color};">{pct:+.1f}%</td>
-            <td><span class="soc-badge badge-nominal">Within [p01, p99]</span></td>
+            <td><span class="soc-badge badge-nominal">{pf.get('empirical_range_display', 'Within Bounds')}</span></td>
         </tr>
         """
 
