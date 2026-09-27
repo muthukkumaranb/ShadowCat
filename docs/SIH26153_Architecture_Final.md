@@ -17,7 +17,7 @@ The core of SHADOWCAT is a predictive world model that learns the latent dynamic
 
 ## 3. Multi-Head Forecasting & Counterfactual Explainability
 The latent state $z_t$ is processed by specialized heads to map predictions to actionable analyst insights.
-* **Hazard Head:** Forecasts a multi-step risk trajectory (t+1 through t+4), bounded by a strict False Positive Rate ceiling (global τ=0.45, ≤5% false-alarm rate) to prevent alert fatigue.
+* **Hazard Head:** Forecasts a multi-step risk trajectory (t+1 through t+4), bounded by a strict False Positive Rate ceiling (global τ=0.15, ≤5% false-alarm rate) to prevent alert fatigue.
 * **Stage Head:** Maps the predicted threat to specific MITRE ATT&CK stages. Retrained on the full-packet-coverage dataset across all three attacks, the Stage Head achieves a verified **0.8627 accuracy** (386 test samples).
 * **Counterfactual Explainability:** Integrated Gradients and NLL Novelty scoring are used to isolate the exact feature perturbations driving the model's alert (e.g., highlighting specific port sweeps or rhythm anomalies), allowing human analysts to trust and verify the ML decision boundary.
 
