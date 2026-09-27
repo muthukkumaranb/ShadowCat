@@ -10,7 +10,7 @@
 | **LOEO Overall Accuracy** | **86.01%** | **83.68%** | **-2.33%** |
 | **Credential Access Recall** | **0.573** | **0.488** | **-0.085** |
 
-- **Root Cause Explanation**: This modest decline is consistent with the same root cause identified in the hazard head investigation — the stage head also consumes the full 406-feature input vector (including the 12 previously-fabricated packet columns), so a portion of its v1 performance was likely benefiting from the label-correlated fallback signal now correctly removed.
+- **Root Cause Explanation**: This modest decline is consistent with the same root cause identified in the hazard head investigation - the stage head also consumes the full 406-feature input vector (including the 12 previously-fabricated packet columns), so a portion of its v1 performance was likely benefiting from the label-correlated fallback signal now correctly removed.
 
 ---
 
