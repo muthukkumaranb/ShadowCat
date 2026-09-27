@@ -31,6 +31,6 @@
 2. The Stage Head, retrained on the full-packet-coverage dataset across all 3 attacks, achieves a verified **0.8627 accuracy**.
 
 ## Slide 5: Tamper-Evident Cryptographic Ledger
-* **Provable Integrity:** To meet the SIH Blockchain & Cybersecurity theme without excess overhead, SHADOWCAT implements a SHA-256 recursive hash chain.
-* **Immutable Provenance:** Every Gate 0 contract diff, PyTorch model checkpoint, and evaluation report is cryptographically chained.
-* **Real-time Auditing:** Any unauthorized tampering with evaluation metrics or model weights instantly invalidates the chain, ensuring trust in the deployed gateway.
+* **Hyperledger Fabric Integration:** The primary notarization path utilizes a real Hyperledger Fabric blockchain with Go chaincode. It features autonomous, chaincode-native incident response that issues verifiable containment records (e.g., `ISOLATE_HOST`) for severe alerts.
+* **Resilient Architecture:** A secondary SHA-256 recursive hash chain serves as an automatic, seamless fallback tier if the blockchain RPC path is ever severed, ensuring uninterrupted operation.
+* **Immutable Provenance:** Every prediction lineage, Gate 0 contract diff, and PyTorch model checkpoint is cryptographically linked, guaranteeing tamper-evident auditing.

@@ -162,13 +162,13 @@ streamlit run frontend/app.py
 
 ---
 
-## Blockchain-Inspired Tamper-Evident Audit Trail
+## Hyperledger Fabric Two-Tier Notarization Architecture
 
-To meet the SIH **Blockchain & Cybersecurity** theme without introducing the excessive infrastructure overhead of a full distributed ledger for a single-deployment gateway, SHADOWCAT implements a **cryptographic SHA-256 recursive hash chain** ([`backend/audit_chain.py`](backend/audit_chain.py)).
+To meet the SIH **Blockchain & Cybersecurity** theme, SHADOWCAT implements a real two-tier notarization design, with a live blockchain as the primary path and a cryptographic hash chain as a resilient fallback.
 
-- **Provable Tamper-Evidence:** Every Gate 0 contract diff, PyTorch model checkpoint, and evaluation report is hashed by its exact raw bytes and cryptographically chained ($Hash_i = SHA256(Block_i \parallel Hash_{i-1})$).
-- **Post-Hoc Verification:** Any unauthorized alteration to historical evaluation metrics or model weights breaks downstream link hashes and is instantly caught by `verify_chain()`.
-- **Live Demo Script:** Run `python backend/demo_tamper_detection.py` to observe simulated adversarial tampering detection on safe temporary copies.
+- **Primary Tier (Hyperledger Fabric):** The system integrates a real Go chaincode deployed on a local Fabric test network (channel: `shadowcat-notary-channel`). It exposes functions like `RecordPredictionLineageWithTarget`, `NotarizeAlert`, and `RecordModelProvenance`. The chaincode features autonomous incident response: when severity is HIGH or CRITICAL, the Go chaincode natively creates an `IncidentResponseRecord` (e.g., `ISOLATE_HOST:<node_id>`) in the same transaction without Python-layer intervention. Real measured Fabric commit latency is a median of 2402.55ms (3/3 on-chain confirmed).
+- **Fallback Tier (SHA-256 Hash Chain):** If the Fabric RPC path is severed, the system seamlessly falls back to a **cryptographic SHA-256 recursive hash chain** ([`backend/audit_chain.py`](backend/audit_chain.py)). Every Gate 0 contract diff, PyTorch model checkpoint, and evaluation report is hashed and chained ($Hash_i = SHA256(Block_i \parallel Hash_{i-1})$). A documented fallback test (`scratch/test_kill_network_fallback.py`) proves failover is clean and uninterrupted.
+- **Live Demo Script:** Run `python backend/demo_fabric_tamper.py` to observe simulated adversarial tampering detection specifically for the Fabric path.
 
 ---
 
@@ -185,6 +185,7 @@ In accordance with scientific integrity and engineering transparency:
 8. **Botnet Detection Shortfall:** Botnet onset detection remains a disclosed, unresolved limitation. Even with real packet telemetry, the signal-to-noise ratio is too weak (ROC-AUC ~0.63), which is insufficient for reliable, low-FPR alerting. This has not been artificially 'solved' via F1-only threshold manipulation.
 9. **Hazard Head Robustness:** Currently running an honest baseline fallback (0.05) due to an unrecoverable per-fold PCA scaler limitation; root cause documented, verified via direct testing, not a guess.
 10. **GraphSAGE Fusion:** Real per-window graph construction is now wired in as an explicitly labeled experimental/held-back output, separate from the primary verified forecast; the underlying ablation evidence (validation loss 1.666 vs 1.932) remains the reason it's not in the primary path.
+11. **Hyperledger Fabric Local Dependency:** The primary Hyperledger Fabric notarization path is not fully plug-and-play upon cloning the repository. It requires a local Fabric test-network running via Docker with the `shadowcat-notary-channel` and chaincode deployed, as the Windows path (`D:\sih2026\fabric-experiment`) is hardcoded in `backend/fabric_bridge.py`. Without this local network running, every notarization call gracefully and automatically falls back to the SHA-256 hash chain (`notarized_via="sha256_fallback"`).
 
 ---
 

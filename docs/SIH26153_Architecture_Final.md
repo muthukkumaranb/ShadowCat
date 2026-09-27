@@ -22,10 +22,10 @@ The latent state $z_t$ is processed by specialized heads to map predictions to a
 * **Counterfactual Explainability:** Integrated Gradients and NLL Novelty scoring are used to isolate the exact feature perturbations driving the model's alert (e.g., highlighting specific port sweeps or rhythm anomalies), allowing human analysts to trust and verify the ML decision boundary.
 
 ## 4. Tamper-Evident Audit Ledger (Blockchain Integration)
-To satisfy the SIH Blockchain requirement securely on a single-deployment gateway, SHADOWCAT implements a cryptographic SHA-256 recursive hash chain.
-* **Provable Lineage:** Every Gate 0 contract diff, PyTorch model checkpoint, and evaluation report is hashed by its exact raw bytes and cryptographically chained ($Hash_i = SHA256(Block_i \parallel Hash_{i-1})$).
-* **Inference Contract Verification:** The backend `predict()` inference boundary explicitly enforces that DE and ML scaler parameters match bit-for-bit.
-* **Tamper Evidence:** Any unauthorized alteration to historical metrics, thresholds, or model weights instantly breaks downstream link hashes and is caught by the `verify_chain()` auditor.
+To satisfy the SIH Blockchain requirement, SHADOWCAT implements a two-tier notarization architecture, integrating a real blockchain as the primary tier and a hash chain as a resilient fallback.
+* **Hyperledger Fabric (Primary):** The system connects to a real Go chaincode on a local Fabric test network (`shadowcat-notary-channel`). It records an atomic 4-stage prediction lineage (raw data, feature vector, model ID, prediction). The chaincode features autonomous incident response, natively creating an `IncidentResponseRecord` (e.g., `ISOLATE_HOST`) on-chain for HIGH/CRITICAL alerts, with a verified median commit latency of 2402.55ms.
+* **SHA-256 Hash Chain (Fallback):** If the Fabric network is unreachable, the system automatically falls back to a cryptographic SHA-256 recursive hash chain to ensure uninterrupted, tamper-evident lineage without pipeline failure.
+* **Tamper Evidence:** Any unauthorized alteration to historical metrics or model weights breaks the downstream cryptographic links and is instantly caught by the auditing systems.
 
 ## 5. Operational Interface
 * **Analyst Dashboard:** A dark-mode Streamlit dashboard visualizes the forecasted risk trajectories, attribution, and benchmark audits in real-time.
