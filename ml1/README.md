@@ -102,7 +102,7 @@ Following real Scapy-based extraction on Wednesday-14-02-2018 (`SSH-Bruteforce`)
 
 - **Continuous Dynamics World Model (`artifacts/lstm/gaussian_next_state_best_v3.pt`)**: Causal LSTM predicting Gaussian next-state transitions across 406 input dimensions (388 flow features + 6 masks + 12 real packet features).
 - **Hazard Head Ensemble (`artifacts/lstm/hazard_head_v3/`)**: 37-fold Leave-One-Episode-Out (LOEO) onset forecasting models across horizons $H=1, 2, 5$. Discriminative power is verified on real packet distributions ($ROC\text{-}AUC_{H=1}=0.7893$, $ROC\text{-}AUC_{H=2}=0.8432$, $ROC\text{-}AUC_{H=5}=0.7701$).
-- **Stage Classification Head (`artifacts/lstm/stage_head_v3/`)**: Multi-class MITRE ATT&CK stage classifier trained on latent continuous state representations.
+- **Stage Classification Head (`artifacts/lstm/stage_head_v3/`)**: Multi-class MITRE ATT&CK stage classifier trained on latent continuous state representations. 37-fold LOEO accuracy achieved **0.8627**, now fully backed by real extracted packet telemetry across all 3 headline attacks (SSH-Bruteforce, Botnet, and DDOS-LOIC-UDP).
 - **Inference Contract (`artifacts/lstm/inference_scaler_v3.yaml`, `inference_feature_order_v3.json`)**: Frozen 406-dimensional positional feature order and parameter-matched RobustScaler for zero-defect backend integration.
 
 
