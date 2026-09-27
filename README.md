@@ -165,7 +165,7 @@ In accordance with scientific integrity and engineering transparency:
 1. **Dataset Nature:** Evaluated on the CSE-CIC-IDS2018 testbed dataset; real-world enterprise zero-day generalization requires continuous fine-tuning.
 2. **Network Topology:** The evaluation environment reflects a single simulated enterprise topology.
 3. **Onset Forecasting Limit ($H=5$):** Multi-horizon forecasting at horizon $H=5$ minutes represents an epistemic benchmark limit under Leave-One-Episode-Out cross-validation.
-4. **ATT&CK Stage Granularity:** Stage head currently evaluates high-fidelity discrimination for initial access / credential brute-force stages; full 14-tactic multi-stage ATT&CK classification is exploratory.
+4. **ATT&CK Stage Granularity:** Stage head currently evaluates high-fidelity discrimination for credential brute-force stages vs background; full 14-tactic multi-stage ATT&CK classification is exploratory: Discovery and Command & Control have zero test support in LOEO splits, while Impact-stage attacks (19 test windows) are not detected by the current Stage Head (0% recall in both v2 and v3 evaluations; the model defaults these to Unknown/Other).
 5. **Rollout Horizon Boundaries:** Autoregressive state rollout is empirically validated for depths $K=1 \dots 3$; depth $K=4$ is classified as informational/exploratory due to compounding drift.
 6. **Telemetry Extraction (Option B):** Packet-level telemetry is now genuinely extracted for the 14-02-2018 and 02-03-2018 PCAPs without label leakage.
 7. **Hazard FPR Constraints:** Hazard-head calibration is enforced using an explicit False Positive Rate ceiling (global τ=0.45, ≤5% false-alarm rate) to prevent alert fatigue.
