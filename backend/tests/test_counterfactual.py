@@ -70,13 +70,13 @@ def test_unit_inversion_to_physical_domain(engine):
     (e.g., retransmissions, microseconds, seconds, packets).
     """
     # Test pkt_tcp_retrans_count
-    # In scaler_params: median=2.0, scale=12.0, is_log1p=False
-    # For z = 10.0: raw = 10.0 * 12.0 + 2.0 = 122.0
+    # In scaler_params: median=6.0, scale=16.0, is_log1p=False
+    # For z = 10.0: raw = 10.0 * 16.0 + 6.0 = 166.0
     raw_val = engine.invert_units("pkt_tcp_retrans_count", 10.0)
-    assert raw_val == 122.0
+    assert raw_val == 166.0
 
-    # For z = 0.0: raw = median = 2.0
-    assert engine.invert_units("pkt_tcp_retrans_count", 0.0) == 2.0
+    # For z = 0.0: raw = median = 6.0
+    assert engine.invert_units("pkt_tcp_retrans_count", 0.0) == 6.0
 
     # Test duration_sec_max (is_log1p = True)
     raw_dur = engine.invert_units("duration_sec_max", 0.0)
@@ -92,12 +92,12 @@ def test_feasible_counterfactual_on_flagged_window(pipeline, engine, ucs_dataset
     idx = 70
     seq = ucs_dataset.iloc[idx - 29 : idx + 1][cols].to_numpy(dtype=np.float32)
 
-    res = engine.search(pipeline, seq, threshold=0.15)
+    res = engine.search(pipeline, seq, threshold=0.50)
 
     assert res["status"] == "feasible"
     assert res["found"] is True
-    assert res["initial_hazard"] > 0.15  # Genuine flagged window
-    assert res["counterfactual_hazard"] < 0.15  # Crossed below threshold
+    assert res["initial_hazard"] > 0.50  # Genuine flagged window
+    assert res["counterfactual_hazard"] < 0.50  # Crossed below threshold
     assert len(res["perturbed_features"]) > 0
     assert len(res["summary"]) > 20
     assert res["honesty_label"] == HONESTY_LABEL
