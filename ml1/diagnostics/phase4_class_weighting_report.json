@@ -1,0 +1,68 @@
+{
+  "class_weighting_status": {
+    "config_says_class_weighting": true,
+    "config_loss": "BCEWithLogitsLoss",
+    "trainer_supports_pos_weight": true,
+    "run_lstm_frozen_uses_pos_weight": false,
+    "actual_class_weighting_applied": false,
+    "diagnosis": "model_config.yaml says class_weighting: true, but run_lstm_frozen.py does NOT pass pos_weight to train(). Therefore class weighting was NOT applied during training."
+  },
+  "unweighted_experiment": [
+    {
+      "fold_id": 0,
+      "attack_type": "Botnet",
+      "val_threshold": 0.31,
+      "val_f1": 0.7284,
+      "test_f1": 0.6667,
+      "best_epoch": 4
+    },
+    {
+      "fold_id": 10,
+      "attack_type": "SSH-Bruteforce",
+      "val_threshold": 0.32,
+      "val_f1": 0.7609,
+      "test_f1": 0.7143,
+      "best_epoch": 4
+    },
+    {
+      "fold_id": 19,
+      "attack_type": "DDOS-LOIC-UDP",
+      "val_threshold": 0.05,
+      "val_f1": 0.6272,
+      "test_f1": 0.6667,
+      "best_epoch": 6
+    }
+  ],
+  "weighted_experiment": [
+    {
+      "fold_id": 0,
+      "attack_type": "Botnet",
+      "pos_weight": 1.863,
+      "val_threshold": 0.45,
+      "val_f1": 0.6966,
+      "test_f1": 0.6667,
+      "best_epoch": 1,
+      "checkpoint": "C:\\Users\\Vicky\\Documents\\SIH_2026\\ShadowCat\\ml1\\diagnostics\\checkpoints\\lstm_class_weighted_fold0.pt"
+    },
+    {
+      "fold_id": 10,
+      "attack_type": "SSH-Bruteforce",
+      "pos_weight": 1.927,
+      "val_threshold": 0.48,
+      "val_f1": 0.7646,
+      "test_f1": 0.7143,
+      "best_epoch": 2,
+      "checkpoint": "C:\\Users\\Vicky\\Documents\\SIH_2026\\ShadowCat\\ml1\\diagnostics\\checkpoints\\lstm_class_weighted_fold10.pt"
+    },
+    {
+      "fold_id": 19,
+      "attack_type": "DDOS-LOIC-UDP",
+      "pos_weight": 1.854,
+      "val_threshold": 0.05,
+      "val_f1": 0.7559,
+      "test_f1": 0.6667,
+      "best_epoch": 8,
+      "checkpoint": "C:\\Users\\Vicky\\Documents\\SIH_2026\\ShadowCat\\ml1\\diagnostics\\checkpoints\\lstm_class_weighted_fold19.pt"
+    }
+  ]
+}

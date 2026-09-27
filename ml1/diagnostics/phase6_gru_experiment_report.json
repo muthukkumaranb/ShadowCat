@@ -1,0 +1,57 @@
+{
+  "lstm_results": [
+    {
+      "fold_id": 0,
+      "attack_type": "Botnet",
+      "val_threshold": 0.31,
+      "val_f1": 0.7284,
+      "test_f1": 0.6667,
+      "best_epoch": 4
+    },
+    {
+      "fold_id": 10,
+      "attack_type": "SSH-Bruteforce",
+      "val_threshold": 0.32,
+      "val_f1": 0.7609,
+      "test_f1": 0.7143,
+      "best_epoch": 4
+    },
+    {
+      "fold_id": 19,
+      "attack_type": "DDOS-LOIC-UDP",
+      "val_threshold": 0.05,
+      "val_f1": 0.6272,
+      "test_f1": 0.6667,
+      "best_epoch": 6
+    }
+  ],
+  "gru_results": [
+    {
+      "fold_id": 0,
+      "attack_type": "Botnet",
+      "val_threshold": 0.28,
+      "val_f1": 0.747,
+      "test_f1": 0.6667,
+      "best_epoch": 5,
+      "checkpoint": "C:\\Users\\Vicky\\Documents\\SIH_2026\\ShadowCat\\ml1\\diagnostics\\checkpoints\\gru_experiment_fold0.pt"
+    },
+    {
+      "fold_id": 10,
+      "attack_type": "SSH-Bruteforce",
+      "val_threshold": 0.28,
+      "val_f1": 0.7534,
+      "test_f1": 0.2857,
+      "best_epoch": 14,
+      "checkpoint": "C:\\Users\\Vicky\\Documents\\SIH_2026\\ShadowCat\\ml1\\diagnostics\\checkpoints\\gru_experiment_fold10.pt"
+    },
+    {
+      "fold_id": 19,
+      "attack_type": "DDOS-LOIC-UDP",
+      "val_threshold": 0.11,
+      "val_f1": 0.7122,
+      "test_f1": 0.6667,
+      "best_epoch": 4,
+      "checkpoint": "C:\\Users\\Vicky\\Documents\\SIH_2026\\ShadowCat\\ml1\\diagnostics\\checkpoints\\gru_experiment_fold19.pt"
+    }
+  ]
+}
