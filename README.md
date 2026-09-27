@@ -142,7 +142,7 @@ streamlit run frontend/app.py
 | **Hazard Forecasting ROC-AUC (v3)** | **0.789** (H=1), **0.843** (H=2), **0.770** (H=5) across LOEO 37 Folds | [Hazard Report v3](ml1/artifacts/lstm/hazard_head_v3/hazard_head_report_v3.md) |
 | **Lagged Logistic Regression Baseline** | F1: 0.738 — Caveat: heavily degraded on Fold 16 (temporal shift) | [Gate 0 Report](data-engineering/gate0_leakage_report.md) |
 | **GNN Multimodal Fusion Ablation** | Validation Loss: Temporal-Only (1.666) beats Fused (1.932) | **HOLD** — [GNN Decision](ml2-full/GNN_FINAL/ml2/results/gnn_adopt_hold_decision.md) |
-| **Stage-Head Scope (v3)** | Validated on *Credential Access / Brute Force* vs background (v3) | [Stage Report v3](ml1/artifacts/lstm/stage_head_v3/stage_head_report.md) |
+| **Stage-Head Scope (v2)** | Validated on *Credential Access / Brute Force* vs background (v2) | [Stage Report v2](ml1/artifacts/lstm/stage_head/stage_head_report.md) |
 | **PC2 Significance Test (v3)** | Persistence baseline significantly outperforms autoregressive rollouts on PC2 | [PC2 Report v3](ml1/artifacts/lstm/probabilistic_world_model_v3/pc2_attack_significance_report.md) |
 | **Inference Contract Verification (v3)**| DE vs ML1 Scaler parameters match bit-for-bit (0 mismatches, 406-D) | [Contract Diff v3](data-engineering/data/ucs/CONTRACT_DIFF_REPORT.md) |
 | **Tamper-Evident Hash Chain** | 10 chained blocks covering all verified extraction, v4 models, and FPR-calibrated reports | [Audit Chain](backend/audit_chain.json) |

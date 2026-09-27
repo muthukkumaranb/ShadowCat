@@ -63,8 +63,34 @@ def main():
     parser.add_argument("--data", type=Path, default=Path("data/ucs/ucs_windows.parquet"))
     parser.add_argument("--world-model-ckpt", type=Path, default=Path("artifacts/experiments/world_model_20260904/probabilistic/gaussian_next_state_best.pt"))
     parser.add_argument("--mapping", type=Path, default=Path("data/ucs/attack_tactics_mapping.yaml"))
+    parser.add_argument("--manifest", type=Path, default=None)
     parser.add_argument("--output-dir", type=Path, default=Path("artifacts/lstm/stage_head"))
     args = parser.parse_args()
+
+    # Intelligent path resolution for data and mapping across execution directories
+    if not args.data.exists():
+        candidates = [
+            Path("data-engineering/data/ucs/ucs_windows.parquet"),
+            workspace_dir / "data-engineering/data/ucs/ucs_windows.parquet",
+            Path("data/ucs/ucs_windows.parquet"),
+            workspace_dir / "data/ucs/ucs_windows.parquet",
+        ]
+        for c in candidates:
+            if c.exists():
+                args.data = c
+                break
+
+    if not args.mapping.exists():
+        candidates = [
+            Path("data-engineering/data/ucs/attack_tactics_mapping.yaml"),
+            workspace_dir / "data-engineering/data/ucs/attack_tactics_mapping.yaml",
+            Path("data/ucs/attack_tactics_mapping.yaml"),
+            workspace_dir / "data/ucs/attack_tactics_mapping.yaml",
+        ]
+        for c in candidates:
+            if c.exists():
+                args.mapping = c
+                break
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
     set_seed(42)
@@ -221,86 +247,102 @@ def main():
         }
 
     # 5. 37-Fold LOEO Evaluation across all Attack Tactics
-    manifest_path = Path("artifacts/loeo/corrected_37fold_manifest.json")
+    manifest_path = args.manifest
+    if manifest_path is None or not manifest_path.exists():
+        candidates = [
+            Path("ml1/artifacts/loeo/corrected_37fold_manifest.json"),
+            Path("artifacts/loeo/corrected_37fold_manifest.json"),
+            workspace_dir / "artifacts/loeo/corrected_37fold_manifest.json",
+            workspace_dir / "ml1/artifacts/loeo/corrected_37fold_manifest.json",
+        ]
+        for c in candidates:
+            if c.exists():
+                manifest_path = c
+                break
+
+    if manifest_path is None or not manifest_path.exists():
+        raise FileNotFoundError(
+            f"Could not locate 37-fold LOEO manifest file at any candidate path. Checked: {candidates}"
+        )
+
     loeo_per_class = {cls_name: {"tp": 0, "fp": 0, "fn": 0, "support": 0} for cls_name in stage_classes}
     loeo_total_samples = 0
     loeo_cm = np.zeros((num_classes, num_classes), dtype=int)
 
-    if manifest_path.exists():
-        print("\nRunning 37-fold LOEO cross-validation for Stage Head...")
-        with open(manifest_path, 'r') as f:
-            manifest_data = json.load(f)
+    print(f"\nRunning 37-fold LOEO cross-validation for Stage Head using {manifest_path}...")
+    with open(manifest_path, 'r', encoding='utf-8') as f:
+        manifest_data = json.load(f)
 
-        for fold in manifest_data['folds']:
-            fold_id = fold['fold_id']
-            train_idx = np.array(fold['train_indices'])
-            test_idx = np.array(fold['test_indices'])
+    for fold in manifest_data['folds']:
+        fold_id = fold['fold_id']
+        train_idx = np.array(fold['train_indices'])
+        test_idx = np.array(fold['test_indices'])
 
-            # Map indices to purged windows
-            fold_frame = purged.copy()
-            fold_frame['split'] = 'none'
-            fold_frame.loc[fold_frame.index.isin(test_idx), 'split'] = 'test'
-            fold_frame.loc[fold_frame.index.isin(train_idx), 'split'] = 'train'
+        # Map indices to purged windows
+        fold_frame = purged.copy()
+        fold_frame['split'] = 'none'
+        fold_frame.loc[fold_frame.index.isin(test_idx), 'split'] = 'test'
+        fold_frame.loc[fold_frame.index.isin(train_idx), 'split'] = 'train'
 
-            train_df = fold_frame[fold_frame['split'] == 'train']
-            test_df = fold_frame[fold_frame['split'] == 'test']
+        train_df = fold_frame[fold_frame['split'] == 'train']
+        test_df = fold_frame[fold_frame['split'] == 'test']
 
-            if len(test_df) == 0 or len(train_df) == 0:
-                continue
+        if len(test_df) == 0 or len(train_df) == 0:
+            continue
 
-            # Compute S_hat using world model on sequence histories
-            def extract_s_hat_and_y(df_sub):
-                idx_map = {idx: pos for pos, idx in enumerate(purged.index)}
-                X_list, y_list = [], []
-                full_features_np = purged[features].to_numpy(dtype=np.float32)
-                full_y_stage = purged['stage_idx'].to_numpy(dtype=int)
+        # Compute S_hat using world model on sequence histories
+        def extract_s_hat_and_y(df_sub):
+            idx_map = {idx: pos for pos, idx in enumerate(purged.index)}
+            X_list, y_list = [], []
+            full_features_np = purged[features].to_numpy(dtype=np.float32)
+            full_y_stage = purged['stage_idx'].to_numpy(dtype=int)
 
-                for idx in df_sub.index:
-                    t_pos = idx_map[idx]
-                    start = t_pos - config.lookback_windows + 1
-                    if start < 0 or t_pos >= len(purged):
-                        continue
-                    hist = full_features_np[start:t_pos+1]
-                    if len(hist) == config.lookback_windows:
-                        X_list.append(hist)
-                        y_list.append(full_y_stage[t_pos])
-                if not X_list:
-                    return np.zeros((0, 406), dtype=np.float32), np.zeros((0,), dtype=int)
-                X_arr = np.array(X_list, dtype=np.float32)
-                with torch.no_grad():
-                    mean, _ = world_model(torch.as_tensor(X_arr, dtype=torch.float32).to(device))
-                return mean.cpu().numpy(), np.array(y_list, dtype=int)
-
-            S_train, Y_train = extract_s_hat_and_y(train_df)
-            S_test, Y_test = extract_s_hat_and_y(test_df)
-
-            if len(S_train) == 0 or len(S_test) == 0 or len(np.unique(Y_train)) < 2:
-                continue
-
-            f_head = StageClassificationHead(state_dim=406, num_classes=num_classes, hidden_dim=64, dropout=0.2).to(device)
-            opt = torch.optim.Adam(f_head.parameters(), lr=0.001, weight_decay=1e-4)
-            crit = nn.CrossEntropyLoss()
-
-            tr_ds = TensorDataset(torch.as_tensor(S_train, dtype=torch.float32), torch.as_tensor(Y_train, dtype=torch.long))
-            tr_ld = DataLoader(tr_ds, batch_size=64, shuffle=True)
-
-            for ep in range(15):
-                f_head.train()
-                for sb, yb in tr_ld:
-                    sb, yb = sb.to(device), yb.to(device)
-                    opt.zero_grad()
-                    loss = crit(f_head(sb), yb)
-                    loss.backward()
-                    opt.step()
-
-            f_head.eval()
+            for idx in df_sub.index:
+                t_pos = idx_map[idx]
+                start = t_pos - config.lookback_windows + 1
+                if start < 0 or t_pos >= len(purged):
+                    continue
+                hist = full_features_np[start:t_pos+1]
+                if len(hist) == config.lookback_windows:
+                    X_list.append(hist)
+                    y_list.append(full_y_stage[t_pos])
+            if not X_list:
+                return np.zeros((0, 406), dtype=np.float32), np.zeros((0,), dtype=int)
+            X_arr = np.array(X_list, dtype=np.float32)
             with torch.no_grad():
-                l_test = f_head(torch.as_tensor(S_test, dtype=torch.float32).to(device))
-                p_test = np.argmax(torch.softmax(l_test, dim=-1).cpu().numpy(), axis=-1)
+                mean, _ = world_model(torch.as_tensor(X_arr, dtype=torch.float32).to(device))
+            return mean.cpu().numpy(), np.array(y_list, dtype=int)
 
-            fold_cm = confusion_matrix(Y_test, p_test, labels=list(range(num_classes)))
-            loeo_cm += fold_cm
-            loeo_total_samples += len(Y_test)
+        S_train, Y_train = extract_s_hat_and_y(train_df)
+        S_test, Y_test = extract_s_hat_and_y(test_df)
+
+        if len(S_train) == 0 or len(S_test) == 0 or len(np.unique(Y_train)) < 2:
+            continue
+
+        f_head = StageClassificationHead(state_dim=406, num_classes=num_classes, hidden_dim=64, dropout=0.2).to(device)
+        opt = torch.optim.Adam(f_head.parameters(), lr=0.001, weight_decay=1e-4)
+        crit = nn.CrossEntropyLoss()
+
+        tr_ds = TensorDataset(torch.as_tensor(S_train, dtype=torch.float32), torch.as_tensor(Y_train, dtype=torch.long))
+        tr_ld = DataLoader(tr_ds, batch_size=64, shuffle=True)
+
+        for ep in range(15):
+            f_head.train()
+            for sb, yb in tr_ld:
+                sb, yb = sb.to(device), yb.to(device)
+                opt.zero_grad()
+                loss = crit(f_head(sb), yb)
+                loss.backward()
+                opt.step()
+
+        f_head.eval()
+        with torch.no_grad():
+            l_test = f_head(torch.as_tensor(S_test, dtype=torch.float32).to(device))
+            p_test = np.argmax(torch.softmax(l_test, dim=-1).cpu().numpy(), axis=-1)
+
+        fold_cm = confusion_matrix(Y_test, p_test, labels=list(range(num_classes)))
+        loeo_cm += fold_cm
+        loeo_total_samples += len(Y_test)
 
     # Compute overall LOEO per-class metrics
     loeo_per_class_summary = {}
@@ -341,18 +383,18 @@ def main():
         "unknown_other_fraction_in_dataset": float(np.mean(windows['stage_label'] == "Unknown/Other")),
     }
 
-    with open(args.output_dir / "stage_head_metrics.json", "w") as f:
+    with open(args.output_dir / "stage_head_metrics.json", "w", encoding="utf-8") as f:
         json.dump(metrics_summary, f, indent=2)
 
     # 6. Generate Markdown Report
     report_lines = [
         "# Stage Head Classification Report\n",
         "## Architectural Verification",
-        "- **Input Verification**: Stage Head operates directly on **PREDICTED future latent state** $\\hat{S}_{t+1}$ generated by `LSTMGaussianWorldModel` (Item 1 checkpoint), fulfilling strict architectural requirements.",
+        f"- **Input Verification**: Stage Head operates directly on **PREDICTED future latent state** $\\hat{{S}}_{{t+1}}$ generated by `LSTMGaussianWorldModel` ({args.world_model_ckpt.name}), fulfilling strict architectural requirements.",
         "- **ATT&CK Mapping Source**: `data/ucs/attack_tactics_mapping.yaml`",
         "- **Unknown/Other Fallback Rule**: All benign or unmapped/low-confidence traffic windows default to `Unknown/Other`.",
         "- **Scope Verification**: Evaluated across all labeled windows (Claim Ladder Rung 4). B1 stage transition (n=1 infiltration) is strictly excluded (case study scope owned by ML2).\n",
-        "## Performance Metrics — 37-Fold LOEO Protocol (All Stage Classes Covered)",
+        "## Performance Metrics - 37-Fold LOEO Protocol (All Stage Classes Covered)",
         f"- **LOEO Overall Accuracy**: **{loeo_overall_acc:.4f}**",
         f"- **Total LOEO Evaluation Samples**: **{loeo_total_samples}**\n",
         "### 37-Fold LOEO Per-Class Metrics",
@@ -387,7 +429,7 @@ def main():
         report_lines.append(f"| **{cls_name}** | {m['precision']:.4f} | {m['recall']:.4f} | {m['f1']:.4f} | {m['support']} |")
 
     report_path = args.output_dir / "stage_head_report.md"
-    with open(report_path, "w") as f:
+    with open(report_path, "w", encoding="utf-8") as f:
         f.write("\n".join(report_lines))
 
     print(f"\nSaved stage head metrics: {args.output_dir / 'stage_head_metrics.json'}")
