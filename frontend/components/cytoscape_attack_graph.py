@@ -91,7 +91,7 @@ def render_cytoscape_graph(
         </body>
         </html>
         """
-        st.iframe(src=empty_html, height=height)
+        st.iframe(empty_html, height=height)
         return
 
     # Derive real graph traversal if not passed
@@ -684,4 +684,4 @@ def render_cytoscape_graph(
     </html>
     """
 
-    st.iframe(src=html_content, height=height)
+    st.iframe(html_content, height=height)

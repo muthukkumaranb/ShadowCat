@@ -267,7 +267,7 @@ def render_attack_graph_panel():
             selected_host=selected_host_id,
             focused_host=focused_host_id
         )
-        st.iframe(src=svg_html, height=520)
+        st.iframe(svg_html, height=520)
 
         # Status summary below canvas
         blast_info = ""
