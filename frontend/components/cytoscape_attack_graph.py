@@ -6,7 +6,7 @@ Features dynamic K-step rollout diffusion, visual host isolation, live progressi
 
 import json
 from typing import Dict, Any, Optional, List
-import streamlit.components.v1 as components
+
 
 
 def render_cytoscape_graph(
@@ -93,7 +93,7 @@ def render_cytoscape_graph(
         </body>
         </html>
         """
-        components.html(empty_html, height=height)
+        st.iframe(src=empty_html, height=height)
         return
 
     # Derive real graph traversal if not passed
@@ -686,4 +686,4 @@ def render_cytoscape_graph(
     </html>
     """
 
-    components.html(html_content, height=height, scrolling=False)
+    st.iframe(src=html_content, height=height)

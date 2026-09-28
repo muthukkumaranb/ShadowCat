@@ -25,7 +25,7 @@ GOVERNANCE COMPLIANCE:
 import json
 import math
 import streamlit as st
-import streamlit.components.v1 as components
+
 from styles import render_html, COLORS
 from data_provider import get_host_risk_graph, is_using_mock_data
 
@@ -267,7 +267,7 @@ def render_attack_graph_panel():
             selected_host=selected_host_id,
             focused_host=focused_host_id
         )
-        components.html(svg_html, height=520)
+        st.iframe(src=svg_html, height=520)
 
         # Status summary below canvas
         blast_info = ""
