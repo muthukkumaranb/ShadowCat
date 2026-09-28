@@ -3,6 +3,8 @@
 **Theme:** Blockchain & Cybersecurity
 **Organization:** National Technical Research Organisation (NTRO)
 
+<img src="assets/Shadowcat_Architecture_v13.png" alt="ShadowCat Architecture" style="width: 100%; max-height: 400px; object-fit: contain;">
+
 ## 1. Unified Cyber State (UCS) & Data Ingestion
 SHADOWCAT shifts perimeter defense from reactive signature matching to predictive forecasting. The pipeline begins with Gate 0 ingestion protocols.
 * **Packet-Level Coverage:** The platform extracts real packet-level telemetry for all three headline attacks (**SSH-Bruteforce, Botnet, and DDOS-LOIC-UDP**) without label leakage.
