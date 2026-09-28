@@ -12,11 +12,14 @@ frontend/
 ├── data_provider.py         # Decoupled data access layer (Live backend vs mock fallback)
 ├── styles.py                # CSS design system (Dark glassmorphism, responsive tokens)
 ├── views/
-│   ├── 01_Forecast.py       # Live risk forecasting & pre-emptive trajectory (t+1..t+4)
-│   ├── 01a_Input.py         # Network flow ingestion & real-time telemetry analyzer
-│   ├── 02_Evidence.py       # Telemetry evidence, dual-signal evaluation & attributions
-│   ├── 03_Validation.py     # Scientific rigor, LOEO 37-fold cross-validation & audit chain
-│   └── 05_About.py          # Platform specs, threat models & architecture handbook
+│   ├── 01_Telemetry_Ingestion.py # Network flow ingestion & real-time telemetry analyzer
+│   ├── 02_Overview.py            # Platform specs, threat models & architecture handbook
+│   ├── 03_Forecast.py            # Live risk forecasting & pre-emptive trajectory (t+1..t+4)
+│   ├── 04_Attack_Graph.py        # Explainable graph diffusion simulation across real network topology edges
+│   ├── 05_Alerts.py              # Security telemetry, anomaly alerts, and dynamic filtering pipeline
+│   ├── 06_Explainability.py      # Telemetry evidence, dual-signal evaluation & attributions
+│   ├── 07_Validation_Trust.py    # Scientific rigor, LOEO 37-fold cross-validation & audit chain
+│   └── 08_Reports_History.py     # Persistent reports database and historical alert history
 ├── components/              # Modular UI components (header, charts, cards, tables)
 ├── models/                  # Pre-computed benchmark outputs & metadata manifests
 └── requirements.txt         # Frontend dependencies

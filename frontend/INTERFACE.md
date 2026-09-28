@@ -48,7 +48,7 @@ If you are not using checkpoint files (e.g. running a live in-memory service), m
 ### 2.1 `get_forecast_trajectory(window_id: str = None) -> dict`
 Returns multi-step forward simulation of network state risk across horizons $K=1..4$.
 
-* **Consuming UI File:** `views/01_Forecast.py` & `components/forecast.py`
+* **Consuming UI File:** `views/03_Forecast.py` & `components/forecast.py`
 * **Input:** `window_id` (str, optional): Target 60s sliding window identifier.
 * **Return Schema:**
 ```json
@@ -80,7 +80,7 @@ Returns multi-step forward simulation of network state risk across horizons $K=1
 ### 2.2 `get_comparison_table() -> list[dict]`
 Returns the PS-mandated comparative benchmark evaluation comparing the World Model against baseline models.
 
-* **Consuming UI File:** `views/03_Validation.py`
+* **Consuming UI File:** `views/07_Validation_Trust.py`
 * **Return Schema:** List of 4 dictionaries:
 ```json
 [
@@ -198,7 +198,7 @@ Returns host topology graph, communication edges, and host risk predictions $h_v
 ### 2.4 `get_novelty_score(window_id: str = None) -> dict`
 Returns current observed state $S(t)$, novelty score, and behavioral envelope status.
 
-* **Consuming UI File:** `views/01_Forecast.py`, `views/02_Evidence.py`, `components/state.py`
+* **Consuming UI File:** `views/03_Forecast.py`, `views/06_Explainability.py`, `components/state.py`
 * **Return Schema:**
 ```json
 {
@@ -224,7 +224,7 @@ Returns current observed state $S(t)$, novelty score, and behavioral envelope st
 ### 2.5 `get_attributions(window_id: str = None) -> list[dict]`
 Returns deletion-tested feature attribution rankings.
 
-* **Consuming UI File:** `views/02_Evidence.py` & `components/explanation.py`
+* **Consuming UI File:** `views/06_Explainability.py` & `components/explanation.py`
 * **Return Schema:** List of dicts:
 ```json
 [
@@ -243,7 +243,7 @@ Returns deletion-tested feature attribution rankings.
 ### 2.6 `get_flagged_flows(window_id: str = None, limit: int = None) -> list[dict]`
 Returns correlated network flows driving the forecast.
 
-* **Consuming UI File:** `views/02_Evidence.py` & `components/evidence.py`
+* **Consuming UI File:** `views/06_Explainability.py` & `components/evidence.py`
 * **Return Schema:**
 ```json
 [
@@ -267,7 +267,7 @@ Returns correlated network flows driving the forecast.
 ### 2.7 `get_validation_data() -> dict`
 Returns authoritative LOEO 37-fold cross-validation metrics, horizon stability data, and leakage audit checklist.
 
-* **Consuming UI File:** `views/03_Validation.py`
+* **Consuming UI File:** `views/07_Validation_Trust.py`
 * **Return Schema:**
 ```json
 {

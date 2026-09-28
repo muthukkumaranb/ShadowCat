@@ -9,7 +9,7 @@
 * **Unified Cyber State (UCS):** Ingests raw NetFlows and Scapy-extracted packets into a 406-D feature vector ($S_t$) using 1-minute window aggregation.
 * **Temporal World Model:** A Causal LSTM (30-window lookback) predicts network state dynamics $p(S_{t+1} | S_t)$.
 * **Multi-Head Analysis:**
-  * **Hazard Head:** Multi-step risk trajectories (t+1 .. t+4).
+  * **Stacked & Calibrated Residual LSTM Ensemble:** Multi-step risk trajectories (t+1 .. t+4).
   * **Stage Head:** MITRE ATT&CK classification mapping.
 
 ## Slide 3: Real Packet Coverage & Explainability
@@ -24,7 +24,7 @@
 | Detection | Production (Stacked Residual LSTM Ensemble) | **0.9962** | 0.9929 | 1.0000 | 0.0080 |
 | Detection | Logistic Regression baseline (same features) | 0.9730 | 0.9730 | 0.9730 | 0.0000 |
 | Onset (forecasting) | Production (Stacked Residual LSTM Ensemble) | **0.9127** | 0.9684 | 0.9054 | 0.0095 |
-| Onset (forecasting) | Logistic Regression baseline (same features) | 0.8880 | 0.9459 | 0.8784 | 0.0045 |
+| Onset (forecasting) | Logistic Regression baseline (same features) | 0.8880 | 0.9459 | 0.8784 | 0.0000 |
 
 **Caveat Disclosures:** 
 1. The LR detection F1 of 0.973 is a mean across 37 folds where 36 score a perfect 1.0 and 1 fold (Fold 16, SSH-Bruteforce, 66 test windows) scores 0.0 — 0% recall, every attack window misclassified as benign.

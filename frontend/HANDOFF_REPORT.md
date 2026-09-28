@@ -25,12 +25,15 @@ The primary objectives achieved:
 
 * **Streamlined 2-Tier Navigation Structure:**
   * **Operations (Cockpit / Front Door):**
-    1. `Threat Forecast` (`views/01_Forecast.py`) — **Default / Root Route**
-    2. `Evidence & Attribution` (`views/02_Evidence.py`)
-    3. `Telemetry Ingestion` (`views/01a_Input.py`)
-    4. `Validation & Benchmarks` (`views/03_Validation.py`)
+    1. `Threat Forecast` (`views/03_Forecast.py`) — **Default / Root Route**
+    2. `Evidence & Attribution` (`views/06_Explainability.py`)
+    3. `Telemetry Ingestion` (`views/01_Telemetry_Ingestion.py`)
+    4. `Validation & Benchmarks` (`views/07_Validation_Trust.py`)
   * **Platform Specs & Audit:**
-    5. `Platform Specifications` (`views/05_About.py`)
+    5. `Platform Specifications` (`views/02_Overview.py`)
+    6. `Attack Graph` (`views/04_Attack_Graph.py`) — Explainable graph diffusion simulation
+    7. `Alerts` (`views/05_Alerts.py`) — Security telemetry and anomaly alerts
+    8. `Reports & History` (`views/08_Reports_History.py`) — Persistent reports database
 * **Decommissioned Pages:** Removed deprecated `00_Home.py` (Executive Overview) and `00b_Architecture.py` (redundant architecture views). Removed the collapsible 3-column "Operational Briefing for Evaluators" from the top of the Forecast view.
 * **Sidebar Visual Primacy (CSS):** Updated `styles.py` to give `Threat Forecast` distinct visual prominence (sky-blue left border `#38BDF8`, subtle background glow, bold weight), while secondary operations pages render as clean list items.
 
@@ -97,11 +100,14 @@ Prior to push, the entire codebase was compiled and validated against 4 independ
 
 [4] verify_all_pages.py:
     ==> ALL 5 PAGES PASSED ALL REGRESSION AND GOVERNANCE CHECKS.
-    • Threat Forecast (views/01_Forecast.py):     PASS (0 Exceptions, 0 Debug, 0 Emojis)
-    • Evidence & Attribution (views/02_Evidence.py): PASS (0 Exceptions, 0 Debug, 0 Emojis)
-    • Telemetry Ingestion (views/01a_Input.py):       PASS (0 Exceptions, 0 Debug, 0 Emojis)
-    • Validation & Benchmarks (views/03_Validation.py): PASS (0 Exceptions, 0 Debug, 0 Emojis)
-    • Platform Specifications (views/05_About.py):      PASS (0 Exceptions, 0 Debug, 0 Emojis)
+    • Threat Forecast (views/03_Forecast.py):     PASS (0 Exceptions, 0 Debug, 0 Emojis)
+    • Evidence & Attribution (views/06_Explainability.py): PASS (0 Exceptions, 0 Debug, 0 Emojis)
+    • Telemetry Ingestion (views/01_Telemetry_Ingestion.py):       PASS (0 Exceptions, 0 Debug, 0 Emojis)
+    • Validation & Benchmarks (views/07_Validation_Trust.py): PASS (0 Exceptions, 0 Debug, 0 Emojis)
+    • Platform Specifications (views/02_Overview.py):      PASS (0 Exceptions, 0 Debug, 0 Emojis)
+    • Attack Graph (views/04_Attack_Graph.py):           PASS (0 Exceptions, 0 Debug, 0 Emojis)
+    • Alerts (views/05_Alerts.py):                 PASS (0 Exceptions, 0 Debug, 0 Emojis)
+    • Reports History (views/08_Reports_History.py):        PASS (0 Exceptions, 0 Debug, 0 Emojis)
 
 [5] interactive_audit.py:
     ==> ALL INTERACTIVE WIDGET AUDIT CHECKS PASSED WITH ZERO RUNTIME EXCEPTIONS.

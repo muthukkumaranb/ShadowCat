@@ -140,12 +140,13 @@ By default, the backend scripts map the Windows host path `D:\sih2026` to the Fa
 
 To stand up the real Fabric test-network layer yourself:
 1. Ensure **Docker Desktop** is installed and running.
-2. From within a bash-compatible terminal, navigate to the test-network directory and bring up the network with CA nodes and the required channel:
+2. Install dependencies and normalize line endings (required once per environment): `apt-get update && apt-get install -y docker.io docker-compose-v2 jq curl dos2unix`, then run `dos2unix` on the shell scripts under `fabric-samples/test-network/` as `run_network.sh` does.
+3. From within a bash-compatible terminal, navigate to the test-network directory and bring up the network with CA nodes and the required channel:
    ```bash
    cd fabric-experiment/fabric-samples/test-network
    ./network.sh up createChannel -c shadowcat-notary-channel -ca
    ```
-3. Deploy the `shadowcat_notary` Go chaincode to the channel:
+4. Deploy the `shadowcat_notary` Go chaincode to the channel:
    ```bash
    ./network.sh deployCC -ccn shadowcat_notary -ccp ../../chaincode/shadowcat_notary -ccl go -c shadowcat-notary-channel
    ```
@@ -159,7 +160,7 @@ To stand up the real Fabric test-network layer yourself:
 | Detection | Production (Stacked Residual LSTM Ensemble) | **0.9962** | 0.9929 | 1.0000 | 0.0080 |
 | Detection | Logistic Regression baseline (same features) | 0.9730 | 0.9730 | 0.9730 | 0.0000 |
 | Onset (forecasting) | Production (Stacked Residual LSTM Ensemble) | **0.9127** | 0.9684 | 0.9054 | 0.0095 |
-| Onset (forecasting) | Logistic Regression baseline (same features) | 0.8880 | 0.9459 | 0.8784 | 0.0045 |
+| Onset (forecasting) | Logistic Regression baseline (same features) | 0.8880 | 0.9459 | 0.8784 | 0.0000 |
 
 **Note**: The LR detection F1 of 0.973 is a mean across 37 folds where 36 score a perfect 1.0 and 1 fold (Fold 16, SSH-Bruteforce, 66 test windows) scores 0.0 — 0% recall, every attack window misclassified as benign.
 
@@ -176,7 +177,7 @@ To stand up the real Fabric test-network layer yourself:
 | **Stage-Head Scope (v3)** | Validated on *Credential Access / Brute Force* vs background (v3), 0.8627 accuracy | [Stage Report v3](ml1/artifacts/lstm/stage_head_v3/reeval_packetcov/stage_head_report.md) |
 | **PC2 Significance Test (v3)** | Persistence baseline significantly outperforms autoregressive rollouts on PC2 | [PC2 Report v3](ml1/artifacts/lstm/probabilistic_world_model_v3/pc2_attack_significance_report.md) |
 | **Inference Contract Verification (v3)**| DE vs ML1 Scaler parameters match bit-for-bit (0 mismatches, 406-D) | [Contract Diff v3](data-engineering/data/ucs/CONTRACT_DIFF_REPORT.md) |
-| **Tamper-Evident Hash Chain** | 10 chained blocks covering all verified extraction, v4 models, and FPR-calibrated reports | [Audit Chain](backend/audit_chain.json) |
+| **Tamper-Evident Hash Chain** | 37 chained blocks covering all verified extraction, v4 models, and FPR-calibrated reports | [Audit Chain](backend/audit_chain.json) |
 
 ---
 
