@@ -85,14 +85,14 @@ All output datasets and audit reports are written directly to `data/ucs/`.
 
 ## Runtime Extraction Engine (UCSExtractor)
 
-The `UCSExtractor` runtime module ([`src/ucs_extractor.py`](file:///e:/SIH%202026%20-%20UCS%20Ingestion%20Pipeline%20(Main)/src/ucs_extractor.py)) packages the batch pipeline into a lightweight, high-performance module for streaming and real-time backend/inference integration.
+The `UCSExtractor` runtime module ([`src/ucs_extractor.py`](src/ucs_extractor.py)) packages the batch pipeline into a lightweight, high-performance module for streaming and real-time backend/inference integration.
 
 ### Contract & Architecture (Schema `v3.0`)
 - **Total Output Shape**: Exactly **410 columns** per window:
   - **4 Window Identifiers**: `window_id`, `window_start_utc`, `window_end_utc`, `source_day`
   - **6 Presence Masks**: `mask_has_traffic_volume_features`, `mask_has_flow_timing_features`, `mask_has_packet_level_features`, `mask_has_tcp_flags`, `mask_has_graph_topology`, `mask_has_identity_auth`
   - **400 Scaled Features**: Normalized via frozen `data/ucs/scaler_params.yaml` fitted on the 2,013 post-purge training windows.
-- **Frozen Imputation**: Missing values are imputed using frozen raw-scale training medians ([`data/ucs/imputation_params.yaml`](file:///e:/SIH%202026%20-%20UCS%20Ingestion%20Pipeline%20(Main)/data/ucs/imputation_params.yaml)), ensuring zero cross-sample leakage and centering neutral values at `0.0`.
+- **Frozen Imputation**: Missing values are imputed using frozen raw-scale training medians ([`data/ucs/imputation_params.yaml`](data/ucs/imputation_params.yaml)), ensuring zero cross-sample leakage and centering neutral values at `0.0`.
 - **Reproducibility**: Bit-exact reproduction (0 bit mismatch) against the batch ingestion pipeline.
 
 ### Class Constants & ML1 Alignment
@@ -142,7 +142,7 @@ To guarantee 100% positional and numerical parity between `UCSExtractor` and ML1
 
 ## Input Validation (CICFlowMeterValidator)
 
-The `CICFlowMeterValidator` module ([`src/csv_validator.py`](file:///e:/SIH%202026%20-%20UCS%20Ingestion%20Pipeline%20(Main)/src/csv_validator.py)) verifies and cleans raw CSV inputs before extraction:
+The `CICFlowMeterValidator` module ([`src/csv_validator.py`](src/csv_validator.py)) verifies and cleans raw CSV inputs before extraction:
 - **`EXACT_MATCH`**: All 80 raw CICFlowMeter columns are present with standard casing.
 - **`MAPPED_VARIANT`**: Recognizable column variations (case differences, underscores, canonical names) are automatically mapped and decisions are recorded in `variant_mappings`.
 - **`REJECTED`**: Missing critical fields (destination port, timestamp, duration, packet counts) or non-numeric corrupted fields are rejected with detailed diagnostics.
@@ -152,6 +152,6 @@ The `CICFlowMeterValidator` module ([`src/csv_validator.py`](file:///e:/SIH%2020
 ## Limitations
 
 - **Contiguous Episode Granularity**: Pulsing/intermittent C2 traffic can be split into multiple single-window episodes under the strict contiguity rule; this is documented and does not affect leakage boundaries.
-- **Packet-Level Feature Scope**: Raw PCAP packet extraction is currently scoped to Wednesday-14-02-2018 (`SSH-Bruteforce`); all remaining days use flow-level telemetry and have `mask_has_packet_level_features = 0.0`.
+- **Packet-Level Feature Scope**: Raw PCAP packet extraction is currently extracted for Wednesday-14-02-2018 (`SSH-Bruteforce`) with ~0.913 coverage, Wednesday-21-02-2018 (`DDOS-LOIC-UDP`) with 1.000 coverage, and Friday-02-03-2018 (`Botnet`) with 0.996 coverage.
 
 

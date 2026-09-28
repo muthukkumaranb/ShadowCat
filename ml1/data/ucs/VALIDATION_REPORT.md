@@ -1,3 +1,6 @@
+> [!WARNING]
+> **DATA DUPLICATION NOTICE**: This is a non-canonical copy. For the canonical source of truth, please refer to the files in data-engineering/data/ucs/.
+
 # Validation & Audit Report: Unified Cyber State ($S_t$) Pipeline
 **SIH26153 — Cyber World Model Architecture (Data Engineer Track)**
 **Generated Date**: 2026-09-04 06:29:13 UTC

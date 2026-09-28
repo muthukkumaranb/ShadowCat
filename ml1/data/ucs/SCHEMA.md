@@ -1,3 +1,6 @@
+> [!WARNING]
+> **DATA DUPLICATION NOTICE**: This is a non-canonical copy. For the canonical source of truth, please refer to the files in data-engineering/data/ucs/.
+
 # Unified Cyber State ($S_t$) Schema Documentation
 **SIH26153 — Cyber World Model Architecture**
 

@@ -90,6 +90,6 @@ We do not artificially depress thresholds to claim "Botnet is fixed". We state p
 
 ## 5. Artifacts & Audit Integration
 
-- Full threshold sweep data: [`hazard_threshold_sweep_all_types.csv`](file:///d:/sih2026/ml1/artifacts/lstm/hazard_head_v4/hazard_threshold_sweep_all_types.csv)
-- Production backend implementation: [`backend/predict.py`](file:///d:/sih2026/backend/predict.py)
-- Tamper-evident forensic chain: [`backend/audit_chain.json`](file:///d:/sih2026/backend/audit_chain.json)
+- Full threshold sweep data: [`hazard_threshold_sweep_all_types.csv`](hazard_threshold_sweep_all_types.csv)
+- Production backend implementation: [`backend/predict.py`](../../../../backend/predict.py)
+- Tamper-evident forensic chain: [`backend/audit_chain.json`](../../../../backend/audit_chain.json)

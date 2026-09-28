@@ -101,8 +101,11 @@ inference APIs remain available for non-UCS sequence datasets. The included
 Real Scapy/binary-parsed packet-level telemetry is now extracted and verified for all 3 headline attack types — SSH-Bruteforce (14-02-2018), Botnet (02-03-2018), and DDOS-LOIC-UDP (21-02-2018) — and all ML1 components were retrained on the resulting feature matrix:
 
 - **Continuous Dynamics World Model (`artifacts/lstm/gaussian_next_state_best_v3_packetcov.pt`)**: Causal LSTM predicting Gaussian next-state transitions across 406 input dimensions (388 flow features + 6 masks + 12 real packet features). The original `gaussian_next_state_best_v3.pt` at this path's parent directory is a separate, earlier checkpoint kept unmodified for audit-chain integrity (see `artifacts/lstm/stage_head_v3/NOTE.md`) — it is no longer the checkpoint the backend loads by default.
-- **Hazard Head Ensemble (`artifacts/lstm/hazard_head_v3/`)**: 37-fold Leave-One-Episode-Out (LOEO) onset forecasting models across horizons $H=1, 2, 5$. Discriminative power is verified on real packet distributions ($ROC\text{-}AUC_{H=1}=0.7893$, $ROC\text{-}AUC_{H=2}=0.8432$, $ROC\text{-}AUC_{H=5}=0.7701$).
+- **Stacked & Calibrated Residual LSTM Ensemble (`artifacts/lstm/stacked_residual_ensemble/`)**: 37-fold Leave-One-Episode-Out (LOEO) onset forecasting models across horizons $H=1, 2, 5$. Discriminative power is verified on real packet distributions (Detection F1: 0.9962 (SSH), 0.9929 (DDOS), 1.0000 (Botnet) | Onset F1: 0.9127 (SSH), 0.9684 (DDOS), 0.9054 (Botnet)). The system maintains a strict False Positive Rate ceiling (global τ=0.15, ≤5% false-alarm rate).
 - **Stage Classification Head (`artifacts/lstm/stage_head_v3/reeval_packetcov/`)**: Multi-class MITRE ATT&CK stage classifier trained on latent continuous state representations. 37-fold LOEO accuracy is **0.8627** (386 samples), the canonical result now that all 3 headline attacks (SSH-Bruteforce, Botnet, DDOS-LOIC-UDP) are backed by real extracted packet telemetry — see `artifacts/lstm/stage_head_v3/NOTE.md` for the full history of prior evaluations this supersedes.
 - **Inference Contract (`artifacts/lstm/inference_scaler_v4.yaml`, `inference_feature_order_v4.json`)**: Frozen 406-dimensional positional feature order and parameter-matched RobustScaler (globally refit across all three real-telemetry days) for zero-defect backend integration.
 
 
+
+
+**Note**: The final deployed hazard threshold is globally calibrated to 0.15.
