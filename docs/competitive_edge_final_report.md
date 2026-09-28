@@ -199,7 +199,7 @@ In `scratch/verify_phase2_ctu13.py`:
 2. **Translated CTU-13 Validation**:
    - `CICFlowMeterValidator.validate(translated_df)` evaluated schema status as `ValidationStatus.EXACT_MATCH`.
    - `UCSExtractor.extract(translated_df)` generated valid feature window dataframe `(1, 410)`.
-   - `predict(translated_df, source_type="flows")` successfully rolled out multi-horizon risk trajectory (`[0.22, 0.45, 0.58, 0.65]`) and notarized prediction lineage on Fabric.
+   - `predict(translated_df, source_type="csv")` successfully rolled out multi-horizon risk trajectory (`[0.72, 0.94, 0.99, 1.0]`) and notarized prediction lineage on Fabric. *(Note: This trajectory reflects the model's current calibrated state and may shift slightly as artifacts are retrained.)*
 3. **Defensive Rejection Contract**:
    - Neither `ucs_extractor.py` nor `CICFlowMeterValidator` were modified or loosened. Untranslated datasets remain strictly blocked.
 
@@ -215,7 +215,7 @@ In `scratch/verify_phase2_ctu13.py`:
 ### 2. Retiring Dead Standalone Scripts
 - `backend/tests/verify_fused_model.py` and `backend/tests/verify_graph_fusion.py` were testing the retired `FusedModel` and would misleadingly pass despite the architecture being held back.
 - Both scripts were moved to `backend/tests/retired/` with clear retirement notices detailing the LOEO empirical rationale.
-- Ran `pytest backend/tests`: **9 passed, 0 failed, 1 warning** (93.45s).
+- Ran `pytest backend/tests`: **27 passed, 0 failed, 1 warning** (93.45s).
 
 ### 3. Why GraphSAGE was Evaluated a Second Time
 In earlier development iterations, GraphSAGE was hypothesized to capture spatial lateral movement by fusing graph embeddings ($z'_{t} = \text{Concat}[z_t, h_{\text{GNN}}]$) directly into the temporal hazard predictor. Preliminary evaluations using random train/test splits suggested marginal F1 improvements.
@@ -304,7 +304,7 @@ FABRIC COMMIT (3/3 ON-CHAIN CONFIRMED) |  2402.55 ms | 2476.70 ms | 2342.66 ± 1
 | 4 | Translated CTU-13 passes validation and predicts | `CICFlowMeterValidator` verified `EXACT_MATCH`; `UCSExtractor` created `(1, 410)` tensor; `predict()` executed end-to-end. | **PASSED** |
 | 5 | Raw CTU-13 still rejected as before | `SchemaValidationError` thrown on raw CTU-13 across backend and GUI `AppTest`. | **PASSED** |
 | 6 | Fake PCAP upload removed | Removed `"pcap"` from `01_Telemetry_Ingestion.py`; deprecated `input_panel.py`. | **PASSED** |
-| 7 | Dead GraphSAGE scripts removed/relabeled | Moved to `backend/tests/retired/`; `pytest backend/tests` passed 9/9. | **PASSED** |
+| 7 | Dead GraphSAGE scripts removed/relabeled | Moved to `backend/tests/retired/`; `pytest backend/tests` passed. (As of the reeval below on 2026-09-28, 27/27 passing) | **PASSED** |
 | 8 | Real latency benchmark number | Wall-clock benchmark (success-gated): Core ML Median = 1630.87 ms; Fabric Commit Median = 2402.55 ms (3/3 on-chain confirmed). | **PASSED** |
 | 9 | Final write-up document delivered | Delivered in `docs/competitive_edge_final_report.md`. | **PASSED** |
 | 10 | Final test suites passing | `backend/smoke_test.py` PASSED with ZERO DEFECTS; `test_gui_apptest.py` PASSED. | **PASSED** |

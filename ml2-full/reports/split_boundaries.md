@@ -3,7 +3,7 @@
 Total windows: 561
 
 ## Scope note
-This dataset spans only ~9.33 hours. This split validates the MECHANICS of chronological split + purge + embargo, per team lead direction — it is not a production-scale train/val/test split.
+This dataset spans only ~9.33 hours. This split validates the MECHANICS of chronological split + purge + embargo, per team lead direction â€” it is not a production-scale train/val/test split.
 
 ## Boundaries
 - Train: 2016-08-29 00:07:00+00:00 to 2016-08-29 06:38:00+00:00

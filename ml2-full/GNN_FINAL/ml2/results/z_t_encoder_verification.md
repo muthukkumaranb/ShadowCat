@@ -91,3 +91,9 @@ Sample of changed columns from the canonical `ucs_windows.parquet`:
 Spot-check on unchanged features (e.g. `packet_count_fwd_mean`) confirmed `ucs_windows.parquet` continues to reflect normalized values.
 
 **Conclusion:** No double-application found. The pipeline safely passes normalized inputs into the LSTM.
+
+---
+
+## 2026-09-28: v3/packetcov Checkpoint Verification
+
+**Note**: The verification for gaussian_next_state_best_v3_packetcov.pt is currently outstanding. No verification output artifact exists for this run. This gap has been flagged for completion.

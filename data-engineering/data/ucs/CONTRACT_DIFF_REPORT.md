@@ -10,7 +10,7 @@
 > **INFERENCE GATE: UNLOCKED (CONDITIONAL / PROVISIONAL ON CURRENT CHECKPOINT)**
 > Exact index-by-index positional order and numerical parameters match 100% across all 406 model dimensions.
 > Unlocked against the CURRENT deployed checkpoint (trained on simulated packet features for 14-02-2018). This is NOT unlocked against a corrected/honest-fallback pipeline -- that change was reverted (353fb96) pending ML1 retrain coordination, which has not yet been confirmed.
-> Downstream backend services are authorized to wire [`UCSExtractor.extract()`](file:///e:/SIH%202026%20-%20UCS%20Ingestion%20Pipeline%20(Main)/src/ucs_extractor.py) and [`UCSExtractor.extract_model_tensor()`](file:///e:/SIH%202026%20-%20UCS%20Ingestion%20Pipeline%20(Main)/src/ucs_extractor.py) into `backend.predict()` ONLY for evaluation against this current deployed checkpoint.
+> Downstream backend services are authorized to wire [`UCSExtractor.extract()`](../../src/ucs_extractor.py) and [`UCSExtractor.extract_model_tensor()`](../../src/ucs_extractor.py) into `backend.predict()` ONLY for evaluation against this current deployed checkpoint.
 
 ## 📌 Dimension Specification & PCAP Packet Count Clarification
 

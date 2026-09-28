@@ -8,15 +8,27 @@ The backend track serves as the unified runtime integration layer for the SHADOW
 
 ```
 backend/
-├── predict.py               # Production inference pipeline (predict(df, source_type=...))
-├── models.py                # PyTorch architectures (Gaussian LSTM, HazardHead, StageHead)
-├── smoke_test.py            # End-to-end integration smoke test
+├── __init__.py              # Package initialization
 ├── audit_chain.py           # Blockchain-inspired cryptographic hash-chain engine
-├── audit_chain.json         # Canonical tamper-evident audit ledger (7 verified blocks)
+├── audit_chain.json         # Canonical tamper-evident audit ledger (37 verified blocks)
+├── benchmark_real_latency.py# Profiling script for end-to-end processing latency
 ├── build_audit_chain.py     # Script to generate/rebuild the canonical audit chain
-├── verify_audit_chain.py    # Fast integrity verification CLI tool
-├── demo_tamper_detection.py # Safe live demo of adversarial tampering detection
+├── conformal.py             # Conformal prediction utilities for calibrated uncertainty
+├── counterfactual.py        # Counterfactual explanation generation (Integrated Gradients)
+├── demo_fabric_tamper.py    # Safe live demo of adversarial tampering detection for Fabric
+├── demo_tamper_detection.py # Safe live demo of adversarial tampering detection for SHA-256
+├── fabric_bridge.py         # Hyperledger Fabric chaincode integration & RPC bridge
+├── graph_traversal.py       # Graph diffusion simulation and topology rules
+├── mitre_kb.py              # MITRE ATT&CK Knowledge Base mapping
+├── models.py                # PyTorch architectures (Gaussian LSTM, StageHead, Stacked Residual LSTM)
+├── predict.py               # Production inference pipeline (predict(df, source_type=...))
+├── proof_runner.py          # Helper for generating verifiable prediction proofs
+├── reports_db.py            # Persistent storage layer for generated threat reports
+├── smoke_test.py            # End-to-end integration smoke test
+├── temporal_attribution.py  # Temporal feature attribution over lookback windows
+├── test_fabric_bridge.py    # Unit tests for the Fabric bridge module
 ├── verify_audit.py          # Diagnostics & scaler parity verification script
+├── verify_audit_chain.py    # Fast integrity verification CLI tool
 └── requirements.txt         # Standalone backend dependencies
 ```
 
@@ -43,7 +55,7 @@ Input DataFrame (Flows / Windows)
 (Zero-infinities, robust feature extraction, 406-D UCS mapping)
                │
                ▼
-   Feature Normalization (v2 Scalers)
+   Feature Normalization (v3.0 Scalers)
 (Strict post-purge training fit: Log1p + RobustScaler)
                │
                ▼
@@ -52,7 +64,7 @@ Input DataFrame (Flows / Windows)
                │
       ┌────────┴────────┐
       ▼                 ▼
-Hazard Head v2     Stage Head v2
+Stacked Residual LSTM Ensemble (37-fold)     Stage Head v3
 (Multi-horizon     (ATT&CK stage
  risk trajectory   classification:
  t+1 .. t+4)       Credential Access)
@@ -73,8 +85,10 @@ Authoritative Prediction Dictionary Output
 
 To answer the SIH theme (*Blockchain & Cybersecurity*) with genuine technical rigor, SHADOWCAT implements a lightweight, blockchain-inspired SHA-256 recursive hash chain over all verified project artifacts (Gate 0 verdicts, model checkpoint weights, contract diffs, and evaluation reports).
 
-### Why Hash Chains vs Full Distributed Ledgers?
-A full distributed consensus network (e.g. proof-of-work/stake) introduces disproportionate computational and deployment overhead for a single enterprise/perimeter security gateway. A recursive cryptographic hash chain provides **provable, post-hoc tamper detection** (tampering with any past report or model weight breaks the downstream hash tree), which is the exact property required for forensic evidence integrity.
+### Two-Tier Notarization Architecture
+SHADOWCAT implements a real two-tier notarization design, with a live blockchain as the primary path and a cryptographic hash chain as a resilient fallback.
+- **Primary Tier (Hyperledger Fabric):** The system connects to a real Go chaincode on a local Fabric test network (`shadowcat-notary-channel`). It records an atomic 4-stage prediction lineage (raw data, feature vector, model ID, prediction). The chaincode features autonomous incident response natively on-chain for HIGH/CRITICAL alerts.
+- **Fallback Tier (SHA-256 Hash Chain):** If the Fabric network is unreachable, the system automatically falls back to a cryptographic SHA-256 recursive hash chain to ensure uninterrupted, tamper-evident lineage without pipeline failure. Every record is tagged `notarized_via: "fabric"` or `"sha256_fallback"`.
 
 ---
 
@@ -87,7 +101,7 @@ python backend/smoke_test.py
 ```
 
 ### 2. Verify Audit Chain Integrity
-Walks all 7 chained blocks and validates byte-level SHA-256 matches:
+Walks all 37 chained blocks and validates byte-level SHA-256 matches:
 ```bash
 python backend/verify_audit_chain.py
 ```
@@ -102,3 +116,6 @@ python backend/demo_tamper_detection.py
 ```bash
 python backend/verify_audit.py
 ```
+
+
+**Note**: The final deployed hazard threshold is globally calibrated to 0.15.

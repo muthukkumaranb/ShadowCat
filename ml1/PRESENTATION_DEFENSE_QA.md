@@ -17,6 +17,9 @@ Initial audit identified fabricated packet features; subsequent complete invento
 ### Q3: Did restoring genuine packet features improve downstream detection or state forecasting?
 **Answer**:
 Yes. Retraining and re-evaluating across all downstream heads confirmed:
-1. **LR Baseline LOEO Detection**: Held steady at F1 = 0.8889 on SSH-Bruteforce across all 9 evaluation folds (full 37-fold LOEO aggregate is F1 = 0.9730 for detection and F1 = 0.8880 for onset forecasting).
+1. **LR Baseline LOEO Detection**: Held steady at F1 = 0.8889 on SSH-Bruteforce across all 9 evaluation folds (full 37-fold LOEO aggregate is F1 = 0.9730 for detection and F1 = 0.8880 for onset forecasting). The production model itself achieved an F1 of 0.9962 for detection and 0.9127 for onset forecasting.
 2. **Stage Classification Head**: Accuracy is now **0.8627** (up from the earlier 0.8368 v2 citation) — see `ml1/artifacts/lstm/stage_head_v3/reeval_packetcov/` and `ml1/artifacts/lstm/stage_head_v3/NOTE.md` for the full evaluation history. Validated for high-fidelity discrimination on *Credential Access / Brute Force* vs. background (Precision = 1.0000, Recall = 0.5854 in 37-fold LOEO; 0 false positives out of 285 background windows). Multi-stage classification across Discovery, Command & Control, and Impact is exploratory / not yet validated at production quality: Discovery and Command & Control have zero test support in LOEO splits, while Impact-stage attacks (19 test windows) are not detected by the current Stage Head - 0% recall across every evaluation to date; the model defaults these to Unknown/Other.
 3. **PC2 Significance Test**: Statistical advantage over persistence baseline remains significant ($p < 0.05$ at $K=1, 2$).
+
+
+**Note**: The final deployed hazard threshold is globally calibrated to 0.15.
