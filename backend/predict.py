@@ -797,27 +797,9 @@ class ShadowcatPipeline:
                 pred_stage = StageClassificationHead.STAGE_CLASSES[stage_idx]
                 pred_conf = float(stage_probs[stage_idx])
 
-                # Per validation finding: Credential Access and Unknown/Other are the validated classes
-                # If stage probability for Credential Access is high, assign Credential Access;
-                # for multi-step lateral scenario progression, provide stage trajectory
-                if pred_stage in ("Unknown/Other", "Credential Access"):
-                    selected_stage = pred_stage
-                    is_heuristic = False
-                    attr_source = f"StageClassificationHead (P(conf)={pred_conf:.2f})"
-                else:
-                    # HEURISTIC FALLBACK PROGRESSION:
-                    # Clearly labeled per audit protocol (Option b).
-                    # When model stage logits fall into unvalidated classes, rollout horizon k
-                    # is mapped to a heuristic stage sequence gated on cumulative risk.
-                    progression = ["Reconnaissance", "Credential Access", "Lateral Movement", "Impact"]
-                    if cum_risk[k] > 0.4:
-                        selected_stage = progression[k]
-                        is_heuristic = True
-                        attr_source = "heuristic stage-progression estimate, not model-classified"
-                    else:
-                        selected_stage = "Unknown/Other"
-                        is_heuristic = False
-                        attr_source = f"StageClassificationHead (P(conf)={pred_conf:.2f})"
+                selected_stage = pred_stage
+                is_heuristic = False
+                attr_source = f"StageClassificationHead (P(conf)={pred_conf:.2f})"
 
                 # Resolve against real MITRE Enterprise ATT&CK STIX corpus
                 stage_info = kb.resolve_stage(selected_stage)
