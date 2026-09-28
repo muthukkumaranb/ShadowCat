@@ -17,21 +17,43 @@ def get_canonical_benchmark_df() -> pd.DataFrame:
     rng = np.random.RandomState(42)
     rows = []
     base_ts = pd.Timestamp("2026-09-18 14:00:00")
+    # Advanced WOW-factor Topology (38 nodes) with temporal spread
+    attacker = "45.138.21.9"
+    dmz = [f"10.0.1.{10+i}" for i in range(4)]
+    app_servers = [f"10.0.2.{100+i}" for i in range(8)]
+    internal_svc = [f"10.0.14.{50+i}" for i in range(12)]
+    databases = [f"10.0.5.{20+i}" for i in range(6)]
+    auth = [f"10.0.3.{10+i}" for i in range(3)]
+    backups = [f"10.0.6.{10+i}" for i in range(4)]
     
-    src_ips = ["10.0.14.88", "10.0.14.21", "10.0.14.92", "10.0.14.15", "10.0.1.55", "10.0.2.80"]
-    dst_ips = ["45.138.21.9", "10.0.14.0", "10.0.5.2", "194.26.29.112", "10.0.3.12", "198.51.100.4"]
+    # Generate edges that simulate lateral movement (chronologically ordered for K-step)
+    edges = []
+    for d in dmz: edges.append((attacker, d))
+    for i, a in enumerate(app_servers): edges.append((dmz[i % len(dmz)], a))
+    for i, s in enumerate(internal_svc): edges.append((app_servers[i % len(app_servers)], s))
+    for i, a in enumerate(auth): edges.append((app_servers[(i+2) % len(app_servers)], a))
+    for i, db in enumerate(databases): 
+        edges.append((internal_svc[i % len(internal_svc)], db))
+        edges.append((internal_svc[(i+3) % len(internal_svc)], db))
+    for i, b in enumerate(backups): edges.append((databases[i % len(databases)], b))
+    
+    # Add random cross-talk for graph density
+    for _ in range(15):
+        s = rng.choice(app_servers + internal_svc)
+        t = rng.choice(app_servers + internal_svc)
+        if s != t: edges.append((s, t))
+            
     protocols = ["TCP", "TCP", "UDP", "TCP", "TCP"]
-    
-    for i in range(40):
-        t_stamp = base_ts + pd.Timedelta(seconds=i*45)
-        src = src_ips[i % len(src_ips)]
-        dst = dst_ips[i % len(dst_ips)]
+    num_flows = 150
+    for i in range(num_flows):
+        t_stamp = base_ts + pd.Timedelta(seconds=i*15)
+        src, dst = edges[i % len(edges)]
         proto = protocols[i % len(protocols)]
         fwd_p = int(rng.randint(12, 1450))
         bwd_p = int(rng.randint(8, 980))
         duration = float(rng.uniform(0.4, 62.5))
         bytes_s = float(rng.uniform(12000, 14800000))
-        hazard = float(min(0.99, max(0.02, 0.2 + (i / 40.0) * 0.75 + rng.normal(0, 0.05))))
+        hazard = float(min(0.99, max(0.02, 0.1 + (i / num_flows) * 0.85 + rng.normal(0, 0.05))))
         
         rows.append({
             "timestamp": t_stamp.strftime("%H:%M:%S.%f")[:-3],

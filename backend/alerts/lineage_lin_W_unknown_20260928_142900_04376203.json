@@ -1,0 +1,12 @@
+{
+  "lineage_id": "lin_W_unknown_20260928_142900_04376203",
+  "raw_data_hash": "04376203da2d3f756d38608ceb8c0be117275bd0aeacc9a62429be11745064a9",
+  "feature_hash": "bd3b58293c2a4c5ec2bc641001693dc00e7daef83fdd4cc4440cb018729aed81",
+  "feature_vector_type": "406-dim canonical engineered features (loss-free audit baseline)",
+  "model_id": "lstm_world_model_v4",
+  "prediction_hash": "6cadf61d1a97d8ceb93deebea76d3d0c4d46b01886369352c74f98e6e0eeee9c",
+  "severity": "HIGH",
+  "target_node": "10.0.14.88",
+  "timestamp": "2026-09-28 14:29:00+00:00",
+  "notarized_via": "sha256_fallback"
+}

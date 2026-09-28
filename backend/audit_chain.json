@@ -268,5 +268,95 @@
     "artifact_hash": "2b59ce51541add233ab4a4f890971c8249873f0791fc142deb0590fadeec4837",
     "prev_entry_hash": "f496a289d58dbde9119c9f3756dbfb06349e48637574e3a23895784b330002f6",
     "entry_hash": "f611da2dfba567409dd9d9e3d76fbf3a400b5e7504da6dece0b77b4129b8e48e"
+  },
+  {
+    "index": 27,
+    "timestamp": "2026-09-28T05:27:29.762839+00:00",
+    "artifact_path": "alerts/alert_89254793af2243f2.json",
+    "artifact_type": "hazard_alert",
+    "description": "Hazard alert 89254793af2243f2 [HIGH] (SHA-256 fallback)",
+    "artifact_hash": "a86502b32f6ca66f8747a4e215b64b54fd3e161678df0eaf9f7e499efe43ba1d",
+    "prev_entry_hash": "f611da2dfba567409dd9d9e3d76fbf3a400b5e7504da6dece0b77b4129b8e48e",
+    "entry_hash": "bae31d3a4edccefd640a6691c71cfd47a5edf76b2660e38f0c6312c59bd00e26"
+  },
+  {
+    "index": 28,
+    "timestamp": "2026-09-28T05:27:30.103208+00:00",
+    "artifact_path": "alerts/lineage_lin_W_14-02-2018_20180214_013900_ecf11455.json",
+    "artifact_type": "prediction_lineage",
+    "description": "Prediction lineage lin_W_14-02-2018_20180214_013900_ecf11455 [HIGH] (SHA-256 fallback)",
+    "artifact_hash": "7446150dcb60c979c06eb26971442472d84ee20c48ef933efce908d47daf6f20",
+    "prev_entry_hash": "bae31d3a4edccefd640a6691c71cfd47a5edf76b2660e38f0c6312c59bd00e26",
+    "entry_hash": "9fe824d4cfcf3ac283920a2911c869b5eee65fe9fa73c721bc28247d7fbecf1f"
+  },
+  {
+    "index": 29,
+    "timestamp": "2026-09-28T05:48:04.143291+00:00",
+    "artifact_path": "alerts/alert_2eb57efc40f4bb05.json",
+    "artifact_type": "hazard_alert",
+    "description": "Hazard alert 2eb57efc40f4bb05 [HIGH] (SHA-256 fallback)",
+    "artifact_hash": "287e6eb883cff91c19753c732ac64713c3b79d30bcbb7465056e599685f0e74a",
+    "prev_entry_hash": "9fe824d4cfcf3ac283920a2911c869b5eee65fe9fa73c721bc28247d7fbecf1f",
+    "entry_hash": "b56ade61605babe8dd77ec5d41b1b25fff04d1bd7bb61fa9f39d280d7f27a671"
+  },
+  {
+    "index": 30,
+    "timestamp": "2026-09-28T05:48:06.162319+00:00",
+    "artifact_path": "alerts/lineage_lin_W_unknown_20180214_090000_3490f3b2.json",
+    "artifact_type": "prediction_lineage",
+    "description": "Prediction lineage lin_W_unknown_20180214_090000_3490f3b2 [HIGH] (SHA-256 fallback)",
+    "artifact_hash": "9d7e292142bbe718a481e7848dda36301eded7b345def23c58aaf66c1146c0d3",
+    "prev_entry_hash": "b56ade61605babe8dd77ec5d41b1b25fff04d1bd7bb61fa9f39d280d7f27a671",
+    "entry_hash": "f044fa5a63e1ff1a30fb1e7c3d257e8c0e99279647eea7a05961ba020b181e11"
+  },
+  {
+    "index": 31,
+    "timestamp": "2026-09-28T06:25:37.193666+00:00",
+    "artifact_path": "alerts/alert_8e64b23a64ecce6a.json",
+    "artifact_type": "hazard_alert",
+    "description": "Hazard alert 8e64b23a64ecce6a [HIGH] (SHA-256 fallback)",
+    "artifact_hash": "b1476ba28fc19bc0ec631ec23a08b81f4d2408cef773570c36e66608b68daac8",
+    "prev_entry_hash": "f044fa5a63e1ff1a30fb1e7c3d257e8c0e99279647eea7a05961ba020b181e11",
+    "entry_hash": "dcc4292c109024a5c2e139834fd79b8f87de6fe15dab7f1534361cbaba3004a6"
+  },
+  {
+    "index": 32,
+    "timestamp": "2026-09-28T06:25:44.727716+00:00",
+    "artifact_path": "alerts/lineage_lin_W_unknown_20260928_142900_04376203.json",
+    "artifact_type": "prediction_lineage",
+    "description": "Prediction lineage lin_W_unknown_20260928_142900_04376203 [HIGH] (SHA-256 fallback)",
+    "artifact_hash": "353c2b724433063598bb913a8e3aec57e6dfc1ed931c39e89d14b56354b1e2ef",
+    "prev_entry_hash": "dcc4292c109024a5c2e139834fd79b8f87de6fe15dab7f1534361cbaba3004a6",
+    "entry_hash": "fa71d694c6f7a01bc51bac1a1b0f77872eeb35cf5135b35b855d7ea835f1d4b2"
+  },
+  {
+    "index": 33,
+    "timestamp": "2026-09-28T06:35:47.162198+00:00",
+    "artifact_path": "alerts/lineage_lin_W_unknown_20260928_142900_3f63e990.json",
+    "artifact_type": "prediction_lineage",
+    "description": "Prediction lineage lin_W_unknown_20260928_142900_3f63e990 [HIGH] (SHA-256 fallback)",
+    "artifact_hash": "caa1c12b6315bd25c35b4f4d227dc87724b946d31b6b56073d4223838a270d2c",
+    "prev_entry_hash": "fa71d694c6f7a01bc51bac1a1b0f77872eeb35cf5135b35b855d7ea835f1d4b2",
+    "entry_hash": "c4ec3cb9ca0ec7ab9f57e54a83de7971c7510d42b66352eeca81e4d5d3cc1015"
+  },
+  {
+    "index": 34,
+    "timestamp": "2026-09-28T07:29:21.088642+00:00",
+    "artifact_path": "alerts/alert_f855789b097eb387.json",
+    "artifact_type": "hazard_alert",
+    "description": "Hazard alert f855789b097eb387 [HIGH] (SHA-256 fallback)",
+    "artifact_hash": "ddf4b39096be405e2bd75abdd32a8b5db7ceffbbc8e50f2dc3124f8480f1bc8d",
+    "prev_entry_hash": "c4ec3cb9ca0ec7ab9f57e54a83de7971c7510d42b66352eeca81e4d5d3cc1015",
+    "entry_hash": "a22556ae7d51e3393eb114f76f805d62d5c2db26674bcfb8867b41b7397649ba"
+  },
+  {
+    "index": 35,
+    "timestamp": "2026-09-28T07:29:22.409852+00:00",
+    "artifact_path": "alerts/lineage_lin_W_unknown_20260928_143700_a780ad7d.json",
+    "artifact_type": "prediction_lineage",
+    "description": "Prediction lineage lin_W_unknown_20260928_143700_a780ad7d [HIGH] (SHA-256 fallback)",
+    "artifact_hash": "b5f7dc8c00b5372f6b92092dd475ce137fc7800a1fcffa798392ef165d534019",
+    "prev_entry_hash": "a22556ae7d51e3393eb114f76f805d62d5c2db26674bcfb8867b41b7397649ba",
+    "entry_hash": "2cc085d4e47103b9f514a3d927cedd945578a9469cb1b4f8e054ebe9218576fe"
   }
 ]

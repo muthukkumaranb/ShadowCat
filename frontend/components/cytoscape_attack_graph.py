@@ -409,8 +409,11 @@ def render_cytoscape_graph(
                             'border-color': '{node_base_border}',
                             'width': 'data(size)',
                             'height': 'data(size)',
-                            'transition-property': 'background-color, border-color, width, height',
-                            'transition-duration': '0.25s'
+                            'shadow-blur': 10,
+                            'shadow-color': '{node_base_bg}',
+                            'shadow-opacity': 0.3,
+                            'transition-property': 'background-color, border-color, width, height, shadow-opacity, shadow-blur, border-width',
+                            'transition-duration': '0.2s'
                         }}
                     }},
                     // Compromised Node style
@@ -422,7 +425,10 @@ def render_cytoscape_graph(
                             'border-width': 3,
                             'color': '#ffffff',
                             'font-weight': 'bold',
-                            'font-size': '10px'
+                            'font-size': '10px',
+                            'shadow-blur': 15,
+                            'shadow-color': '{secondary_sig}',
+                            'shadow-opacity': 0.8
                         }}
                     }},
                     {{
@@ -477,7 +483,10 @@ def render_cytoscape_graph(
                             'border-style': 'dashed',
                             'color': '{tertiary_sig}',
                             'font-weight': 'bold',
-                            'font-size': '10px'
+                            'font-size': '10px',
+                            'shadow-blur': 12,
+                            'shadow-color': '#000000',
+                            'shadow-opacity': 0.8
                         }}
                     }},
                     // Selection state
@@ -486,7 +495,24 @@ def render_cytoscape_graph(
                         style: {{
                             'border-color': '{primary_sig}',
                             'border-width': 4,
-                            'color': '{primary_sig}'
+                            'color': '{primary_sig}',
+                            'shadow-blur': 20,
+                            'shadow-color': '{primary_sig}',
+                            'shadow-opacity': 0.9,
+                            'width': 'calc(data(size) * 1.15)',
+                            'height': 'calc(data(size) * 1.15)'
+                        }}
+                    }},
+                    // Hover state
+                    {{
+                        selector: 'node.hovered',
+                        style: {{
+                            'border-width': 4,
+                            'width': 'calc(data(size) * 1.25)',
+                            'height': 'calc(data(size) * 1.25)',
+                            'shadow-blur': 25,
+                            'shadow-opacity': 1.0,
+                            'cursor': 'pointer'
                         }}
                     }},
                     // Standard Edges with Directional Arrows
@@ -617,6 +643,18 @@ def render_cytoscape_graph(
                 if (evt.target === cy) {{
                     cy.elements().style('opacity', 1.0);
                 }}
+            }});
+            
+            // Hover Interactions
+            cy.on('mouseover', 'node', function(evt) {{
+                evt.target.addClass('hovered');
+                const neighborhood = evt.target.closedNeighborhood();
+                cy.elements().not(neighborhood).style('opacity', 0.25);
+                neighborhood.style('opacity', 1.0);
+            }});
+            cy.on('mouseout', 'node', function(evt) {{
+                evt.target.removeClass('hovered');
+                cy.elements().style('opacity', 1.0);
             }});
 
             cy.fit(null, 30);

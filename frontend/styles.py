@@ -454,6 +454,15 @@ def get_custom_css(theme: Literal["dark", "light"] = "dark") -> str:
         border-color: {t["primary"]} !important;
         box-shadow: none !important;
     }}
+    
+    /* Radio and Checkbox Labels */
+    .stRadio [data-testid="stMarkdownContainer"],
+    .stRadio [data-testid="stMarkdownContainer"] p,
+    .stCheckbox [data-testid="stMarkdownContainer"],
+    .stCheckbox [data-testid="stMarkdownContainer"] p {{
+        color: {t["text_high"]} !important;
+        font-family: 'JetBrains Mono', monospace !important;
+    }}
 
     /* Streamlit Tabs (Pill Tabs) */
     .stTabs [data-baseweb="tab-list"] {{

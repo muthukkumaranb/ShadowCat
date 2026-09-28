@@ -216,7 +216,7 @@ def run_core_ml_inference(input_df: pd.DataFrame, source_type: str = "csv") -> D
         df = df.loc[:, ~df.columns.duplicated(keep="first")].copy()
 
     # Normalize timestamp column for UCSExtractor without duplicate keys
-    ts_cols = [c for c in df.columns if c.lower() in ("timestamp", "timestamp_utc", "time", "ts", "date")]
+    ts_cols = [c for c in df.columns if c.lower() in ("timestamp", "timestamp_utc", "time", "ts", "date", "starttime")]
     if ts_cols:
         ts_col = ts_cols[0]
         try:
@@ -235,6 +235,9 @@ def run_core_ml_inference(input_df: pd.DataFrame, source_type: str = "csv") -> D
     if "flow_duration_s" in df.columns and "Flow Duration" not in df.columns:
         df["Flow Duration"] = (df["flow_duration_s"] * 1000000).astype(int)
         df = df.drop(columns=["flow_duration_s"])
+    elif "Dur" in df.columns and "Flow Duration" not in df.columns:
+        df["Flow Duration"] = (df["Dur"] * 1000000).astype(int)
+        df = df.drop(columns=["Dur"])
     elif "Flow Duration" not in df.columns:
         df["Flow Duration"] = 500000
 
@@ -242,24 +245,57 @@ def run_core_ml_inference(input_df: pd.DataFrame, source_type: str = "csv") -> D
     if "tot_fwd_pkts" in df.columns and "Tot Fwd Pkts" not in df.columns:
         df["Tot Fwd Pkts"] = df["tot_fwd_pkts"]
         df = df.drop(columns=["tot_fwd_pkts"])
+    elif "TotPkts" in df.columns and "Tot Fwd Pkts" not in df.columns:
+        df["Tot Fwd Pkts"] = df["TotPkts"]
+    
+    if "TotBytes" in df.columns and "TotLen Fwd Pkts" not in df.columns:
+        df["TotLen Fwd Pkts"] = df["TotBytes"]
+    elif "flow_byts_s" in df.columns and "TotLen Fwd Pkts" not in df.columns:
+        df["TotLen Fwd Pkts"] = df["flow_byts_s"]
+    elif "TotLen Fwd Pkts" not in df.columns:
+        df["TotLen Fwd Pkts"] = 1000.0
+
     if "tot_bwd_pkts" in df.columns and "Tot Bwd Pkts" not in df.columns:
         df["Tot Bwd Pkts"] = df["tot_bwd_pkts"]
         df = df.drop(columns=["tot_bwd_pkts"])
+        
+    if "TotLen Bwd Pkts" not in df.columns:
+        df["TotLen Bwd Pkts"] = 1000.0
+        
     if "src_ip" in df.columns and "Src IP" not in df.columns:
         df["Src IP"] = df["src_ip"]
         df = df.drop(columns=["src_ip"])
+    elif "SrcAddr" in df.columns and "Src IP" not in df.columns:
+        df["Src IP"] = df["SrcAddr"]
+        df = df.drop(columns=["SrcAddr"])
+        
     if "dst_ip" in df.columns and "Dst IP" not in df.columns:
         df["Dst IP"] = df["dst_ip"]
         df = df.drop(columns=["dst_ip"])
+    elif "DstAddr" in df.columns and "Dst IP" not in df.columns:
+        df["Dst IP"] = df["DstAddr"]
+        df = df.drop(columns=["DstAddr"])
+        
     if "src_port" in df.columns and "Src Port" not in df.columns:
         df["Src Port"] = df["src_port"]
         df = df.drop(columns=["src_port"])
+    elif "Sport" in df.columns and "Src Port" not in df.columns:
+        df["Src Port"] = df["Sport"]
+        df = df.drop(columns=["Sport"])
+        
     if "dst_port" in df.columns and "Dst Port" not in df.columns:
         df["Dst Port"] = df["dst_port"]
         df = df.drop(columns=["dst_port"])
+    elif "Dport" in df.columns and "Dst Port" not in df.columns:
+        df["Dst Port"] = df["Dport"]
+        df = df.drop(columns=["Dport"])
+        
     if "protocol" in df.columns and "Protocol" not in df.columns:
         df["Protocol"] = df["protocol"].apply(lambda p: 6 if str(p).upper() == "TCP" else (17 if str(p).upper() == "UDP" else 6))
         df = df.drop(columns=["protocol"])
+    elif "Proto" in df.columns and "Protocol" not in df.columns:
+        df["Protocol"] = df["Proto"].apply(lambda p: 6 if str(p).upper() == "TCP" else (17 if str(p).upper() == "UDP" else 6))
+        df = df.drop(columns=["Proto"])
 
     # Final safeguard against any duplicate column names
     if df.columns.duplicated().any():
