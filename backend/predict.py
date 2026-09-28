@@ -773,12 +773,9 @@ class ShadowcatPipeline:
         risk_trajectory = step_hazards
 
         # Step 6: Stage Head Classification on Predicted Future State S_hat(t+1)
-        # Grounded against real MITRE ATT&CK STIX 2.1 knowledge base.
-        # Per validated ablation findings, only 'Credential Access' and 'Unknown/Other'
-        # are independently verified from model logits. If the model predicts other classes
-        # or cumulative risk indicates active progression, we provide a multi-step rollout trajectory.
-        # As mandated by audit standards (Option b), unvalidated horizons are explicitly flagged:
-        # 'heuristic stage-progression estimate, not model-classified'.
+        # Grounded against the real MITRE ATT&CK STIX 2.1 knowledge base.
+        # The model's real predicted stage and confidence are always reported honestly,
+        # for every class — no scripted fallback or heuristic substitution.
         stage_names = []
         tactic_ids = []
         mitre_details = []
