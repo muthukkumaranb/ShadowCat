@@ -52,7 +52,7 @@ def render_evidence_table(data, limit=None, *args, **kwargs):
 
     st.dataframe(
         styled_df,
-        use_container_width=True,
+        width='stretch',
         hide_index=True,
         column_config={
             "Flow ID": st.column_config.TextColumn("Flow ID", width="small"),

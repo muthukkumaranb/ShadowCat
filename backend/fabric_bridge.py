@@ -5,8 +5,10 @@ import tempfile
 import sys
 from typing import Optional, List, Dict, Any
 
+from pathlib import Path
+
 # The base directory where the fabric experiment resides on the Windows host
-FABRIC_HOST_ROOT = os.environ.get("SHADOWCAT_FABRIC_HOST_ROOT", r"D:\sih2026")
+FABRIC_HOST_ROOT = os.environ.get("SHADOWCAT_FABRIC_HOST_ROOT", str(Path(__file__).resolve().parents[1]))
 FABRIC_DIR = os.path.join(FABRIC_HOST_ROOT, "fabric-experiment")
 
 def _to_container_path(host_root: str) -> str:

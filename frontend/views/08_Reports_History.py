@@ -76,7 +76,7 @@ def render_page():
     with filter_cols[3]:
         st.markdown("")  # spacer
         st.markdown("")
-        refresh = st.button("⟳  Refresh", key="rh_refresh", use_container_width=True)
+        refresh = st.button("⟳  Refresh", key="rh_refresh", width='stretch')
 
     # ── Query ────────────────────────────────────────────────────────────
     severity_arg = None if sev_filter == "All" else sev_filter

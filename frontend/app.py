@@ -69,7 +69,7 @@ with header_col2:
     for i, (title, page_obj) in enumerate(nav_titles):
         with nav_cols[i]:
             is_active = (pg == page_obj)
-            if st.button(title, key=f"nav_{i}", type="primary" if is_active else "secondary", use_container_width=True):
+            if st.button(title, key=f"nav_{i}", type="primary" if is_active else "secondary", width='stretch'):
                 st.switch_page(page_obj)
 
 with header_col3:
@@ -85,7 +85,7 @@ with header_col3:
         """)
     with col_btn:
         btn_label = "DARK" if st.session_state.theme == "dark" else "LIGHT"
-        st.button(btn_label, on_click=toggle_theme, help="Toggle Light/Dark Theme", use_container_width=True)
+        st.button(btn_label, on_click=toggle_theme, help="Toggle Light/Dark Theme", width='stretch')
 
 render_html(f"<div style='border-bottom: 1px solid {t['border']}; margin-bottom: 1rem;'></div>")
 

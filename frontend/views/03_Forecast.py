@@ -246,7 +246,7 @@ def render_page():
         with b_col:
             is_active = (i == curr_k)
             btn_label = f"k = {i} [{'NOW' if i==0 else f'+{i*15}m'}]"
-            if st.button(btn_label, key=f"step_btn_{i}", type="primary" if is_active else "secondary", use_container_width=True):
+            if st.button(btn_label, key=f"step_btn_{i}", type="primary" if is_active else "secondary", width='stretch'):
                 st.session_state.forecast_k_step = i
                 st.rerun()
 
@@ -564,18 +564,18 @@ def render_page():
 
     p_col1, p_col2 = st.columns(2)
     with p_col1:
-        if st.button("Simulate Mitigation (Preview Hazard Drop)", use_container_width=True):
+        if st.button("Simulate Mitigation (Preview Hazard Drop)", width='stretch'):
             st.info("Simulated PB-608: Expected hazard drop -82% within 2 rollout intervals (t+15m to t+30m).")
     with p_col2:
         if not is_quarantined:
-            if st.button("Authorize Autonomous Quarantine", type="primary", use_container_width=True):
+            if st.button("Authorize Autonomous Quarantine", type="primary", width='stretch'):
                 st.session_state.quarantine_active = True
                 st.session_state.isolated_nodes.add("svc-auth-master")
                 st.session_state.isolated_nodes.add("ip-10-0-14-88")
                 st.success("Containment command broadcast to enclave SDN controller: Host svc-auth-master quarantined & isolated.")
                 st.rerun()
         else:
-            if st.button("Revoke Autonomous Quarantine (Restore Interconnect)", use_container_width=True):
+            if st.button("Revoke Autonomous Quarantine (Restore Interconnect)", width='stretch'):
                 st.session_state.quarantine_active = False
                 st.session_state.isolated_nodes.discard("svc-auth-master")
                 st.session_state.isolated_nodes.discard("ip-10-0-14-88")

@@ -135,7 +135,7 @@ def render_page():
         </div>
         """)
     with c_tab3:
-        if st.button("Load Demo Benchmark", use_container_width=True):
+        if st.button("Load Demo Benchmark", width='stretch'):
             benchmark_df = get_canonical_benchmark_df()
             st.session_state.ingested_df = benchmark_df
             st.session_state.ingested_source_name = "CSE-CIC-IDS2018-canonical-stream-40w.csv"
@@ -306,7 +306,7 @@ def render_page():
         </div>
     </div>
     """)
-    st.dataframe(active_df.head(12), use_container_width=True)
+    st.dataframe(active_df.head(12), width='stretch')
 
     # Primary Action & Execution Button — Full Width, Highly Visible
     render_html(f"""
@@ -355,7 +355,7 @@ def render_page():
     </style>
     """, unsafe_allow_html=True)
 
-    if st.button("EXECUTE CORE ML INFERENCE AND PREDICT", type="primary", use_container_width=True, help="Trigger live feature extraction and autoregressive world model inference"):
+    if st.button("EXECUTE CORE ML INFERENCE AND PREDICT", type="primary", width='stretch', help="Trigger live feature extraction and autoregressive world model inference"):
         with st.spinner("Executing UCSExtractor (406-dim continuous tensor) & LSTM Gaussian World Model..."):
             pred_result = run_core_ml_inference(active_df, source_type="csv")
             st.session_state["ml_prediction_result"] = pred_result

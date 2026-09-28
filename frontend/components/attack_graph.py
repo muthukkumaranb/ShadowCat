@@ -4,7 +4,7 @@ Renders enterprise host entities, active flow connections, and K-step forward si
 
 ADVANCED VISUAL & INTERACTIVE UPGRADES:
 1. Truncation Fix: Action buttons ("Inspect" and "Focus") utilize full half-columns with
-   compact styling and use_container_width=True, preventing any "In..." or "Fo..." truncation.
+   compact styling and width='stretch', preventing any "In..." or "Fo..." truncation.
 2. Highlighted Predicted Attack Path: Predicted lateral rollout edges render with distinct 4.5px stroke,
    GPU-accelerated animated marching ants, pulsing laser glow, and scaled prominent arrowheads.
 3. Dual-Dimension Node Encoding:
@@ -334,12 +334,12 @@ def render_attack_graph_panel():
             b_col1, b_col2 = st.columns(2)
             with b_col1:
                 btn_inspect_lbl = "Telemetry" if is_active_sel else "Inspect"
-                if st.button(btn_inspect_lbl, key=f"btn_inspect_{host_ip}", use_container_width=True, disabled=is_active_sel, help=f"Inspect telemetry trajectory and sockets for {host_ip}"):
+                if st.button(btn_inspect_lbl, key=f"btn_inspect_{host_ip}", width='stretch', disabled=is_active_sel, help=f"Inspect telemetry trajectory and sockets for {host_ip}"):
                     st.session_state["selected_graph_host"] = host_ip
                     st.rerun()
             with b_col2:
                 btn_focus_lbl = "Unfocus" if is_focused else "Focus"
-                if st.button(btn_focus_lbl, key=f"btn_focus_{host_ip}", use_container_width=True, help=f"Toggle 1-hop lateral blast radius isolation for {host_ip}"):
+                if st.button(btn_focus_lbl, key=f"btn_focus_{host_ip}", width='stretch', help=f"Toggle 1-hop lateral blast radius isolation for {host_ip}"):
                     st.session_state["focused_graph_host"] = None if is_focused else host_ip
                     st.session_state["selected_graph_host"] = host_ip
                     st.rerun()

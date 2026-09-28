@@ -213,7 +213,7 @@ def render_explanation_section(data):
         </div>
         """)
         fig = create_attribution_chart(explanation)
-        st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+        st.plotly_chart(fig, width='stretch', config={"displayModeBar": False})
 
     with col_signals:
         render_html(f"""

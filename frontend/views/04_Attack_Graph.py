@@ -191,7 +191,7 @@ def render_page():
     for i, s_col in enumerate(s_cols):
         with s_col:
             is_cur = (i == curr_k)
-            if st.button(f"{k_steps_info[i]['title']}\n{k_steps_info[i]['phase']}", key=f"att_k_{i}", type="primary" if is_cur else "secondary", use_container_width=True):
+            if st.button(f"{k_steps_info[i]['title']}\n{k_steps_info[i]['phase']}", key=f"att_k_{i}", type="primary" if is_cur else "secondary", width='stretch'):
                 st.session_state.attack_k_step = i
                 st.rerun()
 
@@ -458,12 +458,12 @@ def render_page():
 
             # Host Isolation Toggle
             if is_isolated:
-                if st.button(f"Restore Host Connectivity ({sel_node})", use_container_width=True):
+                if st.button(f"Restore Host Connectivity ({sel_node})", width='stretch'):
                     st.session_state.isolated_nodes.discard(sel_node)
                     st.success(f"Containment flag lifted: {sel_node} restored to active monitoring.")
                     st.rerun()
             else:
-                if st.button(f"Sever Host Connections & Isolate ({sel_node})", type="primary", use_container_width=True):
+                if st.button(f"Sever Host Connections & Isolate ({sel_node})", type="primary", width='stretch'):
                     st.session_state.isolated_nodes.add(sel_node)
                     st.warning(f"Containment flag recorded: {sel_node} marked for isolation in dashboard.")
                     st.rerun()
@@ -482,7 +482,7 @@ def render_page():
                 data=pcap_bytes,
                 file_name=f"forensic_trace_{sel_node}.pcap",
                 mime="application/vnd.tcpdump.pcap",
-                use_container_width=True
+                width='stretch'
             )
         else:
             # Visible failure handling when no endpoint data exists (fail visibly, not silently)
