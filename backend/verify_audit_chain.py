@@ -13,6 +13,7 @@ if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))
 
 from audit_chain import verify_chain, _load_chain
+from fabric_bridge import _is_docker_available
 
 if __name__ == "__main__":
     chain = _load_chain()
@@ -23,7 +24,12 @@ if __name__ == "__main__":
 
     is_valid, issues = verify_chain()
     if is_valid:
-        print("✅ AUDIT CHAIN VALID — all entries intact, no tampering detected.\n")
+        print("✅ AUDIT CHAIN VALID — all entries intact, no tampering detected.")
+        if not _is_docker_available():
+            print("[i] Docker: not found — Fabric notarization will use SHA-256 fallback (this is fine)\n")
+        else:
+            print("[i] Docker: available — Fabric notarization is supported\n")
+        
         for entry in chain:
             print(f"  [{entry['index']}] {entry['artifact_type']:<22} | {entry['entry_hash'][:16]}... | {entry['description']}")
         sys.exit(0)

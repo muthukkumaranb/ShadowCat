@@ -3,6 +3,7 @@ import json
 import os
 import tempfile
 import sys
+import shutil
 from typing import Optional, List, Dict, Any
 
 from pathlib import Path
@@ -19,11 +20,29 @@ def _to_container_path(host_root: str) -> str:
 
 FABRIC_CONTAINER_ROOT = _to_container_path(FABRIC_HOST_ROOT)
 
+_DOCKER_AVAILABLE = None
+
+def _is_docker_available() -> bool:
+    global _DOCKER_AVAILABLE
+    if _DOCKER_AVAILABLE is None:
+        if shutil.which("docker") is None:
+            _DOCKER_AVAILABLE = False
+        else:
+            try:
+                subprocess.run(["docker", "info"], capture_output=True, check=True, timeout=2)
+                _DOCKER_AVAILABLE = True
+            except Exception:
+                _DOCKER_AVAILABLE = False
+    return _DOCKER_AVAILABLE
+
 def _run_fabric_command(fcn, args):
     """
     Executes a chaincode command using a temporary bash script mapped into an ephemeral Ubuntu docker container.
     This avoids the missing 'cli' container and powershell escaping madness.
     """
+    if not _is_docker_available():
+        return False, "Docker not installed or not running — falling back to SHA-256 hash chain"
+
     # Construct the JSON arguments for the chaincode
     chaincode_args = {"function": fcn, "Args": [str(a) for a in args]}
     args_json = json.dumps(chaincode_args) 
@@ -71,6 +90,9 @@ def _query_fabric_command(fcn, args):
     """
     Executes a chaincode query.
     """
+    if not _is_docker_available():
+        return False, "Docker not installed or not running"
+
     chaincode_args = {"function": fcn, "Args": [str(a) for a in args]}
     args_json = json.dumps(chaincode_args)
 
@@ -115,7 +137,10 @@ def notarize_model(model_id: str, checkpoint_path: str, schema_path: str) -> boo
     if success:
         print(f"[+] Successfully notarized model: {model_id}")
     else:
-        print(f"[-] Failed to notarize model. Error:\n{out}")
+        if "Docker not installed or not running" in out:
+            print("[i] Hyperledger Fabric not available (Docker not found) — using SHA-256 fallback notarization instead.")
+        else:
+            print(f"[-] Failed to notarize model. Error:\n{out}")
     return success
 
 def notarize_alert(alert_hash: str, severity: str, timestamp: str) -> bool:
@@ -124,7 +149,10 @@ def notarize_alert(alert_hash: str, severity: str, timestamp: str) -> bool:
     if success:
         print(f"[+] Successfully notarized alert: {alert_hash}")
     else:
-        print(f"[-] Failed to notarize alert. Error:\n{out}")
+        if "Docker not installed or not running" in out:
+            print("[i] Hyperledger Fabric not available (Docker not found) — using SHA-256 fallback notarization instead.")
+        else:
+            print(f"[-] Failed to notarize alert. Error:\n{out}")
     return success
 
 def query_alert(alert_hash: str) -> Optional[dict]:
@@ -171,7 +199,10 @@ def record_prediction_lineage(
     if success:
         print(f"[+] Successfully recorded prediction lineage: {lineage_id}")
     else:
-        print(f"[-] Failed to record prediction lineage. Error:\n{out}")
+        if "Docker not installed or not running" in out:
+            print("[i] Hyperledger Fabric not available (Docker not found) — using SHA-256 fallback notarization instead.")
+        else:
+            print(f"[-] Failed to record prediction lineage. Error:\n{out}")
     return success
 
 def query_prediction_lineage(lineage_id: str) -> Optional[dict]:

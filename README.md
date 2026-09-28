@@ -112,6 +112,12 @@ Install the required packages for the data pipeline, PyTorch models, and Streaml
 pip install -r requirements.txt
 ```
 
+### Optional: Hyperledger Fabric Notarization
+The blockchain notarization layer requires Docker Desktop (docker.com) to be installed and running.
+This is OPTIONAL — if Docker isn't available, the pipeline automatically falls back to a SHA-256
+hash-chain notarization (`notarized_via: "sha256_fallback"`), and all forecasting/scoring/graph
+functionality works identically either way. Only the on-chain audit trail is affected.
+
 ### 4. Verify System Integrity
 Before launching the application, ensure all backend components and models are functioning correctly.
 

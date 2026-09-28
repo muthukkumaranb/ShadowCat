@@ -87,6 +87,9 @@ To answer the SIH theme (*Blockchain & Cybersecurity*) with genuine technical ri
 
 ### Two-Tier Notarization Architecture
 SHADOWCAT implements a real two-tier notarization design, with a live blockchain as the primary path and a cryptographic hash chain as a resilient fallback.
+
+**Optional Prerequisite:** The Fabric tier requires Docker Desktop (docker.com) to be installed and running. If Docker isn't available, the pipeline automatically uses the SHA-256 fallback (`notarized_via: "sha256_fallback"`), and all functionality remains intact.
+
 - **Primary Tier (Hyperledger Fabric):** The system connects to a real Go chaincode on a local Fabric test network (`shadowcat-notary-channel`). It records an atomic 4-stage prediction lineage (raw data, feature vector, model ID, prediction). The chaincode features autonomous incident response natively on-chain for HIGH/CRITICAL alerts.
 - **Fallback Tier (SHA-256 Hash Chain):** If the Fabric network is unreachable, the system automatically falls back to a cryptographic SHA-256 recursive hash chain to ensure uninterrupted, tamper-evident lineage without pipeline failure. Every record is tagged `notarized_via: "fabric"` or `"sha256_fallback"`.
 
