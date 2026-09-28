@@ -84,8 +84,8 @@ Follow these steps to set up the environment, verify the models, and launch the 
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/muthukkumaranb/shadowkutty.git
-cd shadowkutty
+git clone https://github.com/muthukkumaranb/ShadowCat.git
+cd ShadowCat
 ```
 
 ### 2. Set Up a Virtual Environment (Recommended)
