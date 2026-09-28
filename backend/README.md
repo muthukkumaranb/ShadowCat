@@ -10,7 +10,7 @@ The backend track serves as the unified runtime integration layer for the SHADOW
 backend/
 ├── __init__.py              # Package initialization
 ├── audit_chain.py           # Blockchain-inspired cryptographic hash-chain engine
-├── audit_chain.json         # Canonical tamper-evident audit ledger (37 verified blocks)
+├── audit_chain.json         # Canonical tamper-evident audit ledger (27 verified blocks)
 ├── benchmark_real_latency.py# Profiling script for end-to-end processing latency
 ├── build_audit_chain.py     # Script to generate/rebuild the canonical audit chain
 ├── conformal.py             # Conformal prediction utilities for calibrated uncertainty
@@ -101,7 +101,7 @@ python backend/smoke_test.py
 ```
 
 ### 2. Verify Audit Chain Integrity
-Walks all 37 chained blocks and validates byte-level SHA-256 matches:
+Walks all 27 chained blocks and validates byte-level SHA-256 matches:
 ```bash
 python backend/verify_audit_chain.py
 ```

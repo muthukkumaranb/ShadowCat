@@ -36,7 +36,7 @@
    │ 3. MULTI-HEAD FORECASTING & EXPLAINABILITY                                  │
    │         ┌────────────────────────────┴────────────────────────────┐         │
    │         ▼                                                         ▼         │
-   │   Hazard Head v3                                            Stage Head v3   │
+   │   Stacked Residual LSTM Ensemble                            Stage Head v3   │
    │   Multi-step Risk Trajectory                                MITRE ATT&CK    │
    │   (t+1 .. t+4 Horizons)                                     (Credential)    │
    │         │                                                         │         │
@@ -71,7 +71,7 @@
 | Directory | Track / Ownership | Description |
 | :--- | :--- | :--- |
 | [`/data-engineering`](data-engineering/README.md) | **Data Engineering Track** | Gate 0 protocols, UCS extraction pipeline, 406-D feature normalization, chronological splits, and purge+embargo zones. |
-| [`/ml1`](ml1/README.md) | **ML1 Track** | Causal LSTM world model ($z_t$), probabilistic next-state Gaussian transitions, Hazard Head v3, and Stage Head v3. |
+| [`/ml1`](ml1/README.md) | **ML1 Track** | Causal LSTM world model ($z_t$), probabilistic next-state Gaussian transitions, Stacked Residual LSTM Ensemble, and Stage Head v3. |
 | [`/ml2-full`](ml2-full/README.md) | **ML2 Track** | Graph representation learning and multimodal fusion ablation (`GNN_FINAL/ml2` is canonical; `gnn/` is exploratory/superseded). |
 | [`/backend`](backend/README.md) | **Backend Track** | Authoritative `predict()` inference boundary, smoke test suite, and blockchain-inspired SHA-256 hash-chain audit ledger. |
 | [`/frontend`](frontend/README.md) | **Frontend Track** | Interactive dark-mode Streamlit dashboard, dual-signal telemetry viewer, and scientific benchmark comparison panels. |
@@ -177,7 +177,7 @@ To stand up the real Fabric test-network layer yourself:
 | **Stage-Head Scope (v3)** | Validated on *Credential Access / Brute Force* vs background (v3), 0.8627 accuracy | [Stage Report v3](ml1/artifacts/lstm/stage_head_v3/reeval_packetcov/stage_head_report.md) |
 | **PC2 Significance Test (v3)** | Persistence baseline significantly outperforms autoregressive rollouts on PC2 | [PC2 Report v3](ml1/artifacts/lstm/probabilistic_world_model_v3/pc2_attack_significance_report.md) |
 | **Inference Contract Verification (v3)**| DE vs ML1 Scaler parameters match bit-for-bit (0 mismatches, 406-D) | [Contract Diff v3](data-engineering/data/ucs/CONTRACT_DIFF_REPORT.md) |
-| **Tamper-Evident Hash Chain** | 37 chained blocks covering all verified extraction, v4 models, and FPR-calibrated reports | [Audit Chain](backend/audit_chain.json) |
+| **Tamper-Evident Hash Chain** | 27 chained blocks covering all verified extraction, v4 models, and FPR-calibrated reports | [Audit Chain](backend/audit_chain.json) |
 
 ---
 
@@ -202,9 +202,8 @@ In accordance with scientific integrity and engineering transparency:
 6. **Telemetry Extraction (Option B):** Packet-level telemetry is now genuinely extracted for the SSH-Bruteforce (14-02-2018), DDOS-LOIC-UDP (21-02-2018), and Botnet (02-03-2018) PCAPs without label leakage.
 7. **Hazard FPR Constraints:** Hazard-head calibration is enforced using an explicit False Positive Rate ceiling (global τ=0.15, ≤5% false-alarm rate) to prevent alert fatigue.
 8. **Botnet Detection Shortfall:** Botnet onset detection remains a disclosed, unresolved limitation. Even with real packet telemetry, the signal-to-noise ratio is too weak (ROC-AUC ~0.63), which is insufficient for reliable, low-FPR alerting. This has not been artificially 'solved' via F1-only threshold manipulation.
-9. **Hazard Head Robustness:** Currently running an honest baseline fallback (0.05) due to an unrecoverable per-fold PCA scaler limitation; root cause documented, verified via direct testing, not a guess.
-10. **GraphSAGE Fusion:** Real per-window graph construction is now wired in as an explicitly labeled experimental/held-back output, separate from the primary verified forecast; the underlying ablation evidence (validation loss 1.666 vs 1.932) remains the reason it's not in the primary path.
-11. **Hyperledger Fabric Local Dependency:** The primary Hyperledger Fabric notarization path is not fully plug-and-play upon cloning the repository. It requires a local Fabric test-network running via Docker with the `shadowcat-notary-channel` and chaincode deployed, as the Windows path (`D:\sih2026\fabric-experiment`) is hardcoded in `backend/fabric_bridge.py`. Without this local network running, every notarization call gracefully and automatically falls back to the SHA-256 hash chain (`notarized_via="sha256_fallback"`).
+9. **GraphSAGE Fusion:** Real per-window graph construction is now wired in as an explicitly labeled experimental/held-back output, separate from the primary verified forecast; the underlying ablation evidence (validation loss 1.666 vs 1.932) remains the reason it's not in the primary path.
+10. **Hyperledger Fabric Local Dependency:** The primary Hyperledger Fabric notarization path is not fully plug-and-play upon cloning the repository. It requires a local Fabric test-network running via Docker with the `shadowcat-notary-channel` and chaincode deployed, as the Windows path (`D:\sih2026\fabric-experiment`) is hardcoded in `backend/fabric_bridge.py`. Without this local network running, every notarization call gracefully and automatically falls back to the SHA-256 hash chain (`notarized_via="sha256_fallback"`).
 
 ---
 
