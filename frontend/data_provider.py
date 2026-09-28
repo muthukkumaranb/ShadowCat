@@ -170,7 +170,7 @@ def _get_live_prediction() -> Dict[str, Any]:
         # Load canonical window slice for live demonstration
         parquet_path = REPO_ROOT / "data-engineering" / "data" / "ucs" / "ucs_windows.parquet"
         if parquet_path.exists():
-            df = pd.read_parquet(parquet_path).head(40).copy()
+            df = pd.read_parquet(parquet_path).head(2500).copy()
             _CACHED_LIVE_PREDICTION = predict(df, source_type="flows")
             return _CACHED_LIVE_PREDICTION
     except Exception as e:
