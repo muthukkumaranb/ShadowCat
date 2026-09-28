@@ -2,7 +2,7 @@
 
 **Branch:** `feature/competitive-edge-phase1`  
 **Date:** September 2026  
-**Auditor / Engineering Lead:** Shadowcat Security & ML Core Team  
+**Auditor / Engineering Lead:** ShadowCat Security & ML Core Team  
 **Verification Status:** Fully Verified across Live Hyperledger Fabric, Streamlit AppTest Suite, and 37-Fold LOEO ML Diagnostics  
 
 ---

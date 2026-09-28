@@ -1,6 +1,6 @@
 > [!WARNING]
 > **Exploratory GNN Work (Superseded)**
-> This directory contains the old, superseded exploratory UGR16-based subproject. It is **NOT** part of the canonical Shadowcat pipeline and should not be merged into the submission monorepo. It is kept here only for historical reference. The verified pipeline lives under GNN_FINAL/ml2/.
+> This directory contains the old, superseded exploratory UGR16-based subproject. It is **NOT** part of the canonical ShadowCat pipeline and should not be merged into the submission monorepo. It is kept here only for historical reference. The verified pipeline lives under GNN_FINAL/ml2/.
 # Graph-Based Cyber Attack Risk Forecasting (GNN Component)
 
 This module implements the **Graph Representation Encoder** for the SIH26153 World Model architecture.

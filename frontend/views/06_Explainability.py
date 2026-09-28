@@ -67,7 +67,7 @@ def render_page():
                     <span style="font-family: 'Inter', sans-serif; font-size: 0.6875rem; color: {t['text_muted']};">(Executive Briefing)</span>
                 </div>
                 <p style="font-family: 'Inter', sans-serif; font-size: 0.8125rem; color: {t['text_high']}; line-height: 1.5; margin: 0;">
-                    <b style="color:{t['primary']}">Understanding Threat Attribution:</b> SHAP (Shapley Additive exPlanations) and integrated gradients decompose Shadowcat's forward trajectory prediction into measurable contributions. Rather than treating neural predictions as an opaque black-box, this view surfaces exactly which network signals (packet structure, cadence anomalies, or host relationships) are driving the estimated <span style="font-family: 'JetBrains Mono'; font-weight: 700; color: {t['secondary']};">{risk_val:.3f}</span> risk horizon.
+                    <b style="color:{t['primary']}">Understanding Threat Attribution:</b> SHAP (Shapley Additive exPlanations) and integrated gradients decompose ShadowCat's forward trajectory prediction into measurable contributions. Rather than treating neural predictions as an opaque black-box, this view surfaces exactly which network signals (packet structure, cadence anomalies, or host relationships) are driving the estimated <span style="font-family: 'JetBrains Mono'; font-weight: 700; color: {t['secondary']};">{risk_val:.3f}</span> risk horizon.
                 </p>
             </div>
             <div style="background: {t['surface_card']}; border: 1px solid {t['border']}; border-radius: 4px; padding: 0.6rem 1.25rem; text-align: center;">

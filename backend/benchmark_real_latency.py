@@ -1,5 +1,5 @@
 """
-Real Latency Benchmark for Production Deployed Shadowcat Pipeline
+Real Latency Benchmark for Production Deployed ShadowCat Pipeline
 ==================================================================
 Measures genuine wall-clock inference latency on the actual deployed pipeline:
   1. Sequence ingestion & 406-dim feature extraction / tensor creation
@@ -221,7 +221,7 @@ def run_benchmark(n_trials: int = 30, n_warmup: int = 5, n_fabric_trials: int = 
         fabric_commit_stats = f"SKIPPED - Fabric unreachable during this run, {fabric_fallback_count}/{n_fabric_trials} trials fell back to sha256_fallback"
 
     results = {
-        "pipeline_name": "Shadowcat Stacked Residual LSTM + Graph Traversal",
+        "pipeline_name": "ShadowCat Stacked Residual LSTM + Graph Traversal",
         "benchmark_environment": {
             "platform": sys.platform,
             "python_version": sys.version.split()[0],

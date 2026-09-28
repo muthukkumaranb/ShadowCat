@@ -1,5 +1,5 @@
 {
-  "pipeline_name": "Shadowcat Stacked Residual LSTM + Graph Traversal",
+  "pipeline_name": "ShadowCat Stacked Residual LSTM + Graph Traversal",
   "benchmark_environment": {
     "platform": "win32",
     "python_version": "3.11.16",

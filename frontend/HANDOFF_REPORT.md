@@ -5,7 +5,7 @@
 **Project:** SHADOWCAT — Autonomous Pre-Emptive Cyber Threat Forecasting Platform  
 **Target:** NTRO PS 6153 (Air-Gapped Enterprise Network Defense)  
 **Status:** **100% Complete & Verified** · Ready for Live Backend Integration  
-**Commit Reference:** `8e31866` on `main` (`https://github.com/nehasatheeshann-hash/Shadowcat.git`)
+**Commit Reference:** `8e31866` on `main` (`https://github.com/nehasatheeshann-hash/ShadowCat.git`)
 
 ---
 
