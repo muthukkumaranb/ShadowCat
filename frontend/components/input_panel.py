@@ -84,7 +84,7 @@ def render_input_panel():
                 render_html("""
                 <div style="font-size: 0.78rem; color: #8A8A8A; margin-top: 6px; line-height: 1.5;">
                     <b>Dataset:</b> CSE-CIC-IDS2018 (Scenario: Infiltration & SSH Brute Force)<br>
-                    <b>Episode Length:</b> 60-second sliding windows (L=30 history lookback, K=4 forward rollout)
+                    <b>Episode Length:</b> 60-second sliding windows (L=30 history lookback, K=5 forward rollout)
                 </div>
                 """)
             with c_btn:

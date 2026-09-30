@@ -13,7 +13,7 @@ SHADOWCAT shifts perimeter defense from reactive signature matching to predictiv
 
 ## 2. Causal Temporal World Model
 The core of SHADOWCAT is a predictive world model that learns the latent dynamics of network traffic.
-* **Architecture:** A Stacked Residual LSTM Ensemble takes a 30-window temporal lookback to map $S_t$ to a 32-D latent representation ($z_t$).
+* **Architecture:** A Stacked Residual LSTM Ensemble takes a 30-window temporal lookback to map $S_t$ to a 64-D latent representation ($z_t$).
 * **Probabilistic Forecasting:** The model learns the transition dynamics $p(S_{t+1} | S_t)$, forecasting the probabilistic next-state of the network up to 5 minutes into the future ($H=5$).
 * **Graph Representation (Ablation):** While a GraphSAGE multimodal fusion branch (ML2) was explored for topological context, empirical ablation (Validation Loss 1.666 vs 1.932) led to it being held back in favor of the pure temporal model for the primary verified forecast.
 
