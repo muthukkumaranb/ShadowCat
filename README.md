@@ -38,7 +38,7 @@
    │         ▼                                                         ▼         │
    │   Stacked Residual LSTM Ensemble                            Stage Head v3   │
    │   Multi-step Risk Trajectory                                MITRE ATT&CK    │
-   │   (t+1 .. t+4 Horizons)                                     (Credential)    │
+   │   (t+1 .. t+5 Horizons)                                     (Credential)    │
    │         │                                                         │         │
    │         └────────────────────────────┬────────────────────────────┘         │
    │                                      ▼                                      │
