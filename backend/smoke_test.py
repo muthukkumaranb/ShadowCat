@@ -37,13 +37,13 @@ def run_smoke_test():
     print("\n[3] Verification Checks:")
     print(f"    - Window ID: {output['window_id']}")
     print(f"    - Is Warmup: {output['is_warmup']}")
-    print(f"    - Risk Trajectory [t+1..t+4]: {risks}")
+    print(f"    - Risk Trajectory [t+1..t+5]: {risks}")
     print(f"    - Stage Trajectory: {stages}")
     print(f"    - Novelty Score: {novelty['novelty_score']} ({novelty['novelty_status']})")
     print(f"    - Dominant Behavior: {novelty['dominant_behavior']}")
 
     # Assertions
-    assert len(risks) == 4, f"Expected 4 risk horizons, got {len(risks)}"
+    assert len(risks) == 5, f"Expected 5 risk horizons, got {len(risks)}"
     assert all(0.0 <= r <= 1.0 for r in risks), f"Risk values outside [0, 1]: {risks}"
     assert not all(r == 0.0 for r in risks), "Degenerate failure: all risks are exact 0.0"
     assert not any(np.isnan(r) for r in risks), "NaN values detected in risk scores"
@@ -81,7 +81,7 @@ def run_smoke_test():
 
     # Verify predict() output contains real MITRE metadata
     assert "mitre_details" in fc, "Forecast trajectory missing 'mitre_details'!"
-    assert len(fc["mitre_details"]) == 4, f"Expected 4 mitre_details entries, got {len(fc['mitre_details'])}"
+    assert len(fc["mitre_details"]) == 5, f"Expected 5 mitre_details entries, got {len(fc['mitre_details'])}"
     for idx, md in enumerate(fc["mitre_details"]):
         assert md["tactic_id"].startswith("TA"), f"Step {idx} invalid tactic_id: {md['tactic_id']}"
         assert md["technique_id"].startswith("T"), f"Step {idx} invalid technique_id: {md['technique_id']}"
@@ -114,12 +114,12 @@ def run_smoke_test():
     print(f"    - Conformal Sample Size: {cf.get('sample_size')}")
     print(f"    - Conformal Quantile: {cf.get('quantile')}")
     print(f"    - Conformal Coverage: {cf.get('coverage')}")
-    print(f"    - Conformal Intervals [t+1..t+4]: {cf.get('intervals')}")
+    print(f"    - Conformal Intervals [t+1..t+5]: {cf.get('intervals')}")
 
     assert cf.get("sample_size", 0) > 1000, f"Expected >1000 empirical residuals, got {cf.get('sample_size')} (placeholder detected!)"
     assert cf.get("quantile") is not None and 0.0 < cf.get("quantile") < 1.0, f"Invalid quantile: {cf.get('quantile')}"
     assert "Pooled validation residuals" in str(cf.get("calibration_source", "")), f"Expected real residuals, got: {cf.get('calibration_source')}"
-    assert len(cf.get("intervals", [])) == 4, "Expected 4 conformal intervals"
+    assert len(cf.get("intervals", [])) == 5, "Expected 5 conformal intervals"
     for iv in cf.get("intervals", []):
         assert len(iv) == 2, f"Invalid interval format: {iv}"
         assert 0.0 <= iv[0] <= iv[1] <= 1.0, f"Invalid interval bounds: {iv}"

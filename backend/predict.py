@@ -723,13 +723,13 @@ class ShadowcatPipeline:
             "graph_edges": edges_info,
         }
 
-        # 4-step forward simulation (Rollout K=1..4)
+        # 5-step forward simulation (Rollout K=1..5)
         rollout_means = []
         rollout_stds = []
         current_seq = seq_tensor.clone()
 
         with torch.no_grad():
-            for k in range(4):
+            for k in range(5):
                 k_mean, k_std = self.world_model(current_seq)
                 rollout_means.append(k_mean.cpu().numpy()[0])
                 rollout_stds.append(k_std.cpu().numpy()[0])
@@ -761,7 +761,7 @@ class ShadowcatPipeline:
         # Interpolate for H=3, 4
         h3 = float(np.clip(h2 + (1.0 / 3.0) * (h5 - h2), 0.0, 1.0))
         h4 = float(np.clip(h2 + (2.0 / 3.0) * (h5 - h2), 0.0, 1.0))
-        step_hazards = [h1, h2, h3, h4]
+        step_hazards = [h1, h2, h3, h4, h5]
 
         # Cumulative risk P(event <= K) = 1 - prod(1 - h_k)
         cum_risk = []
@@ -786,7 +786,7 @@ class ShadowcatPipeline:
         kb = get_mitre_kb()
 
         with torch.no_grad():
-            for k in range(4):
+            for k in range(5):
                 s_hat_k = torch.as_tensor(rollout_means[k], dtype=torch.float32).unsqueeze(0).to(self.device)
                 stage_logits = self.stage_head(s_hat_k)
                 stage_probs = torch.softmax(stage_logits, dim=-1).cpu().numpy()[0]
@@ -824,7 +824,7 @@ class ShadowcatPipeline:
         real_val_preds, real_val_targets, conformal_cal_source = self._get_conformal_calibration_data()
         conformal_predictor.calibrate(real_val_preds, real_val_targets)
 
-        for k in range(4):
+        for k in range(5):
             # Model uncertainty sigma based on dynamics standard deviation
             sigma = float(np.mean(rollout_stds[k]) * 0.15 + (k + 1) * 0.04)
             sigma = float(np.clip(sigma, 0.02, 0.35))
@@ -930,17 +930,18 @@ class ShadowcatPipeline:
             }
 
         # Step 11: Construct Output Payload per INTERFACE.md
-        lead_times = ["1m 00s", "2m 00s", "3m 00s", "4m 00s"]
+        lead_times = ["1m 00s", "2m 00s", "3m 00s", "4m 00s", "5m 00s"]
         labels = [
             "t+1 (1 min) [Validated]",
             "t+2 (2 min) [Validated]",
             "t+3 (3 min) [Validated]",
             "t+4 (4 min) [Exploratory Bound]",
+            "t+5 (5 min) [Exploratory Bound]",
         ]
 
         forecast_trajectory = {
             "window_id": window_id,
-            "horizons": [1, 2, 3, 4],
+            "horizons": [1, 2, 3, 4, 5],
             "labels": labels,
             "risk": [round(r, 2) for r in cum_risk],
             "stage": stage_names,
@@ -972,14 +973,14 @@ class ShadowcatPipeline:
             "active_model_folds": len(self.stacked_onset_models),
             "checkpoint_dir": str(self.stacked_base_dir / "onset"),
             "source_branch": "37-Fold Stacked Calibrated Residual LSTM Ensemble + 32-dim PCA (Active)",
-            "protocol": "Chronological Split (K=1..3 Validated, K=4 Exploratory)",
+            "protocol": "Chronological Split (K=1..3 Validated, K=5 Exploratory)",
             "hazard_epistemic_note": "37-fold LOEO Stacked Residual LSTM ensemble actively evaluating input sequence across 32 PCA dimensions with behavioral drift modulation.",
             "is_mock": False,
         }
 
         # Pack raw steps for legacy aggregator compatibility
         raw_steps = []
-        for k in range(4):
+        for k in range(5):
             raw_steps.append({
                 "step": k + 1,
                 "horizon": labels[k],
@@ -1041,11 +1042,11 @@ class ShadowcatPipeline:
             "source": f"LIVE INFERENCE: {source_type.upper()} Stream",
             "sensor_id": "TAP-DMZ-01",
             "sensor_throughput": "10Gbps Ingress",
-            "window": "t+1 → t+4 (Live Operational)",
+            "window": "t+1 → t+5 (Live Operational)",
             "window_duration": "60s",
             "duration_sec": 60,
             "lookback_windows": 30,
-            "rollout_horizons": 4,
+            "rollout_horizons": 5,
             "timestamp": window_start,
             "is_mock": False,
         }

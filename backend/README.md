@@ -67,7 +67,7 @@ Input DataFrame (Flows / Windows)
 Stacked Residual LSTM Ensemble (37-fold)     Stage Head v3
 (Multi-horizon     (ATT&CK stage
  risk trajectory   classification:
- t+1 .. t+4)       Credential Access)
+ t+1 .. t+5)       Credential Access)
       │                 │
       └────────┬────────┘
                │

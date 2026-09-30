@@ -13,7 +13,7 @@ ADVANCED VISUAL & INTERACTIVE UPGRADES:
      Tier 2 Gateways/Auth: 30px, Tier 3 Endpoints/Storage: 24px).
 4. Compact In-Canvas Legend: Unobtrusively documents Risk Colors, Asset Criticality Sizing, and Path Strokes.
 5. Smooth Horizon Transitions: Offline GPU-accelerated CSS transitions for color interpolation and
-   progressive lateral unfolding as K advances from t to t+4.
+   progressive lateral unfolding as K advances from t to t+5.
 6. Blast Radius Isolation & Hover Tooltips: Interactive node tooltips on hover; clicking Focus dims
    all unconnected nodes/edges to 0.15 opacity, isolating the target host's direct lateral blast radius.
 
@@ -206,9 +206,9 @@ def render_attack_graph_panel():
     col_slider, col_unc_badge = st.columns([2.5, 1.5])
     with col_slider:
         k_step = st.slider(
-            "Select Forward Rollout Horizon (t → t+4):",
+            "Select Forward Rollout Horizon (t → t+5):",
             min_value=0,
-            max_value=4,
+            max_value=5,
             value=current_k,
             step=1,
             format="Step %d",
@@ -356,9 +356,9 @@ def render_attack_graph_panel():
             "containment_stance": "Audit incoming connections.",
         })
 
-        # Calculate multi-horizon trajectory progression for selected host across t -> t+4
+        # Calculate multi-horizon trajectory progression for selected host across t -> t+5
         traj_cells = []
-        for h_idx in range(5):
+        for h_idx in range(6):
             h_step = graph_data["rollout_steps"][h_idx]
             h_code = h_step["horizon_code"]
             h_hr = h_step["host_risks"].get(selected_host_id, {"risk": 0.0, "uncertainty": 0.0})
@@ -415,7 +415,7 @@ def render_attack_graph_panel():
             </div>
 
             <div style="font-size: 0.72rem; color: #8A8A8A; margin-bottom: 4px; font-weight: 600;">
-                Forward Risk Trajectory Progression (t → t+4):
+                Forward Risk Trajectory Progression (t → t+5):
             </div>
             {traj_strip_html}
 

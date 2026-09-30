@@ -72,11 +72,11 @@ def test_forecast_view_edge_cases():
     print("[PASS] Horizon index 0 (immediate horizon) renders cleanly.")
 
     at3 = AppTest.from_file(str(ROOT / "views" / "03_Forecast.py"), default_timeout=30)
-    at3.session_state["forecast_k_step"] = 3
-    at3.session_state["selected_horizon_idx"] = 3
+    at3.session_state["forecast_k_step"] = 4
+    at3.session_state["selected_horizon_idx"] = 4
     at3.run()
-    assert not at3.exception, f"Horizon index 3 (cutoff horizon t+4) failed: {at3.exception}"
-    print("[PASS] Horizon index 3 (cutoff horizon t+4) renders cleanly.")
+    assert not at3.exception, f"Horizon index 4 (cutoff horizon t+5) failed: {at3.exception}"
+    print("[PASS] Horizon index 4 (cutoff horizon t+5) renders cleanly.")
 
 
 def test_evidence_view_edge_cases():

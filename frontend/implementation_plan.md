@@ -123,7 +123,9 @@ DEMO_DATA = {
         {"horizon": "t+3", "time_ahead": "3 min", "stage": "Lateral Movement",
          "probability": 0.67, "uncertainty": 0.18},       # uncertainty grows with K
         {"horizon": "t+4", "time_ahead": "4 min", "stage": "Impact",
-         "probability": 0.81, "uncertainty": 0.27},       # highest uncertainty at K=4
+         "probability": 0.81, "uncertainty": 0.27},       # uncertainty grows with K
+        {"horizon": "t+5", "time_ahead": "5 min", "stage": "Impact",
+         "probability": 0.86, "uncertainty": 0.32},       # highest uncertainty at K=5
     ],
 
     "explanation": [
@@ -229,7 +231,7 @@ not-today-hackers/
 | # | Section | PPT Feature Covered |
 |---|---------|-------------------|
 | 1 | **Forecast trajectory with uncertainty bands** | Slide 2: K-step rollout, Slide 4: autoregressive error growth |
-| 2 | **Horizon selector:** [t+1] [t+2] [t+3] [t+4] | Slide 2: S(t+1)…S(t+k), Slide 4: validated forecast horizons |
+| 2 | **Horizon selector:** [t+1] [t+2] [t+3] [t+4] [t+5] | Slide 2: S(t+1)…S(t+k), Slide 4: validated forecast horizons |
 | 3 | **Selected step detail:** stage, probability, uncertainty, time | Slide 2: Probability + Uncertainty + Stage |
 | 4 | **Probability trajectory:** bar chart per step | Slide 3: Probability Trajectory |
 | 5 | **Stage trajectory:** sequential stage display | Slide 3: Stage Trajectory |
@@ -280,7 +282,7 @@ Probability 1.0 ┤
             0.2 ┤         ●───╱
                 │   ◆    ╱
             0.0 ┤───┼───┼─────────────────────
-                   Now  t+1   t+2   t+3   t+4
+                   Now  t+1   t+2   t+3   t+4   t+5
 ```
 
 - **Bands = probability ± uncertainty** at each step
@@ -313,7 +315,7 @@ New section on the **Forecast page** (maps to Slide 2 USP):
 │    0.2 ┤   ●───╱    ○- - -○                                  │
 │        │  ╱   ○- - -○                                        │
 │    0.0 ┤─────────────────────────                            │
-│          t+1   t+2   t+3   t+4                               │
+│          t+1   t+2   t+3   t+4   t+5                         │
 │                                                             │
 │  Estimated risk reduction: 58%                               │
 │                                                             │

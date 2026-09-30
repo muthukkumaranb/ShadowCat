@@ -32,7 +32,7 @@ def test_benign_sequence():
     stage_predictions = result.get('stage_predictions', [])
     
     print("\n[3] Verification Checks:")
-    print(f"    - Risk Trajectory [t+1..t+4]: {risk_scores}")
+    print(f"    - Risk Trajectory [t+1..t+5]: {risk_scores}")
     print(f"    - Stage Trajectory: {stage_predictions}")
     
     # Assert that hazard alert does not fire

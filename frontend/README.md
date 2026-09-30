@@ -14,7 +14,7 @@ frontend/
 ├── views/
 │   ├── 01_Telemetry_Ingestion.py # Network flow ingestion & real-time telemetry analyzer
 │   ├── 02_Overview.py            # Platform specs, threat models & architecture handbook
-│   ├── 03_Forecast.py            # Live risk forecasting & pre-emptive trajectory (t+1..t+4)
+│   ├── 03_Forecast.py            # Live risk forecasting & pre-emptive trajectory (t+1..t+5)
 │   ├── 04_Attack_Graph.py        # Explainable graph diffusion simulation across real network topology edges
 │   ├── 05_Alerts.py              # Security telemetry, anomaly alerts, and dynamic filtering pipeline
 │   ├── 06_Explainability.py      # Telemetry evidence, dual-signal evaluation & attributions
@@ -30,7 +30,7 @@ frontend/
 ## Key Features & Capabilities
 
 1. **Pre-Emptive Lead Time Visualization**:
-   - Visualizes multi-step hazard trajectories across forecasting horizons ($t+1$ to $t+4$).
+   - Visualizes multi-step hazard trajectories across forecasting horizons ($t+1$ to $t+5$).
    - Displays estimated pre-emptive lead time (up to 3.5 minutes prior to reactive signature detection).
 2. **Dual-Signal Telemetry Evaluation**:
    - Separates **Known Attack Risk** (hazard trajectory) from **Novelty Drift** (Gaussian NLL anomaly score).

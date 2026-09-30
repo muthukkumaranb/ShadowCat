@@ -11,7 +11,7 @@ def render_header(data):
     """Renders the sticky pinned status banner and slim persistent top bar."""
     analysis = data["analysis"]
     telemetry_source = st.session_state.get("telemetry_source", "BENCHMARK: CIC-IDS2018 (Infiltration)")
-    window_str = st.session_state.get("window_str", analysis.get("window", "t+1 → t+4 (Active)"))
+    window_str = st.session_state.get("window_str", analysis.get("window", "t+1 → t+5 (Active)"))
 
     short_feed = telemetry_source.replace("BENCHMARK: ", "").replace(" (Infiltration)", "")
     inf_status = inference_status()

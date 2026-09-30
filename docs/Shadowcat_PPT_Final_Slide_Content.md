@@ -9,7 +9,7 @@
 * **Unified Cyber State (UCS):** Ingests raw NetFlows and Scapy-extracted packets into a 406-D feature vector ($S_t$) using 1-minute window aggregation.
 * **Temporal World Model:** A Causal LSTM (30-window lookback) predicts network state dynamics $p(S_{t+1} | S_t)$.
 * **Multi-Head Analysis:**
-  * **Stacked & Calibrated Residual LSTM Ensemble:** Multi-step risk trajectories (t+1 .. t+4).
+  * **Stacked & Calibrated Residual LSTM Ensemble:** Multi-step risk trajectories (t+1 .. t+5).
   * **Stage Head:** MITRE ATT&CK classification mapping.
 
 ## Slide 3: Real Packet Coverage & Explainability

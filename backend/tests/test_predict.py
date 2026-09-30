@@ -103,10 +103,10 @@ class TestBackendPipeline(unittest.TestCase):
 
             # Check forecast trajectory schema
             fc = res["forecast_trajectory"]
-            self.assertEqual(len(fc["horizons"]), 4)
-            self.assertEqual(len(fc["risk"]), 4)
-            self.assertEqual(len(fc["stage"]), 4)
-            self.assertEqual(len(fc["uncertainty"]), 4)
+            self.assertEqual(len(fc["horizons"]), 5)
+            self.assertEqual(len(fc["risk"]), 5)
+            self.assertEqual(len(fc["stage"]), 5)
+            self.assertEqual(len(fc["uncertainty"]), 5)
 
             # Check probability bounds
             for r in fc["risk"]:
@@ -150,7 +150,7 @@ class TestBackendPipeline(unittest.TestCase):
         self.assertIn("attributions", res)
 
         fc = res["forecast_trajectory"]
-        self.assertEqual(len(fc["risk"]), 4)
+        self.assertEqual(len(fc["risk"]), 5)
         for r in fc["risk"]:
             self.assertGreaterEqual(r, 0.0)
             self.assertLessEqual(r, 1.0)

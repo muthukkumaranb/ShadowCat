@@ -4,7 +4,7 @@ Performs:
 1. Scaler Parameter Sanity Check (DE vs ML1 v2)
 2. Signature IDS Verification Search across all repos
 3. Hazard Ensemble Timing Benchmark (37 folds)
-4. Rollout Horizon Audit (K=3 validated vs K=4 exploratory)
+4. Rollout Horizon Audit (K=1..3 validated vs K=5 exploratory)
 """
 
 import os

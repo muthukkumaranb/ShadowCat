@@ -26,9 +26,9 @@ def _clean_prob(val, default=0.0):
 def create_forecast_chart(forecast_data):
     """
     Creates an executive-grade Plotly chart showing the attack risk probability trajectory
-    with growing epistemic uncertainty bands across forecast horizons K=1..4.
+    with growing epistemic uncertainty bands across forecast horizons K=1..5.
     """
-    x_labels = ["Now (t)", "t+1 (1 min)", "t+2 (2 min)", "t+3 (3 min)", "t+4 (4 min)"]
+    x_labels = ["Now (t)", "t+1 (1 min)", "t+2 (2 min)", "t+3 (3 min)", "t+4 (4 min)", "t+5 (5 min)"]
     probs = [0.06] + [_clean_prob(step.get("probability")) for step in forecast_data]
     lower_bounds = [0.06] + [_clean_prob(step.get("lower_bound")) for step in forecast_data]
     upper_bounds = [0.06] + [_clean_prob(step.get("upper_bound"), default=1.0) for step in forecast_data]

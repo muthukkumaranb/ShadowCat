@@ -351,8 +351,8 @@ def render_page():
     c_coverage = conformal.get("coverage", 0.90)
 
     conf_cards = ""
-    horizons = ["t+1 (1 min)", "t+2 (2 min)", "t+3 (3 min)", "t+4 (4 min)"]
-    risks = fc.get("risk", [0.05, 0.08, 0.12, 0.15])
+    horizons = ["t+1 (1 min)", "t+2 (2 min)", "t+3 (3 min)", "t+4 (4 min)", "t+5 (5 min)"]
+    risks = fc.get("risk", [0.05, 0.08, 0.12, 0.15, 0.18])
     for h_i, (h_lbl, r_pt) in enumerate(zip(horizons, risks)):
         if h_i < len(c_intervals):
             c_lb, c_ub = c_intervals[h_i]

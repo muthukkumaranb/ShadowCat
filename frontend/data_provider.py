@@ -336,11 +336,11 @@ def get_analysis_metadata() -> dict:
         "source": meta.get("source", "LIVE PIPELINE: CSE-CIC-IDS2018 (Infiltration)"),
         "sensor_id": meta.get("sensor_id", "TAP-DMZ-01"),
         "sensor_throughput": meta.get("sensor_throughput", "10Gbps Ingress"),
-        "window": meta.get("window", "t+1 → t+4 (Live Operational)"),
+        "window": meta.get("window", "t+1 → t+5 (Live Operational)"),
         "window_duration": "60s",
         "duration_sec": 60,
         "lookback_windows": 30,
-        "rollout_horizons": 4,
+        "rollout_horizons": 5,
         "timestamp": meta.get("timestamp", "2026-09-10 12:00:00 UTC"),
         "is_mock": is_using_mock_data("analysis_metadata"),
     }
@@ -348,7 +348,7 @@ def get_analysis_metadata() -> dict:
 
 def get_forecast_trajectory(window_id: str = None) -> dict:
     """
-    Returns multi-step forward trajectory simulation across K=1..4 horizons,
+    Returns multi-step forward trajectory simulation across K=1..5 horizons,
     including risk probabilities, stage mapping, calibrated uncertainty, and protocol metadata.
     Consumed by: views/03_Forecast.py, components/forecast.py
     """
@@ -607,7 +607,7 @@ def get_host_risk_graph(episode_id: str = None, k_step: int = 2) -> dict:
             "horizon_code": "t+4",
             "uncertainty_sigma": 0.27,
             "uncertainty_label": "±27% (Epistemic Drift Limit)",
-            "uncertainty_tier": "Maximum Horizon Bound",
+            "uncertainty_tier": "Exploratory Horizon Bound",
             "uncertainty_color": "#E5484D",
             "summary": "Privileged persistence on Domain Controller; replication traffic initiated.",
             "active_edges": [
@@ -620,6 +620,25 @@ def get_host_risk_graph(episode_id: str = None, k_step: int = 2) -> dict:
                 "10.0.4.10": {"risk": 0.91, "uncertainty": 0.18},
                 "10.0.2.15": {"risk": 0.96, "uncertainty": 0.12},
                 "10.0.3.50": {"risk": 0.42, "uncertainty": 0.24},
+            },
+        },
+        5: {
+            "label": "Horizon t+5 (+5 min Rollout)",
+            "horizon_code": "t+5",
+            "uncertainty_sigma": 0.32,
+            "uncertainty_label": "±32% (Exploratory Epistemic Bound)",
+            "uncertainty_tier": "Maximum Horizon Bound",
+            "uncertainty_color": "#E5484D",
+            "summary": "Full domain compromise / data exfiltration impact across enterprise core.",
+            "active_edges": [
+                ("10.0.5.1", "10.0.3.50", "Exfiltration Stream"),
+            ],
+            "host_risks": {
+                "10.0.5.1": {"risk": 0.89, "uncertainty": 0.31},
+                "10.0.4.21": {"risk": 0.85, "uncertainty": 0.25},
+                "10.0.4.10": {"risk": 0.93, "uncertainty": 0.20},
+                "10.0.2.15": {"risk": 0.97, "uncertainty": 0.14},
+                "10.0.3.50": {"risk": 0.51, "uncertainty": 0.29},
             },
         },
     }
@@ -777,7 +796,7 @@ def get_mitre_data() -> list[dict]:
                 ("Initial Access", 0.78, "Active (Current)"),
                 ("Credential Access", 0.67, "Forecast (t+1)"),
                 ("Lateral Movement", 0.54, "Forecast (t+2)"),
-                ("Impact", 0.38, "Forecast (t+4)"),
+                ("Impact", 0.38, "Forecast (t+5)"),
             ]:
                 res = kb.resolve_stage(name)
                 stages.append({
@@ -801,7 +820,7 @@ def get_mitre_data() -> list[dict]:
                 {"stage": "Initial Access", "id": "T1190", "tactic_id": "TA0001", "technique_id": "T1190", "technique_name": "Exploit Public-Facing Application", "technique_full_name": "Exploit Public-Facing Application", "technique_url": "https://attack.mitre.org/techniques/T1190", "description": "Boundary authentication probing and credential spray against DMZ jump host", "confidence": 0.78, "status": "Active (Current)"},
                 {"stage": "Credential Access", "id": "T1110.001", "tactic_id": "TA0006", "technique_id": "T1110.001", "technique_name": "Password Guessing", "technique_full_name": "Brute Force: Password Guessing", "technique_url": "https://attack.mitre.org/techniques/T1110/001", "description": "SSH credential brute-force and Kerberos ticket request anomaly", "confidence": 0.67, "status": "Forecast (t+1)"},
                 {"stage": "Lateral Movement", "id": "T1021.002", "tactic_id": "TA0008", "technique_id": "T1021.002", "technique_name": "SMB/Windows Admin Shares", "technique_full_name": "Remote Services: SMB/Windows Admin Shares", "technique_url": "https://attack.mitre.org/techniques/T1021/002", "description": "Anticipated internal jump host session pivot to Auth Cluster (10.0.4.21)", "confidence": 0.54, "status": "Forecast (t+2)"},
-                {"stage": "Impact", "id": "T1498.001", "tactic_id": "TA0040", "technique_id": "T1498.001", "technique_name": "Direct Network Flood", "technique_full_name": "Network Denial of Service: Direct Network Flood", "technique_url": "https://attack.mitre.org/techniques/T1498/001", "description": "Domain controller replication traffic / service compromise risk", "confidence": 0.38, "status": "Forecast (t+4)"},
+                {"stage": "Impact", "id": "T1498.001", "tactic_id": "TA0040", "technique_id": "T1498.001", "technique_name": "Direct Network Flood", "technique_full_name": "Network Denial of Service: Direct Network Flood", "technique_url": "https://attack.mitre.org/techniques/T1498/001", "description": "Domain controller replication traffic / service compromise risk", "confidence": 0.38, "status": "Forecast (t+5)"},
             ]
     for s in stages:
         s["is_mock"] = is_using_mock_data("mitre_data")

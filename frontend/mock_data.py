@@ -80,6 +80,19 @@ DEMO_DATA = {
             "confidence_band": "High Uncertainty / Compounding Drift (±27%)",
             "lead_time": "4m 00s",
         },
+        {
+            "step": 5,
+            "horizon": "t+5",
+            "time_ahead": "5 min",
+            "stage": "Impact",
+            "probability": 0.86,
+            "uncertainty": 0.32,
+            "lower_bound": 0.54,
+            "upper_bound": 1.00,
+            "tactic_id": "TA0040",
+            "confidence_band": "Exploratory Horizon / Epistemic Bound (±32%)",
+            "lead_time": "5m 00s",
+        },
     ],
 
     # Explainability: Feature-group ablation & deletion validation

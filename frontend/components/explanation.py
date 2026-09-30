@@ -160,7 +160,7 @@ def render_attack_stepper(mitre_data, current_step_idx=2):
                 </div>
                 {tech_sub}
                 <div style="font-size: 0.68rem; color: #666666; margin-top: 2px;">
-                    Horizon t+4 (Rollout)
+                    Horizon t+5 (Rollout)
                 </div>
                 <details style="margin-top: 6px; cursor: pointer;">
                     <summary style="font-size: 0.70rem; color: #666666; font-weight: 600; outline: none; user-select: none;">
