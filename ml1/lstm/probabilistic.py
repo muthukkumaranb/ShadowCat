@@ -225,7 +225,7 @@ def train_gaussian(
                 "hidden_size": model.lstm.hidden_size if hasattr(model, 'lstm') else 0,
                 "num_layers": model.lstm.num_layers if hasattr(model, 'lstm') else 0,
             }
-            status_path = Path("d:/sih2026/scratch/live_lstm_status.json")
+            status_path = Path(__file__).resolve().parents[2] / "scratch" / "live_lstm_status.json"
             status_path.parent.mkdir(parents=True, exist_ok=True)
             status_path.write_text(json.dumps(status), encoding="utf-8")
         except Exception:
