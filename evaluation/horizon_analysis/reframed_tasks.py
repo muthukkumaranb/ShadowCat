@@ -17,7 +17,14 @@ from ml1.lstm.ucs import UCSConfig, validate_ucs_windows
 def get_device():
     return torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+def set_seed(seed=42):
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+
 def main():
+    set_seed(42)
     device = get_device()
     
     # 1. Load Dataset
@@ -71,7 +78,7 @@ def main():
     world_model.eval()
     
     # 3. Rolling-Origin Setup
-    origins = [0.9] # using different training end points
+    origins = [0.5, 0.6, 0.7, 0.8, 0.9] # using different training end points
     purge_windows = config.purge_embargo_width
     lookback = config.lookback_windows
     
@@ -118,7 +125,6 @@ def main():
                 train_reps[k+1] = mean_next_train.cpu().numpy()
                 curr_seq_train = torch.cat([curr_seq_train[:, 1:, :], mean_next_train.unsqueeze(1)], dim=1)
                 
-        print(f"Split {split_ratio} - Train shape: {train_df.shape}")
         # Train linear models for each K
         bin_models = {}
         ttnt_models = {}
@@ -127,7 +133,6 @@ def main():
         scalers = {}
         
         for k in range(1, 6):
-            print(f"Training K={k} models")
             y_bin = np.array([train_bin[s+lookback+k-1] for s in valid_starts_train])
             y_ttnt = np.array([train_ttnt[s+lookback+k-1] for s in valid_starts_train])
             
@@ -135,7 +140,7 @@ def main():
             X_scaled = scaler.fit_transform(train_reps[k])
             scalers[k] = scaler
             
-            clf = LogisticRegression(solver='liblinear', max_iter=100, class_weight='balanced')
+            clf = LogisticRegression(solver='liblinear', max_iter=100, class_weight='balanced', random_state=42)
             clf.fit(X_scaled, y_bin)
             bin_models[k] = clf
             
