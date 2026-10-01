@@ -163,8 +163,24 @@ def main():
         
         _, _, f1_orig, _ = precision_recall_fscore_support(y_true_k, orig_p, average='weighted', zero_division=0)
         _, _, f1_mimo, _ = precision_recall_fscore_support(y_true_k, mimo_p, average='weighted', zero_division=0)
+        _, _, f1_orig_macro, _ = precision_recall_fscore_support(y_true_k, orig_p, average='macro', zero_division=0)
+        _, _, f1_mimo_macro, _ = precision_recall_fscore_support(y_true_k, mimo_p, average='macro', zero_division=0)
         
-        print(f"K={k_val} - Recursive F1 (Weighted): {f1_orig:.4f} | MIMO F1 (Weighted): {f1_mimo:.4f}")
+        _, _, f1_orig_cls, _ = precision_recall_fscore_support(y_true_k, orig_p, average=None, labels=range(len(stage_classes)), zero_division=0)
+        _, _, f1_mimo_cls, _ = precision_recall_fscore_support(y_true_k, mimo_p, average=None, labels=range(len(stage_classes)), zero_division=0)
+        
+        print(f"\n=== Horizon K={k_val} ===")
+        print(f"{'Class Name':<25} | {'Recursive F1':<12} | {'MIMO F1':<10} | {'Delta':<8}")
+        print("-" * 65)
+        for i, cls_name in enumerate(stage_classes):
+            orig_val = f1_orig_cls[i]
+            mimo_val = f1_mimo_cls[i]
+            delta = mimo_val - orig_val
+            print(f"{cls_name:<25} | {orig_val:<12.4f} | {mimo_val:<10.4f} | {delta:<8.4f}")
+        print("-" * 65)
+        print(f"{'Weighted Average':<25} | {f1_orig:<12.4f} | {f1_mimo:<10.4f} | {f1_mimo - f1_orig:<8.4f}")
+        print(f"{'Macro Average':<25} | {f1_orig_macro:<12.4f} | {f1_mimo_macro:<10.4f} | {f1_mimo_macro - f1_orig_macro:<8.4f}\n")
 
 if __name__ == '__main__':
     main()
+
