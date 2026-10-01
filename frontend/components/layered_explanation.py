@@ -196,7 +196,7 @@ def render_layered_explanation(
     # -------------------------------------------------------------------------
     # LAYER 3: Top Contributing Features (SHAP / Integrated Gradients)
     # -------------------------------------------------------------------------
-    top_3 = attributions[:3] if attributions else [
+    top_3: List[Dict[str, Any]] = attributions[:3] if attributions else [
         {"feature": "egress_burst_ratio", "contribution": 0.48, "category": "Packet Dynamics", "delta": "+380%"},
         {"feature": "beacon_jitter_variance", "contribution": 0.28, "category": "Temporal Rhythm", "delta": "+19.4%"},
         {"feature": "peer_fanout_entropy", "contribution": 0.16, "category": "Topology", "delta": "14 targets"},
@@ -204,9 +204,12 @@ def render_layered_explanation(
 
     attr_chips = ""
     for a in top_3:
-        feat_name = a.get("feature", "unknown")
-        c_weight = a.get("contribution", 0.0)
-        delta_str = a.get("delta", "Baseline")
+        feat_name = str(a.get("feature", "unknown"))
+        try:
+            c_weight = float(a.get("contribution", 0.0))
+        except (ValueError, TypeError):
+            c_weight = 0.0
+        delta_str = str(a.get("delta", "Baseline"))
         pct_bar = min(100, int(c_weight * 180))
         chip_color = "#FF453A" if c_weight >= 0.35 else ("#FF9F0A" if c_weight >= 0.20 else t["primary"])
 

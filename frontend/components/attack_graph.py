@@ -450,7 +450,7 @@ def render_attack_graph_panel():
             )
 
 
-def _build_attack_graph_svg(graph_data: dict, active_k: int, selected_host: str, focused_host: str = None) -> str:
+def _build_attack_graph_svg(graph_data: dict, active_k: int, selected_host: str, focused_host: str | None = None) -> str:
     """
     Constructs the self-contained offline SVG vector canvas with GPU-accelerated marching ants,
     pulsing laser glow, dual-dimension node sizing, compact legend, and blast radius isolation.
