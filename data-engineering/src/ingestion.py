@@ -40,11 +40,18 @@ def ingest_csv_file(
     # Read CSV
     df = pd.read_csv(
         filepath,
-        encoding=encoding,
-        low_memory=False,
-        skip_blank_lines=True,
+        engine="pyarrow",
         on_bad_lines="skip",
     )
+
+    # Aggressive memory downcasting to prevent OOM on large files
+    float_cols = df.select_dtypes(include=['float64']).columns
+    if len(float_cols) > 0:
+        df[float_cols] = df[float_cols].astype('float32')
+        
+    int_cols = df.select_dtypes(include=['int64']).columns
+    if len(int_cols) > 0:
+        df[int_cols] = df[int_cols].astype('int32')
 
     # Strip whitespace from column names
     df.columns = [str(c).strip() for c in df.columns]

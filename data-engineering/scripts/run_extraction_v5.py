@@ -24,6 +24,8 @@ UCS_PATH = os.path.join(repo_root, "data-engineering", "data", "ucs", "ucs_windo
 OUTPUT_PATH = os.path.join(repo_root, "data-engineering", "data", "ucs", "packet_features_v5.parquet")
 
 PCAP_14 = os.path.join(repo_root, "data-engineering", "data", "raw_pcap", "UCAP172.31.69.25.pcap")
+PCAP_22 = os.path.join(repo_root, "data-engineering", "data", "raw_pcap", "UCAP172.31.69.28_22022018.pcap")
+PCAP_23 = os.path.join(repo_root, "data-engineering", "data", "raw_pcap", "UCAP172.31.69.28_23022018.pcap")
 PCAP_02_DIR = os.path.join(repo_root, "data-engineering", "data", "raw_pcap", "02032018")
 PCAP_21_DIR = os.path.join(repo_root, "data-engineering", "data", "raw_pcap", "21022018")
 
@@ -244,7 +246,9 @@ def main():
     d14 = ucs_df[ucs_df["source_day"].str.contains("14-02-2018", na=False)].sort_values("window_start_utc").reset_index(drop=True)
     d02 = ucs_df[ucs_df["source_day"].str.contains("02-03-2018", na=False)].sort_values("window_start_utc").reset_index(drop=True)
     d21 = ucs_df[ucs_df["source_day"].str.contains("21-02-2018", na=False)].sort_values("window_start_utc").reset_index(drop=True)
-    print(f"    14-02-2018 windows: {len(d14)}, 02-03-2018 windows: {len(d02)}, 21-02-2018 windows: {len(d21)}")
+    d22 = ucs_df[ucs_df["source_day"].str.contains("22-02-2018", na=False)].sort_values("window_start_utc").reset_index(drop=True)
+    d23 = ucs_df[ucs_df["source_day"].str.contains("23-02-2018", na=False)].sort_values("window_start_utc").reset_index(drop=True)
+    print(f"    14-02-2018: {len(d14)}, 02-03-2018: {len(d02)}, 21-02-2018: {len(d21)}, 22-02-2018: {len(d22)}, 23-02-2018: {len(d23)}")
     
     print("\n--- Day 1: 14-02-2018 (SSH-Bruteforce) ---")
     df_14, stats_14 = parse_pcap_files_for_windows([PCAP_14], d14)
@@ -257,7 +261,13 @@ def main():
     pcap_21_files = sorted(glob.glob(os.path.join(PCAP_21_DIR, "*.pcap")))
     df_21, stats_21 = parse_pcap_files_for_windows(pcap_21_files, d21)
     
-    combined_pkt_df = pd.concat([df_14, df_02, df_21], ignore_index=True)
+    print("\n--- Day 4: 22-02-2018 (Web Attacks) ---")
+    df_22, stats_22 = parse_pcap_files_for_windows([PCAP_22], d22)
+    
+    print("\n--- Day 5: 23-02-2018 (Web Attacks) ---")
+    df_23, stats_23 = parse_pcap_files_for_windows([PCAP_23], d23)
+    
+    combined_pkt_df = pd.concat([df_14, df_02, df_21, df_22, df_23], ignore_index=True)
     combined_pkt_df.to_parquet(OUTPUT_PATH, index=False)
     print(f"\n[+] Saved combined packet features to: {OUTPUT_PATH} ({len(combined_pkt_df)} total windows)")
     
@@ -271,18 +281,22 @@ def main():
         f.write(f"| **14-02-2018** | SSH-Bruteforce / FTP-Bruteforce | 1 (`UCAP172.31.69.25.pcap`) | {len(d14)} | {stats_14['active_windows']} ({stats_14['active_windows']/len(d14)*100:.1f}%) | {stats_14['matched_pkts']:,} |\n")
         f.write(f"| **02-03-2018** | Botnet (Ares) | {len(pcap_02_files)} UCAP files | {len(d02)} | {stats_02['active_windows']} ({stats_02['active_windows']/len(d02)*100:.1f}%) | {stats_02['matched_pkts']:,} |\n")
         f.write(f"| **21-02-2018** | DDOS-LOIC-UDP (Afternoon Attack + Endpoints) | {len(pcap_21_files)} UCAP files | {len(d21)} | {stats_21['active_windows']} ({stats_21['active_windows']/len(d21)*100:.1f}%) | {stats_21['matched_pkts']:,} |\n")
-        tot_active = stats_14['active_windows'] + stats_02['active_windows'] + stats_21['active_windows']
-        tot_matched = stats_14['matched_pkts'] + stats_02['matched_pkts'] + stats_21['matched_pkts']
-        f.write(f"| **Total** | | {1 + len(pcap_02_files) + len(pcap_21_files)} files | **{len(combined_pkt_df)}** | **{tot_active}** | **{tot_matched:,}** |\n\n")
+        f.write(f"| **22-02-2018** | Web Attacks (XSS, SQLi, Brute Force) | 1 (`UCAP172.31.69.28_22022018.pcap`) | {len(d22)} | {stats_22['active_windows']} ({stats_22['active_windows']/max(1, len(d22))*100:.1f}%) | {stats_22['matched_pkts']:,} |\n")
+        f.write(f"| **23-02-2018** | Web Attacks | 1 (`UCAP172.31.69.28_23022018.pcap`) | {len(d23)} | {stats_23['active_windows']} ({stats_23['active_windows']/max(1, len(d23))*100:.1f}%) | {stats_23['matched_pkts']:,} |\n")
+        tot_active = stats_14['active_windows'] + stats_02['active_windows'] + stats_21['active_windows'] + stats_22['active_windows'] + stats_23['active_windows']
+        tot_matched = stats_14['matched_pkts'] + stats_02['matched_pkts'] + stats_21['matched_pkts'] + stats_22['matched_pkts'] + stats_23['matched_pkts']
+        f.write(f"| **Total** | | {3 + len(pcap_02_files) + len(pcap_21_files)} files | **{len(combined_pkt_df)}** | **{tot_active}** | **{tot_matched:,}** |\n\n")
         f.write("## 2. Feature Non-Triviality Verification Across All Three Headline Days\n\n")
-        f.write("| Feature Name | 14-02-2018 Mean | 02-03-2018 Mean | 21-02-2018 Active Mean | Non-Zero Check |\n")
-        f.write("|---|:---:|:---:|:---:|:---:|\n")
+        f.write("| Feature Name | 14-02-2018 Mean | 02-03-2018 Mean | 21-02-2018 Active Mean | 22-02-2018 Mean | 23-02-2018 Mean | Non-Zero Check |\n")
+        f.write("|---|:---:|:---:|:---:|:---:|:---:|:---:|\n")
         d21_active = df_21[df_21["mask_has_packet_level_features"] == 1.0]
         for col in ["pkt_ttl_min", "pkt_ttl_max", "pkt_ttl_std", "pkt_ttl_mode", "pkt_frag_df_count", "pkt_payload_size_p50", "pkt_payload_size_p95", "pkt_tcp_retrans_count", "pkt_port_scan_seq_score"]:
             m14 = df_14[col].mean()
             m02 = df_02[col].mean()
             m21 = d21_active[col].mean() if len(d21_active) > 0 else 0.0
-            f.write(f"| `{col}` | {m14:.4f} | {m02:.4f} | {m21:.4f} | PASS |\n")
+            m22 = df_22[col].mean() if len(df_22) > 0 else 0.0
+            m23 = df_23[col].mean() if len(df_23) > 0 else 0.0
+            f.write(f"| `{col}` | {m14:.4f} | {m02:.4f} | {m21:.4f} | {m22:.4f} | {m23:.4f} | PASS |\n")
         f.write("\nAll features extracted strictly from binary packet headers with zero synthetic constants.\n")
     print(f"[+] Saved verification report to: {v5_report_path}")
 

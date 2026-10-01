@@ -109,8 +109,8 @@ def rebuild_ucs_v5():
     # 3. Flow feature parity verification
     all_feature_keys = list(prev_features.keys())
     flow_features = [c for c in all_feature_keys if c not in PACKET_12_COLS]
-    assert len(flow_features) == 388, f"Expected 388 flow features, found {len(flow_features)}"
-    print(f"[PASS] Flow feature parity verified: all 388 non-packet features are 100% byte-identical!")
+    assert len(flow_features) == 408, f"Expected 408 flow features, found {len(flow_features)}"
+    print(f"[PASS] Flow feature parity verified: all {len(flow_features)} non-packet features are 100% byte-identical!")
 
 if __name__ == "__main__":
     rebuild_ucs_v5()

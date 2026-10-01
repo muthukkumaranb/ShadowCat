@@ -38,9 +38,8 @@ def clean_and_normalize_flow_data(
             "idle_mean", "idle_std", "idle_max", "idle_min"
         ]
 
-    df = df.copy()
     if df.columns.duplicated().any():
-        df = df.loc[:, ~df.columns.duplicated(keep="first")].copy()
+        df = df.loc[:, ~df.columns.duplicated(keep="first")]
 
     # 1. Timestamp parsing to UTC
     if "raw_timestamp" in df.columns:
@@ -76,7 +75,7 @@ def clean_and_normalize_flow_data(
         if valid_ts_mask.sum() > 0:
             corrupted_year_count = int((~valid_ts_mask).sum())
             audit["corrupted_epoch_timestamps_dropped"] = corrupted_year_count
-            df = df[valid_ts_mask].copy()
+            df.drop(df[~valid_ts_mask].index, inplace=True)
 
     candidate_cols = [c for c in df.columns if c not in ["raw_timestamp", "timestamp_utc", "raw_label", "source_file", "source_day"]]
     numeric_cols = df[candidate_cols].columns
@@ -116,7 +115,7 @@ def clean_and_normalize_flow_data(
     feature_cols = [c for c in df.columns if c not in ["source_file", "source_day"]]
     exact_dups = int(df.duplicated(subset=feature_cols).sum())
     audit["exact_duplicate_rows_dropped"] = exact_dups
-    df = df.drop_duplicates(subset=feature_cols).copy()
+    df.drop_duplicates(subset=feature_cols, inplace=True)
 
     # 5. Near-duplicate detection (same 5-tuple signature + same rounded timestamp)
     near_dup_keys = [c for c in ["destination_port", "protocol", "byte_count_fwd", "packet_count_fwd"] if c in df.columns]

@@ -9,11 +9,15 @@ paths:
 # Days to process
 target_files:
   - "Wednesday-14-02-2018_TrafficForML_CICFlowMeter.csv"  # FTP-BruteForce, SSH-Bruteforce
+  - "Thursday-15-02-2018_TrafficForML_CICFlowMeter.csv"   # DoS attacks-GoldenEye, Slowloris
+  - "Friday-16-02-2018_TrafficForML_CICFlowMeter.csv"     # DoS attacks-SlowHTTPTest, Hulk
+  - "Thuesday-20-02-2018_TrafficForML_CICFlowMeter.csv"    # DDoS attacks-LOIC-HTTP
   - "Wednesday-21-02-2018_TrafficForML_CICFlowMeter.csv"  # DDoS HOIC, DDoS LOIC-UDP
+  - "Thursday-22-02-2018_TrafficForML_CICFlowMeter.csv"   # Web Attacks (XSS, SQLi, Brute Force)
+  - "Friday-23-02-2018_TrafficForML_CICFlowMeter.csv"     # Web Attacks
+  - "Wednesday-28-02-2018_TrafficForML_CICFlowMeter.csv"  # Infiltration Day 1
   - "Thursday-01-03-2018_TrafficForML_CICFlowMeter.csv"   # Infiltration (2-phase: compromise + portscan)
   - "Friday-02-03-2018_TrafficForML_CICFlowMeter.csv"     # Botnet
-  - "Thursday-22-02-2018_TrafficForML_CICFlowMeter.csv"   # Web Attacks (XSS, SQLi, Brute Force)
-  - "Wednesday-28-02-2018_TrafficForML_CICFlowMeter.csv"  # Infiltration Day 1
 
 # Windowing parameters
 windowing:

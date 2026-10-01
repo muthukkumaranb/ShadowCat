@@ -89,7 +89,13 @@ def create_1min_windows(
 
     # Window dominant label and attack presence
     if "raw_label" in df.columns:
-        dominant_labels = grouped["raw_label"].agg(lambda s: s.mode().iloc[0] if not s.empty else "Benign").reset_index(name="raw_label_dominant")
+        def _get_dominant_label(s):
+            attacks = s[s.astype(str).str.lower() != "benign"]
+            if not attacks.empty:
+                return attacks.mode().iloc[0]
+            return s.mode().iloc[0] if not s.empty else "Benign"
+            
+        dominant_labels = grouped["raw_label"].agg(_get_dominant_label).reset_index(name="raw_label_dominant")
         has_attack = grouped["raw_label"].agg(lambda s: bool((s.astype(str).str.lower() != "benign").any())).reset_index(name="has_malicious_flows")
         window_df = window_df.merge(dominant_labels, on="window_start_utc", how="left")
         window_df = window_df.merge(has_attack, on="window_start_utc", how="left")
