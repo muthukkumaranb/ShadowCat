@@ -14,6 +14,7 @@ from data_provider import (
     get_mitre_data,
     get_flagged_flows,
     get_live_notarization_status,
+    get_conformal_credibility,
 )
 
 def render_page():
@@ -57,6 +58,16 @@ def render_page():
         risk_delta = f"{risk_val:.2f}"
 
     # TOP FULL-WIDTH THREAT HEADER STRIP
+    # Pre-compute conformal credibility badge HTML to avoid backslash-in-f-string
+    # (illegal before Python 3.12 / PEP 701).
+    _cred = get_conformal_credibility()
+    _is_ind = _cred.get("is_in_distribution", True)
+    _font_family = "'JetBrains Mono', monospace"
+    _bg_color = "rgba(48, 209, 88, 0.12)" if _is_ind else "rgba(255, 69, 58, 0.15)"
+    _border_color = "#30D158" if _is_ind else "#FF453A"
+    _text_color = "#30D158" if _is_ind else "#FF453A"
+    _icon = "✔" if _is_ind else "⚠"
+
     render_html(f"""
     <div class="soc-card" style="margin-bottom: 1.25rem;">
         <div style="display: grid; grid-template-columns: 7fr 5fr; gap: 1.5rem; align-items: center;">
@@ -70,6 +81,8 @@ def render_page():
                     <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: {t['text_muted']};">LATENCY: 42ms</span>
                     <span style="color: {t['outline_variant']};">|</span>
                     <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: {t['text_muted']};">CLUSTER: ALPHA-01</span>
+                    <span style="color: {t['outline_variant']};">|</span>
+                    <span style="display: inline-flex; align-items: center; gap: 0.35rem; background: {_bg_color}; border: 1px solid {_border_color}; border-radius: 4px; padding: 2px 6px; font-family: {_font_family}; font-size: 0.68rem; font-weight: 700; color: {_text_color};">{_icon} {_cred.get("badge_label", "IN-DISTRIBUTION")}</span>
                 </div>
                 <div style="display: flex; align-items: baseline; gap: 1rem;">
                     <div style="font-family: 'JetBrains Mono', monospace; font-size: 2.25rem; font-weight: 700; color: {t['text_high']}; letter-spacing: -0.02em;">

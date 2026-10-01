@@ -19,6 +19,11 @@ from data_provider import (
     get_graph_traversal,
     get_flagged_flows,
     get_onchain_incident_responses,
+    get_conformal_credibility,
+)
+from components.layered_explanation import (
+    render_layered_explanation,
+    render_conformal_credibility_badge,
 )
 from backend.graph_traversal import format_bytes
 
@@ -86,6 +91,16 @@ def render_page():
     is_attack_active = (step_risk >= 0.35)
 
     # TOP CONTROL BAR (Real counts, zero hardcoded fallback 19)
+    # Pre-compute conformal credibility badge HTML to avoid backslash-in-f-string
+    # (illegal before Python 3.12 / PEP 701).
+    _cred = get_conformal_credibility()
+    _is_ind = _cred.get("is_in_distribution", True)
+    _font_family = "'JetBrains Mono', monospace"
+    _bg_color = "rgba(48, 209, 88, 0.12)" if _is_ind else "rgba(255, 69, 58, 0.15)"
+    _border_color = "#30D158" if _is_ind else "#FF453A"
+    _text_color = "#30D158" if _is_ind else "#FF453A"
+    _icon = "✔" if _is_ind else "⚠"
+
     render_html(f"""
     <div class="soc-card" style="margin-bottom: 0.75rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
@@ -101,6 +116,7 @@ def render_page():
                 <span class="soc-badge badge-neutral">Directional Flows: {total_edges}</span>
                 <span class="soc-badge badge-neutral">Walked Hops: {len(walked_edges_at_k)}</span>
                 <span class="soc-badge badge-critical">Isolated: {len(st.session_state.isolated_nodes)} Hosts</span>
+                <span style="display: inline-flex; align-items: center; gap: 0.3rem; background: {_bg_color}; border: 1px solid {_border_color}; border-radius: 4px; padding: 2px 6px; font-family: {_font_family}; font-size: 0.65rem; font-weight: 700; color: {_text_color};">{"✔ IN-DISTRIBUTION" if _is_ind else "⚠ OUT-OF-DISTRIBUTION"}</span>
             </div>
         </div>
     </div>
@@ -455,6 +471,14 @@ def render_page():
                 </div>
             </div>
             """)
+
+            # Layered Explanation & Conformal Uncertainty for inspected node (Task 2)
+            with st.expander(f"Layered Forensics & Attribution for {sel_node}", expanded=False):
+                render_layered_explanation(
+                    step_k=curr_k,
+                    forecast_data=fc,
+                    title=f"Layered Attribution for Endpoint {sel_node}",
+                )
 
             # Host Isolation Toggle
             if is_isolated:
