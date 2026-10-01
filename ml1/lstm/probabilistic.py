@@ -245,3 +245,111 @@ def train_gaussian(
     if best_state is not None:
         model.load_state_dict(best_state)
     return {"model": model, "history": history, "best_epoch": int(np.argmin(history["validation_nll"]) + 1), "best_validation_nll": float(best_loss), "stopped_epoch": epoch, "device": str(device_obj)}
+
+
+def mdn_nll(pi: torch.Tensor, mean: torch.Tensor, std: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+    """
+    Negative log-likelihood for a Mixture Density Network.
+    pi: (batch, K)
+    mean: (batch, K, state_dim)
+    std: (batch, K, state_dim)
+    target: (batch, state_dim)
+    """
+    target = target.unsqueeze(1) # (batch, 1, state_dim)
+    variance = std.square()
+    # log N(y | mu_k, sigma_k^2)
+    # 0.5 * (log(2pi) + 2log(sigma) + (y - mu)^2 / sigma^2) -> this is positive NLL, so N is negative of this
+    log_normal = -0.5 * (torch.log(torch.tensor(2.0 * np.pi, device=mean.device)) + 2.0 * torch.log(std) + (target - mean).square() / variance)
+    # Sum over state_dim (assuming diagonal covariance, log probabilities add up)
+    log_normal_sum = log_normal.sum(dim=-1) # (batch, K)
+    # log(pi * N) = log(pi) + log(N)
+    log_pi = torch.log(pi + 1e-10) # Add epsilon to prevent log(0)
+    log_component = log_pi + log_normal_sum # (batch, K)
+    # -log(sum_k(exp(log_component)))
+    loss = -torch.logsumexp(log_component, dim=-1) # (batch,)
+    return loss.mean()
+
+
+def train_mdn(
+    model: nn.Module,
+    X_train: np.ndarray,
+    y_train: np.ndarray,
+    X_validation: np.ndarray,
+    y_validation: np.ndarray,
+    *,
+    epochs: int = 30,
+    batch_size: int = 64,
+    learning_rate: float = 0.001,
+    weight_decay: float = 0.0001,
+    patience: int = 5,
+    min_delta: float = 0.001,
+    seed: int = 42,
+    device: str = "cpu",
+    checkpoint_path=None,
+) -> dict:
+    torch.manual_seed(seed)
+    device_obj = torch.device(device)
+    model.to(device_obj)
+    train_loader = DataLoader(TensorDataset(torch.as_tensor(X_train, dtype=torch.float32), torch.as_tensor(y_train, dtype=torch.float32)), batch_size=batch_size, shuffle=True)
+    val_loader = DataLoader(TensorDataset(torch.as_tensor(X_validation, dtype=torch.float32), torch.as_tensor(y_validation, dtype=torch.float32)), batch_size=batch_size, shuffle=False)
+    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
+    history = {"train_nll": [], "validation_nll": []}
+    best_loss = float("inf")
+    best_state = None
+    stale = 0
+    for epoch in range(1, epochs + 1):
+        model.train()
+        train_total = 0.0
+        for features, target in train_loader:
+            optimizer.zero_grad()
+            pi, mean, std = model(features.to(device_obj))
+            loss = mdn_nll(pi, mean, std, target.to(device_obj))
+            loss.backward()
+            optimizer.step()
+            train_total += loss.item() * len(features)
+        model.eval()
+        val_total = 0.0
+        with torch.no_grad():
+            for features, target in val_loader:
+                pi, mean, std = model(features.to(device_obj))
+                val_total += mdn_nll(pi, mean, std, target.to(device_obj)).item() * len(features)
+        train_loss = train_total / len(train_loader.dataset)
+        val_loss = val_total / len(val_loader.dataset)
+        history["train_nll"].append(train_loss)
+        history["validation_nll"].append(val_loss)
+        
+        try:
+            import json
+            from pathlib import Path
+            status = {
+                "epoch": epoch,
+                "epochs_total": epochs,
+                "train_nll": train_loss,
+                "val_nll": val_loss,
+                "best_val_nll": best_loss if best_loss != float("inf") else val_loss,
+                "patience": patience,
+                "stale": stale,
+                "lr": learning_rate,
+                "hidden_size": model.lstm.hidden_size if hasattr(model, 'lstm') else 0,
+                "num_layers": model.lstm.num_layers if hasattr(model, 'lstm') else 0,
+            }
+            status_path = Path(__file__).resolve().parents[2] / "scratch" / "live_mdn_status.json"
+            status_path.parent.mkdir(parents=True, exist_ok=True)
+            status_path.write_text(json.dumps(status), encoding="utf-8")
+        except Exception:
+            pass
+
+        if val_loss < best_loss - min_delta:
+            best_loss = val_loss
+            best_state = {key: value.detach().cpu().clone() for key, value in model.state_dict().items()}
+            stale = 0
+            if checkpoint_path is not None:
+                checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+                torch.save({"model_state_dict": model.state_dict(), "validation_nll": val_loss, "epoch": epoch}, checkpoint_path)
+        else:
+            stale += 1
+            if stale >= patience:
+                break
+    if best_state is not None:
+        model.load_state_dict(best_state)
+    return {"model": model, "history": history, "best_epoch": int(np.argmin(history["validation_nll"]) + 1), "best_validation_nll": float(best_loss), "stopped_epoch": epoch, "device": str(device_obj)}

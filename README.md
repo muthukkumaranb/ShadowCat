@@ -187,6 +187,19 @@ To stand up the real Fabric test-network layer yourself:
 
 ---
 
+## Forecasting Advancement: Predictability Horizon Investigation
+
+- A dedicated investigation was run to determine the model's genuine multi-step forecasting skill, separate from the single-step detection/onset benchmarks reported above.
+- Rolling-origin evaluation (5 chronological splits) found the world model's forecast F1 does not exceed a trivial persistence baseline at any tested horizon (K=1 through K=5). Predictability Horizon H* = 0. This was independently reproduced multiple times, including by direct re-execution of the evaluation script against freshly trained checkpoints.
+- Standard remediation attempts were tried and exhausted: rare-class data augmentation (latent-space jitter), narrower horizon scoping, task reframing (regression and lagged-classification instead of multi-step rollout), and a hyperparameter sweep of the base world model (hidden size, depth, learning rate, training length). None of these moved the result; the model consistently collapses to predicting the majority "Unknown/Other" class regardless of configuration.
+- Root cause identified: the world model is trained with a Gaussian negative log-likelihood loss, which is mean-seeking. It is mathematically rewarded for predicting a smoothed average next-state rather than preserving rare attack-state signal, since rare states resemble noise relative to that average. This holds independent of model capacity.
+- An architectural change (Mixture Density Network head, 5 Gaussian mixture components, replacing the single-Gaussian output) was implemented and evaluated to test whether a multimodal output distribution could preserve the signal a single Gaussian collapses. Results: F1 at K=1 through K=5 (0.5530, 0.5527, 0.5523, 0.5520, 0.5517) still does not beat the persistence baseline (0.9517 to 0.9059 across the same horizons); H* remains 0.
+- A follow-up diagnostic found that the mixture components do differentiate internally between benign and attack windows (for example, one component's average weight rises from 5.03% on benign windows to 17.53% on attack windows), but this distinction is lost once the mixture is collapsed to a single expected value for downstream classification, which is required by the current stage-head architecture.
+- Conclusion: the forecasting ceiling is not explained by undertraining, insufficient data augmentation, or model capacity. It is a structural property of how the current world model's output is consumed downstream. Passing the full predicted distribution (or a sample from it) into the stage head, instead of collapsing it to a mean, is identified as the next concrete direction, not yet implemented.
+- This investigation did not change the validated Detection (F1 0.9962) and Onset (F1 0.9127) benchmarks reported above, which measure a different task (single-step classification, not multi-step autoregressive forecasting).
+
+---
+
 ## Hyperledger Fabric Two-Tier Notarization Architecture
 
 To meet the SIH **Blockchain & Cybersecurity** theme, SHADOWCAT implements a real two-tier notarization design, with a live blockchain as the primary path and a cryptographic hash chain as a resilient fallback.
@@ -210,6 +223,7 @@ In accordance with scientific integrity and engineering transparency:
 8. **Botnet Detection Shortfall:** Botnet onset detection remains a disclosed, unresolved limitation. Even with real packet telemetry, the signal-to-noise ratio is too weak (ROC-AUC ~0.63), which is insufficient for reliable, low-FPR alerting. This has not been artificially 'solved' via F1-only threshold manipulation.
 9. **GraphSAGE Fusion:** Real per-window graph construction is now wired in as an explicitly labeled experimental/held-back output, separate from the primary verified forecast; the underlying ablation evidence (validation loss 1.666 vs 1.932) remains the reason it's not in the primary path.
 10. **Hyperledger Fabric Local Dependency:** The primary Hyperledger Fabric notarization path is not fully plug-and-play upon cloning the repository. It requires a local Fabric test-network running via Docker with the `shadowcat-notary-channel` and chaincode deployed, as the Windows path (`D:\sih2026\fabric-experiment`) is hardcoded in `backend/fabric_bridge.py`. Without this local network running, every notarization call gracefully and automatically falls back to the SHA-256 hash chain (`notarized_via="sha256_fallback"`).
+11. **Predictability Horizon:** Multi-step autoregressive forecasting skill beyond the validated single-step benchmarks remains unresolved (H* = 0 across all tested configurations and one architectural remediation), and is disclosed as an open problem rather than masked.
 
 ---
 
