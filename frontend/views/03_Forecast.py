@@ -171,6 +171,16 @@ def render_page():
     active_step = STEPS_DATA[curr_k]
 
     # TOP SECTION / HORIZON CONTROL BAR
+    # Pre-compute conformal credibility badge HTML to avoid backslash-in-f-string
+    # (illegal before Python 3.12 / PEP 701).
+    _cred = get_conformal_credibility()
+    _is_ind = _cred.get("is_in_distribution", True)
+    _font_family = "'JetBrains Mono', monospace"
+    _bg_color = "rgba(48, 209, 88, 0.12)" if _is_ind else "rgba(255, 69, 58, 0.15)"
+    _border_color = "#30D158" if _is_ind else "#FF453A"
+    _text_color = "#30D158" if _is_ind else "#FF453A"
+    _icon = "✔" if _is_ind else "⚠"
+
     render_html(f"""
     <div class="soc-card" style="margin-bottom: 1rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
@@ -199,7 +209,7 @@ def render_page():
                 </div>
                 <div style="border-left: 1px solid {t['border']}; padding-left: 0.5rem;">
                     <!-- Conformal Credibility / Out-of-Distribution Diagnostic Flag (Task 3) -->
-                    {f'<div style="display: inline-flex; align-items: center; gap: 0.4rem; background: {"rgba(48, 209, 88, 0.12)" if get_conformal_credibility().get("is_in_distribution", True) else "rgba(255, 69, 58, 0.15)"}; border: 1px solid {"#30D158" if get_conformal_credibility().get("is_in_distribution", True) else "#FF453A"}; border-radius: 4px; padding: 2px 7px; font-family: \'JetBrains Mono\', monospace; font-size: 0.68rem; font-weight: 700; color: {"#30D158" if get_conformal_credibility().get("is_in_distribution", True) else "#FF453A"};"><span>{"✔" if get_conformal_credibility().get("is_in_distribution", True) else "⚠"} {get_conformal_credibility().get("badge_label", "MODEL CONFIDENCE: IN-DISTRIBUTION")}</span></div>'}
+                    <div style="display: inline-flex; align-items: center; gap: 0.4rem; background: {_bg_color}; border: 1px solid {_border_color}; border-radius: 4px; padding: 2px 7px; font-family: {_font_family}; font-size: 0.68rem; font-weight: 700; color: {_text_color};"><span>{_icon} {_cred.get("badge_label", "MODEL CONFIDENCE: IN-DISTRIBUTION")}</span></div>
                 </div>
             </div>
         </div>

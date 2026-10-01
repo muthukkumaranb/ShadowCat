@@ -124,6 +124,7 @@ def test_layered_explanation_contracts():
 
 def test_apptest_views():
     print("\n[TEST 5] Testing Streamlit AppTest Execution Across Views...")
+    import ast as _ast
     from streamlit.testing.v1 import AppTest
 
     views_to_test = [
@@ -133,6 +134,27 @@ def test_apptest_views():
         ("02_Overview.py", "frontend/views/02_Overview.py"),
     ]
 
+    # --- Syntax pre-validation pass ---
+    # AppTest.exception only captures runtime exceptions; it silently passes when a
+    # SyntaxError causes compilation to fail before script execution even begins.
+    # We guard against that class of blind spot with an explicit ast.parse() check.
+    print("  [SYNTAX CHECK] Validating parse-ability of all view files before AppTest...")
+    for v_name, v_path in views_to_test:
+        full_p = str(REPO_ROOT / v_path)
+        try:
+            with open(full_p, "r", encoding="utf-8") as _fh:
+                _src = _fh.read()
+            _ast.parse(_src)
+            print(f"    [SYNTAX OK] {v_name}")
+        except SyntaxError as _se:
+            raise AssertionError(
+                f"[SYNTAX ERROR] {v_name} failed ast.parse(): {_se}\n"
+                f"  File: {full_p}\n"
+                f"  Line {_se.lineno}: {_se.text}"
+            ) from _se
+    print("  [SYNTAX CHECK] All files passed syntax validation.")
+
+    # --- AppTest execution pass ---
     for v_name, v_path in views_to_test:
         full_p = str(REPO_ROOT / v_path)
         print(f"  Running AppTest on {v_name}...")

@@ -74,8 +74,8 @@ NODE_METADATA = DEFAULT_NODE_METADATA
 
 def generate_node_layout(
     hosts: list[str],
-    host_telemetry: dict = None,
-    node_roles: dict = None,
+    host_telemetry: dict | None = None,
+    node_roles: dict | None = None,
     width: int = 740,
     height: int = 480
 ) -> dict[str, dict]:
