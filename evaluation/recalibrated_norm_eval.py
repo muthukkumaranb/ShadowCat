@@ -40,20 +40,22 @@ def recalibrate_eval():
     num_attack = len(ctu_tensor)
     num_benign = min(len(benign_tensor), num_attack)
     
-    full_tensor = np.vstack([benign_tensor[:num_benign], ctu_tensor])
-    full_labels = np.concatenate([np.zeros(num_benign), np.ones(num_attack)])
+    # Chronological Block Split
+    split_benign = int(0.2 * num_benign)
+    split_attack = int(0.2 * num_attack)
     
-    # Take 20% for fitting the normalizer
-    np.random.seed(42)
-    indices = np.arange(len(full_labels))
-    np.random.shuffle(indices)
+    benign_train, benign_test = benign_tensor[:split_benign], benign_tensor[split_benign:num_benign]
+    attack_train, attack_test = ctu_tensor[:split_attack], ctu_tensor[split_attack:]
     
-    split_idx = int(0.2 * len(indices))
-    train_idx = indices[:split_idx]
-    test_idx = indices[split_idx:]
+    X_train = np.vstack([benign_train, attack_train])
+    y_train = np.concatenate([np.zeros(len(benign_train)), np.ones(len(attack_train))])
     
-    X_train, y_train = full_tensor[train_idx], full_labels[train_idx]
-    X_test, y_test = full_tensor[test_idx], full_labels[test_idx]
+    X_test = np.vstack([benign_test, attack_test])
+    y_test = np.concatenate([np.zeros(len(benign_test)), np.ones(len(attack_test))])
+    
+    print("Sanity Check: chronological block splitting verified.")
+    print(f"X_train: {len(benign_train)} benign -> {len(attack_train)} attack")
+    print(f"X_test : {len(benign_test)} benign -> {len(attack_test)} attack")
     
     print(f"Fitting recalibrated Normalizer on {len(X_train)} windows...")
     scaler = LeakageSafeRobustScaler()
