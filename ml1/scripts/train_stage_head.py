@@ -118,9 +118,9 @@ def main():
     windows = load_ucs_windows(args.data)
     config = UCSConfig()
     features = validate_ucs_windows(windows, config=config)
-    exact_old_features_path = workspace_dir.parent / "scratch/exact_old_features.txt"
+    exact_old_features_path = workspace_dir / "configs/mdn_v1_feature_schema.txt"
     if exact_old_features_path.exists():
-        old_cols = exact_old_features_path.read_text().strip().split(",")
+        old_cols = exact_old_features_path.read_text().split("\n")[-1].strip().split(",")
         features = [c for c in old_cols if c in features]
         print(f"Restricted features to {len(features)} for world model compatibility.")
 
