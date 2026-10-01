@@ -209,6 +209,28 @@ def train_gaussian(
         val_loss = val_total / len(val_loader.dataset)
         history["train_nll"].append(train_loss)
         history["validation_nll"].append(val_loss)
+        
+        try:
+            import json
+            from pathlib import Path
+            status = {
+                "epoch": epoch,
+                "epochs_total": epochs,
+                "train_nll": train_loss,
+                "val_nll": val_loss,
+                "best_val_nll": best_loss if best_loss != float("inf") else val_loss,
+                "patience": patience,
+                "stale": stale,
+                "lr": learning_rate,
+                "hidden_size": model.lstm.hidden_size if hasattr(model, 'lstm') else 0,
+                "num_layers": model.lstm.num_layers if hasattr(model, 'lstm') else 0,
+            }
+            status_path = Path(__file__).resolve().parents[2] / "scratch" / "live_lstm_status.json"
+            status_path.parent.mkdir(parents=True, exist_ok=True)
+            status_path.write_text(json.dumps(status), encoding="utf-8")
+        except Exception:
+            pass
+
         if val_loss < best_loss - min_delta:
             best_loss = val_loss
             best_state = {key: value.detach().cpu().clone() for key, value in model.state_dict().items()}
