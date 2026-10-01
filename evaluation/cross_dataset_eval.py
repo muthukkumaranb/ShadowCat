@@ -15,80 +15,78 @@ from src.ucs_extractor import UCSExtractor
 from backend.predict import ShadowcatPipeline
 
 def evaluate_ctu13():
-    print("Loading CTU-13 Dataset...")
+    print("Loading CTU-13 Attack Dataset...")
     ctu13_path = REPO_ROOT / "scratch" / "CTU13_Attack_Traffic.csv"
     if not ctu13_path.exists():
-        print("CTU-13 data not found. Please ensure scratch/CTU13_Attack_Traffic.csv is available.")
+        print("CTU-13 data not found.")
         return
     
     df_ctu13 = pd.read_csv(ctu13_path)
-    # Ensure there's a Label column, default to 1 if it's attack traffic
-    if 'Label' not in df_ctu13.columns:
-        df_ctu13['Label'] = 1
-        
+    
     print(f"Translating {len(df_ctu13)} CTU-13 flows...")
     translator = CTU13Translator()
     translated_df, fidelity = translator.translate(df_ctu13)
     print(f"Translation Fidelity: {fidelity.fidelity_score_pct}%")
     
-    print("Extracting UCS Windows...")
+    print("Extracting UCS Windows for Attack Traffic...")
     extractor = UCSExtractor()
-    window_df = extractor.extract(translated_df, source_type="csv")
-    model_tensor = extractor.extract_model_tensor(translated_df, source_type="csv")
+    ctu_tensor = extractor.extract_model_tensor(translated_df, source_type="csv")
     
-    print(f"Extracted {len(window_df)} windows.")
+    print("Loading Benign Traffic from CICIDS2018 to create a mixed test set...")
+    cicids_path = REPO_ROOT / "data-engineering" / "data" / "ucs" / "ucs_windows.parquet"
+    df_cicids = pd.read_parquet(cicids_path).sort_values("window_start_utc").reset_index(drop=True)
+    
+    # Extract benign windows
+    benign_df = df_cicids[df_cicids['label_binary'] == 0]
+    benign_tensor = benign_df[extractor.MODEL_INPUT_COLUMNS].to_numpy(dtype=np.float32)
+    
+    # We will take an equal number of benign windows to match the CTU-13 attack windows
+    num_attack = len(ctu_tensor)
+    num_benign = min(len(benign_tensor), num_attack)
+    
+    # Construct mixed sequence: Benign followed by Attack
+    mixed_tensor = np.vstack([benign_tensor[:num_benign], ctu_tensor])
+    mixed_labels = np.concatenate([np.zeros(num_benign), np.ones(num_attack)])
+    
+    print(f"Mixed Test Set Created: {num_benign} Benign windows, {num_attack} Attack windows. Total = {len(mixed_labels)}.")
     
     pipeline = ShadowcatPipeline()
-    
-    # We will slide a 30-window over the tensor and predict
     lookback = 30
     predictions_det = []
-    predictions_onset = []
-    targets_det = []
     
     device = pipeline.device
     
-    # For ground truth, we need to know if the window has attacks.
-    # Assuming window_df has 'mask_has_malicious_flows' or we can just assume 1 if all are attacks.
-    # We'll just assume all windows in CTU13_Attack_Traffic have Label=1.
-    for i in range(len(model_tensor)):
+    for i in range(len(mixed_tensor)):
         start = max(0, i - lookback + 1)
-        seq = model_tensor[start:i+1]
+        seq = mixed_tensor[start:i+1]
         
-        # pad if needed
         if len(seq) < lookback:
             pad_count = lookback - len(seq)
             seq = np.pad(seq, ((pad_count, 0), (0, 0)), mode='edge')
             
-        seq_tensor = torch.as_tensor(seq, dtype=torch.float32).unsqueeze(0).to(device)
-        
+        seq_t = torch.as_tensor(seq, dtype=torch.float32).unsqueeze(0).to(device)
         det_prob = pipeline._predict_detection_ensemble(seq)
-        hazards = pipeline._predict_hazard_ensemble(seq)
         
         pred_det = 1 if (det_prob is not None and det_prob >= 0.5) else 0
-        pred_onset = 1 if (hazards.get(1, 0) >= 0.5) else 0
-        
         predictions_det.append(pred_det)
-        predictions_onset.append(pred_onset)
-        targets_det.append(1) # Ground truth is 1 for attack traffic
         
-    y_true = np.array(targets_det)
+    y_true = mixed_labels
     y_pred = np.array(predictions_det)
     
     print("\n--- CTU-13 Cross-Dataset Evaluation (Detection) ---")
-    print(f"Recall: {recall_score(y_true, y_pred, zero_division=0):.4f}")
+    print(f"Recall:    {recall_score(y_true, y_pred, zero_division=0):.4f}")
+    print(f"Precision: {precision_score(y_true, y_pred, zero_division=0):.4f}")
+    print(f"F1 Score:  {f1_score(y_true, y_pred, zero_division=0):.4f}")
     
-    # We can't compute full MCC/Precision properly if there are no benign samples.
-    # Let's check if there are 0s in targets_det
-    if len(np.unique(y_true)) > 1:
-        print(f"F1: {f1_score(y_true, y_pred, zero_division=0):.4f}")
-        print(f"Precision: {precision_score(y_true, y_pred, zero_division=0):.4f}")
-        tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel()
-        fpr = fp / (fp + tn) if (fp+tn) > 0 else 0
-        print(f"FPR: {fpr:.4f}")
-        print(f"MCC: {matthews_corrcoef(y_true, y_pred):.4f}")
-    else:
-        print("Dataset only contains attack windows. Precision, FPR, and MCC are undefined.")
+    tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel()
+    fpr = fp / (fp + tn) if (fp+tn) > 0 else 0
+    print(f"FPR:       {fpr:.4f}")
+    
+    try:
+        mcc = matthews_corrcoef(y_true, y_pred)
+        print(f"MCC:       {mcc:.4f}")
+    except Exception as e:
+        print(f"MCC:       Undefined ({e})")
 
 if __name__ == '__main__':
     evaluate_ctu13()
