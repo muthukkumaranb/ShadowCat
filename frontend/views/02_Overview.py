@@ -14,6 +14,7 @@ from data_provider import (
     get_mitre_data,
     get_flagged_flows,
     get_live_notarization_status,
+    get_conformal_credibility,
 )
 
 def render_page():
@@ -70,6 +71,8 @@ def render_page():
                     <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: {t['text_muted']};">LATENCY: 42ms</span>
                     <span style="color: {t['outline_variant']};">|</span>
                     <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: {t['text_muted']};">CLUSTER: ALPHA-01</span>
+                    <span style="color: {t['outline_variant']};">|</span>
+                    {f'<span style="display: inline-flex; align-items: center; gap: 0.35rem; background: {"rgba(48, 209, 88, 0.12)" if get_conformal_credibility().get("is_in_distribution", True) else "rgba(255, 69, 58, 0.15)"}; border: 1px solid {"#30D158" if get_conformal_credibility().get("is_in_distribution", True) else "#FF453A"}; border-radius: 4px; padding: 2px 6px; font-family: \'JetBrains Mono\', monospace; font-size: 0.68rem; font-weight: 700; color: {"#30D158" if get_conformal_credibility().get("is_in_distribution", True) else "#FF453A"};">{"✔" if get_conformal_credibility().get("is_in_distribution", True) else "⚠"} {get_conformal_credibility().get("badge_label", "IN-DISTRIBUTION")}</span>'}
                 </div>
                 <div style="display: flex; align-items: baseline; gap: 1rem;">
                     <div style="font-family: 'JetBrains Mono', monospace; font-size: 2.25rem; font-weight: 700; color: {t['text_high']}; letter-spacing: -0.02em;">

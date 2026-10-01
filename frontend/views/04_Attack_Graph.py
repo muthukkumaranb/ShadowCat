@@ -19,6 +19,11 @@ from data_provider import (
     get_graph_traversal,
     get_flagged_flows,
     get_onchain_incident_responses,
+    get_conformal_credibility,
+)
+from components.layered_explanation import (
+    render_layered_explanation,
+    render_conformal_credibility_badge,
 )
 from backend.graph_traversal import format_bytes
 
@@ -101,6 +106,7 @@ def render_page():
                 <span class="soc-badge badge-neutral">Directional Flows: {total_edges}</span>
                 <span class="soc-badge badge-neutral">Walked Hops: {len(walked_edges_at_k)}</span>
                 <span class="soc-badge badge-critical">Isolated: {len(st.session_state.isolated_nodes)} Hosts</span>
+                {f'<span style="display: inline-flex; align-items: center; gap: 0.3rem; background: {"rgba(48, 209, 88, 0.12)" if get_conformal_credibility().get("is_in_distribution", True) else "rgba(255, 69, 58, 0.15)"}; border: 1px solid {"#30D158" if get_conformal_credibility().get("is_in_distribution", True) else "#FF453A"}; border-radius: 4px; padding: 2px 6px; font-family: \'JetBrains Mono\', monospace; font-size: 0.65rem; font-weight: 700; color: {"#30D158" if get_conformal_credibility().get("is_in_distribution", True) else "#FF453A"};">{"✔ IN-DISTRIBUTION" if get_conformal_credibility().get("is_in_distribution", True) else "⚠ OUT-OF-DISTRIBUTION"}</span>'}
             </div>
         </div>
     </div>
@@ -455,6 +461,14 @@ def render_page():
                 </div>
             </div>
             """)
+
+            # Layered Explanation & Conformal Uncertainty for inspected node (Task 2)
+            with st.expander(f"Layered Forensics & Attribution for {sel_node}", expanded=False):
+                render_layered_explanation(
+                    step_k=curr_k,
+                    forecast_data=fc,
+                    title=f"Layered Attribution for Endpoint {sel_node}",
+                )
 
             # Host Isolation Toggle
             if is_isolated:

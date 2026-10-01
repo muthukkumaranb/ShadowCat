@@ -6,7 +6,18 @@ Wired to real data_provider.py and multi-step forecast trajectory.
 
 import streamlit as st
 from styles import TOKENS, render_html
-from data_provider import get_forecast_trajectory, get_novelty_score, get_attributions
+from data_provider import (
+    get_forecast_trajectory,
+    get_novelty_score,
+    get_attributions,
+    get_conformal_forecast,
+    get_conformal_credibility,
+    get_counterfactual,
+)
+from components.layered_explanation import (
+    render_layered_explanation,
+    render_conformal_credibility_badge,
+)
 
 def render_page():
     t = TOKENS.get(st.session_state.get("theme", "dark"), TOKENS["dark"])
@@ -179,11 +190,17 @@ def render_page():
                     <span style="color:{t['primary']};">Inference Engine Synced</span>
                 </div>
             </div>
-            <div style="display: flex; align-items: center; gap: 0.5rem; background: {t['surface_lowest']}; padding: 3px 8px; border-radius: 9999px; border: 1px solid {t['border']};">
-                <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_muted']}; text-transform: uppercase;">Horizon</span>
-                <span class="soc-badge badge-neutral" style="padding: 2px 8px;">H = 1 (15m)</span>
-                <span class="soc-badge badge-neutral" style="padding: 2px 8px;">H = 2 (30m)</span>
-                <span class="soc-badge badge-nominal" style="padding: 2px 8px;">H = 5 (75m Primary)</span>
+            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                <div>
+                    <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_muted']}; text-transform: uppercase; margin-right: 4px;">Horizon</span>
+                    <span class="soc-badge badge-neutral" style="padding: 2px 8px;">H = 1 (15m)</span>
+                    <span class="soc-badge badge-neutral" style="padding: 2px 8px;">H = 2 (30m)</span>
+                    <span class="soc-badge badge-nominal" style="padding: 2px 8px;">H = 5 (75m Primary)</span>
+                </div>
+                <div style="border-left: 1px solid {t['border']}; padding-left: 0.5rem;">
+                    <!-- Conformal Credibility / Out-of-Distribution Diagnostic Flag (Task 3) -->
+                    {f'<div style="display: inline-flex; align-items: center; gap: 0.4rem; background: {"rgba(48, 209, 88, 0.12)" if get_conformal_credibility().get("is_in_distribution", True) else "rgba(255, 69, 58, 0.15)"}; border: 1px solid {"#30D158" if get_conformal_credibility().get("is_in_distribution", True) else "#FF453A"}; border-radius: 4px; padding: 2px 7px; font-family: \'JetBrains Mono\', monospace; font-size: 0.68rem; font-weight: 700; color: {"#30D158" if get_conformal_credibility().get("is_in_distribution", True) else "#FF453A"};"><span>{"✔" if get_conformal_credibility().get("is_in_distribution", True) else "⚠"} {get_conformal_credibility().get("badge_label", "MODEL CONFIDENCE: IN-DISTRIBUTION")}</span></div>'}
+                </div>
             </div>
         </div>
     </div>
@@ -350,50 +367,13 @@ def render_page():
     </div>
     """)
 
-    # PLAIN-LANGUAGE CAUSAL RISK ATTRIBUTION PANEL
-    drivers = active_step["drivers"]
-    render_html(f"""
-    <div class="soc-card" style="margin-bottom: 1rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                <span class="soc-badge badge-nominal" style="padding: 1px 5px; font-size: 0.65rem;">ATTRIBUTION</span>
-                <span class="soc-section-title">Causal Risk Attribution & Synthesis</span>
-            </div>
-            <div style="display: flex; gap: 0.5rem;">
-                <span class="soc-badge badge-neutral">STEP k = {active_step['k']} STATE</span>
-                <span class="soc-badge badge-nominal">Primary Forecast Engine</span>
-            </div>
-        </div>
-        <div class="soc-card-nested" style="margin-bottom: 0.75rem; line-height: 1.55; font-size: 0.875rem;">
-            <p style="margin: 0; color: {t['text_high']};">
-                {active_step['prose']} <span style="color: {t['text_secondary']};">{active_step['forecast_prose']}</span>
-            </p>
-        </div>
-        <div style="display: flex; justify-content: space-between; font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_muted']}; text-transform: uppercase; margin-bottom: 0.25rem;">
-            <span>Causal Factor Breakdown for Horizon Step <b style="color:{t['primary']}">k = {active_step['k']}</b></span>
-            <span>Aggregated Influence: 100%</span>
-        </div>
-        <div style="width: 100%; height: 8px; background: {t['surface_highest']}; border-radius: 4px; display: flex; overflow: hidden; margin-bottom: 0.5rem;">
-            <div style="width: {drivers['egress']}%; background: {t['secondary']}; height: 100%;"></div>
-            <div style="width: {drivers['fanout']}%; background: {t['tertiary']}; height: 100%;"></div>
-            <div style="width: {drivers['sweep']}%; background: {t['outline_variant']}; height: 100%;"></div>
-        </div>
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
-            <div class="soc-card-nested" style="display: flex; justify-content: space-between; align-items: center; padding: 0.4rem 0.75rem;">
-                <span style="font-size: 0.75rem; color: {t['text_secondary']};">● Egress Surge</span>
-                <span style="font-family: 'JetBrains Mono', monospace; font-weight: 700; color: {t['secondary']}; font-size: 0.8125rem;">{drivers['egress']}% Influence</span>
-            </div>
-            <div class="soc-card-nested" style="display: flex; justify-content: space-between; align-items: center; padding: 0.4rem 0.75rem;">
-                <span style="font-size: 0.75rem; color: {t['text_secondary']};">● Peer Fan-Out</span>
-                <span style="font-family: 'JetBrains Mono', monospace; font-weight: 700; color: {t['tertiary']}; font-size: 0.8125rem;">{drivers['fanout']}% Influence</span>
-            </div>
-            <div class="soc-card-nested" style="display: flex; justify-content: space-between; align-items: center; padding: 0.4rem 0.75rem;">
-                <span style="font-size: 0.75rem; color: {t['text_secondary']};">● Port Sweep</span>
-                <span style="font-family: 'JetBrains Mono', monospace; font-weight: 700; color: {t['text_muted']}; font-size: 0.8125rem;">{drivers['sweep']}% Influence</span>
-            </div>
-        </div>
-    </div>
-    """)
+    # TASK 2: Restructured 4-Layer Explanation UI (Replaces Flat Block)
+    render_layered_explanation(
+        step_k=curr_k,
+        forecast_data=fc,
+        attributions_data=attributions,
+        title=f"Layered Forecast Attribution & Forensic Synthesis (Horizon Step k = {active_step['k']})",
+    )
 
     # BASELINE VS CURRENT HISTORICAL TREND COMPARISONS
     c_col1, c_col2, c_col3 = st.columns(3)
