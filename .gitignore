@@ -63,5 +63,7 @@ backend/data/
 fabric-experiment/
 stitich frontend/
 
-
+# Runtime-generated alerts and audit logs
+backend/alerts/
+backend/audit_chain.json
 
