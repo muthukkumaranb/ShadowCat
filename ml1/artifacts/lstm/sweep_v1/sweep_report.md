@@ -23,9 +23,13 @@ We executed a hyperparameter sweep over increased capacity and training duration
 ## Task 3: Verdict and Recommendations
 
 **Verdict: The `LSTMGaussianWorldModel` architecture has a fundamental structural flaw for this task.**
-Even though increasing capacity (doubling hidden size, doubling layers) and training to convergence drastically reduced the Validation NLL (from ~12.2 to ~4.8), **this did not translate to any improvement in downstream stage predictability**. The F1 score stayed locked at exactly 0.5530 across all configurations, significantly lagging the Persistence baseline (~0.95). 
+Even though increasing capacity (doubling hidden size, doubling layers) and training to convergence drastically reduced the Validation NLL (from ~12.2 to ~4.8), **this did not translate to any improvement in downstream stage predictability**. 
 
-More capacity does not help; this points toward a representational or architectural limitation rather than undertraining, though the exact mechanism isn't established by this sweep alone.
+*Methodological Check*: To ensure this stagnation wasn't an artifact of evaluating new world models against a stale, frozen stage classification head, we retrained a new `StageClassificationHead` explicitly on the `hidden128_L2_low_lr` world model's predictions. The newly trained head exhibited a 100% recall for the majority "Unknown/Other" class, but 0% precision/recall for all attack classes. Because the world model relies on a Gaussian NLL loss, it is driven to predict a highly smoothed mean feature vector, washing out all categorical and rare attack signals.
+
+As a result, any downstream classification head is forced to predict the majority class for all samples, locking the F1 score at exactly 0.5530 across all configurations and significantly lagging the Persistence baseline (~0.95). 
+
+More capacity does not help. The Gaussian auto-regressive state representation fundamentally cannot preserve the signal required for downstream attack forecasting. An autoregressive generative approach or joint-embedding architecture is now required.
 
 ## Task 4: Progress Monitor
 

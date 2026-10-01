@@ -39,6 +39,7 @@ def get_device():
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--checkpoint", type=str, default=None, help="Path to custom world model checkpoint")
+    parser.add_argument("--stage-head-checkpoint", type=str, default=None, help="Path to custom stage head checkpoint")
     args = parser.parse_args()
 
     device = get_device()
@@ -106,9 +107,12 @@ def main():
     world_model.to(device)
     world_model.eval()
     
-    stage_head_path = workspace_dir / "ml1/artifacts/lstm/stage_head_v3/stage_head_best.pt"
-    if not stage_head_path.exists():
-        stage_head_path = workspace_dir / "ml1/artifacts/lstm/stage_head/stage_head_best.pt"
+    if args.stage_head_checkpoint:
+        stage_head_path = Path(args.stage_head_checkpoint)
+    else:
+        stage_head_path = workspace_dir / "ml1/artifacts/lstm/stage_head_v3/stage_head_best.pt"
+        if not stage_head_path.exists():
+            stage_head_path = workspace_dir / "ml1/artifacts/lstm/stage_head/stage_head_best.pt"
         
     stage_head = StageClassificationHead(
         state_dim=len(features),

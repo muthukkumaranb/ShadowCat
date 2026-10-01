@@ -156,16 +156,26 @@ def main():
     
     train_seq, val_seq, test_seq = sequences['train'], sequences['val'], sequences['test']
 
-    # Load World Model to extract predicted future state
+    ckpt = torch.load(args.world_model_ckpt, map_location=device, weights_only=True)
+    model_state = ckpt.get('model_state_dict', ckpt)
+    
+    # Infer hidden size and num layers from state dict
+    lstm_weight = model_state.get('lstm.weight_ih_l0')
+    if lstm_weight is not None:
+        hidden_size = lstm_weight.shape[0] // 4
+        num_layers = max([int(k.split('_l')[1]) for k in model_state.keys() if k.startswith('lstm.weight_ih_l')]) + 1
+    else:
+        hidden_size = 64
+        num_layers = 1
+
     world_model = LSTMGaussianWorldModel(
         input_size=train_seq.X.shape[-1],
-        hidden_size=64,
+        hidden_size=hidden_size,
         state_dim=train_seq.y.shape[-1],
-        num_layers=1,
+        num_layers=num_layers,
         dropout=0.2
     )
-    ckpt = torch.load(args.world_model_ckpt, map_location=device, weights_only=True)
-    world_model.load_state_dict(ckpt['model_state_dict'] if 'model_state_dict' in ckpt else ckpt)
+    world_model.load_state_dict(model_state)
     world_model.to(device)
     world_model.eval()
 
