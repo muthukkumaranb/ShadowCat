@@ -395,3 +395,75 @@ class LSTMGaussianWorldModel(nn.Module):
             "epsilon": self.epsilon,
             "distribution": "diagonal Gaussian",
         }
+
+
+class LSTMMixtureDensityWorldModel(nn.Module):
+    """Mixture Density Network (MDN) approximation to p(S(t+1)|S(t-29), ..., S(t))."""
+
+    def __init__(
+        self,
+        input_size: int,
+        hidden_size: int = 64,
+        state_dim: int | None = None,
+        num_layers: int = 1,
+        dropout: float = 0.2,
+        epsilon: float = 1e-4,
+        num_components: int = 5,
+    ) -> None:
+        super().__init__()
+        if state_dim is None:
+            state_dim = input_size
+        if input_size <= 0 or hidden_size <= 0 or state_dim <= 0 or num_layers <= 0 or num_components <= 0:
+            raise ValueError("input_size, hidden_size, state_dim, num_layers, and num_components must be positive.")
+        if not 0.0 <= dropout < 1.0 or epsilon <= 0.0:
+            raise ValueError("dropout must be in [0, 1) and epsilon must be positive.")
+        self.input_size = input_size
+        self.hidden_size = hidden_size
+        self.state_dim = state_dim
+        self.num_layers = num_layers
+        self.dropout_rate = dropout
+        self.epsilon = epsilon
+        self.num_components = num_components
+        
+        self.lstm = nn.LSTM(
+            input_size,
+            hidden_size,
+            num_layers=num_layers,
+            batch_first=True,
+            dropout=dropout if num_layers > 1 else 0.0,
+        )
+        self.dropout = nn.Dropout(dropout)
+        
+        self.pi_head = nn.Sequential(nn.Linear(hidden_size, hidden_size), nn.ReLU(), nn.Linear(hidden_size, num_components))
+        self.mean_head = nn.Sequential(nn.Linear(hidden_size, hidden_size), nn.ReLU(), nn.Linear(hidden_size, num_components * state_dim))
+        self.raw_std_head = nn.Sequential(nn.Linear(hidden_size, hidden_size), nn.ReLU(), nn.Linear(hidden_size, num_components * state_dim))
+
+    def forward(self, x: torch.Tensor | np.ndarray) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        x = torch.as_tensor(x, dtype=torch.float32)
+        if x.ndim != 3 or x.size(-1) != self.input_size:
+            raise ValueError(f"Expected input shape (batch, sequence, {self.input_size}).")
+        output, _ = self.lstm(x)
+        representation = self.dropout(output[:, -1, :])
+        
+        pi_logits = self.pi_head(representation)
+        pi = torch.softmax(pi_logits, dim=-1)
+        
+        mean = self.mean_head(representation).view(-1, self.num_components, self.state_dim)
+        std = torch.nn.functional.softplus(self.raw_std_head(representation)).view(-1, self.num_components, self.state_dim) + self.epsilon
+        
+        return pi, mean, std
+
+    def predict_distribution(self, x: torch.Tensor | np.ndarray) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        return self.forward(x)
+
+    def get_config(self) -> dict:
+        return {
+            "input_size": self.input_size,
+            "hidden_size": self.hidden_size,
+            "state_dim": self.state_dim,
+            "num_layers": self.num_layers,
+            "dropout": self.dropout_rate,
+            "epsilon": self.epsilon,
+            "num_components": self.num_components,
+            "distribution": "mixture of diagonal Gaussians",
+        }

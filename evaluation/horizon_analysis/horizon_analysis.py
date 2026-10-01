@@ -10,7 +10,7 @@ from sklearn.metrics import f1_score
 workspace_dir = Path(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 sys.path.insert(0, str(workspace_dir))
 
-from ml1.lstm.model import LSTMGaussianWorldModel
+from ml1.lstm.model import LSTMGaussianWorldModel, LSTMMixtureDensityWorldModel
 from ml1.lstm.ucs import UCSConfig, validate_ucs_windows, build_next_state_sequences
 from ml1.scripts.train_stage_head import StageClassificationHead
 
@@ -85,6 +85,26 @@ def main():
         else:
             hidden_size = 64
             num_layers = 1
+            
+        is_mdn = 'pi_head.0.weight' in model_state
+        if is_mdn:
+            num_components = model_state['pi_head.2.bias'].shape[0]
+            world_model = LSTMMixtureDensityWorldModel(
+                input_size=len(features),
+                hidden_size=hidden_size,
+                state_dim=len(features),
+                num_layers=num_layers,
+                dropout=0.2,
+                num_components=num_components
+            )
+        else:
+            world_model = LSTMGaussianWorldModel(
+                input_size=len(features),
+                hidden_size=hidden_size,
+                state_dim=len(features),
+                num_layers=num_layers,
+                dropout=0.2
+            )
     else:
         world_model_path = workspace_dir / "ml1/artifacts/lstm/probabilistic_world_model_v3/gaussian_next_state_best.pt"
         if not world_model_path.exists():
@@ -96,13 +116,13 @@ def main():
         ckpt = torch.load(world_model_path, map_location=device, weights_only=False)
         model_state = ckpt.get('model_state_dict', ckpt)
         
-    world_model = LSTMGaussianWorldModel(
-        input_size=len(features),
-        hidden_size=hidden_size,
-        state_dim=len(features),
-        num_layers=num_layers,
-        dropout=0.2
-    )
+        world_model = LSTMGaussianWorldModel(
+            input_size=len(features),
+            hidden_size=hidden_size,
+            state_dim=len(features),
+            num_layers=num_layers,
+            dropout=0.2
+        )
     world_model.load_state_dict(model_state)
     world_model.to(device)
     world_model.eval()
@@ -185,7 +205,12 @@ def main():
         with torch.no_grad():
             curr_seq = torch.tensor(histories).to(device)
             for k in range(5):
-                mean_next, _ = world_model(curr_seq)
+                if hasattr(world_model, 'num_components'):
+                    pi, mean_k, std = world_model(curr_seq)
+                    mean_next = torch.sum(pi.unsqueeze(-1) * mean_k, dim=1)
+                else:
+                    mean_next, _ = world_model(curr_seq)
+                    
                 logits = stage_head(mean_next)
                 preds = torch.argmax(logits, dim=-1).cpu().numpy()
                 pred_stages_model[:, k] = preds

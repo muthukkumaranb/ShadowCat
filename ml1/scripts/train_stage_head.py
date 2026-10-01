@@ -23,7 +23,7 @@ from torch.utils.data import TensorDataset, DataLoader
 import yaml
 from sklearn.metrics import classification_report, confusion_matrix, precision_recall_fscore_support, accuracy_score
 
-from lstm.model import LSTMGaussianWorldModel
+from lstm.model import LSTMGaussianWorldModel, LSTMMixtureDensityWorldModel
 from lstm.ucs import UCSConfig, validate_ucs_windows, build_next_state_sequences, load_ucs_windows, purge_and_embargo
 from lstm.utils import get_device, set_seed
 
@@ -168,13 +168,25 @@ def main():
         hidden_size = 64
         num_layers = 1
 
-    world_model = LSTMGaussianWorldModel(
-        input_size=train_seq.X.shape[-1],
-        hidden_size=hidden_size,
-        state_dim=train_seq.y.shape[-1],
-        num_layers=num_layers,
-        dropout=0.2
-    )
+    is_mdn = 'pi_head.0.weight' in model_state
+    if is_mdn:
+        num_components = model_state['pi_head.2.bias'].shape[0]
+        world_model = LSTMMixtureDensityWorldModel(
+            input_size=train_seq.X.shape[-1],
+            hidden_size=hidden_size,
+            state_dim=train_seq.y.shape[-1],
+            num_layers=num_layers,
+            dropout=0.2,
+            num_components=num_components
+        )
+    else:
+        world_model = LSTMGaussianWorldModel(
+            input_size=train_seq.X.shape[-1],
+            hidden_size=hidden_size,
+            state_dim=train_seq.y.shape[-1],
+            num_layers=num_layers,
+            dropout=0.2
+        )
     world_model.load_state_dict(model_state)
     world_model.to(device)
     world_model.eval()
@@ -182,8 +194,14 @@ def main():
     def get_predicted_states_and_labels(seq_set):
         X_tensor = torch.as_tensor(seq_set.X, dtype=torch.float32).to(device)
         with torch.no_grad():
-            mean, _ = world_model(X_tensor)
-        s_hat = mean.cpu().numpy()
+            if is_mdn:
+                pi, mean, std = world_model(X_tensor)
+                # Compute overall expected value: sum_k(pi_k * mu_k)
+                expected_mean = torch.sum(pi.unsqueeze(-1) * mean, dim=1)
+                s_hat = expected_mean.cpu().numpy()
+            else:
+                mean, _ = world_model(X_tensor)
+                s_hat = mean.cpu().numpy()
         
         # Map sequence timestamps to stage_idx
         time_to_stage = dict(zip(pd.to_datetime(purged['window_start_utc'], utc=True), purged['stage_idx']))
@@ -335,8 +353,14 @@ def main():
                 return np.zeros((0, 406), dtype=np.float32), np.zeros((0,), dtype=int)
             X_arr = np.array(X_list, dtype=np.float32)
             with torch.no_grad():
-                mean, _ = world_model(torch.as_tensor(X_arr, dtype=torch.float32).to(device))
-            return mean.cpu().numpy(), np.array(y_list, dtype=int)
+                if is_mdn:
+                    pi, mean, std = world_model(torch.as_tensor(X_arr, dtype=torch.float32).to(device))
+                    expected_mean = torch.sum(pi.unsqueeze(-1) * mean, dim=1)
+                    s_hat = expected_mean.cpu().numpy()
+                else:
+                    mean, _ = world_model(torch.as_tensor(X_arr, dtype=torch.float32).to(device))
+                    s_hat = mean.cpu().numpy()
+            return s_hat, np.array(y_list, dtype=int)
 
         S_train, Y_train = extract_s_hat_and_y(train_df)
         S_test, Y_test = extract_s_hat_and_y(test_df)
