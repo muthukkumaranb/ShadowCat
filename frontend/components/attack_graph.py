@@ -28,6 +28,7 @@ import streamlit as st
 
 from styles import render_html, COLORS
 from data_provider import get_host_risk_graph, is_using_mock_data
+from components.layered_explanation import render_layered_explanation, render_conformal_credibility_badge
 
 # Spatial layout coordinates and asset criticality metadata (Reference 5-host baseline)
 DEFAULT_NODE_METADATA = {
@@ -441,6 +442,12 @@ def render_attack_graph_panel():
             </div>
         </div>
         """)
+
+        with st.expander(f"Layered Forensics & Attribution for Host {selected_host_id}", expanded=False):
+            render_layered_explanation(
+                step_k=k_step,
+                title=f"Layered Attribution for Host {selected_host_id}",
+            )
 
 
 def _build_attack_graph_svg(graph_data: dict, active_k: int, selected_host: str, focused_host: str = None) -> str:
