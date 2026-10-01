@@ -445,6 +445,19 @@ class ShadowcatPipeline:
             except Exception as e:
                 logging.warning(f"Could not load PCA cache from {pca_load_target}: {e}")
 
+        # 6. Initialize Split Conformal Predictor with ACI and Joint Coverage
+        self.conformal_coverage = 0.90
+        # ACI gamma per-horizon: larger for K=4-5 (exploratory)
+        aci_gammas = [0.01, 0.01, 0.01, 0.05, 0.05]
+        # ACI is opt-in (disabled by default to preserve static calibration behavior)
+        use_aci = os.environ.get("SHADOWCAT_ACI_MODE", "false").lower() == "true"
+        self.conformal_predictor = SplitConformalPredictor(
+            coverage=self.conformal_coverage,
+            aci_mode=use_aci,
+            aci_gammas=aci_gammas
+        )
+        self.conformal_cal_source = None
+
     def _get_conformal_calibration_data(self) -> Tuple[np.ndarray, np.ndarray, str]:
         """
         Retrieves real empirical validation predictions and true binary targets
@@ -816,13 +829,14 @@ class ShadowcatPipeline:
         lower_bounds = []
         upper_bounds = []
         conformal_intervals = []
-        conformal_coverage = 0.90
-        conformal_predictor = SplitConformalPredictor(coverage=conformal_coverage)
+        conformal_intervals_joint = []
+        conformal_credibility = []
 
         # Split Conformal Prediction calibrated strictly on real empirical validation residuals
         # Pooled across 37 LOEO folds with zero test-set leakage (NO dummy/placeholder data)
-        real_val_preds, real_val_targets, conformal_cal_source = self._get_conformal_calibration_data()
-        conformal_predictor.calibrate(real_val_preds, real_val_targets)
+        if not self.conformal_predictor.is_calibrated:
+            real_val_preds, real_val_targets, self.conformal_cal_source = self._get_conformal_calibration_data()
+            self.conformal_predictor.calibrate(real_val_preds, real_val_targets)
 
         for k in range(5):
             # Model uncertainty sigma based on dynamics standard deviation
@@ -834,8 +848,15 @@ class ShadowcatPipeline:
             lower_bounds.append(lb)
             upper_bounds.append(ub)
 
-            c_lb, c_ub = conformal_predictor.predict_interval(cum_risk[k])
+            c_lb, c_ub = self.conformal_predictor.predict_interval(cum_risk[k], horizon_idx=k)
+            c_lb_j, c_ub_j = self.conformal_predictor.predict_interval_joint(cum_risk[k], horizon_idx=k)
             conformal_intervals.append([round(c_lb, 4), round(c_ub, 4)])
+            conformal_intervals_joint.append([round(c_lb_j, 4), round(c_ub_j, 4)])
+            
+            # Compute conformal credibility for the UI dashboard based on interval width
+            width = c_ub - c_lb
+            credibility = "HIGH" if width < 0.2 else ("MEDIUM" if width < 0.4 else "LOW")
+            conformal_credibility.append(credibility)
 
         # Step 8 & 9: Feature Attribution (Top Contributing Features)
         attr_scores = np.abs(obs_state - pred_state)
@@ -961,11 +982,14 @@ class ShadowcatPipeline:
             "lower_bound": [round(lb, 2) for lb in lower_bounds],
             "upper_bound": [round(ub, 2) for ub in upper_bounds],
             "conformal_intervals": conformal_intervals,
-            "conformal_coverage": conformal_coverage,
-            "conformal_guarantee": f"{int(conformal_coverage * 100)}% finite-sample calibrated prediction interval",
-            "conformal_calibration_source": conformal_cal_source,
-            "conformal_sample_size": conformal_predictor.calibration_sample_size,
-            "conformal_quantile": round(float(conformal_predictor.calibrated_quantile), 4),
+            "conformal_intervals_joint": conformal_intervals_joint,
+            "conformal_credibility": conformal_credibility,
+            "conformal_coverage": self.conformal_coverage,
+            "conformal_coverage_joint": 1.0 - self.conformal_predictor.alpha_joint,
+            "conformal_guarantee": f"{int(self.conformal_coverage * 100)}% finite-sample calibrated prediction interval",
+            "conformal_calibration_source": self.conformal_cal_source,
+            "conformal_sample_size": self.conformal_predictor.calibration_sample_size,
+            "conformal_quantile": round(float(self.conformal_predictor.calibrated_quantile), 4),
             "calibrated_threshold": self.calibrated_threshold_global,
             "hazard_alert": any(r >= self.calibrated_threshold_global for r in cum_risk),
             "calibrated_uncertainty": True,
@@ -1065,13 +1089,17 @@ class ShadowcatPipeline:
             "graph_traversal": graph_traversal,
             "temporal_attributions": temporal_attributions,
             "conformal_forecast": {
-                "coverage": conformal_coverage,
+                "coverage": self.conformal_coverage,
+                "coverage_joint": 1.0 - self.conformal_predictor.alpha_joint,
                 "intervals": conformal_intervals,
+                "intervals_joint": conformal_intervals_joint,
+                "conformal_credibility": conformal_credibility,
                 "point_estimates": [round(r, 2) for r in cum_risk],
                 "method": "Split Conformal Prediction (37-Fold LOEO Validation-Calibrated)",
-                "sample_size": conformal_predictor.calibration_sample_size,
-                "quantile": round(float(conformal_predictor.calibrated_quantile), 4),
-                "calibration_source": conformal_cal_source,
+                "sample_size": self.conformal_predictor.calibration_sample_size,
+                "quantile": round(float(self.conformal_predictor.calibrated_quantile), 4),
+                "calibration_source": self.conformal_cal_source,
+                "aci_mode": self.conformal_predictor.aci_mode,
             },
             "detection_probability": round(self._predict_detection_ensemble(seq_30x406), 4) if (self.use_stacked_model and self.stacked_models_loaded and len(self.stacked_detection_models) > 0) else None,
             "detection_alert": bool(self._predict_detection_ensemble(seq_30x406) >= 0.5) if (self.use_stacked_model and self.stacked_models_loaded and len(self.stacked_detection_models) > 0) else False,
