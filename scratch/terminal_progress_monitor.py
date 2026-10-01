@@ -28,7 +28,7 @@ if os.name == "nt":
     os.system("color")
 
 # Default paths
-REPO_ROOT = Path(r"d:\sih2026")
+REPO_ROOT = Path(__file__).resolve().parents[1]
 PCAP_2102_DIR = REPO_ROOT / "data-engineering" / "data" / "raw_pcap" / "21022018"
 DEFAULT_RESULTS_JSON = REPO_ROOT / "scratch" / "endtoend_graphsage_results.json"
 MANIFEST_PATH = REPO_ROOT / "ml1" / "artifacts" / "loeo" / "corrected_37fold_manifest.json"
@@ -169,6 +169,8 @@ def detect_active_workload(override_pid: int = None):
                             mode = "pcap"
                         elif "run_extraction" in cmd_str:
                             mode = "extraction"
+                        elif "run_world_model_sweep.py" in cmd_str or "train_probabilistic.py" in cmd_str:
+                            mode = "lstm_train"
                         else:
                             mode = "graphsage"
                         return mode, True, p.pid, cpu_sec, mem_mb, elapsed_sec, cpu_pct, cmd_str
@@ -180,6 +182,8 @@ def detect_active_workload(override_pid: int = None):
         graphsage_candidates = []
         extraction_candidates = []
 
+        lstm_candidates = []
+
         for p in psutil.process_iter(["pid", "name", "cmdline"]):
             try:
                 cmdline = p.info.get("cmdline") or []
@@ -190,6 +194,8 @@ def detect_active_workload(override_pid: int = None):
                     pcap_candidates.append((p, cmd_str))
                 elif "run_extraction" in cmd_str or "rebuild_ucs" in cmd_str:
                     extraction_candidates.append((p, cmd_str))
+                elif "run_world_model_sweep.py" in cmd_str or "train_probabilistic.py" in cmd_str:
+                    lstm_candidates.append((p, cmd_str))
                 elif "evaluate_endtoend_graphsage" in cmd_str or "evaluate_graphsage" in cmd_str:
                     graphsage_candidates.append((p, cmd_str))
             except (psutil.NoSuchProcess, psutil.AccessDenied):
@@ -205,6 +211,11 @@ def detect_active_workload(override_pid: int = None):
             best_p, best_cmd = max(extraction_candidates, key=lambda x: (x[0].cpu_times().user + x[0].cpu_times().system))
             with best_p.oneshot():
                 return "extraction", True, best_p.pid, (best_p.cpu_times().user + best_p.cpu_times().system), best_p.memory_info().rss / (1024*1024), max(0, time.time() - best_p.create_time()), best_p.cpu_percent(interval=None), best_cmd
+
+        if lstm_candidates:
+            best_p, best_cmd = max(lstm_candidates, key=lambda x: (x[0].cpu_times().user + x[0].cpu_times().system))
+            with best_p.oneshot():
+                return "lstm_train", True, best_p.pid, (best_p.cpu_times().user + best_p.cpu_times().system), best_p.memory_info().rss / (1024*1024), max(0, time.time() - best_p.create_time()), best_p.cpu_percent(interval=None), best_cmd
 
         if graphsage_candidates:
             best_p, best_cmd = max(graphsage_candidates, key=lambda x: (x[0].cpu_times().user + x[0].cpu_times().system))
@@ -608,6 +619,64 @@ def render_graphsage_dashboard(
 # Main Loop & Entry Point
 # ─────────────────────────────────────────────────────────────────────────────
 
+def render_lstm_dashboard(
+    spinner_char: str,
+    results_path: Path,
+    is_running: bool,
+    pid: int,
+    cpu_sec: float,
+    mem_mb: float,
+    wall_elapsed: float,
+    cpu_pct: float,
+    cmdline_str: str,
+) -> str:
+    """Render full ANSI dashboard for World Model Sweep / Training."""
+    status_data = load_results_json(results_path)
+    
+    epoch = status_data.get("epoch", 0)
+    total_epochs = status_data.get("epochs_total", 30)
+    train_nll = status_data.get("train_nll", 0.0)
+    val_nll = status_data.get("val_nll", 0.0)
+    best_val_nll = status_data.get("best_val_nll", 0.0)
+    patience = status_data.get("patience", 5)
+    stale = status_data.get("stale", 0)
+    lr = status_data.get("lr", 0.0)
+    hidden_size = status_data.get("hidden_size", 0)
+    num_layers = status_data.get("num_layers", 0)
+    
+    pct = (epoch / total_epochs * 100.0) if total_epochs > 0 else 0.0
+    prog_bar = make_bar(pct, width=32, fill_color=C_CYAN)
+
+    buf = []
+    buf.append("\033[H")
+
+    status_badge = f"{C_GREEN}● TRAINING ACTIVE [PID {pid}]{C_RESET}" if is_running else f"{C_YELLOW}◌ IDLE / COMPLETE{C_RESET}"
+
+    buf.append(f"{C_CYAN}╭─────────────────────────────────────────────────────────────────────────────╮{C_RESET}")
+    title_text = f"🧠  LSTM WORLD MODEL HYPERPARAMETER SWEEP  {spinner_char}  {status_badge}"
+    buf.append(f"{C_CYAN}│{C_RESET}  {C_BOLD}{C_WHITE}{title_text}{C_RESET}")
+    buf.append(f"{C_CYAN}├─────────────────────────────────────────────────────────────────────────────┤{C_RESET}")
+    buf.append(f"{C_CYAN}│{C_RESET}  {C_BOLD}Active Configuration:{C_RESET} Hidden Size={C_YELLOW}{hidden_size}{C_RESET} │ Layers={C_YELLOW}{num_layers}{C_RESET} │ LR={C_YELLOW}{lr}{C_RESET}")
+    buf.append(f"{C_CYAN}│{C_RESET}  Epoch Progress: [{prog_bar}] {C_BOLD}{C_CYAN}{pct:5.1f}%{C_RESET} ({epoch}/{total_epochs})")
+    buf.append(f"{C_CYAN}├─────────────────────────────────────────────────────────────────────────────┤{C_RESET}")
+    
+    buf.append(f"{C_CYAN}│{C_RESET}  {C_BOLD}PERFORMANCE METRICS:{C_RESET}")
+    buf.append(f"{C_CYAN}│{C_RESET}  Train Gaussian NLL: {C_BLUE}{train_nll:.4f}{C_RESET}")
+    buf.append(f"{C_CYAN}│{C_RESET}  Val Gaussian NLL:   {C_MAGENTA}{val_nll:.4f}{C_RESET}")
+    buf.append(f"{C_CYAN}│{C_RESET}  Best Val NLL:       {C_GREEN}{C_BOLD}{best_val_nll:.4f}{C_RESET}")
+    
+    stale_color = C_GREEN if stale == 0 else (C_YELLOW if stale < patience - 1 else C_RED)
+    buf.append(f"{C_CYAN}│{C_RESET}  Early Stopping:     {stale_color}{stale} / {patience} epochs without improvement{C_RESET}")
+
+    buf.append(f"{C_CYAN}├─────────────────────────────────────────────────────────────────────────────┤{C_RESET}")
+    cpu_hrs = cpu_sec / 3600.0
+    wall_str = format_duration(wall_elapsed)
+    buf.append(f"{C_CYAN}│{C_RESET}  {C_DIM}Telemetry:{C_RESET} PID: {C_BOLD}{pid if is_running else 'Offline'}{C_RESET} │ Worker RAM: {C_MAGENTA}{mem_mb:.0f} MB{C_RESET} │ CPU Time: {C_YELLOW}{cpu_hrs:.2f}h{C_RESET} │ Wall: {C_BLUE}{wall_str}{C_RESET}")
+    buf.append(f"{C_CYAN}╰─────────────────────────────────────────────────────────────────────────────╯{C_RESET}")
+    
+    return "\n".join(buf)
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Unified Terminal Progress Monitor for Cyber World Model Architecture"
@@ -625,9 +694,9 @@ def main():
     )
     parser.add_argument(
         "--mode",
-        choices=["auto", "pcap", "graphsage"],
+        choices=["auto", "pcap", "graphsage", "lstm_train"],
         default="auto",
-        help="Dashboard mode (auto, pcap, or graphsage)",
+        help="Dashboard mode (auto, pcap, graphsage, or lstm_train)",
     )
     parser.add_argument(
         "--pid",
@@ -658,6 +727,18 @@ def main():
                 dash = render_pcap_dashboard(
                     spinner_char=spinner_char,
                     dest_dir=PCAP_2102_DIR,
+                    is_running=is_running,
+                    pid=pid,
+                    cpu_sec=cpu_sec,
+                    mem_mb=mem_mb,
+                    wall_elapsed=elapsed_sec,
+                    cpu_pct=cpu_pct,
+                    cmdline_str=cmdline_str,
+                )
+            elif active_mode == "lstm_train":
+                dash = render_lstm_dashboard(
+                    spinner_char=spinner_char,
+                    results_path=REPO_ROOT / "scratch" / "live_lstm_status.json",
                     is_running=is_running,
                     pid=pid,
                     cpu_sec=cpu_sec,

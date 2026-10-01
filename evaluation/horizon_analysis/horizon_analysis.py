@@ -31,10 +31,16 @@ def assign_stage(row, tactic_map):
     attack = row.get('label_attack_type', 'Benign')
     return tactic_map.get(attack, "Unknown/Other")
 
+import argparse
+
 def get_device():
     return torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--checkpoint", type=str, default=None, help="Path to custom world model checkpoint")
+    args = parser.parse_args()
+
     device = get_device()
     
     # 1. Load Dataset & Mapping
@@ -62,21 +68,41 @@ def main():
     num_classes = len(stage_classes)
     
     # 2. Load Models
-    world_model_path = workspace_dir / "ml1/artifacts/lstm/probabilistic_world_model_v3/gaussian_next_state_best.pt"
-    if not world_model_path.exists():
-        world_model_path = workspace_dir / "ml1/artifacts/lstm/gaussian_next_state_best_v3.pt"
-    if not world_model_path.exists():
-        world_model_path = workspace_dir / "ml1/artifacts/lstm/gaussian_next_state_best_v2.pt"
+    if args.checkpoint:
+        world_model_path = Path(args.checkpoint)
+        # Infer architecture from sweep configs
+        # Default is hidden=64, layers=1, but if we pass checkpoint, we might need to know architecture!
+        # Oh, `LSTMGaussianWorldModel` needs input_size, hidden_size, state_dim, num_layers.
+        # We can try to load the state dict to guess or just pass via args.
+        ckpt = torch.load(world_model_path, map_location=device, weights_only=False)
+        model_state = ckpt.get('model_state_dict', ckpt)
+        # Infer hidden size and num layers from state dict
+        lstm_weight = model_state.get('lstm.weight_ih_l0')
+        if lstm_weight is not None:
+            hidden_size = lstm_weight.shape[0] // 4
+            num_layers = max([int(k.split('_l')[1]) for k in model_state.keys() if k.startswith('lstm.weight_ih_l')]) + 1
+        else:
+            hidden_size = 64
+            num_layers = 1
+    else:
+        world_model_path = workspace_dir / "ml1/artifacts/lstm/probabilistic_world_model_v3/gaussian_next_state_best.pt"
+        if not world_model_path.exists():
+            world_model_path = workspace_dir / "ml1/artifacts/lstm/gaussian_next_state_best_v3.pt"
+        if not world_model_path.exists():
+            world_model_path = workspace_dir / "ml1/artifacts/lstm/gaussian_next_state_best_v2.pt"
+        hidden_size = 64
+        num_layers = 1
+        ckpt = torch.load(world_model_path, map_location=device, weights_only=False)
+        model_state = ckpt.get('model_state_dict', ckpt)
         
     world_model = LSTMGaussianWorldModel(
         input_size=len(features),
-        hidden_size=64,
+        hidden_size=hidden_size,
         state_dim=len(features),
-        num_layers=1,
+        num_layers=num_layers,
         dropout=0.2
     )
-    ckpt = torch.load(world_model_path, map_location=device, weights_only=False)
-    world_model.load_state_dict(ckpt.get('model_state_dict', ckpt))
+    world_model.load_state_dict(model_state)
     world_model.to(device)
     world_model.eval()
     
