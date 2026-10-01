@@ -52,6 +52,11 @@ def main():
     windows = pd.read_parquet(data_path)
     config = UCSConfig()
     features = validate_ucs_windows(windows, config=config)
+    exact_old_features_path = workspace_dir / "scratch/exact_old_features.txt"
+    if exact_old_features_path.exists():
+        old_cols = exact_old_features_path.read_text().strip().split(",")
+        features = [c for c in old_cols if c in features]
+        print(f"Restricted features to {len(features)} for world model compatibility.")
     
     mapping_path = workspace_dir / "data-engineering/data/ucs/attack_tactics_mapping.yaml"
     if not mapping_path.exists():

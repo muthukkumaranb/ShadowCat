@@ -118,6 +118,11 @@ def main():
     windows = load_ucs_windows(args.data)
     config = UCSConfig()
     features = validate_ucs_windows(windows, config=config)
+    exact_old_features_path = workspace_dir.parent / "scratch/exact_old_features.txt"
+    if exact_old_features_path.exists():
+        old_cols = exact_old_features_path.read_text().strip().split(",")
+        features = [c for c in old_cols if c in features]
+        print(f"Restricted features to {len(features)} for world model compatibility.")
 
     tactic_map = load_attack_stage_mapping(args.mapping)
     print(f"Loaded ATT&CK tactic mappings for {len(tactic_map)} attack types:")
