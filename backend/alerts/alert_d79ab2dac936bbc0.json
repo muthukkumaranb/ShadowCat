@@ -1,0 +1,8 @@
+{
+  "alert_hash": "d79ab2dac936bbc0",
+  "window_id": "W_unknown_20180302_112500",
+  "window_start": "2018-03-02 11:25:00+00:00",
+  "max_risk": 1.0,
+  "severity": "HIGH",
+  "notarized_via": "sha256_fallback"
+}

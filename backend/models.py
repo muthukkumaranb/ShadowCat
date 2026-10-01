@@ -280,3 +280,49 @@ class StageClassificationHead(nn.Module):
         with torch.no_grad():
             logits = self.forward(predicted_state)
             return torch.softmax(logits, dim=-1)
+
+class MIMOStageClassificationHead(nn.Module):
+    """
+    MIMO Stage Classifier operating on latent z(t) (64 dims).
+    Predicts stage distributions for all K=1..5 horizons directly.
+    """
+    STAGE_CLASSES = StageClassificationHead.STAGE_CLASSES
+    TACTIC_ID_MAP = StageClassificationHead.TACTIC_ID_MAP
+
+    @classmethod
+    def get_tactic_details(cls, stage_name: str) -> dict:
+        return StageClassificationHead.get_tactic_details(stage_name)
+
+    def __init__(
+        self,
+        latent_dim: int = 64,
+        num_classes: int = 6,
+        horizons: int = 5,
+        hidden_dim: int = 128,
+        dropout: float = 0.2,
+    ) -> None:
+        super().__init__()
+        self.latent_dim = latent_dim
+        self.num_classes = num_classes
+        self.horizons = horizons
+        self.net = nn.Sequential(
+            nn.Linear(latent_dim, hidden_dim),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(hidden_dim, horizons * num_classes),
+        )
+
+    def forward(self, z_t: torch.Tensor) -> torch.Tensor:
+        """
+        Input shape: (batch_size, latent_dim=64)
+        Returns: logits shape (batch_size, horizons=5, num_classes=6)
+        """
+        z_t = torch.as_tensor(z_t, dtype=torch.float32)
+        out = self.net(z_t)
+        return out.view(-1, self.horizons, self.num_classes)
+
+    def predict_probabilities(self, z_t: torch.Tensor) -> torch.Tensor:
+        self.eval()
+        with torch.no_grad():
+            logits = self.forward(z_t)
+            return torch.softmax(logits, dim=-1)

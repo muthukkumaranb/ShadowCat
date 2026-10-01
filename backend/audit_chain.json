@@ -238,5 +238,75 @@
     "artifact_hash": "b5f7dc8c00b5372f6b92092dd475ce137fc7800a1fcffa798392ef165d534019",
     "prev_entry_hash": "2cdeb09f64df4350968295712a09b334e4ad974c1e778569ff094af525ca1bcd",
     "entry_hash": "1587a4bb6948aa2661dc02a509367641693494b9cf86ca2f9c7a82920927a9f4"
+  },
+  {
+    "index": 24,
+    "timestamp": "2026-10-01T03:49:21.474761+00:00",
+    "artifact_path": "alerts/alert_9109c467fd8842fe.json",
+    "artifact_type": "hazard_alert",
+    "description": "Hazard alert 9109c467fd8842fe [HIGH] (SHA-256 fallback)",
+    "artifact_hash": "94a7b65d7b191622b62af54a2e03a8df017fe3ca6d346f50f588e75f34557e6a",
+    "prev_entry_hash": "1587a4bb6948aa2661dc02a509367641693494b9cf86ca2f9c7a82920927a9f4",
+    "entry_hash": "4d68ac6755eb104835f813df6d39a18d18db3503552b66b2be33297de747feb5"
+  },
+  {
+    "index": 25,
+    "timestamp": "2026-10-01T03:49:21.506392+00:00",
+    "artifact_path": "alerts/lineage_lin_W_14-02-2018_20180214_012900_a2710d1d.json",
+    "artifact_type": "prediction_lineage",
+    "description": "Prediction lineage lin_W_14-02-2018_20180214_012900_a2710d1d [HIGH] (SHA-256 fallback)",
+    "artifact_hash": "39f261f766cc1c89e5934f29024ee62198ba3bb017b560c94273575204092972",
+    "prev_entry_hash": "4d68ac6755eb104835f813df6d39a18d18db3503552b66b2be33297de747feb5",
+    "entry_hash": "7ee57c728fe2b1b97d047658f08c85de95d5d0ff6af9b0e81433b37257d71c04"
+  },
+  {
+    "index": 26,
+    "timestamp": "2026-10-01T03:49:25.968741+00:00",
+    "artifact_path": "alerts/alert_d79ab2dac936bbc0.json",
+    "artifact_type": "hazard_alert",
+    "description": "Hazard alert d79ab2dac936bbc0 [HIGH] (SHA-256 fallback)",
+    "artifact_hash": "c2624d9e8772d3732acb203ec28e8e0f8c846c488c4e561008babe6e3543ee29",
+    "prev_entry_hash": "7ee57c728fe2b1b97d047658f08c85de95d5d0ff6af9b0e81433b37257d71c04",
+    "entry_hash": "6e4859fd6829b4904a2a5712b981bf1e5c345b6ddef9fbce48fcdf411a24200a"
+  },
+  {
+    "index": 27,
+    "timestamp": "2026-10-01T03:49:25.994349+00:00",
+    "artifact_path": "alerts/lineage_lin_W_unknown_20180302_112500_db2890d3.json",
+    "artifact_type": "prediction_lineage",
+    "description": "Prediction lineage lin_W_unknown_20180302_112500_db2890d3 [HIGH] (SHA-256 fallback)",
+    "artifact_hash": "3b52988edb7a44784acb83e59d50b64f34fdf19387583a83d2088546f8ae430e",
+    "prev_entry_hash": "6e4859fd6829b4904a2a5712b981bf1e5c345b6ddef9fbce48fcdf411a24200a",
+    "entry_hash": "93dbdbf79003bb4149fba15d66becee879ce99b6d623eb5e5d18cab2ed96beec"
+  },
+  {
+    "index": 28,
+    "timestamp": "2026-10-01T03:49:27.354936+00:00",
+    "artifact_path": "alerts/alert_46d02b94fadb6fb5.json",
+    "artifact_type": "hazard_alert",
+    "description": "Hazard alert 46d02b94fadb6fb5 [HIGH] (SHA-256 fallback)",
+    "artifact_hash": "3d6f851381db22ef9c6d1f13e4aecad783937ab67f2e059e1115d3a31c8b3dca",
+    "prev_entry_hash": "93dbdbf79003bb4149fba15d66becee879ce99b6d623eb5e5d18cab2ed96beec",
+    "entry_hash": "fbb713ab084e1d779054710d4605ecd041c88a7022eb7bfcc4a3b8fd542303f8"
+  },
+  {
+    "index": 29,
+    "timestamp": "2026-10-01T03:49:28.282791+00:00",
+    "artifact_path": "alerts/alert_27f8dfaeecbdec00.json",
+    "artifact_type": "hazard_alert",
+    "description": "Hazard alert 27f8dfaeecbdec00 [HIGH] (SHA-256 fallback)",
+    "artifact_hash": "cadb38bb12466574d8bfaa072985c5b41c2309b9e97ad5485d18c9147b50f3b8",
+    "prev_entry_hash": "fbb713ab084e1d779054710d4605ecd041c88a7022eb7bfcc4a3b8fd542303f8",
+    "entry_hash": "6eefea2cbbedfe397addcfb57cae36e79ff2cd7b0cc2970f826df37ff6cfe123"
+  },
+  {
+    "index": 30,
+    "timestamp": "2026-10-01T03:49:28.304489+00:00",
+    "artifact_path": "alerts/lineage_lin_W_unknown_20180214_090000_308396d5.json",
+    "artifact_type": "prediction_lineage",
+    "description": "Prediction lineage lin_W_unknown_20180214_090000_308396d5 [HIGH] (SHA-256 fallback)",
+    "artifact_hash": "1179c684670d3b780682de22caaeaec5a451270100a56b5d7a0a91e2f35c662d",
+    "prev_entry_hash": "6eefea2cbbedfe397addcfb57cae36e79ff2cd7b0cc2970f826df37ff6cfe123",
+    "entry_hash": "e8f684f4d9d010e23a58eebc060bde738834f03ca2dc77f22885ba5c77df80ab"
   }
 ]
