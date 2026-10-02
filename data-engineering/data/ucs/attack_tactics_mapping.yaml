@@ -71,3 +71,52 @@ mappings:
     technique_name: "Network Service Discovery"
     confidence: "clean"
     justification: "Nmap sweeps across the internal network for lateral movement planning."
+
+  "DoS slowloris":
+    tactic: "Impact"
+    technique_id: "T1498"
+    technique_name: "Network Denial of Service"
+    confidence: "clean"
+    justification: "CIC-IDS2017 DoS slowloris attack."
+
+  "DoS Slowhttptest":
+    tactic: "Impact"
+    technique_id: "T1498"
+    technique_name: "Network Denial of Service"
+    confidence: "clean"
+    justification: "CIC-IDS2017 DoS Slowhttptest attack."
+
+  "DoS Hulk":
+    tactic: "Impact"
+    technique_id: "T1498"
+    technique_name: "Network Denial of Service"
+    confidence: "clean"
+    justification: "CIC-IDS2017 DoS Hulk attack."
+
+  "DoS GoldenEye":
+    tactic: "Impact"
+    technique_id: "T1498"
+    technique_name: "Network Denial of Service"
+    confidence: "clean"
+    justification: "CIC-IDS2017 DoS GoldenEye attack."
+
+  "Heartbleed":
+    tactic: "Credential Access"
+    technique_id: "T1552"
+    technique_name: "Unsecured Credentials"
+    confidence: "clean"
+    justification: "CIC-IDS2017 Heartbleed vulnerability exploitation."
+
+  "FTP-Patator":
+    tactic: "Credential Access"
+    technique_id: "T1110.001"
+    technique_name: "Brute Force: Password Guessing"
+    confidence: "clean"
+    justification: "CIC-IDS2017 FTP Brute Force."
+
+  "SSH-Patator":
+    tactic: "Credential Access"
+    technique_id: "T1110.001"
+    technique_name: "Brute Force: Password Guessing"
+    confidence: "clean"
+    justification: "CIC-IDS2017 SSH Brute Force."

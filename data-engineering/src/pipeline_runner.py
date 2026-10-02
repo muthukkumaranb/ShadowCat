@@ -120,7 +120,13 @@ def run_pipeline(config_path: str = "configs/pipeline_config.yaml") -> Dict[str,
 
             # STAGE 2: Canonical Mapping
             print("  -> Stage 2: Canonical Mapping...")
-            df_canonical, map_audit = map_to_canonical_schema(df_raw)
+            if "2017" in filepath or "ISCX" in filepath:
+                from src.cicids2017_mapper import map_cicids2017_schema
+                df_canonical, map_audit = map_cicids2017_schema(df_raw)
+                df_canonical["source_dataset"] = "CIC-IDS2017"
+            else:
+                df_canonical, map_audit = map_to_canonical_schema(df_raw)
+                df_canonical["source_dataset"] = "CSE-CIC-IDS2018"
             day_audit["stage2_mapping"] = map_audit
             print(f"     Mapped {map_audit['mapped_columns_count']} columns into canonical schema.")
 

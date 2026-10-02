@@ -1,0 +1,1 @@
+{"epoch": 60, "epochs_total": 60, "train_nll": 317.31975533175057, "val_nll": 6.516782059389002, "best_val_nll": 6.557354755962597, "patience": 10, "stale": 0, "lr": 0.0005, "hidden_size": 128, "num_layers": 2}
