@@ -2,8 +2,17 @@
 UCSExtractor: Reusable Runtime Feature Extraction Module
 SIH 2026 - Unified Cyber State (UCS) Ingestion Pipeline
 
-Packages the batch ingestion pipeline into a reusable runtime extractor that converts
-streaming or batched flow/PCAP records into standardized 410-column UCS window tensors.
+Authoritative Schema Breakdown:
+- Disk Parquet Dataset (data-engineering/data/ucs/ucs_windows.parquet): 418 columns total
+  * 4 Window Identifiers: window_id, window_start_utc, window_end_utc, source_day
+  * 6 Presence Masks: mask_has_traffic_volume_features, mask_has_flow_timing_features,
+                      mask_has_packet_level_features, mask_has_tcp_flags,
+                      mask_has_graph_topology, mask_has_identity_auth
+  * 400 Numerical Features: 388 flow aggregation features + 12 PCAP packet features
+  * 8 Dataset & Label Metadata: split, label_binary, label_attack_type, future_attack_label,
+                                raw_label_dominant, has_malicious_flows, episode_id, forecast_episode_id
+- Runtime Extractor Output (extract()): Exactly 410 columns (4 window IDs + 6 masks + 400 features)
+- Model Input Tensor (extract_model_tensor()): Exactly 406 columns (388 flow features + 6 masks + 12 packet features)
 """
 
 import os
