@@ -77,6 +77,12 @@ def clean_and_normalize_flow_data(
             audit["corrupted_epoch_timestamps_dropped"] = corrupted_year_count
             df.drop(df[~valid_ts_mask].index, inplace=True)
 
+    # 1.5. Drop identifier columns that cause schema drift if present
+    drop_identifiers = ["Flow ID", "Src IP", "Dst IP", "Src Port", "flow_id", "src_ip", "dst_ip", "src_port"]
+    for col in drop_identifiers:
+        if col in df.columns:
+            df.drop(columns=[col], inplace=True)
+
     candidate_cols = [c for c in df.columns if c not in ["raw_timestamp", "timestamp_utc", "raw_label", "source_file", "source_day"]]
     numeric_cols = df[candidate_cols].columns
 

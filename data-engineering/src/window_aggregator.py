@@ -34,7 +34,8 @@ def create_1min_windows(
     # Select numerical feature columns for aggregation
     exclude_cols = {
         "timestamp_utc", "window_start_utc", "raw_timestamp", "raw_label",
-        "source_file", "source_day", "destination_port", "protocol"
+        "source_file", "source_day", "destination_port", "protocol",
+        "Flow ID", "Src IP", "Dst IP", "Src Port", "flow_id", "src_ip", "dst_ip", "src_port"
     }
     numeric_feature_cols = [
         c for c in df.select_dtypes(include=[np.number]).columns
