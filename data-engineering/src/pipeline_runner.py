@@ -216,13 +216,22 @@ def run_pipeline(config_path: str = "configs/pipeline_config.yaml") -> Dict[str,
     # Merge Packet-Level Features (Wednesday-14-02-2018 PCAP coverage)
     print("[*] Merging PCAP packet-level features (TTL, flags, payloads, retransmissions, port scan scores)...")
     packet_features_path = os.path.join(output_dir, "packet_features.parquet")
-    if not os.path.exists(packet_features_path):
+    if not os.path.exists(packet_features_path) and "14-02-2018" in str(full_windows_df["source_day"].unique()):
+        # Only attempt to extract for 2018 if the PCAP actually matches
         from src.pcap_extractor import extract_or_generate_packet_features
+        # We must write a temporary ucs_windows for it to read
+        temp_ucs_path = os.path.join(output_dir, "temp_ucs_windows.parquet")
+        full_windows_df.to_parquet(temp_ucs_path, index=False)
         extract_or_generate_packet_features(
-            ucs_windows_path=os.path.join(output_dir, "ucs_windows.parquet") if os.path.exists(os.path.join(output_dir, "ucs_windows.parquet")) else None,
+            ucs_windows_path=temp_ucs_path,
             target_day="14-02-2018",
             output_path=packet_features_path
         )
+        if os.path.exists(temp_ucs_path):
+            os.remove(temp_ucs_path)
+    elif not os.path.exists(packet_features_path):
+        # Create empty packet features for non-2018 or missing PCAP
+        pd.DataFrame({"window_id": []}).to_parquet(packet_features_path)
     
     packet_df = pd.read_parquet(packet_features_path)
     pkt_cols = [c for c in packet_df.columns if c != "window_id"]

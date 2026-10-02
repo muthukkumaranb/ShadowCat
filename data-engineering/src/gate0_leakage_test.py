@@ -153,11 +153,16 @@ def run_gate0_leakage_test(
     m_a_chrono, m_b_chrono = evaluate_split(train_chrono, test_chrono)
 
     # 2. Window-Stratified Diagnostic
+    # Filter classes with count < 2 to prevent train_test_split stratify error
+    class_counts = df["label_attack_type"].value_counts()
+    valid_classes = class_counts[class_counts >= 2].index
+    df_strat = df[df["label_attack_type"].isin(valid_classes)].copy()
+    
     train_strat, test_strat = train_test_split(
-        df,
+        df_strat,
         test_size=0.15,
         random_state=42,
-        stratify=df["label_attack_type"]
+        stratify=df_strat["label_attack_type"]
     )
     m_a_strat, m_b_strat = evaluate_split(train_strat, test_strat)
 

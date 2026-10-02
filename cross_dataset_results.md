@@ -1,0 +1,1 @@
+# Cross-Dataset Generalization (Trained on 2018, Evaluated on 2017)\n2018 Test F1: 0.2625\n2017 Zero-Shot F1: 0.4276\n

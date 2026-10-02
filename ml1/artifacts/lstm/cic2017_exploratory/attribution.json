@@ -1,0 +1,66 @@
+[
+  {
+    "feature_group": "direction_ratio",
+    "feature_count": 5,
+    "mean_output_change": 0.4135170578956604,
+    "mean_uncertainty_change": 0.029262641444802284,
+    "protocol": "chronological split",
+    "masking": "zero standardized/input representation features"
+  },
+  {
+    "feature_group": "masks",
+    "feature_count": 6,
+    "mean_output_change": 1.527587890625,
+    "mean_uncertainty_change": 0.08910830318927765,
+    "protocol": "chronological split",
+    "masking": "zero standardized/input representation features"
+  },
+  {
+    "feature_group": "other",
+    "feature_count": 185,
+    "mean_output_change": 3.5295002460479736,
+    "mean_uncertainty_change": 0.19032692909240723,
+    "protocol": "chronological split",
+    "masking": "zero standardized/input representation features"
+  },
+  {
+    "feature_group": "packet_volume",
+    "feature_count": 15,
+    "mean_output_change": 0.7447726130485535,
+    "mean_uncertainty_change": 0.053485095500946045,
+    "protocol": "chronological split",
+    "masking": "zero standardized/input representation features"
+  },
+  {
+    "feature_group": "tcp_flags",
+    "feature_count": 60,
+    "mean_output_change": 2.1752636432647705,
+    "mean_uncertainty_change": 0.12649185955524445,
+    "protocol": "chronological split",
+    "masking": "zero standardized/input representation features"
+  },
+  {
+    "feature_group": "tcp_window_segment",
+    "feature_count": 20,
+    "mean_output_change": 0.3568927049636841,
+    "mean_uncertainty_change": 0.024400807917118073,
+    "protocol": "chronological split",
+    "masking": "zero standardized/input representation features"
+  },
+  {
+    "feature_group": "timing",
+    "feature_count": 120,
+    "mean_output_change": 5.543125152587891,
+    "mean_uncertainty_change": 0.32886189222335815,
+    "protocol": "chronological split",
+    "masking": "zero standardized/input representation features"
+  },
+  {
+    "feature_group": "traffic_volume",
+    "feature_count": 15,
+    "mean_output_change": 0.4555247724056244,
+    "mean_uncertainty_change": 0.03301946446299553,
+    "protocol": "chronological split",
+    "masking": "zero standardized/input representation features"
+  }
+]

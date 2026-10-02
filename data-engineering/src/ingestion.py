@@ -43,6 +43,15 @@ def ingest_csv_file(
         engine="pyarrow",
         on_bad_lines="skip",
     )
+    
+    # Ensure column names are strings and deduplicate
+    df.columns = [str(c) for c in df.columns]
+    if df.columns.duplicated().any():
+        # pandas doesn't have an in-place column deduplicator that is simple, so:
+        cols = pd.Series(df.columns)
+        for dup in cols[cols.duplicated()].unique():
+            cols[cols[cols == dup].index.values.tolist()] = [dup + '.' + str(i) if i != 0 else dup for i in range(sum(cols == dup))]
+        df.columns = cols
 
     # Aggressive memory downcasting to prevent OOM on large files
     float_cols = df.select_dtypes(include=['float64']).columns

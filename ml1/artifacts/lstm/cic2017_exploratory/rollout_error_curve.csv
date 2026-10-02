@@ -1,0 +1,7 @@
+k,model,rmse,mae,mse,protocol
+1,lstm_gaussian,9417.435546875,109.93756866455078,88688088.0,chronological split
+1,persistence,13265.099609375,22.46019172668457,175962864.0,chronological split
+1,lagged_linear_pca,2180778.0,13947.6337890625,4755792855040.0,chronological split
+2,lstm_gaussian,9414.583984375,106.2701187133789,88634384.0,chronological split
+2,persistence,13265.099609375,22.456321716308594,175962880.0,chronological split
+2,lagged_linear_pca,1032515.8125,11637.5244140625,1066088857600.0,chronological split
