@@ -83,7 +83,7 @@ def clean_and_normalize_flow_data(
         if col in df.columns:
             df.drop(columns=[col], inplace=True)
 
-    candidate_cols = [c for c in df.columns if c not in ["raw_timestamp", "timestamp_utc", "raw_label", "source_file", "source_day"]]
+    candidate_cols = [c for c in df.columns if c not in ["raw_timestamp", "timestamp_utc", "raw_label", "source_file", "source_day", "source_dataset"]]
     numeric_cols = df[candidate_cols].columns
 
     inf_counts = {}

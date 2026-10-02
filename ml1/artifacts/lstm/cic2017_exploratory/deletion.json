@@ -1,66 +1,66 @@
 [
   {
     "feature_group": "direction_ratio",
-    "mae": 14.928157806396484,
-    "rmse": 5731.34716796875,
-    "delta_mae": -0.05603504180908203,
-    "delta_rmse": -0.0087890625,
+    "mae": 12.747498512268066,
+    "rmse": 5870.84228515625,
+    "delta_mae": -0.034422874450683594,
+    "delta_rmse": 0.0029296875,
     "protocol": "chronological split"
   },
   {
     "feature_group": "masks",
-    "mae": 14.017566680908203,
-    "rmse": 5731.30322265625,
-    "delta_mae": -0.9666261672973633,
-    "delta_rmse": -0.052734375,
+    "mae": 12.112485885620117,
+    "rmse": 5870.81298828125,
+    "delta_mae": -0.6694355010986328,
+    "delta_rmse": -0.0263671875,
     "protocol": "chronological split"
   },
   {
     "feature_group": "other",
-    "mae": 17.695432662963867,
-    "rmse": 5731.587890625,
-    "delta_mae": 2.711239814758301,
-    "delta_rmse": 0.23193359375,
+    "mae": 13.47694206237793,
+    "rmse": 5870.82373046875,
+    "delta_mae": 0.6950206756591797,
+    "delta_rmse": -0.015625,
     "protocol": "chronological split"
   },
   {
     "feature_group": "packet_volume",
-    "mae": 14.732650756835938,
-    "rmse": 5731.3447265625,
-    "delta_mae": -0.2515420913696289,
-    "delta_rmse": -0.01123046875,
+    "mae": 12.967389106750488,
+    "rmse": 5870.84375,
+    "delta_mae": 0.18546772003173828,
+    "delta_rmse": 0.00439453125,
     "protocol": "chronological split"
   },
   {
     "feature_group": "tcp_flags",
-    "mae": 14.152647972106934,
-    "rmse": 5731.330078125,
-    "delta_mae": -0.8315448760986328,
-    "delta_rmse": -0.02587890625,
+    "mae": 12.363430976867676,
+    "rmse": 5870.83349609375,
+    "delta_mae": -0.4184904098510742,
+    "delta_rmse": -0.005859375,
     "protocol": "chronological split"
   },
   {
     "feature_group": "tcp_window_segment",
-    "mae": 15.073723793029785,
-    "rmse": 5731.390625,
-    "delta_mae": 0.08953094482421875,
-    "delta_rmse": 0.03466796875,
+    "mae": 12.819161415100098,
+    "rmse": 5870.8427734375,
+    "delta_mae": 0.037240028381347656,
+    "delta_rmse": 0.00341796875,
     "protocol": "chronological split"
   },
   {
     "feature_group": "timing",
-    "mae": 15.4494047164917,
-    "rmse": 5731.19970703125,
-    "delta_mae": 0.4652118682861328,
-    "delta_rmse": -0.15625,
+    "mae": 11.860054016113281,
+    "rmse": 5870.70751953125,
+    "delta_mae": -0.9218673706054688,
+    "delta_rmse": -0.1318359375,
     "protocol": "chronological split"
   },
   {
     "feature_group": "traffic_volume",
-    "mae": 14.882196426391602,
-    "rmse": 5731.35107421875,
-    "delta_mae": -0.10199642181396484,
-    "delta_rmse": -0.0048828125,
+    "mae": 12.765247344970703,
+    "rmse": 5870.84228515625,
+    "delta_mae": -0.016674041748046875,
+    "delta_rmse": 0.0029296875,
     "protocol": "chronological split"
   }
 ]

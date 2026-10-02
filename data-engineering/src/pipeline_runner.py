@@ -616,4 +616,8 @@ Contains exact $Q_{25}, Q_{50}, Q_{75}$, scale, and `is_log1p` flags fitted stri
 
 
 if __name__ == "__main__":
-    run_pipeline()
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--config", type=str, default="configs/pipeline_config.yaml")
+    args = parser.parse_args()
+    run_pipeline(args.config)

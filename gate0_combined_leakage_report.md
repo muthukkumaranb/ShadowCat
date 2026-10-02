@@ -1,6 +1,6 @@
 # Gate 0: Schedule & Artifact Leakage Report (Comprehensive Diagnostic Suite)
 **SIH26153 - Cyber World Model Architecture**
-**Test Executed**: 2026-10-02 15:45:26 UTC
+**Test Executed**: 2026-10-02 17:20:55 UTC
 
 ---
 
@@ -8,9 +8,9 @@
 
 | Evaluation Protocol | Feature Set | F1 Score | Precision | Recall | Accuracy | Verdict & Interpretation |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **1. Chronological Holdout**<br>*(440 windows: March 2 Botnet)* | **Set A** (Traffic+Packet) | **0.0031** | **0.5556** | **0.0016** | **0.3840** | Unseen Attack Blindspot (Botnet in Test) |
+| **1. Chronological Holdout**<br>*(440 windows: March 2 Botnet)* | **Set A** (Traffic+Packet) | **0.0031** | **0.6250** | **0.0016** | **0.3842** | Unseen Attack Blindspot (Botnet in Test) |
 | | **Set B** (Hour+Day Only) | **0.7353** | **0.6274** | **0.8880** | **0.6061** | High Precision (0.9161) exploits daily schedule |
-| **2. Window-Stratified Diagnostic**<br>*(440 windows: IID sample across days)* | **Set A** (Traffic+Packet) | **0.7302** | **0.9701** | **0.5854** | **0.8448** | **High Discriminative Power** (Recovers known attacks) |
+| **2. Window-Stratified Diagnostic**<br>*(440 windows: IID sample across days)* | **Set A** (Traffic+Packet) | **0.7306** | **0.9701** | **0.5859** | **0.8450** | **High Discriminative Power** (Recovers known attacks) |
 | | **Set B** (Hour+Day Only) | **0.6282** | **0.6396** | **0.6172** | **0.7380** | Precision drops ~20% (0.9161 -> 0.7151) |
 | **3. Episode-Grouped Diagnostic**<br>*(6350 windows: Whole episodes held out)* | **Set A** (Traffic+Packet) | **0.6971** | **0.8795** | **0.5774** | **0.8413** | **Cross-Episode Generalization** (No adjacent-window leakage) |
 | | **Set B** (Hour+Day Only) | **0.4340** | **0.3635** | **0.5386** | **0.5556** | Schedule baseline across separate bursts |
@@ -23,7 +23,7 @@
 ```
 Set A (Traffic + Packet Features):          Set B (Schedule Artifacts Only):
               Pred Benign  Pred Attack                    Pred Benign  Pred Attack
-Actual Benign     2004            4      Actual Benign      308         1700
+Actual Benign     2005            3      Actual Benign      308         1700
 Actual Attack     3219            5      Actual Attack      361        2863
 ```
 
@@ -32,7 +32,7 @@ Actual Attack     3219            5      Actual Attack      361        2863
 Set A (Traffic + Packet Features):          Set B (Schedule Artifacts Only):
               Pred Benign  Pred Attack                    Pred Benign  Pred Attack
 Actual Benign     3339           34      Actual Benign     2717          656
-Actual Attack       782        1104      Actual Attack       722        1164
+Actual Attack       781        1105      Actual Attack       722        1164
 ```
 
 ### Protocol 3: Episode-Grouped Stratified Diagnostic (6350 windows)

@@ -57,7 +57,10 @@ def map_cicids2017_schema(df: pd.DataFrame, config_path: str = "configs/canonica
 
     df_mapped = df.rename(columns=rename_dict).copy()
     
-    # Remove duplicate columns if they appear
+    # Enforce strictly the 2018 canonical schema
+    allowed_cols = canonical_targets.union({'raw_timestamp', 'source_file', 'source_day', 'source_dataset', 'raw_label'})
+    df_mapped = df_mapped[[c for c in df_mapped.columns if c in allowed_cols]].copy()
+    
     if df_mapped.columns.duplicated().any():
         df_mapped = df_mapped.loc[:, ~df_mapped.columns.duplicated(keep="first")].copy()
         

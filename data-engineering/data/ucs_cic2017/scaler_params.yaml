@@ -1618,36 +1618,6 @@ bwd_seg_size_avg_max:
   is_log1p: false
   q25: 699.9285736083984
   q75: 1807.3184509277344
-fwd_header_len_1_mean:
-  median: 144.53333333333333
-  scale: 149.21666666666667
-  is_log1p: false
-  q25: 72.78333333333333
-  q75: 222.0
-fwd_header_len_1_std:
-  median: 137.56188540329578
-  scale: 227.5480190265755
-  is_log1p: false
-  q25: 58.80247473633908
-  q75: 286.3504937629146
-fwd_header_len_1_sum:
-  median: 8672.0
-  scale: 8953.0
-  is_log1p: false
-  q25: 4367.0
-  q75: 13320.0
-fwd_header_len_1_min:
-  median: 20.0
-  scale: 32186519.26043473
-  is_log1p: false
-  q25: 20.0
-  q75: 20.0
-fwd_header_len_1_max:
-  median: 712.0
-  scale: 1244.0
-  is_log1p: false
-  q25: 332.0
-  q75: 1576.0
 fwd_byts_b_avg_mean:
   median: 0.0
   scale: 1.0
@@ -1948,66 +1918,6 @@ subflow_bwd_byts_max:
   is_log1p: false
   q25: 6666.0
   q75: 97865.0
-init_fwd_win_byts_mean:
-  median: 5222.35
-  scale: 10640.6875
-  is_log1p: false
-  q25: 1422.8875
-  q75: 12063.575
-init_fwd_win_byts_std:
-  median: 10665.58449941553
-  scale: 10744.894293491107
-  is_log1p: false
-  q25: 4573.56678997509
-  q75: 15318.461083466196
-init_fwd_win_byts_sum:
-  median: 313319.5
-  scale: 638441.25
-  is_log1p: false
-  q25: 85373.25
-  q75: 723814.5
-init_fwd_win_byts_min:
-  median: -1.0
-  scale: 1857.450687894986
-  is_log1p: false
-  q25: -1.0
-  q75: -1.0
-init_fwd_win_byts_max:
-  median: 34904.5
-  scale: 36335.0
-  is_log1p: false
-  q25: 29200.0
-  q75: 65535.0
-init_bwd_win_byts_mean:
-  median: 1791.5083333333332
-  scale: 3290.041666666667
-  is_log1p: false
-  q25: 282.76666666666665
-  q75: 3572.8083333333334
-init_bwd_win_byts_std:
-  median: 7306.531050312591
-  scale: 10094.339894434162
-  is_log1p: false
-  q25: 888.0363650141086
-  q75: 10982.37625944827
-init_bwd_win_byts_sum:
-  median: 107490.5
-  scale: 197402.5
-  is_log1p: false
-  q25: 16966.0
-  q75: 214368.5
-init_bwd_win_byts_min:
-  median: -1.0
-  scale: 60.81929973819848
-  is_log1p: false
-  q25: -1.0
-  q75: -1.0
-init_bwd_win_byts_max:
-  median: 33304.0
-  scale: 58195.0
-  is_log1p: false
-  q25: 5382.0
-  q75: 63577.0
 fwd_act_data_pkts_mean:
   median: 2.0
   scale: 2.283333333333333
@@ -2308,36 +2218,6 @@ idle_min_max:
   is_log1p: false
   q25: 14896855.5
   q75: 98300000.0
-source_dataset_mean:
-  median: 0.0
-  scale: 1.0
-  is_log1p: false
-  q25: 0.0
-  q75: 0.0
-source_dataset_std:
-  median: 0.0
-  scale: 1.0
-  is_log1p: false
-  q25: 0.0
-  q75: 0.0
-source_dataset_sum:
-  median: 0.0
-  scale: 1.0
-  is_log1p: false
-  q25: 0.0
-  q75: 0.0
-source_dataset_min:
-  median: 0.0
-  scale: 1.0
-  is_log1p: false
-  q25: 0.0
-  q75: 0.0
-source_dataset_max:
-  median: 0.0
-  scale: 1.0
-  is_log1p: false
-  q25: 0.0
-  q75: 0.0
 duration_sec_mean:
   median: 2.2315125974713723
   scale: 2.037446679574346

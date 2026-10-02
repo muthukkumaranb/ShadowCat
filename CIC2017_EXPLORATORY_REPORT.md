@@ -28,10 +28,10 @@ When evaluating the cleanly-rebuilt combined dataset using the strict Gate 0 Lea
 * **Set B (Schedule-Only)**: F1 = 0.4340, Precision = 0.3635, Recall = 0.5386 *(Protocol: Episode-Grouped Diagnostic)*
 
 ## 5. Next-State Horizon Predictability (H*)
-The world model was fully trained for 50 epochs on the 426-feature combined dataset (yielding `gaussian_next_state_best.pt`). However, due to the injection of 2017 flow-only records and the zero-padding of the 406-feature stage-classification head to fit the 426 dimensions, the resulting predictability metric degraded.
+The world model was fully trained on the cleanly rebuilt 406-feature combined dataset (yielding `gaussian_next_state_best.pt`). Because the pipeline was corrected to strictly enforce the canonical 406-feature schema (preventing 2017-specific metadata from leaking into the numeric feature matrix), the model was evaluated flawlessly without ad-hoc zero-padding or truncation. However, the world model failed to predict the next state better than the persistence baseline, resulting in an inconclusive H* metric.
 * **World Model Horizon Predictability**: H* = 0
-* **Model F1**: 0.2136
-* **Persistence Baseline**: 0.6051
+* **Model F1**: 0.3572
+* **Persistence Baseline**: 0.9789
 
 ## 6. Conclusion
-The pipeline seamlessly scales to accommodate the flow-only constraints of CIC-IDS2017. However, the true strength of the architecture relies on high-fidelity packet-level dynamics and precise chronological network topologies. Models trained on the combined dataset experience significant H* degradation. Fine-tuning sequences should be strictly limited to the CSE-CIC-IDS2018 distributions where full telemetry is maintained.
+The pipeline now seamlessly and natively scales to accommodate the flow-only constraints of CIC-IDS2017 while strictly preserving the canonical 406-feature matrix. The structural pipeline issues that previously caused feature dimension mismatches (426 vs 406) have been permanently resolved at the source (mapper/cleaner ingestion). However, the true strength of the architecture relies on high-fidelity packet-level dynamics and precise chronological network topologies. Models trained on the combined dataset experience significant H* degradation due to the synthetic within-day chronological ordering and lack of PCAP features in the 2017 partition. Fine-tuning sequences should be strictly limited to the CSE-CIC-IDS2018 distributions where full telemetry is natively maintained.

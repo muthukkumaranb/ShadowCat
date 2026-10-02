@@ -4,64 +4,64 @@
     {
       "feature_group": "direction_ratio",
       "feature_count": 5,
-      "mean_output_change": 0.21041180193424225,
-      "mean_uncertainty_change": 0.053920671343803406,
+      "mean_output_change": 0.18341077864170074,
+      "mean_uncertainty_change": 0.05543741583824158,
       "protocol": "chronological split",
       "masking": "zero standardized/input representation features"
     },
     {
       "feature_group": "masks",
       "feature_count": 6,
-      "mean_output_change": 0.993121325969696,
-      "mean_uncertainty_change": 0.2244960218667984,
+      "mean_output_change": 0.7048647403717041,
+      "mean_uncertainty_change": 0.19975130259990692,
       "protocol": "chronological split",
       "masking": "zero standardized/input representation features"
     },
     {
       "feature_group": "other",
-      "feature_count": 185,
-      "mean_output_change": 4.233301639556885,
-      "mean_uncertainty_change": 0.925366222858429,
+      "feature_count": 165,
+      "mean_output_change": 2.0345780849456787,
+      "mean_uncertainty_change": 0.596815824508667,
       "protocol": "chronological split",
       "masking": "zero standardized/input representation features"
     },
     {
       "feature_group": "packet_volume",
       "feature_count": 15,
-      "mean_output_change": 0.3951295018196106,
-      "mean_uncertainty_change": 0.10030356794595718,
+      "mean_output_change": 0.4719889163970947,
+      "mean_uncertainty_change": 0.1411636620759964,
       "protocol": "chronological split",
       "masking": "zero standardized/input representation features"
     },
     {
       "feature_group": "tcp_flags",
       "feature_count": 60,
-      "mean_output_change": 1.4679369926452637,
-      "mean_uncertainty_change": 0.3302467465400696,
+      "mean_output_change": 0.9328575134277344,
+      "mean_uncertainty_change": 0.2842334508895874,
       "protocol": "chronological split",
       "masking": "zero standardized/input representation features"
     },
     {
       "feature_group": "tcp_window_segment",
       "feature_count": 20,
-      "mean_output_change": 0.29019078612327576,
-      "mean_uncertainty_change": 0.07487069815397263,
+      "mean_output_change": 0.18141992390155792,
+      "mean_uncertainty_change": 0.05922408774495125,
       "protocol": "chronological split",
       "masking": "zero standardized/input representation features"
     },
     {
       "feature_group": "timing",
       "feature_count": 120,
-      "mean_output_change": 3.099716901779175,
-      "mean_uncertainty_change": 0.7027977705001831,
+      "mean_output_change": 2.128607749938965,
+      "mean_uncertainty_change": 0.6229977607727051,
       "protocol": "chronological split",
       "masking": "zero standardized/input representation features"
     },
     {
       "feature_group": "traffic_volume",
       "feature_count": 15,
-      "mean_output_change": 0.43805867433547974,
-      "mean_uncertainty_change": 0.10415703058242798,
+      "mean_output_change": 0.3605145812034607,
+      "mean_uncertainty_change": 0.11044292151927948,
       "protocol": "chronological split",
       "masking": "zero standardized/input representation features"
     }
@@ -69,66 +69,66 @@
   "deletion": [
     {
       "feature_group": "direction_ratio",
-      "mae": 14.928157806396484,
-      "rmse": 5731.34716796875,
-      "delta_mae": -0.05603504180908203,
-      "delta_rmse": -0.0087890625,
+      "mae": 12.747498512268066,
+      "rmse": 5870.84228515625,
+      "delta_mae": -0.034422874450683594,
+      "delta_rmse": 0.0029296875,
       "protocol": "chronological split"
     },
     {
       "feature_group": "masks",
-      "mae": 14.017566680908203,
-      "rmse": 5731.30322265625,
-      "delta_mae": -0.9666261672973633,
-      "delta_rmse": -0.052734375,
+      "mae": 12.112485885620117,
+      "rmse": 5870.81298828125,
+      "delta_mae": -0.6694355010986328,
+      "delta_rmse": -0.0263671875,
       "protocol": "chronological split"
     },
     {
       "feature_group": "other",
-      "mae": 17.695432662963867,
-      "rmse": 5731.587890625,
-      "delta_mae": 2.711239814758301,
-      "delta_rmse": 0.23193359375,
+      "mae": 13.47694206237793,
+      "rmse": 5870.82373046875,
+      "delta_mae": 0.6950206756591797,
+      "delta_rmse": -0.015625,
       "protocol": "chronological split"
     },
     {
       "feature_group": "packet_volume",
-      "mae": 14.732650756835938,
-      "rmse": 5731.3447265625,
-      "delta_mae": -0.2515420913696289,
-      "delta_rmse": -0.01123046875,
+      "mae": 12.967389106750488,
+      "rmse": 5870.84375,
+      "delta_mae": 0.18546772003173828,
+      "delta_rmse": 0.00439453125,
       "protocol": "chronological split"
     },
     {
       "feature_group": "tcp_flags",
-      "mae": 14.152647972106934,
-      "rmse": 5731.330078125,
-      "delta_mae": -0.8315448760986328,
-      "delta_rmse": -0.02587890625,
+      "mae": 12.363430976867676,
+      "rmse": 5870.83349609375,
+      "delta_mae": -0.4184904098510742,
+      "delta_rmse": -0.005859375,
       "protocol": "chronological split"
     },
     {
       "feature_group": "tcp_window_segment",
-      "mae": 15.073723793029785,
-      "rmse": 5731.390625,
-      "delta_mae": 0.08953094482421875,
-      "delta_rmse": 0.03466796875,
+      "mae": 12.819161415100098,
+      "rmse": 5870.8427734375,
+      "delta_mae": 0.037240028381347656,
+      "delta_rmse": 0.00341796875,
       "protocol": "chronological split"
     },
     {
       "feature_group": "timing",
-      "mae": 15.4494047164917,
-      "rmse": 5731.19970703125,
-      "delta_mae": 0.4652118682861328,
-      "delta_rmse": -0.15625,
+      "mae": 11.860054016113281,
+      "rmse": 5870.70751953125,
+      "delta_mae": -0.9218673706054688,
+      "delta_rmse": -0.1318359375,
       "protocol": "chronological split"
     },
     {
       "feature_group": "traffic_volume",
-      "mae": 14.882196426391602,
-      "rmse": 5731.35107421875,
-      "delta_mae": -0.10199642181396484,
-      "delta_rmse": -0.0048828125,
+      "mae": 12.765247344970703,
+      "rmse": 5870.84228515625,
+      "delta_mae": -0.016674041748046875,
+      "delta_rmse": 0.0029296875,
       "protocol": "chronological split"
     }
   ]

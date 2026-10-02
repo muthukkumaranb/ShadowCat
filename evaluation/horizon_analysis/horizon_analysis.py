@@ -45,12 +45,19 @@ def main():
     device = get_device()
     
     # 1. Load Dataset & Mapping
-    data_path = workspace_dir / "data-engineering/data/ucs_combined.parquet"
+    data_path = workspace_dir / "data-engineering/data/ucs/ucs_windows.parquet"
+    if not data_path.exists():
+        data_path = workspace_dir / "data/ucs/ucs_windows.parquet"
         
     windows = pd.read_parquet(data_path)
     config = UCSConfig()
     features = validate_ucs_windows(windows, config=config)
-
+    exact_old_features_path = workspace_dir / "ml1/configs/mdn_v1_feature_schema.txt"
+    if exact_old_features_path.exists():
+        old_cols = exact_old_features_path.read_text().split("\n")[-1].strip().split(",")
+        features = [c for c in old_cols if c in features]
+        print(f"Restricted features to {len(features)} for world model compatibility.")
+    
     mapping_path = workspace_dir / "data-engineering/data/ucs/attack_tactics_mapping.yaml"
     if not mapping_path.exists():
         mapping_path = workspace_dir / "data/ucs/attack_tactics_mapping.yaml"
@@ -128,7 +135,7 @@ def main():
     if args.stage_head_checkpoint:
         stage_head_path = Path(args.stage_head_checkpoint)
     else:
-        stage_head_path = workspace_dir / "ml1/artifacts/lstm/stage_head_v3/stage_head_best_426.pt"
+        stage_head_path = workspace_dir / "ml1/artifacts/lstm/stage_head_v3/stage_head_best.pt"
         if not stage_head_path.exists():
             stage_head_path = workspace_dir / "ml1/artifacts/lstm/stage_head/stage_head_best.pt"
         
