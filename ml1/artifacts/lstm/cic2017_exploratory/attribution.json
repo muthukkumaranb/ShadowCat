@@ -2,64 +2,64 @@
   {
     "feature_group": "direction_ratio",
     "feature_count": 5,
-    "mean_output_change": 0.4135170578956604,
-    "mean_uncertainty_change": 0.029262641444802284,
+    "mean_output_change": 0.21041180193424225,
+    "mean_uncertainty_change": 0.053920671343803406,
     "protocol": "chronological split",
     "masking": "zero standardized/input representation features"
   },
   {
     "feature_group": "masks",
     "feature_count": 6,
-    "mean_output_change": 1.527587890625,
-    "mean_uncertainty_change": 0.08910830318927765,
+    "mean_output_change": 0.993121325969696,
+    "mean_uncertainty_change": 0.2244960218667984,
     "protocol": "chronological split",
     "masking": "zero standardized/input representation features"
   },
   {
     "feature_group": "other",
     "feature_count": 185,
-    "mean_output_change": 3.5295002460479736,
-    "mean_uncertainty_change": 0.19032692909240723,
+    "mean_output_change": 4.233301639556885,
+    "mean_uncertainty_change": 0.925366222858429,
     "protocol": "chronological split",
     "masking": "zero standardized/input representation features"
   },
   {
     "feature_group": "packet_volume",
     "feature_count": 15,
-    "mean_output_change": 0.7447726130485535,
-    "mean_uncertainty_change": 0.053485095500946045,
+    "mean_output_change": 0.3951295018196106,
+    "mean_uncertainty_change": 0.10030356794595718,
     "protocol": "chronological split",
     "masking": "zero standardized/input representation features"
   },
   {
     "feature_group": "tcp_flags",
     "feature_count": 60,
-    "mean_output_change": 2.1752636432647705,
-    "mean_uncertainty_change": 0.12649185955524445,
+    "mean_output_change": 1.4679369926452637,
+    "mean_uncertainty_change": 0.3302467465400696,
     "protocol": "chronological split",
     "masking": "zero standardized/input representation features"
   },
   {
     "feature_group": "tcp_window_segment",
     "feature_count": 20,
-    "mean_output_change": 0.3568927049636841,
-    "mean_uncertainty_change": 0.024400807917118073,
+    "mean_output_change": 0.29019078612327576,
+    "mean_uncertainty_change": 0.07487069815397263,
     "protocol": "chronological split",
     "masking": "zero standardized/input representation features"
   },
   {
     "feature_group": "timing",
     "feature_count": 120,
-    "mean_output_change": 5.543125152587891,
-    "mean_uncertainty_change": 0.32886189222335815,
+    "mean_output_change": 3.099716901779175,
+    "mean_uncertainty_change": 0.7027977705001831,
     "protocol": "chronological split",
     "masking": "zero standardized/input representation features"
   },
   {
     "feature_group": "traffic_volume",
     "feature_count": 15,
-    "mean_output_change": 0.4555247724056244,
-    "mean_uncertainty_change": 0.03301946446299553,
+    "mean_output_change": 0.43805867433547974,
+    "mean_uncertainty_change": 0.10415703058242798,
     "protocol": "chronological split",
     "masking": "zero standardized/input representation features"
   }

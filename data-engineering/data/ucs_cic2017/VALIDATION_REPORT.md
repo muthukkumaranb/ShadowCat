@@ -1,6 +1,6 @@
 # Validation & Audit Report: Unified Cyber State ($S_t$) Pipeline
 **SIH26153 — Cyber World Model Architecture (Data Engineer Track)**
-**Generated Date**: 2026-10-02 14:08:58 UTC
+**Generated Date**: 2026-10-02 15:42:54 UTC
 
 ---
 
@@ -33,9 +33,9 @@
 
 ## 3. Split Boundaries & Chronological Audit
 
-- **Training Partition (70%)**: 21,455 windows (`2017-07-03 00:00:00+00:00` to `2017-07-07 07:24:00+00:00`)
-- **Validation Partition (15%)**: 4,597 windows (`2017-07-07 07:25:00+00:00` to `2017-07-08 11:29:00+00:00`)
-- **Testing Partition (15%)**: 4,598 windows (`2017-07-08 11:30:00+00:00` to `2017-07-11 00:25:00+00:00`)
+- **Training Partition (70%)**: 21,455 windows (`2017-07-03 00:00:00+00:00` to `2017-07-08 07:24:00+00:00`)
+- **Validation Partition (15%)**: 4,597 windows (`2017-07-08 07:25:00+00:00` to `2017-07-09 19:47:00+00:00`)
+- **Testing Partition (15%)**: 4,598 windows (`2017-07-09 19:48:00+00:00` to `2017-07-13 00:25:00+00:00`)
 
 ---
 
@@ -44,8 +44,8 @@
 ### Window Class Distribution:
 ```
 label_attack_type
-BENIGN              19175
-DoS Hulk             4129
+BENIGN              19199
+DoS Hulk             4105
 DoS GoldenEye        2890
 SSH-Patator          2456
 FTP-Patator           791
@@ -58,21 +58,21 @@ Heartbleed              1
 ```
 
 ### Binary Label Distribution:
-- **Benign (0)**: 19,175 windows (62.85%)
-- **Attack (1)**: 11,335 windows (37.15%)
-- **Future Attack ($H=5$ min)**: 25,674 windows (84.15%)
+- **Benign (0)**: 19,199 windows (62.93%)
+- **Attack (1)**: 11,311 windows (37.07%)
+- **Future Attack ($H=5$ min)**: 22,559 windows (73.94%)
 
 ### Independent Attack Episodes (Contiguous Attack Runs):
-- **BENIGN**: 6436 independent attack episode(s)
-- **DoS slowloris**: 309 independent attack episode(s)
-- **FTP-Patator**: 744 independent attack episode(s)
-- **Web-BruteForce**: 448 independent attack episode(s)
-- **DoS Slowhttptest**: 85 independent attack episode(s)
-- **Web-XSS**: 150 independent attack episode(s)
-- **DoS Hulk**: 3728 independent attack episode(s)
+- **BENIGN**: 5861 independent attack episode(s)
+- **FTP-Patator**: 636 independent attack episode(s)
+- **DoS slowloris**: 299 independent attack episode(s)
+- **DoS Slowhttptest**: 81 independent attack episode(s)
+- **DoS Hulk**: 3780 independent attack episode(s)
+- **SSH-Patator**: 2330 independent attack episode(s)
+- **Web-BruteForce**: 452 independent attack episode(s)
+- **Web-XSS**: 157 independent attack episode(s)
 - **Web-SQLi**: 16 independent attack episode(s)
-- **SSH-Patator**: 2278 independent attack episode(s)
-- **DoS GoldenEye**: 287 independent attack episode(s)
+- **DoS GoldenEye**: 120 independent attack episode(s)
 - **Heartbleed**: 1 independent attack episode(s)
 
 > [!NOTE]

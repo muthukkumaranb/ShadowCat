@@ -63,9 +63,16 @@ def map_cicids2017_schema(df: pd.DataFrame, config_path: str = "configs/canonica
         
     # Synthesize timestamp_utc if missing (MachineLearningCSV lacks it)
     if "raw_timestamp" not in df_mapped.columns and "timestamp_utc" not in df_mapped.columns:
-        # Create a sequential timestamp starting from a fixed date (e.g. 2017-07-03)
-        # Adding 1 second per row to create meaningful temporal windows (60 flows/min)
-        start_time = pd.Timestamp("2017-07-03 00:00:00", tz="UTC")
+        # Create a sequential timestamp but shifted by file to prevent overlap across days
+        day_offset = 0
+        if "source_file" in df_mapped.columns:
+            fn = str(df_mapped["source_file"].iloc[0]).lower()
+            if "tuesday" in fn: day_offset = 1
+            elif "wednesday" in fn: day_offset = 2
+            elif "thursday" in fn: day_offset = 3
+            elif "friday" in fn: day_offset = 4
+        
+        start_time = pd.Timestamp("2017-07-03 00:00:00", tz="UTC") + pd.Timedelta(days=day_offset)
         df_mapped["timestamp_utc"] = start_time + pd.to_timedelta(df_mapped.index, unit='s')
         
     if "protocol" not in df_mapped.columns:

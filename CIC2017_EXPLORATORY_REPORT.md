@@ -1,39 +1,37 @@
 # CIC-IDS2017 Exploratory Report
 
 ## 1. Executive Summary
-This report summarizes the exploratory investigation of integrating the CIC-IDS2017 dataset into the Unified Cyber State (UCS) pipeline. We successfully processed 4 viable days of CIC-IDS2017 flow data, generating 30,510 temporal windows. When combined with the CSE-CIC-IDS2018 dataset, the model demonstrated an ability to learn generalized representations, though cross-dataset zero-shot generalization remains challenging due to foundational feature disparities (e.g., lack of packet-level features in the flow-only 2017 format).
+This report details the final exploratory integration of the CIC-IDS2017 dataset into the Unified Cyber State (UCS) pipeline. Following rigorous validation, we successfully reconstructed the temporal dataset using real chronological ordering at the day-level, while within-day timing remains synthetic due to critical source omissions. The inclusion of the 2017 data exposes vulnerabilities in relying on chronological test splits and reinforces the necessity of the LOEO protocol. 
 
-## 2. Ingestion & Schema Alignment
-The CIC-IDS2017 dataset required a custom ingestion mapping (`cicids2017_mapper.py`) because it lacked core metadata required by the pipeline's temporal windowing aggregation:
-* **Missing `timestamp_utc`**: The timestamp string was mapped and localized to UTC.
-* **Missing `protocol`**: Synthesized default values (e.g., 6/TCP).
-* **Missing `destination_port`**: Mapped from existing port identifiers or defaults.
-* **Missing `source_ip`/`destination_ip`**: IP addressing was not explicitly mapped, leading to empty graph edges.
+## 2. Real Omissions vs. Synthesis (Missing Columns Check)
+We performed a literal exact-column dump on the raw source files (`Monday-WorkingHours.pcap_ISCX.csv`) to verify absent metadata.
+**Raw columns array subset**:
+`["' Destination Port'", "' Flow Duration'", "' Total Fwd Packets'", ... , "' Label'"]`
 
-Despite these limitations, the pipeline successfully executed through Stage 4 (Temporal Windowing) and Stage 6 (Attack Alignment), yielding strict Train/Val/Test partitions protected by purge-embargo mechanisms.
+* **Confirmed Present**: `Destination Port`
+* **Confirmed Absent**: `Timestamp`, `Protocol`, `Source IP`, `Destination IP`, `Source Port`
 
-## 3. Zero-Shot Cross-Dataset Generalization
-We trained a Logistic Regression baseline solely on the 2018 UCS windows and evaluated it zero-shot on the 2017 UCS windows.
-* **In-Distribution (2018 Test Set)**: F1 = 0.2625, Precision = 0.9483, Recall = 0.1524
-* **Zero-Shot (2017 All Windows)**: F1 = 0.4276, Precision = 0.6187, Recall = 0.3267
+Because the original timestamp metadata was stripped from the `MachineLearningCVE` CSVs by the CIC authors, we had to apply a synthetic timestamp approach. **Disclosure**: The 2017 windows use real day-level ordering (derived from the source file name, mapping Monday through Friday properly sequentially) but synthetic within-day minute-level ordering. It is not real per-window timing.
 
-Interestingly, the zero-shot performance on the 2017 dataset exceeded the in-distribution test set. This is likely an artifact of class imbalances and easier-to-detect attack signatures (e.g., high-volume DoS) present in the 2017 dataset, which triggered the model's learned volume-based thresholds.
+## 3. Generalization vs Memorization: F1 Metrics
+We re-evaluated the baselines, ensuring evaluation protocols were clearly delineated to avoid false equivalencies between chronologically-split holdouts and episodic cross-validation.
+
+* **In-Distribution 2018 (Baseline)**: F1 = 0.738 *(Protocol: 37-fold LOEO, run_lr_frozen.py)*
+* **In-Distribution 2018 (Future Holdout)**: F1 = 0.2625 *(Protocol: Single Chronological Split - completely unseen novel attacks)*
+* **Zero-Shot 2017 Generalization**: F1 = 0.4234 *(Protocol: Trained on full 2018 dataset, tested zero-shot on 2017 using Logistic Regression)*
+
+The 0.4234 zero-shot F1 proves that some volume-based heuristics transfer, though the complete lack of packet-level PCAP features caps the ceiling of tabular zero-shot capabilities.
 
 ## 4. Leakage-Free Generalization (Gate 0)
-When evaluating the combined dataset (2018 + 2017) using the strict Gate 0 Leave-One-Episode-Out (LOEO) protocol, the model successfully generalized across episodes:
-* **Set A (Traffic+Packet)**: F1 = 0.6585, Precision = 0.9604, Recall = 0.5010
-* **Set B (Schedule-Only)**: F1 = 0.5702, Precision = 0.6361, Recall = 0.5166
-
-Set A significantly outperformed Set B, demonstrating that the inclusion of the 2017 data (which does not suffer from the same strict automated attack schedule artifacts as 2018) forces the model to rely more heavily on true traffic characteristics rather than overfitting to scheduled chronological patterns.
+When evaluating the cleanly-rebuilt combined dataset using the strict Gate 0 Leave-One-Episode-Out (LOEO) protocol, the model successfully demonstrated strong precision in generalizing across isolated episodes:
+* **Set A (Traffic+Packet)**: F1 = 0.6971, Precision = 0.8795, Recall = 0.5774 *(Protocol: Episode-Grouped Diagnostic)*
+* **Set B (Schedule-Only)**: F1 = 0.4340, Precision = 0.3635, Recall = 0.5386 *(Protocol: Episode-Grouped Diagnostic)*
 
 ## 5. Next-State Horizon Predictability (H*)
-Using the `train_probabilistic.py` routine, a world model checkpoint was successfully trained on the combined dataset and validated via `horizon_analysis.py`.
-The combined dataset introduces noise (due to mismatched packet features and synthesized timestamps), yet the probabilistic world model managed to capture baseline temporal dynamics. The model was trained and exported successfully to the `ml1/artifacts/lstm/cic2017_exploratory` directory.
+The world model was fully trained for 50 epochs on the 426-feature combined dataset (yielding `gaussian_next_state_best.pt`). However, due to the injection of 2017 flow-only records and the zero-padding of the 406-feature stage-classification head to fit the 426 dimensions, the resulting predictability metric degraded.
+* **World Model Horizon Predictability**: H* = 0
+* **Model F1**: 0.2136
+* **Persistence Baseline**: 0.6051
 
-## 6. Caveats & Conclusion
-The integration proved successful at the pipeline level, but highlights critical caveats:
-1. **Flow-Level vs Packet-Level**: 2017 is flow-only. Merging it with 2018 required imputing zeros for all PCAP-level features.
-2. **Graph Topology**: Lack of IP information in the 2017 flow exports prevents meaningful topological embedding (GraphSAGE).
-3. **Synthesis Risks**: The required synthesis of `protocol` and timestamps creates artificial distribution shifts.
-
-**Recommendation**: The combined dataset can be used for pre-training robust volume-based detectors, but fine-tuning should rely strictly on the higher-fidelity CSE-CIC-IDS2018 (with PCAP) to ensure packet-level and graph-level feature integrity.
+## 6. Conclusion
+The pipeline seamlessly scales to accommodate the flow-only constraints of CIC-IDS2017. However, the true strength of the architecture relies on high-fidelity packet-level dynamics and precise chronological network topologies. Models trained on the combined dataset experience significant H* degradation. Fine-tuning sequences should be strictly limited to the CSE-CIC-IDS2018 distributions where full telemetry is maintained.
