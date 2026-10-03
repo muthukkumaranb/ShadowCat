@@ -29,7 +29,7 @@ When evaluating the cleanly-rebuilt combined dataset using the strict Gate 0 Lea
 * **Set B (Schedule-Only)**: F1 = 0.4340, Precision = 0.3635, Recall = 0.5386 *(Protocol: Episode-Grouped Diagnostic - not independently re-verified)*
 
 ## 5. Next-State Horizon Predictability (H*)
-The world model was fully trained on the cleanly rebuilt 406-feature combined dataset (yielding `gaussian_next_state_best.pt`). Because the pipeline was corrected to strictly enforce the canonical 406-feature schema (preventing 2017-specific metadata from leaking into the numeric feature matrix), the model was evaluated flawlessly without ad-hoc zero-padding or truncation. However, the world model failed to predict the next state better than the persistence baseline, resulting in an inconclusive H* metric. An earlier version of this report showed 2018-only numbers by mistake.
+The world model was fully trained on the cleanly rebuilt 406-feature combined dataset (yielding `gaussian_next_state_best.pt`). Because the pipeline was corrected to strictly enforce the canonical 406-feature schema (preventing 2017-specific metadata from leaking into the numeric feature matrix), the model was evaluated flawlessly without ad-hoc zero-padding or truncation. However, the world model failed to predict the next state better than the persistence baseline, resulting in an inconclusive H* metric. An earlier version of this report showed 2018-only numbers by mistake. Combined-data numbers come from an evaluation run with the data path set to ucs_combined.parquet; the committed script defaults to 2018-only data.
 * **World Model Horizon Predictability**: H* = 0
 * **Model F1**: 0.2136–0.2137 at K=1–5
 * **Persistence Baseline**: 0.6051 / 0.6313 / 0.6608 / 0.6526 / 0.6562
