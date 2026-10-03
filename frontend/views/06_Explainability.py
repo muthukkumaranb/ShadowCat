@@ -1,7 +1,7 @@
 """
 SHADOWCAT SOC Cockpit - Page 6: Model Inference Explainability & Feature Attribution
 Direct implementation of Stitch folder shadowcat_soc_explainability.
-Wired to live data_provider.py and SHAP / Integrated Gradients attributions.
+Wired to live data_provider.py and Integrated Gradients attributions.
 """
 
 import streamlit as st
@@ -43,7 +43,7 @@ def render_page():
                 <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem;">
                     <span class="soc-badge badge-nominal">XAI PROTOCOL</span>
                     <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_muted']};">
-                        KERNEL://SHAP_INT_GRAD_V4
+                        KERNEL://INT_GRAD_ONSET
                     </span>
                 </div>
                 <h1 style="font-family: 'JetBrains Mono', monospace; font-size: 1.5rem; font-weight: 700; color: {t['text_high']}; text-transform: uppercase; margin: 0;">
@@ -51,7 +51,7 @@ def render_page():
                 </h1>
             </div>
             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                <span class="soc-badge badge-neutral">Checkpoint: sc-threat-v4.1</span>
+                <span class="soc-badge badge-neutral">Checkpoint: lstm-stacked-v1</span>
                 <span class="soc-badge badge-neutral">Baseline: 30-Day Rolling Normal</span>
                 <span class="soc-badge {risk_badge_cls}">CURRENT RISK: {risk_val:.3f} ({risk_severity_txt})</span>
             </div>
@@ -67,7 +67,7 @@ def render_page():
                     <span style="font-family: 'Inter', sans-serif; font-size: 0.6875rem; color: {t['text_muted']};">(Executive Briefing)</span>
                 </div>
                 <p style="font-family: 'Inter', sans-serif; font-size: 0.8125rem; color: {t['text_high']}; line-height: 1.5; margin: 0;">
-                    <b style="color:{t['primary']}">Understanding Threat Attribution:</b> SHAP (Shapley Additive exPlanations) and integrated gradients decompose ShadowCat's forward trajectory prediction into measurable contributions. Rather than treating neural predictions as an opaque black-box, this view surfaces exactly which network signals (packet structure, cadence anomalies, or host relationships) are driving the estimated <span style="font-family: 'JetBrains Mono'; font-weight: 700; color: {t['secondary']};">{risk_val:.3f}</span> risk horizon.
+                    <b style="color:{t['primary']}">Understanding Threat Attribution:</b> Integrated Gradients decompose ShadowCat's forward trajectory prediction into measurable contributions. Rather than treating neural predictions as an opaque black-box, this view surfaces exactly which network signals (packet structure, cadence anomalies, or host relationships) are driving the estimated <span style="font-family: 'JetBrains Mono'; font-weight: 700; color: {t['secondary']};">{risk_val:.3f}</span> risk horizon.
                 </p>
             </div>
             <div style="background: {t['surface_card']}; border: 1px solid {t['border']}; border-radius: 4px; padding: 0.6rem 1.25rem; text-align: center;">
@@ -281,7 +281,7 @@ def render_page():
                 <tr>
                     <th>Feature Identifier</th>
                     <th>Subsystem Category</th>
-                    <th>Shapley Contribution</th>
+                    <th>Integrated Gradients Contribution</th>
                     <th>Observed Delta</th>
                     <th>Validation Status</th>
                 </tr>
@@ -292,7 +292,7 @@ def render_page():
         </table>
         """)
 
-    # 5. TimeSHAP: Temporal Step Attribution Decomposition (t-29 .. t)
+    # 5. Temporal Integrated Gradients: Step Attribution Decomposition (t-29 .. t)
     temporal = get_temporal_attributions()
     t_weights = temporal.get("timestep_attributions", [])
     if not t_weights:
@@ -322,12 +322,12 @@ def render_page():
     render_html(f"""
     <div class="soc-section-header" style="margin-top: 1.5rem;">
         <div>
-            <div class="soc-section-title">TimeSHAP: Temporal Event & Cadence Progression (Lookback Horizon)</div>
+            <div class="soc-section-title">Temporal Integrated Gradients: Event & Cadence Progression (Lookback Horizon)</div>
             <span style="font-family: 'Inter', sans-serif; font-size: 0.75rem; color: {t['text_secondary']};">
                 Sequential path integrated gradients decomposing which historical timesteps and cadence bursts drove current state risk
             </span>
         </div>
-        <span class="soc-subsystem-tag">TEMPORAL SHAPLEY ATTRIBUTION</span>
+        <span class="soc-subsystem-tag">TEMPORAL INTEGRATED GRADIENTS</span>
     </div>
     <div class="soc-card" style="margin-top: 0.5rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
