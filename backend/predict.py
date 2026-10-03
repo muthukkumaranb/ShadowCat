@@ -475,6 +475,25 @@ class ShadowcatPipeline:
             except Exception as e:
                 logging.warning(f"Could not load PCA cache from {pca_load_target}: {e}")
 
+        # 5b. Dedicated PCA + Scaler for Hazard Heads (models/pca_32.pkl)
+        # Hazard heads (hazard_head_v3) were trained with models/pca_32.pkl + its StandardScaler.
+        self.hazard_pca = None
+        self.hazard_pca_features = None
+        self.hazard_pca_scaler = None
+        self.hazard_pca_available = False
+        if pca_file.exists():
+            try:
+                import pickle
+                with open(pca_file, "rb") as f:
+                    h_data = pickle.load(f)
+                    self.hazard_pca = h_data.get("pca")
+                    self.hazard_pca_features = h_data.get("features")
+                    self.hazard_pca_scaler = h_data.get("scaler")
+                    self.hazard_pca_available = (self.hazard_pca is not None and self.hazard_pca_scaler is not None)
+                logging.info(f"Loaded dedicated hazard 32-dim PCA transform + scaler from {pca_file}")
+            except Exception as e:
+                logging.warning(f"Could not load hazard PCA cache from {pca_file}: {e}")
+
         # 6. Initialize Split Conformal Predictor with ACI and Joint Coverage
         self.conformal_coverage = 0.90
         # ACI gamma per-horizon: larger for K=4-5 (exploratory)
@@ -542,26 +561,35 @@ class ShadowcatPipeline:
 
         Source priority:
           1. hazard_head_v3 direct LOEO models (H1/H2/H5) — real per-horizon probabilities,
-             LOEO-validated (ROC-AUC 0.789/0.843/0.770). Used whenever PCA is available.
+             LOEO-validated (ROC-AUC 0.789/0.843/0.770). Scaled and PCA-transformed via models/pca_32.pkl + scaler.
           2. Stacked ensemble H=1 only (no synthetic scaling for H=2/H=5).
         H=3 and H=4 are not modelled and are NOT returned here.
         """
         import logging
-        if not (self.pca_available and self.pca is not None):
+        # Select PCA and scaler specifically for hazard heads (models/pca_32.pkl)
+        if self.hazard_pca_available and self.hazard_pca is not None:
+            h_pca = self.hazard_pca
+            h_scaler = self.hazard_pca_scaler
+            h_features = self.hazard_pca_features
+        elif self.pca_available and self.pca is not None:
+            h_pca = self.pca
+            h_scaler = getattr(self, "pca_scaler", None)
+            h_features = self.pca_features
+        else:
             raise RuntimeError(
                 "CRITICAL: PCA is unavailable — hazard head inference requires 32-dim PCA transform. "
                 "Silent degradation is strictly prohibited."
             )
 
-        # Build PCA-reduced 32-dim sequence tensor (shared by both paths)
-        cols = self.pca_features if (
-            self.pca_features is not None and len(self.pca_features) == sequence_30x406.shape[1]
+        # Build PCA-reduced 32-dim sequence tensor for hazard heads
+        cols = h_features if (
+            h_features is not None and len(h_features) == sequence_30x406.shape[1]
         ) else [f"f_{i}" for i in range(sequence_30x406.shape[1])]
         seq_df = pd.DataFrame(sequence_30x406, columns=cols)
-        if getattr(self, "pca_scaler", None) is not None:
-            scaled_values = self.pca_scaler.transform(seq_df[cols].to_numpy(dtype=np.float64))
+        if h_scaler is not None:
+            scaled_values = h_scaler.transform(seq_df[cols].to_numpy(dtype=np.float64))
             seq_df = pd.DataFrame(scaled_values, columns=cols)
-        transformed = self.pca.transform(seq_df)
+        transformed = h_pca.transform(seq_df)
         pca_cols = [f"pca_{i}" for i in range(32)]
         seq_32 = transformed[pca_cols].to_numpy(dtype=np.float32)
         seq_tensor = torch.as_tensor(seq_32, dtype=torch.float32).unsqueeze(0).to(self.device)
