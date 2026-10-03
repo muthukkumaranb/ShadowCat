@@ -3,32 +3,28 @@
 **Theme:** Blockchain & Cybersecurity
 **Organization:** National Technical Research Organisation (NTRO)
 
-<img src="assets/Shadowcat_Architecture_v13.png" alt="ShadowCat Architecture" style="width: 100%; max-height: 400px; object-fit: contain;">
+<img src="assets/Shadowcat_Architecture.png" alt="ShadowCat Architecture" style="width: 100%; max-height: 400px; object-fit: contain;">
+
+Numbers match README.md and docs/FINAL_FINDINGS.md; *pending merge* marks results committed on branches not yet merged into main.
 
 ## 1. Unified Cyber State (UCS) & Data Ingestion
-SHADOWCAT shifts perimeter defense from reactive signature matching to predictive forecasting. The pipeline begins with Gate 0 ingestion protocols.
-* **Packet-Level Coverage:** The platform extracts real packet-level telemetry for all three headline attacks (**SSH-Bruteforce, Botnet, and DDOS-LOIC-UDP**) without label leakage.
-* **Feature Extraction:** Raw NetFlows and Scapy-extracted packet stats are aggregated into 1-minute windows, yielding a 406-dimensional UCS feature vector ($S_t$).
-* **Sanitization:** The data undergoes robust normalization (Log1p + RobustScaler) to ensure stability against extreme traffic spikes before passing to the ML track.
+* **Feature extraction:** CICFlowMeter flows are aggregated into 1-minute windows, yielding a 406-dimensional UCS state $S_t$ (388 flow features, 6 presence masks, 12 packet features).
+* **Packet-level coverage:** packet statistics from the project's custom PCAP parser are available for the SSH-Bruteforce, Botnet and DDOS-LOIC-UDP days; elsewhere `mask_has_packet_level_features` = 0.
+* **Normalization:** Log1p + RobustScaler fitted on training windows only; purge + embargo at split boundaries.
 
-## 2. Causal Temporal World Model
-The core of SHADOWCAT is a predictive world model that learns the latent dynamics of network traffic.
-* **Architecture:** A Stacked Residual LSTM Ensemble takes a 30-window temporal lookback to map $S_t$ to a 64-D latent representation ($z_t$).
-* **Probabilistic Forecasting:** The model learns the transition dynamics $p(S_{t+1} | S_t)$, forecasting the probabilistic next-state of the network up to 5 minutes into the future ($H=5$).
-* **Graph Representation (Ablation):** While a GraphSAGE multimodal fusion branch (ML2) was explored for topological context, empirical ablation (Validation Loss 1.666 vs 1.932) led to it being held back in favor of the pure temporal model for the primary verified forecast.
+## 2. World Model
+* **Architecture:** a causal LSTM over a 30-window lookback learns $p(S_{t+1} | S_t)$ with a Gaussian head.
+* **Forecasting status:** the autoregressive rollout does not beat a persistence baseline at any K = 1..5 (H* = 0), across a capacity sweep, an MDN head, 10-day data, CIC-IDS2017 data and a delta / Monte Carlo rollout (the last two *pending merge*). Root cause: the Gaussian NLL is mean-seeking, and the dataset's scripted attacks have few observable precursors.
+* **Graph branch (held back):** a GraphSAGE fusion branch was explored; ablation (validation loss 1.666 vs 1.932) kept it out of the primary path. No prediction uses a GNN.
 
-## 3. Multi-Head Forecasting & Counterfactual Explainability
-The latent state $z_t$ is processed by specialized heads to map predictions to actionable analyst insights.
-* **Stacked & Calibrated Residual LSTM Ensemble:** Forecasts a multi-step risk trajectory (t+1 through t+5), bounded by a strict False Positive Rate ceiling (global τ=0.15, ≤5% false-alarm rate) to prevent alert fatigue.
-* **Stage Head:** Maps the predicted threat to specific MITRE ATT&CK stages. Retrained on the full-packet-coverage dataset across all three attacks, the Stage Head achieves a verified **0.8627 accuracy** (386 test samples).
-* **Counterfactual Explainability:** Integrated Gradients and NLL Novelty scoring are used to isolate the exact feature perturbations driving the model's alert (e.g., highlighting specific port sweeps or rhythm anomalies), allowing human analysts to trust and verify the ML decision boundary.
+## 3. Heads and Explainability
+* **Stacked & calibrated residual LSTM ensemble (37 LOEO folds):** one probability that an attack window occurs within the next 5 minutes (onset), and one for the current window (detection). LOEO mean F1: detection 0.9962 vs LR 0.9730; onset 0.9127 vs LR 0.8880. Onset is measured mostly on windows already inside an attack; on true precursors ROC-AUC is 0.625 vs LR 0.520 (*pending merge*). The gain over LR comes from the calibrated LR stage, not from the LSTM history (*pending merge*).
+* **Stage head:** maps the world-model state to a MITRE ATT&CK tactic (0.8627 accuracy on its own test set, credential brute-force vs background). The dashboard shows a stage only when its top probability is > 0.5 for a real tactic; in a sweep over the dataset this never happened (*pending merge*).
+* **Explainability:** Integrated Gradients on the stacked onset logit, plus a bounded counterfactual search on the onset probability.
 
-## 4. Tamper-Evident Audit Ledger (Blockchain Integration)
-To satisfy the SIH Blockchain requirement, SHADOWCAT implements a two-tier notarization architecture, integrating a real blockchain as the primary tier and a hash chain as a resilient fallback.
-* **Hyperledger Fabric (Primary):** The system connects to a real Go chaincode on a local Fabric test network (`shadowcat-notary-channel`). It records an atomic 4-stage prediction lineage (raw data, feature vector, model ID, prediction). The chaincode features autonomous incident response, natively creating an `IncidentResponseRecord` (e.g., `ISOLATE_HOST`) on-chain for HIGH/CRITICAL alerts, with a verified median commit latency of 2402.55ms.
-* **SHA-256 Hash Chain (Fallback):** If the Fabric network is unreachable, the system automatically falls back to a cryptographic SHA-256 recursive hash chain to ensure uninterrupted, tamper-evident lineage without pipeline failure.
-* **Tamper Evidence:** Any unauthorized alteration to historical metrics or model weights breaks the downstream cryptographic links and is instantly caught by the auditing systems.
+## 4. Tamper-Evident Audit Ledger
+* **Hyperledger Fabric (optional):** Go chaincode on a local test network (`shadowcat-notary-channel`) records a 4-stage prediction lineage and model provenance, and writes an `IncidentResponseRecord` on-chain for HIGH/CRITICAL records; measured median commit latency 2402.55 ms (3/3 confirmed).
+* **SHA-256 hash chain (default when Fabric is unavailable):** every model load, alert and lineage record is chained; altering an earlier record breaks verification.
 
 ## 5. Operational Interface
-* **Analyst Dashboard:** A dark-mode Streamlit dashboard visualizes the forecasted risk trajectories, attribution, and benchmark audits in real-time.
-* **Telemetry Viewer:** Dual-signal telemetry viewers give human analysts direct insight into the counterfactual attributions and the cryptographic provenance of every alert.
+* **Dashboard:** a Streamlit app that runs the pipeline on uploaded files or three real demo slices from CSE-CIC-IDS2018 and shows the onset and detection probabilities, Integrated Gradients, flow ranking, validation results and the audit chain. It processes files, not a live network feed.

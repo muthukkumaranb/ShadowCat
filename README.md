@@ -1,6 +1,6 @@
 # SHADOWCAT
 
-> **An AI world model that forecasts network attacks before they happen, learning network state dynamics from traffic and mapping predictions to MITRE ATT&CK stages, fully offline.**
+> **A network-traffic world model with a validated attack detector and onset estimator: it learns 1-minute network state dynamics from CICFlowMeter flows, scores P(attack within the next 5 minutes) with a stacked LOEO ensemble, and keeps a tamper-evident audit trail, fully offline. Its multi-step rollout does not yet beat a persistence baseline (H* = 0).**
 
 ---
 
@@ -19,7 +19,7 @@
 - **ID:** `SIH26153`
 - **Organization:** National Technical Research Organisation (NTRO)
 - **Theme:** Blockchain & Cybersecurity
-- **Core Mission:** Shift perimeter intrusion defense from reactive signature matching (0 lead time, post-compromise alerts) to **predictive pre-emptive forecasting** with quantified lead time, empirical leakage protection, and tamper-evident cryptographic provenance.
+- **Core Mission:** Shift perimeter intrusion defense from reactive signature matching (0 lead time, post-compromise alerts) to learned, leakage-controlled estimation of attack onset from traffic, with tamper-evident cryptographic provenance. Onset F1 0.9127 is measured mostly on windows already inside an attack; on true precursors (no attack yet, attack within 5 minutes) the stacked model reaches ROC-AUC 0.625 vs LR 0.520 (*pending merge*, `feature/deviation-evidence`).
 
 ---
 
@@ -64,7 +64,7 @@
                                           ▼
    ┌─────────────────────────────────────────────────────────────────────────────┐
    │ 5. OPERATIONAL DASHBOARD (frontend/app.py)                                  │
-   │ Streamlit Glassmorphic UI: Risk Trajectories, Attribution & Benchmark Audits│
+   │ Streamlit UI: Onset Probability, Attribution & Benchmark Audits             │
    └─────────────────────────────────────────────────────────────────────────────┘
 
    * Note on Graph Branch (ML2): GraphSAGE fusion (real per-window graph construction) is now
@@ -146,7 +146,7 @@ Start the Streamlit operational interface:
 ```bash
 streamlit run frontend/app.py
 ```
-*The dashboard will automatically open in your default web browser at `http://localhost:8501`. Here you can view the live risk trajectories and forensic benchmark panels.*
+*The dashboard will automatically open in your default web browser at `http://localhost:8501`. Load one of the three real demo slices on the Ingestion page; the onset probability, explanation and validation results update across the pages.*
 
 ### Optional: Reproducing the Hyperledger Fabric Layer
 
@@ -197,8 +197,8 @@ LR scores 1.0 on 36/37 folds and 0.0 on Fold 16 (SSH-Bruteforce).
 
 | Evaluation Metric / Milestone | Result / Finding | Status & Reference |
 | :--- | :--- | :--- |
-| **Real PCAP Telemetry (Option B)** | Genuine Scapy-extracted packet stats for SSH-Bruteforce (14-02-2018), DDOS-LOIC-UDP (21-02-2018), and Botnet (02-03-2018); 0 label leakage | [Extraction Report](data-engineering/data/ucs/PACKET_EXTRACTION_VERIFICATION.md) |
-| **Hazard Forecasting ROC-AUC (v3)** | **0.789** (H=1), **0.843** (H=2), **0.770** (H=5) across LOEO 37 Folds | [Hazard Report v3](ml1/artifacts/lstm/hazard_head_v3/hazard_head_report_v3.md) |
+| **Real PCAP Telemetry (Option B)** | Packet stats extracted with the project's custom PCAP parser for SSH-Bruteforce (14-02-2018), DDOS-LOIC-UDP (21-02-2018), and Botnet (02-03-2018); 0 label leakage | [Extraction Report](data-engineering/data/ucs/PACKET_EXTRACTION_VERIFICATION.md) |
+| **Hazard Forecasting ROC-AUC (v3)** | **0.789** (H=1), **0.843** (H=2), **0.770** (H=5) across LOEO 37 Folds; reproduces exactly only with the per-fold PCA refit it was trained with, not through the deployed input path, so the dashboard does not show it (*pending merge*, `fix/demo-integrity`, `hazard_v3_results.json`) | [Hazard Report v3](ml1/artifacts/lstm/hazard_head_v3/hazard_head_report_v3.md) |
 | **Lagged Logistic Regression Baseline** | F1: 0.9730 — Caveat: 0% recall, every attack window misclassified as benign on Fold 16 | [Gate 0 Report](data-engineering/gate0_leakage_report.md) |
 | **GNN Multimodal Fusion Ablation** | Validation Loss: Temporal-Only (1.666) beats Fused (1.932) | **HOLD** — [GNN Decision](ml2-full/GNN_FINAL/ml2/results/gnn_adopt_hold_decision.md) |
 | **Stage-Head Scope (v3)** | Validated on *Credential Access / Brute Force* vs background (v3), 0.8627 accuracy | [Stage Report v3](ml1/artifacts/lstm/stage_head_v3/reeval_packetcov/stage_head_report.md) |
@@ -241,13 +241,13 @@ To meet the SIH **Blockchain & Cybersecurity** theme, SHADOWCAT implements a rea
 ## Known Limitations & Scope Disclosures
 
 In accordance with scientific integrity and engineering transparency:
-1. **Dataset Nature:** Evaluated on the CSE-CIC-IDS2018 testbed dataset; real-world enterprise zero-day generalization requires continuous fine-tuning.
+1. **Dataset Nature:** Evaluated only on the CSE-CIC-IDS2018 testbed dataset. No claim is made that the models work on unseen attack types or other networks; the leave-one-family-out world-model deviation result (*pending merge*, `feature/deviation-evidence`) is the only unseen-family evidence.
 2. **Network Topology:** The evaluation environment reflects a single simulated enterprise topology.
-3. **Onset Forecasting Limit ($H=5$):** Multi-horizon forecasting at horizon $H=5$ minutes represents an epistemic benchmark limit under Leave-One-Episode-Out cross-validation.
+3. **Onset window ($H=5$):** The onset model gives one probability for "an attack window within the next 5 minutes"; it does not produce per-minute horizons.
 4. **ATT&CK Stage Granularity:** Stage head currently evaluates high-fidelity discrimination for credential brute-force stages vs background; full 14-tactic multi-stage ATT&CK classification is exploratory: Discovery and Command & Control have zero test support in LOEO splits, while Impact-stage attacks (19 test windows) are not detected by the current Stage Head (0% recall in both v2 and v3 evaluations; the model defaults these to Unknown/Other).
 5. **Rollout Horizon Boundaries:** Autoregressive state rollout does not beat a persistence baseline at any depth K = 1..5 (H* = 0); no rollout depth is validated.
 6. **Telemetry Extraction (Option B):** Packet-level telemetry is now genuinely extracted for the SSH-Bruteforce (14-02-2018), DDOS-LOIC-UDP (21-02-2018), and Botnet (02-03-2018) PCAPs without label leakage.
-7. **Hazard FPR Constraints:** Hazard-head calibration is enforced using an explicit False Positive Rate ceiling (global τ=0.15, ≤5% false-alarm rate) to prevent alert fatigue.
+7. **Alert threshold:** The dashboard alerts when the onset probability is >= 0.5 (the threshold of the reported per-fold F1). In a sweep over every dataset window, 3.8% of benign windows alert (these windows were in training for 36 of 37 folds, so this is not a held-out false-alarm rate; *pending merge*, `fix/demo-integrity`, `evaluation/demo_sweep_results.json`). No ≤5% held-out false-alarm guarantee is claimed.
 8. **Botnet Detection Shortfall:** Botnet onset detection remains a disclosed, unresolved limitation. Even with real packet telemetry, the signal-to-noise ratio is too weak (ROC-AUC ~0.63), which is insufficient for reliable, low-FPR alerting. This has not been artificially 'solved' via F1-only threshold manipulation.
 9. **GraphSAGE Fusion:** Real per-window graph construction is now wired in as an explicitly labeled experimental/held-back output, separate from the primary verified forecast; the underlying ablation evidence (validation loss 1.666 vs 1.932) remains the reason it's not in the primary path.
 10. **Hyperledger Fabric Local Dependency:** The primary Hyperledger Fabric notarization path is not fully plug-and-play upon cloning the repository. It requires a local Fabric test-network running via Docker with the `shadowcat-notary-channel` and chaincode deployed, as the Windows path (`D:\sih2026\fabric-experiment`) is hardcoded in `backend/fabric_bridge.py`. Without this local network running, every notarization call gracefully and automatically falls back to the SHA-256 hash chain (`notarized_via="sha256_fallback"`).
