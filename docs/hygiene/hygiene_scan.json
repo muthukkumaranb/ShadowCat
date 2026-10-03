@@ -3,64 +3,55 @@
   "tracked_files_matching_426_old_ucs_scratch_parquet": [],
   "python_files_with_absolute_paths": {
     "backend/fabric_bridge.py": [
-      "'D:\\\\sih2026'"
+      "D:\\\u2026"
     ],
     "data-engineering/scripts/download_csvs_robust.py": [
-      "'d:\\sih2026\\data-engineering\\data\\raw\\CSE-CIC-IDS2018-csv'"
+      "d:\\\u2026"
     ],
     "data-engineering/watch_progress.py": [
-      "\"C:\\Users\\MUTHUKUMARAN\\.gemini\\antigravity-ide\\brain\\6bf0770c-fc59-49ec-9fa1-be17dfac5f89\\.system_generated\\tasks\\task-534.log\""
+      "C:\\Users\\\u2026"
     ],
     "ml1/audit_features.py": [
-      "\"C:\\Users\\Vicky\\Documents\\SIH_2026\\SIH2026---UCS-INGESTION-PIPELINE-for-logistic-regression\""
+      "C:\\Users\\\u2026"
     ],
     "ml1/scratch/run_provisional.py": [
-      "\"E:\\SIH 2026 - UCS Ingestion Pipeline (Main)\\data\\ucs\\ucs_graph_edgelists.parquet\"",
-      "\"E:\\SIH 2026 - UCS Ingestion Pipeline (Main)\\data\\ucs\\ucs_windows.parquet\""
+      "E:\\\u2026"
     ],
     "ml1/scripts/apply_option_a_data_fix.py": [
-      "\"c:\\Users\\Vicky\\Documents\\SIH_2026\\LSTM-type-model-CICIDS2018-UCS\""
+      "c:\\Users\\\u2026"
     ],
     "ml1/scripts/audit_phase2_quantify_lr_leakage.py": [
-      "\"c:\\Users\\Vicky\\Documents\\SIH_2026\\LSTM-type-model-CICIDS2018-UCS\""
+      "c:\\Users\\\u2026"
     ],
     "ml1/scripts/audit_pipeline.py": [
-      "\"C:\\Users\\Vicky\\Documents\\SIH_2026\\SIH2026---UCS-INGESTION-PIPELINE-for-logistic-regression\""
+      "C:\\Users\\\u2026"
     ],
     "ml1/scripts/copy_v2_checkpoint.py": [
-      "\"c:\\Users\\Vicky\\Documents\\SIH_2026\\LSTM-type-model-CICIDS2018-UCS\""
+      "c:\\Users\\\u2026"
     ],
     "ml1/scripts/generate_feature_audit.py": [
-      "\"C:\\Users\\Vicky\\Documents\\SIH_2026\\SIH2026---UCS-INGESTION-PIPELINE-for-logistic-regression\""
+      "C:\\Users\\\u2026"
     ],
     "ml1/scripts/sanity_check_loeo_deviation.py": [
-      "\"C:/Users/Vicky/Documents/SIH_2026/LSTM-type-model-CICIDS2018-UCS\""
+      "C:/Users/\u2026"
     ],
     "ml1/scripts/verify_final_lr.py": [
-      "\"C:\\Users\\Vicky\\Documents\\SIH_2026\\SIH2026---UCS-INGESTION-PIPELINE-for-logistic-regression\""
+      "C:\\Users\\\u2026"
     ],
     "ml2-full/scripts/inspect_labels.py": [
-      "\"E:\\Data Set folders\\UGR 16\\august_week5.parquet\""
+      "E:\\\u2026"
     ],
     "scratch/debug_validator.py": [
-      "\"d:/sih2026\"",
-      "\"d:/sih2026/data-engineering\"",
-      "\"d:/sih2026/scratch/dummy_cicids2018.csv\""
+      "d:/\u2026"
     ],
     "scratch/download_ctu13.py": [
-      "\"d:/sih2026/data/ctu13_scenario9_slice.csv\""
+      "d:/\u2026"
     ],
     "scratch/test_cicids.py": [
-      "\"d:/sih2026\"",
-      "\"d:/sih2026/backend\"",
-      "\"d:/sih2026/data-engineering/configs/canonical_mapping.yaml\"",
-      "\"d:/sih2026/scratch/dummy_cicids2018.csv\""
+      "d:/\u2026"
     ],
     "scratch/test_ctu13.py": [
-      "\"d:/sih2026\"",
-      "\"d:/sih2026/backend\"",
-      "\"d:/sih2026/data-engineering\"",
-      "\"d:/sih2026/data/ctu13_sample.csv\""
+      "d:/\u2026"
     ]
   },
   "python_files_referencing_untracked_data_files": {
