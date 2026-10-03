@@ -4,6 +4,16 @@
 
 ---
 
+## Deliverables
+
+- **Demo video:** https://youtu.be/c_4-A5syubs
+- **Architecture diagram:** [docs/assets/Shadowcat_Architecture.png](docs/assets/Shadowcat_Architecture.png) ([PDF](docs/assets/ShadowCat_Architecture.pdf))
+- **Slides (content):** [docs/Shadowcat_PPT_Final_Slide_Content.md](docs/Shadowcat_PPT_Final_Slide_Content.md)
+- **Architecture document:** [docs/SIH26153_Architecture_Final.md](docs/SIH26153_Architecture_Final.md)
+- **Final findings:** [docs/FINAL_FINDINGS.md](docs/FINAL_FINDINGS.md)
+
+---
+
 ## Problem Statement Reference
 
 - **ID:** `SIH26153`
@@ -37,8 +47,8 @@
    │         ┌────────────────────────────┴────────────────────────────┐         │
    │         ▼                                                         ▼         │
    │   Stacked Residual LSTM Ensemble                            Stage Head v3   │
-   │   Multi-step Risk Trajectory                                MITRE ATT&CK    │
-   │   (t+1 .. t+5 Horizons)                                     (Credential)    │
+   │   One onset probability:                                    MITRE ATT&CK    │
+   │   P(attack within t+1..t+5)                                 (Credential)    │
    │         │                                                         │         │
    │         └────────────────────────────┬────────────────────────────┘         │
    │                                      ▼                                      │
@@ -170,6 +180,17 @@ To stand up the real Fabric test-network layer yourself:
 
 **Note**: The LR detection F1 of 0.973 is a mean across 37 folds where 36 score a perfect 1.0 and 1 fold (Fold 16, SSH-Bruteforce, 66 test windows) scores 0.0 — 0% recall, every attack window misclassified as benign.
 
+LR scores 1.0 on 36/37 folds and 0.0 on Fold 16 (SSH-Bruteforce).
+
+**Matched false-positive rate (~5%)** on the same 412 pooled LOEO test windows, threshold chosen by the same procedure for both models — *pending merge* (`fix/demo-integrity`, `evaluation/benchmark/stacked_benchmark_results.json`):
+
+| Task | Model | F1 | Precision | Recall | FPR |
+|---|---|---|---|---|---|
+| Detection | Stacked Residual LSTM Ensemble | **0.958** | 0.920 | 1.000 | 0.049 |
+| Detection | Logistic Regression baseline | 0.871 | 0.906 | 0.839 | 0.049 |
+| Onset | Stacked Residual LSTM Ensemble | **0.936** | 0.928 | 0.945 | 0.048 |
+| Onset | Logistic Regression baseline | 0.829 | 0.912 | 0.761 | 0.048 |
+
 ---
 
 ## Summary of Key Scientific Results
@@ -195,9 +216,15 @@ To stand up the real Fabric test-network layer yourself:
 - Root cause identified: the world model is trained with a Gaussian negative log-likelihood loss, which is mean-seeking. It is mathematically rewarded for predicting a smoothed average next-state rather than preserving rare attack-state signal, since rare states resemble noise relative to that average. This holds independent of model capacity.
 - An architectural change (Mixture Density Network head, 5 Gaussian mixture components, replacing the single-Gaussian output) was implemented and evaluated to test whether a multimodal output distribution could preserve the signal a single Gaussian collapses. Results: F1 at K=1 through K=5 (0.5530, 0.5527, 0.5523, 0.5520, 0.5517) still does not beat the persistence baseline (0.9517 to 0.9059 across the same horizons); H* remains 0.
 - A follow-up diagnostic found that the mixture components do differentiate internally between benign and attack windows (for example, one component's average weight rises from 5.03% on benign windows to 17.53% on attack windows), but this distinction is lost once the mixture is collapsed to a single expected value for downstream classification, which is required by the current stage-head architecture.
-- A third remediation path was evaluated: data volume was expanded from 3 to 10 labeled days (4,545 total windows, full coverage of Credential Access, Impact, Discovery, and Command and Control classes). Re-evaluating the MDN world model on this expanded data still gives H* = 0.
+- A third remediation path was evaluated: data volume was expanded from 3 to 10 labeled days (4,545 total windows at commit a0ae7bc, full coverage of Credential Access, Impact, Discovery, and Command and Control classes). Re-evaluating the MDN world model on this expanded data still gives H* = 0. Note: `main` currently holds the 6-day dataset (2,787 windows); a rebuild of the 10-day dataset with main's pipeline is *pending merge* on `fix/restore-10day-dataset` and did not reproduce a0ae7bc's feature values (`REBUILD_CHECK.json`).
 - Conclusion: all three independent remediation paths (capacity/hyperparameters, architecture, data volume) now agree, which is strong evidence the ceiling is a structural property of the single-step world-model objective itself, not any of these three factors. Passing the full predicted distribution (or a sample from it) into the stage head, instead of collapsing it to a mean, is identified as the next concrete direction, not yet implemented.
 - This investigation did not change the validated Detection (F1 0.9962) and Onset (F1 0.9127) benchmarks reported above, which measure a different task (single-step classification, not multi-step autoregressive forecasting).
+- Closing summary (details in [docs/FINAL_FINDINGS.md](docs/FINAL_FINDINGS.md)):
+  - H* = 0 at K = 1..5, confirmed by the capacity sweep, the MDN head, the 10-day data and the CIC-IDS2017 exploration (combined data: model 0.2136 vs persistence 0.6051, *pending merge*); a delta-parameterised and 32-sample Monte Carlo rollout also gives H* = 0 in all four configurations (*pending merge*, `feature/rollout-delta-mc`).
+  - Root cause: the Gaussian NLL objective is mean-seeking, and the scripted CSE-CIC-IDS2018 attacks have almost no observable precursors.
+  - Onset F1 0.9127 is measured mostly on windows already inside an attack: of 984 onset-positive windows only 71 are true precursors; on precursors the stacked model reaches ROC-AUC 0.625 vs LR 0.520 (*pending merge*, `feature/deviation-evidence`).
+  - The LSTM residual adds no measurable gain over the stacked model's own calibrated LR stage (history shuffled or removed gives the same F1, *pending merge*); the improvement over LR is not temporal learning.
+  - The earlier interim claim that "more data eliminated H* = 0" is retracted: it compared against a day-of-week predictor, not the world model.
 
 ---
 
@@ -218,7 +245,7 @@ In accordance with scientific integrity and engineering transparency:
 2. **Network Topology:** The evaluation environment reflects a single simulated enterprise topology.
 3. **Onset Forecasting Limit ($H=5$):** Multi-horizon forecasting at horizon $H=5$ minutes represents an epistemic benchmark limit under Leave-One-Episode-Out cross-validation.
 4. **ATT&CK Stage Granularity:** Stage head currently evaluates high-fidelity discrimination for credential brute-force stages vs background; full 14-tactic multi-stage ATT&CK classification is exploratory: Discovery and Command & Control have zero test support in LOEO splits, while Impact-stage attacks (19 test windows) are not detected by the current Stage Head (0% recall in both v2 and v3 evaluations; the model defaults these to Unknown/Other).
-5. **Rollout Horizon Boundaries:** Autoregressive state rollout is empirically validated for depths $K=1 \dots 3$; depth $K=5$ is classified as informational/exploratory due to compounding drift.
+5. **Rollout Horizon Boundaries:** Autoregressive state rollout does not beat a persistence baseline at any depth K = 1..5 (H* = 0); no rollout depth is validated.
 6. **Telemetry Extraction (Option B):** Packet-level telemetry is now genuinely extracted for the SSH-Bruteforce (14-02-2018), DDOS-LOIC-UDP (21-02-2018), and Botnet (02-03-2018) PCAPs without label leakage.
 7. **Hazard FPR Constraints:** Hazard-head calibration is enforced using an explicit False Positive Rate ceiling (global τ=0.15, ≤5% false-alarm rate) to prevent alert fatigue.
 8. **Botnet Detection Shortfall:** Botnet onset detection remains a disclosed, unresolved limitation. Even with real packet telemetry, the signal-to-noise ratio is too weak (ROC-AUC ~0.63), which is insufficient for reliable, low-FPR alerting. This has not been artificially 'solved' via F1-only threshold manipulation.
