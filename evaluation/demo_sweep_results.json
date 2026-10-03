@@ -1,0 +1,95 @@
+{
+  "data": "data-engineering/data/ucs/ucs_windows_models_v1.parquet",
+  "windows_swept": 2758,
+  "note": "all windows are LOEO dataset windows (in training for 36 of 37 fold models); not a held-out result",
+  "alert_threshold": 0.5,
+  "share_alerting_all": 0.3060188542422045,
+  "share_alerting_benign_label_binary_0": 0.03820960698689956,
+  "share_alerting_benign_and_no_attack_within_5min": 0.028960817717206135,
+  "share_alerting_attack_label_binary_1": 0.8358531317494601,
+  "benign_windows_all_alert": false,
+  "onset_probability": {
+    "benign": {
+      "n": 1832,
+      "mean": 0.28184544104803494,
+      "p05": 0.09727475000000001,
+      "p25": 0.20020025000000002,
+      "median": 0.278185,
+      "p75": 0.358927,
+      "p95": 0.47480989999999984,
+      "share_ge_0.5": 0.03820960698689956
+    },
+    "attack": {
+      "n": 926,
+      "mean": 0.7131300442764578,
+      "p05": 0.39480625,
+      "p25": 0.5685445,
+      "median": 0.7503275,
+      "p75": 0.8552975,
+      "p95": 0.9592707500000001,
+      "share_ge_0.5": 0.8358531317494601
+    },
+    "benign_and_no_attack_within_5min": {
+      "n": 1761,
+      "mean": 0.27648871607041453,
+      "p05": 0.096608,
+      "p25": 0.196151,
+      "median": 0.275354,
+      "p75": 0.354399,
+      "p95": 0.462525,
+      "share_ge_0.5": 0.028960817717206135
+    }
+  },
+  "detection_probability": {
+    "benign": {
+      "n": 1832,
+      "mean": 0.24259437772925765,
+      "p05": 0.03726500000000003,
+      "p25": 0.15605,
+      "median": 0.23845,
+      "p75": 0.32065,
+      "p95": 0.4376399999999998,
+      "share_ge_0.5": 0.016921397379912665
+    },
+    "attack": {
+      "n": 926,
+      "mean": 0.716769978401728,
+      "p05": 0.37072499999999997,
+      "p25": 0.5689,
+      "median": 0.75575,
+      "p75": 0.88295,
+      "p95": 0.9693499999999999,
+      "share_ge_0.5": 0.8153347732181425
+    }
+  },
+  "stage_shown_t1": {
+    "No stage determined": 2758
+  },
+  "stage_head_top_class_t1": {
+    "Unknown/Other": 2744,
+    "Impact": 14
+  },
+  "stage_shown_t1_by_attack_type": {
+    "Benign": {
+      "No stage determined": 2446
+    },
+    "Botnet": {
+      "No stage determined": 48
+    },
+    "DDOS-HOIC": {
+      "No stage determined": 8
+    },
+    "DDOS-LOIC-UDP": {
+      "No stage determined": 19
+    },
+    "Infiltration-Compromise": {
+      "No stage determined": 97
+    },
+    "Infiltration-Portscan": {
+      "No stage determined": 58
+    },
+    "SSH-Bruteforce": {
+      "No stage determined": 82
+    }
+  }
+}

@@ -6,6 +6,8 @@ from the SQLite reports database.
 Follows existing view conventions (theme tokens, render_html, session-state theme).
 """
 
+import html
+
 import streamlit as st
 from styles import TOKENS, render_html
 from data_provider import get_report_history
@@ -117,7 +119,7 @@ def render_page():
                 ◇ NO RECORDS
             </div>
             <div style="font-family: 'Inter', sans-serif; font-size: 0.85rem; color: {t['text_secondary']}; max-width: 480px; margin: 0 auto; line-height: 1.6;">
-                No prediction reports have been captured yet. Run a live prediction
+                No prediction reports have been captured yet. Run a prediction
                 via the <strong>Telemetry Ingestion</strong> page to populate this view.
                 Records persist in the SQLite database and survive app restarts.
             </div>
@@ -139,6 +141,11 @@ def render_page():
         model_id = report.get("model_id", "—")
         raw_data_hash = report.get("raw_data_hash", "—")
         prediction_hash = report.get("prediction_hash", "—")
+        # Records can carry input-derived strings (window ids, host names): escape before HTML rendering
+        rec_type, rec_id, severity, notarized_via, created_at, window_id, window_start, target_node, model_id, \
+            raw_data_hash, prediction_hash = (
+                html.escape(str(v)) for v in (rec_type, rec_id, severity, notarized_via, created_at, window_id,
+                                              window_start, target_node, model_id, raw_data_hash, prediction_hash))
 
         # Severity styling
         if severity == "HIGH":

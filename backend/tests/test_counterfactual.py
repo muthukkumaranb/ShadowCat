@@ -34,7 +34,7 @@ def ucs_dataset():
 def test_honesty_label_presence(engine):
     """Confirm honesty label text is mandatory and present."""
     assert HONESTY_LABEL in [
-        "Model-based counterfactual under the hazard model's learned decision boundary — not a guarantee that this change would have prevented the actual attack, and not validated against real intervention data."
+        "Model-based counterfactual under the onset model's learned decision boundary — not a guarantee that this change would have prevented the actual attack, and not validated against real intervention data."
     ]
     # Check that a mock/empty result contains honesty label
     res = engine.search(None, np.zeros((30, 406), dtype=np.float32), threshold=0.15)

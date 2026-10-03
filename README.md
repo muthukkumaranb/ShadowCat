@@ -89,7 +89,7 @@ cd ShadowCat
 ```
 
 ### 2. Set Up a Virtual Environment (Recommended)
-It's highly recommended to use an isolated Python environment (Python 3.9+ is supported). 
+It's highly recommended to use an isolated Python environment. Python 3.11 or newer is required (`requirements.txt` pins `scikit-learn==1.9.0`, which requires Python >= 3.11).
 
 **Using `venv`:**
 ```bash
@@ -102,7 +102,7 @@ source venv/bin/activate
 
 **Using Conda:**
 ```bash
-conda create -n shadowcat python=3.10 -y
+conda create -n shadowcat python=3.11 -y
 conda activate shadowcat
 ```
 

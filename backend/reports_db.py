@@ -22,9 +22,10 @@ from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
-# Resolve DB path: backend/data/shadowcat_reports.db
+# Runtime DB lives outside tracked sources: <repo>/runtime/ (gitignored),
+# overridable with SHADOWCAT_RUNTIME_DIR.
 _BACKEND_DIR = Path(__file__).resolve().parent
-_DB_DIR = _BACKEND_DIR / "data"
+_DB_DIR = Path(os.environ.get("SHADOWCAT_RUNTIME_DIR", _BACKEND_DIR.parent / "runtime"))
 _DB_PATH = _DB_DIR / "shadowcat_reports.db"
 
 _CREATE_TABLE_SQL = """

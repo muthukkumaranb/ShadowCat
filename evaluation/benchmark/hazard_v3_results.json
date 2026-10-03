@@ -1,0 +1,2780 @@
+{
+  "tolerance": 0.01,
+  "runs": {
+    "pca32@data-engineering/data/ucs/ucs_windows_models_v1.parquet": {
+      "pca_mode": "pca32",
+      "data": "data-engineering/data/ucs/ucs_windows_models_v1.parquet",
+      "all_horizons_reproduce": false,
+      "horizons": {
+        "H1": {
+          "reported_roc_auc_mean": 0.7893,
+          "reproduced_roc_auc_mean": 0.5140032878777467,
+          "abs_diff_vs_reported": 0.27529671212225326,
+          "folds_with_both_classes": 36,
+          "max_abs_fold_diff_vs_committed_csv": 1.0,
+          "reproduces_within_tolerance": false,
+          "folds": [
+            {
+              "fold_id": 0,
+              "n_test": 20,
+              "positives": 10,
+              "roc_auc": 0.06,
+              "pr_auc": 0.3402737183696936,
+              "committed_csv_roc_auc": 0.6799999999999999
+            },
+            {
+              "fold_id": 1,
+              "n_test": 24,
+              "positives": 12,
+              "roc_auc": 0.6666666666666667,
+              "pr_auc": 0.6340170185564922,
+              "committed_csv_roc_auc": 0.1597222222222222
+            },
+            {
+              "fold_id": 2,
+              "n_test": 12,
+              "positives": 2,
+              "roc_auc": 0.35000000000000003,
+              "pr_auc": 0.18253968253968253,
+              "committed_csv_roc_auc": 0.75
+            },
+            {
+              "fold_id": 3,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.4,
+              "pr_auc": 0.25,
+              "committed_csv_roc_auc": 0.7
+            },
+            {
+              "fold_id": 4,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 0.0
+            },
+            {
+              "fold_id": 5,
+              "n_test": 9,
+              "positives": 4,
+              "roc_auc": 0.4,
+              "pr_auc": 0.4303571428571429,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 6,
+              "n_test": 9,
+              "positives": 4,
+              "roc_auc": 0.7,
+              "pr_auc": 0.6083333333333333,
+              "committed_csv_roc_auc": 0.0
+            },
+            {
+              "fold_id": 7,
+              "n_test": 8,
+              "positives": 3,
+              "roc_auc": 0.0,
+              "pr_auc": 0.2757936507936508,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 8,
+              "n_test": 14,
+              "positives": 7,
+              "roc_auc": 0.3469387755102041,
+              "pr_auc": 0.5506493506493506,
+              "committed_csv_roc_auc": 0.0
+            },
+            {
+              "fold_id": 9,
+              "n_test": 10,
+              "positives": 5,
+              "roc_auc": 0.56,
+              "pr_auc": 0.6833333333333333,
+              "committed_csv_roc_auc": 0.0
+            },
+            {
+              "fold_id": 10,
+              "n_test": 12,
+              "positives": 2,
+              "roc_auc": 0.45,
+              "pr_auc": 0.2111111111111111,
+              "committed_csv_roc_auc": 0.55
+            },
+            {
+              "fold_id": 11,
+              "n_test": 9,
+              "positives": 4,
+              "roc_auc": 0.0,
+              "pr_auc": 0.3179563492063492,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 12,
+              "n_test": 20,
+              "positives": 10,
+              "roc_auc": 0.49,
+              "pr_auc": 0.5667204965656978,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 13,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 14,
+              "n_test": 16,
+              "positives": 8,
+              "roc_auc": 0.0,
+              "pr_auc": 0.33712814962814963,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 15,
+              "n_test": 24,
+              "positives": 12,
+              "roc_auc": 0.8333333333333333,
+              "pr_auc": 0.8451736376368729,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 16,
+              "n_test": 66,
+              "positives": 33,
+              "roc_auc": 0.14003673094582186,
+              "pr_auc": 0.3410980242508184,
+              "committed_csv_roc_auc": 0.0266299357208448
+            },
+            {
+              "fold_id": 17,
+              "n_test": 12,
+              "positives": 6,
+              "roc_auc": 0.0,
+              "pr_auc": 0.34678932178932176,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 18,
+              "n_test": 14,
+              "positives": 7,
+              "roc_auc": 0.8571428571428572,
+              "pr_auc": 0.8444444444444443,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 19,
+              "n_test": 12,
+              "positives": 2,
+              "roc_auc": 0.85,
+              "pr_auc": 0.7,
+              "committed_csv_roc_auc": 0.55
+            },
+            {
+              "fold_id": 20,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.4,
+              "pr_auc": 0.25,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 21,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 22,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.0,
+              "pr_auc": 0.16666666666666666,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 23,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.0,
+              "pr_auc": 0.16666666666666666,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 24,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.0,
+              "pr_auc": 0.16666666666666666,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 25,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 26,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 27,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 28,
+              "n_test": 6,
+              "positives": 0,
+              "roc_auc": null,
+              "pr_auc": null,
+              "committed_csv_roc_auc": null
+            },
+            {
+              "fold_id": 29,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.0,
+              "pr_auc": 0.16666666666666666,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 30,
+              "n_test": 7,
+              "positives": 2,
+              "roc_auc": 0.0,
+              "pr_auc": 0.22619047619047616,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 31,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.0,
+              "pr_auc": 0.16666666666666666,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 32,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 33,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 34,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 35,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 36,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            }
+          ]
+        },
+        "H2": {
+          "reported_roc_auc_mean": 0.8432,
+          "reproduced_roc_auc_mean": 0.6467166909969939,
+          "abs_diff_vs_reported": 0.19648330900300603,
+          "folds_with_both_classes": 36,
+          "max_abs_fold_diff_vs_committed_csv": 1.0,
+          "reproduces_within_tolerance": false,
+          "folds": [
+            {
+              "fold_id": 0,
+              "n_test": 20,
+              "positives": 10,
+              "roc_auc": 0.33999999999999997,
+              "pr_auc": 0.4577909233868986,
+              "committed_csv_roc_auc": 0.745
+            },
+            {
+              "fold_id": 1,
+              "n_test": 24,
+              "positives": 11,
+              "roc_auc": 0.6573426573426573,
+              "pr_auc": 0.5434434252616072,
+              "committed_csv_roc_auc": 0.8426573426573426
+            },
+            {
+              "fold_id": 2,
+              "n_test": 12,
+              "positives": 3,
+              "roc_auc": 0.1111111111111111,
+              "pr_auc": 0.19166666666666668,
+              "committed_csv_roc_auc": 0.8888888888888888
+            },
+            {
+              "fold_id": 3,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.0,
+              "pr_auc": 0.16666666666666666,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 4,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.0,
+              "pr_auc": 0.16666666666666666,
+              "committed_csv_roc_auc": 0.0
+            },
+            {
+              "fold_id": 5,
+              "n_test": 9,
+              "positives": 4,
+              "roc_auc": 0.25,
+              "pr_auc": 0.4131944444444444,
+              "committed_csv_roc_auc": 0.3
+            },
+            {
+              "fold_id": 6,
+              "n_test": 9,
+              "positives": 4,
+              "roc_auc": 0.85,
+              "pr_auc": 0.8541666666666666,
+              "committed_csv_roc_auc": 0.0
+            },
+            {
+              "fold_id": 7,
+              "n_test": 8,
+              "positives": 3,
+              "roc_auc": 0.0,
+              "pr_auc": 0.2757936507936508,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 8,
+              "n_test": 14,
+              "positives": 7,
+              "roc_auc": 0.0,
+              "pr_auc": 0.3412948162948163,
+              "committed_csv_roc_auc": 0.4081632653061224
+            },
+            {
+              "fold_id": 9,
+              "n_test": 10,
+              "positives": 5,
+              "roc_auc": 0.07999999999999999,
+              "pr_auc": 0.3705555555555555,
+              "committed_csv_roc_auc": 0.0
+            },
+            {
+              "fold_id": 10,
+              "n_test": 12,
+              "positives": 3,
+              "roc_auc": 0.40740740740740744,
+              "pr_auc": 0.4909090909090909,
+              "committed_csv_roc_auc": 0.5925925925925926
+            },
+            {
+              "fold_id": 11,
+              "n_test": 9,
+              "positives": 4,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 12,
+              "n_test": 20,
+              "positives": 10,
+              "roc_auc": 0.97,
+              "pr_auc": 0.9697979797979798,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 13,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 14,
+              "n_test": 16,
+              "positives": 8,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 15,
+              "n_test": 24,
+              "positives": 12,
+              "roc_auc": 0.8680555555555556,
+              "pr_auc": 0.8756345506345506,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 16,
+              "n_test": 66,
+              "positives": 33,
+              "roc_auc": 0.9761248852157943,
+              "pr_auc": 0.9709449749808654,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 17,
+              "n_test": 12,
+              "positives": 6,
+              "roc_auc": 0.08333333333333331,
+              "pr_auc": 0.3636544011544012,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 18,
+              "n_test": 14,
+              "positives": 6,
+              "roc_auc": 0.8958333333333334,
+              "pr_auc": 0.8178571428571427,
+              "committed_csv_roc_auc": 0.9479166666666666
+            },
+            {
+              "fold_id": 19,
+              "n_test": 12,
+              "positives": 3,
+              "roc_auc": 0.5925925925925926,
+              "pr_auc": 0.4242424242424242,
+              "committed_csv_roc_auc": 0.6296296296296295
+            },
+            {
+              "fold_id": 20,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.8,
+              "pr_auc": 0.5,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 21,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 22,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 23,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 24,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 25,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 26,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.0,
+              "pr_auc": 0.16666666666666666,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 27,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 28,
+              "n_test": 6,
+              "positives": 0,
+              "roc_auc": null,
+              "pr_auc": null,
+              "committed_csv_roc_auc": null
+            },
+            {
+              "fold_id": 29,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.4,
+              "pr_auc": 0.25,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 30,
+              "n_test": 7,
+              "positives": 2,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 31,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 32,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 33,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 34,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 35,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.0,
+              "pr_auc": 0.16666666666666666,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 36,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            }
+          ]
+        },
+        "H5": {
+          "reported_roc_auc_mean": 0.7701,
+          "reproduced_roc_auc_mean": 0.5681397023341017,
+          "abs_diff_vs_reported": 0.2019602976658983,
+          "folds_with_both_classes": 36,
+          "max_abs_fold_diff_vs_committed_csv": 1.0,
+          "reproduces_within_tolerance": false,
+          "folds": [
+            {
+              "fold_id": 0,
+              "n_test": 20,
+              "positives": 10,
+              "roc_auc": 0.0,
+              "pr_auc": 0.33122859682457206,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 1,
+              "n_test": 24,
+              "positives": 12,
+              "roc_auc": 0.7847222222222222,
+              "pr_auc": 0.7210100085100084,
+              "committed_csv_roc_auc": 0.0
+            },
+            {
+              "fold_id": 2,
+              "n_test": 12,
+              "positives": 6,
+              "roc_auc": 0.7222222222222223,
+              "pr_auc": 0.8208333333333333,
+              "committed_csv_roc_auc": 0.7222222222222223
+            },
+            {
+              "fold_id": 3,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 0.0
+            },
+            {
+              "fold_id": 4,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.0,
+              "pr_auc": 0.16666666666666666,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 5,
+              "n_test": 9,
+              "positives": 4,
+              "roc_auc": 0.0,
+              "pr_auc": 0.3179563492063492,
+              "committed_csv_roc_auc": 0.3
+            },
+            {
+              "fold_id": 6,
+              "n_test": 9,
+              "positives": 4,
+              "roc_auc": 0.0,
+              "pr_auc": 0.3179563492063492,
+              "committed_csv_roc_auc": 0.0499999999999999
+            },
+            {
+              "fold_id": 7,
+              "n_test": 8,
+              "positives": 3,
+              "roc_auc": 0.4666666666666666,
+              "pr_auc": 0.4206349206349207,
+              "committed_csv_roc_auc": 0.0
+            },
+            {
+              "fold_id": 8,
+              "n_test": 14,
+              "positives": 7,
+              "roc_auc": 0.6326530612244898,
+              "pr_auc": 0.6535714285714285,
+              "committed_csv_roc_auc": 0.2448979591836734
+            },
+            {
+              "fold_id": 9,
+              "n_test": 10,
+              "positives": 5,
+              "roc_auc": 0.08000000000000002,
+              "pr_auc": 0.371031746031746,
+              "committed_csv_roc_auc": 0.2799999999999999
+            },
+            {
+              "fold_id": 10,
+              "n_test": 12,
+              "positives": 6,
+              "roc_auc": 0.6111111111111112,
+              "pr_auc": 0.6898148148148148,
+              "committed_csv_roc_auc": 0.5833333333333334
+            },
+            {
+              "fold_id": 11,
+              "n_test": 9,
+              "positives": 4,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 12,
+              "n_test": 20,
+              "positives": 10,
+              "roc_auc": 1.0,
+              "pr_auc": 0.9999999999999999,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 13,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.8,
+              "pr_auc": 0.5,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 14,
+              "n_test": 16,
+              "positives": 8,
+              "roc_auc": 0.453125,
+              "pr_auc": 0.48711878399378405,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 15,
+              "n_test": 24,
+              "positives": 12,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 0.0
+            },
+            {
+              "fold_id": 16,
+              "n_test": 66,
+              "positives": 33,
+              "roc_auc": 0.660238751147842,
+              "pr_auc": 0.5755577090192341,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 17,
+              "n_test": 12,
+              "positives": 6,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 18,
+              "n_test": 14,
+              "positives": 7,
+              "roc_auc": 0.8367346938775511,
+              "pr_auc": 0.7407029478458049,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 19,
+              "n_test": 12,
+              "positives": 6,
+              "roc_auc": 0.8055555555555556,
+              "pr_auc": 0.8888888888888888,
+              "committed_csv_roc_auc": 0.9444444444444444
+            },
+            {
+              "fold_id": 20,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 21,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.0,
+              "pr_auc": 0.16666666666666666,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 22,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 23,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 24,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.6,
+              "pr_auc": 0.3333333333333333,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 25,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.0,
+              "pr_auc": 0.16666666666666666,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 26,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 27,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 28,
+              "n_test": 6,
+              "positives": 0,
+              "roc_auc": null,
+              "pr_auc": null,
+              "committed_csv_roc_auc": null
+            },
+            {
+              "fold_id": 29,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.0,
+              "pr_auc": 0.16666666666666666,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 30,
+              "n_test": 7,
+              "positives": 2,
+              "roc_auc": 0.0,
+              "pr_auc": 0.22619047619047616,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 31,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.0,
+              "pr_auc": 0.16666666666666666,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 32,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 33,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.0,
+              "pr_auc": 0.16666666666666666,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 34,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 35,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 36,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.0,
+              "pr_auc": 0.16666666666666666,
+              "committed_csv_roc_auc": 0.6
+            }
+          ]
+        }
+      }
+    },
+    "pca32@git:371b855:data-engineering/data/ucs/ucs_windows.parquet": {
+      "pca_mode": "pca32",
+      "data": "git:371b855:data-engineering/data/ucs/ucs_windows.parquet",
+      "all_horizons_reproduce": false,
+      "horizons": {
+        "H1": {
+          "reported_roc_auc_mean": 0.7893,
+          "reproduced_roc_auc_mean": 0.5126161663012313,
+          "abs_diff_vs_reported": 0.2766838336987687,
+          "folds_with_both_classes": 36,
+          "max_abs_fold_diff_vs_committed_csv": 1.0,
+          "reproduces_within_tolerance": false,
+          "folds": [
+            {
+              "fold_id": 0,
+              "n_test": 20,
+              "positives": 10,
+              "roc_auc": 0.029999999999999995,
+              "pr_auc": 0.33476395035992557,
+              "committed_csv_roc_auc": 0.6799999999999999
+            },
+            {
+              "fold_id": 1,
+              "n_test": 24,
+              "positives": 12,
+              "roc_auc": 0.5902777777777778,
+              "pr_auc": 0.5842625131669754,
+              "committed_csv_roc_auc": 0.1597222222222222
+            },
+            {
+              "fold_id": 2,
+              "n_test": 12,
+              "positives": 2,
+              "roc_auc": 0.45,
+              "pr_auc": 0.2111111111111111,
+              "committed_csv_roc_auc": 0.75
+            },
+            {
+              "fold_id": 3,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.4,
+              "pr_auc": 0.25,
+              "committed_csv_roc_auc": 0.7
+            },
+            {
+              "fold_id": 4,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 0.0
+            },
+            {
+              "fold_id": 5,
+              "n_test": 9,
+              "positives": 4,
+              "roc_auc": 0.55,
+              "pr_auc": 0.525,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 6,
+              "n_test": 9,
+              "positives": 4,
+              "roc_auc": 0.6,
+              "pr_auc": 0.5428571428571429,
+              "committed_csv_roc_auc": 0.0
+            },
+            {
+              "fold_id": 7,
+              "n_test": 8,
+              "positives": 3,
+              "roc_auc": 0.0,
+              "pr_auc": 0.2757936507936508,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 8,
+              "n_test": 14,
+              "positives": 7,
+              "roc_auc": 0.5306122448979592,
+              "pr_auc": 0.6103483817769533,
+              "committed_csv_roc_auc": 0.0
+            },
+            {
+              "fold_id": 9,
+              "n_test": 10,
+              "positives": 5,
+              "roc_auc": 0.48,
+              "pr_auc": 0.5722222222222222,
+              "committed_csv_roc_auc": 0.0
+            },
+            {
+              "fold_id": 10,
+              "n_test": 12,
+              "positives": 2,
+              "roc_auc": 0.75,
+              "pr_auc": 0.6428571428571428,
+              "committed_csv_roc_auc": 0.55
+            },
+            {
+              "fold_id": 11,
+              "n_test": 9,
+              "positives": 4,
+              "roc_auc": 0.0,
+              "pr_auc": 0.3179563492063492,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 12,
+              "n_test": 20,
+              "positives": 10,
+              "roc_auc": 0.42000000000000004,
+              "pr_auc": 0.47336390217969165,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 13,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 14,
+              "n_test": 16,
+              "positives": 8,
+              "roc_auc": 0.0,
+              "pr_auc": 0.33712814962814963,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 15,
+              "n_test": 24,
+              "positives": 12,
+              "roc_auc": 0.11805555555555557,
+              "pr_auc": 0.34998843039124367,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 16,
+              "n_test": 66,
+              "positives": 33,
+              "roc_auc": 0.6831955922865014,
+              "pr_auc": 0.5823117546764188,
+              "committed_csv_roc_auc": 0.0266299357208448
+            },
+            {
+              "fold_id": 17,
+              "n_test": 12,
+              "positives": 6,
+              "roc_auc": 0.5,
+              "pr_auc": 0.5176286676286675,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 18,
+              "n_test": 14,
+              "positives": 7,
+              "roc_auc": 0.10204081632653061,
+              "pr_auc": 0.36312021312021314,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 19,
+              "n_test": 12,
+              "positives": 2,
+              "roc_auc": 0.85,
+              "pr_auc": 0.7,
+              "committed_csv_roc_auc": 0.55
+            },
+            {
+              "fold_id": 20,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.4,
+              "pr_auc": 0.25,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 21,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 22,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.0,
+              "pr_auc": 0.16666666666666666,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 23,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.0,
+              "pr_auc": 0.16666666666666666,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 24,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.0,
+              "pr_auc": 0.16666666666666666,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 25,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 26,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 27,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 28,
+              "n_test": 6,
+              "positives": 0,
+              "roc_auc": null,
+              "pr_auc": null,
+              "committed_csv_roc_auc": null
+            },
+            {
+              "fold_id": 29,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.0,
+              "pr_auc": 0.16666666666666666,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 30,
+              "n_test": 7,
+              "positives": 2,
+              "roc_auc": 0.0,
+              "pr_auc": 0.22619047619047616,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 31,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.0,
+              "pr_auc": 0.16666666666666666,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 32,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 33,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 34,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 35,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 36,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            }
+          ]
+        },
+        "H2": {
+          "reported_roc_auc_mean": 0.8432,
+          "reproduced_roc_auc_mean": 0.6221478201465575,
+          "abs_diff_vs_reported": 0.2210521798534425,
+          "folds_with_both_classes": 36,
+          "max_abs_fold_diff_vs_committed_csv": 1.0,
+          "reproduces_within_tolerance": false,
+          "folds": [
+            {
+              "fold_id": 0,
+              "n_test": 20,
+              "positives": 10,
+              "roc_auc": 0.19,
+              "pr_auc": 0.3823940979900732,
+              "committed_csv_roc_auc": 0.745
+            },
+            {
+              "fold_id": 1,
+              "n_test": 24,
+              "positives": 11,
+              "roc_auc": 0.8601398601398601,
+              "pr_auc": 0.7470125833762198,
+              "committed_csv_roc_auc": 0.8426573426573426
+            },
+            {
+              "fold_id": 2,
+              "n_test": 12,
+              "positives": 3,
+              "roc_auc": 0.14814814814814814,
+              "pr_auc": 0.1994949494949495,
+              "committed_csv_roc_auc": 0.8888888888888888
+            },
+            {
+              "fold_id": 3,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.0,
+              "pr_auc": 0.16666666666666666,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 4,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.0,
+              "pr_auc": 0.16666666666666666,
+              "committed_csv_roc_auc": 0.0
+            },
+            {
+              "fold_id": 5,
+              "n_test": 9,
+              "positives": 4,
+              "roc_auc": 0.15,
+              "pr_auc": 0.3506944444444444,
+              "committed_csv_roc_auc": 0.3
+            },
+            {
+              "fold_id": 6,
+              "n_test": 9,
+              "positives": 4,
+              "roc_auc": 0.9,
+              "pr_auc": 0.8875,
+              "committed_csv_roc_auc": 0.0
+            },
+            {
+              "fold_id": 7,
+              "n_test": 8,
+              "positives": 3,
+              "roc_auc": 0.0,
+              "pr_auc": 0.2757936507936508,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 8,
+              "n_test": 14,
+              "positives": 7,
+              "roc_auc": 0.0,
+              "pr_auc": 0.3412948162948163,
+              "committed_csv_roc_auc": 0.4081632653061224
+            },
+            {
+              "fold_id": 9,
+              "n_test": 10,
+              "positives": 5,
+              "roc_auc": 0.0,
+              "pr_auc": 0.3543650793650793,
+              "committed_csv_roc_auc": 0.0
+            },
+            {
+              "fold_id": 10,
+              "n_test": 12,
+              "positives": 3,
+              "roc_auc": 0.40740740740740744,
+              "pr_auc": 0.4909090909090909,
+              "committed_csv_roc_auc": 0.5925925925925926
+            },
+            {
+              "fold_id": 11,
+              "n_test": 9,
+              "positives": 4,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 12,
+              "n_test": 20,
+              "positives": 10,
+              "roc_auc": 0.6900000000000001,
+              "pr_auc": 0.7000102593484946,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 13,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.6,
+              "pr_auc": 0.3333333333333333,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 14,
+              "n_test": 16,
+              "positives": 8,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 15,
+              "n_test": 24,
+              "positives": 12,
+              "roc_auc": 0.7708333333333333,
+              "pr_auc": 0.7608159814042167,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 16,
+              "n_test": 66,
+              "positives": 33,
+              "roc_auc": 0.9715335169880625,
+              "pr_auc": 0.9643464833596087,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 17,
+              "n_test": 12,
+              "positives": 6,
+              "roc_auc": 0.0,
+              "pr_auc": 0.34678932178932176,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 18,
+              "n_test": 14,
+              "positives": 6,
+              "roc_auc": 0.9166666666666666,
+              "pr_auc": 0.8734126984126983,
+              "committed_csv_roc_auc": 0.9479166666666666
+            },
+            {
+              "fold_id": 19,
+              "n_test": 12,
+              "positives": 3,
+              "roc_auc": 0.5925925925925926,
+              "pr_auc": 0.4242424242424242,
+              "committed_csv_roc_auc": 0.6296296296296295
+            },
+            {
+              "fold_id": 20,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.8,
+              "pr_auc": 0.5,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 21,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 22,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 23,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 24,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 25,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 26,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.0,
+              "pr_auc": 0.16666666666666666,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 27,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 28,
+              "n_test": 6,
+              "positives": 0,
+              "roc_auc": null,
+              "pr_auc": null,
+              "committed_csv_roc_auc": null
+            },
+            {
+              "fold_id": 29,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.4,
+              "pr_auc": 0.25,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 30,
+              "n_test": 7,
+              "positives": 2,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 31,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 32,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 33,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 34,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 35,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.0,
+              "pr_auc": 0.16666666666666666,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 36,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            }
+          ]
+        },
+        "H5": {
+          "reported_roc_auc_mean": 0.7701,
+          "reproduced_roc_auc_mean": 0.5564366469919771,
+          "abs_diff_vs_reported": 0.21366335300802286,
+          "folds_with_both_classes": 36,
+          "max_abs_fold_diff_vs_committed_csv": 1.0,
+          "reproduces_within_tolerance": false,
+          "folds": [
+            {
+              "fold_id": 0,
+              "n_test": 20,
+              "positives": 10,
+              "roc_auc": 0.0,
+              "pr_auc": 0.33122859682457206,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 1,
+              "n_test": 24,
+              "positives": 12,
+              "roc_auc": 0.875,
+              "pr_auc": 0.8646647334147334,
+              "committed_csv_roc_auc": 0.0
+            },
+            {
+              "fold_id": 2,
+              "n_test": 12,
+              "positives": 6,
+              "roc_auc": 0.8055555555555556,
+              "pr_auc": 0.8888888888888888,
+              "committed_csv_roc_auc": 0.7222222222222223
+            },
+            {
+              "fold_id": 3,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 0.0
+            },
+            {
+              "fold_id": 4,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.0,
+              "pr_auc": 0.16666666666666666,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 5,
+              "n_test": 9,
+              "positives": 4,
+              "roc_auc": 0.0,
+              "pr_auc": 0.3179563492063492,
+              "committed_csv_roc_auc": 0.3
+            },
+            {
+              "fold_id": 6,
+              "n_test": 9,
+              "positives": 4,
+              "roc_auc": 0.0,
+              "pr_auc": 0.3179563492063492,
+              "committed_csv_roc_auc": 0.0499999999999999
+            },
+            {
+              "fold_id": 7,
+              "n_test": 8,
+              "positives": 3,
+              "roc_auc": 0.3333333333333333,
+              "pr_auc": 0.3694444444444444,
+              "committed_csv_roc_auc": 0.0
+            },
+            {
+              "fold_id": 8,
+              "n_test": 14,
+              "positives": 7,
+              "roc_auc": 0.8367346938775511,
+              "pr_auc": 0.8395485466914037,
+              "committed_csv_roc_auc": 0.2448979591836734
+            },
+            {
+              "fold_id": 9,
+              "n_test": 10,
+              "positives": 5,
+              "roc_auc": 0.12,
+              "pr_auc": 0.38769841269841265,
+              "committed_csv_roc_auc": 0.2799999999999999
+            },
+            {
+              "fold_id": 10,
+              "n_test": 12,
+              "positives": 6,
+              "roc_auc": 0.6944444444444446,
+              "pr_auc": 0.7384920634920634,
+              "committed_csv_roc_auc": 0.5833333333333334
+            },
+            {
+              "fold_id": 11,
+              "n_test": 9,
+              "positives": 4,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 12,
+              "n_test": 20,
+              "positives": 10,
+              "roc_auc": 1.0,
+              "pr_auc": 0.9999999999999999,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 13,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.19999999999999996,
+              "pr_auc": 0.2,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 14,
+              "n_test": 16,
+              "positives": 8,
+              "roc_auc": 0.078125,
+              "pr_auc": 0.35025946275946274,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 15,
+              "n_test": 24,
+              "positives": 12,
+              "roc_auc": 0.9444444444444444,
+              "pr_auc": 0.9462343212343212,
+              "committed_csv_roc_auc": 0.0
+            },
+            {
+              "fold_id": 16,
+              "n_test": 66,
+              "positives": 33,
+              "roc_auc": 0.9981634527089073,
+              "pr_auc": 0.9981904607573057,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 17,
+              "n_test": 12,
+              "positives": 6,
+              "roc_auc": 0.9444444444444444,
+              "pr_auc": 0.9484126984126984,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 18,
+              "n_test": 14,
+              "positives": 7,
+              "roc_auc": 0.7959183673469388,
+              "pr_auc": 0.7142857142857143,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 19,
+              "n_test": 12,
+              "positives": 6,
+              "roc_auc": 0.8055555555555556,
+              "pr_auc": 0.8888888888888888,
+              "committed_csv_roc_auc": 0.9444444444444444
+            },
+            {
+              "fold_id": 20,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 21,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.0,
+              "pr_auc": 0.16666666666666666,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 22,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 23,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 24,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.6,
+              "pr_auc": 0.3333333333333333,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 25,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.0,
+              "pr_auc": 0.16666666666666666,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 26,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 27,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 28,
+              "n_test": 6,
+              "positives": 0,
+              "roc_auc": null,
+              "pr_auc": null,
+              "committed_csv_roc_auc": null
+            },
+            {
+              "fold_id": 29,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.0,
+              "pr_auc": 0.16666666666666666,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 30,
+              "n_test": 7,
+              "positives": 2,
+              "roc_auc": 0.0,
+              "pr_auc": 0.22619047619047616,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 31,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.0,
+              "pr_auc": 0.16666666666666666,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 32,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 33,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.0,
+              "pr_auc": 0.16666666666666666,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 34,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 35,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 36,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.0,
+              "pr_auc": 0.16666666666666666,
+              "committed_csv_roc_auc": 0.6
+            }
+          ]
+        }
+      }
+    },
+    "refit_train@git:371b855:data-engineering/data/ucs/ucs_windows.parquet": {
+      "pca_mode": "refit_train",
+      "data": "git:371b855:data-engineering/data/ucs/ucs_windows.parquet",
+      "all_horizons_reproduce": true,
+      "horizons": {
+        "H1": {
+          "reported_roc_auc_mean": 0.7893,
+          "reproduced_roc_auc_mean": 0.7893431154984185,
+          "abs_diff_vs_reported": 4.3115498418511145e-05,
+          "folds_with_both_classes": 36,
+          "max_abs_fold_diff_vs_committed_csv": 1.0408340855860843e-17,
+          "reproduces_within_tolerance": true,
+          "folds": [
+            {
+              "fold_id": 0,
+              "n_test": 20,
+              "positives": 10,
+              "roc_auc": 0.6799999999999999,
+              "pr_auc": 0.7615674603174603,
+              "committed_csv_roc_auc": 0.6799999999999999
+            },
+            {
+              "fold_id": 1,
+              "n_test": 24,
+              "positives": 12,
+              "roc_auc": 0.1597222222222222,
+              "pr_auc": 0.3594366969796031,
+              "committed_csv_roc_auc": 0.1597222222222222
+            },
+            {
+              "fold_id": 2,
+              "n_test": 12,
+              "positives": 2,
+              "roc_auc": 0.75,
+              "pr_auc": 0.3666666666666667,
+              "committed_csv_roc_auc": 0.75
+            },
+            {
+              "fold_id": 3,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.7,
+              "pr_auc": 0.25,
+              "committed_csv_roc_auc": 0.7
+            },
+            {
+              "fold_id": 4,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.0,
+              "pr_auc": 0.16666666666666666,
+              "committed_csv_roc_auc": 0.0
+            },
+            {
+              "fold_id": 5,
+              "n_test": 9,
+              "positives": 4,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 6,
+              "n_test": 9,
+              "positives": 4,
+              "roc_auc": 0.0,
+              "pr_auc": 0.3179563492063492,
+              "committed_csv_roc_auc": 0.0
+            },
+            {
+              "fold_id": 7,
+              "n_test": 8,
+              "positives": 3,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 8,
+              "n_test": 14,
+              "positives": 7,
+              "roc_auc": 0.0,
+              "pr_auc": 0.3627594627594628,
+              "committed_csv_roc_auc": 0.0
+            },
+            {
+              "fold_id": 9,
+              "n_test": 10,
+              "positives": 5,
+              "roc_auc": 0.0,
+              "pr_auc": 0.3543650793650793,
+              "committed_csv_roc_auc": 0.0
+            },
+            {
+              "fold_id": 10,
+              "n_test": 12,
+              "positives": 2,
+              "roc_auc": 0.55,
+              "pr_auc": 0.5909090909090909,
+              "committed_csv_roc_auc": 0.55
+            },
+            {
+              "fold_id": 11,
+              "n_test": 9,
+              "positives": 4,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 12,
+              "n_test": 20,
+              "positives": 10,
+              "roc_auc": 1.0,
+              "pr_auc": 0.9999999999999999,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 13,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 14,
+              "n_test": 16,
+              "positives": 8,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 15,
+              "n_test": 24,
+              "positives": 12,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 16,
+              "n_test": 66,
+              "positives": 33,
+              "roc_auc": 0.02662993572084481,
+              "pr_auc": 0.31616590147650403,
+              "committed_csv_roc_auc": 0.0266299357208448
+            },
+            {
+              "fold_id": 17,
+              "n_test": 12,
+              "positives": 6,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 18,
+              "n_test": 14,
+              "positives": 7,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 19,
+              "n_test": 12,
+              "positives": 2,
+              "roc_auc": 0.55,
+              "pr_auc": 0.35,
+              "committed_csv_roc_auc": 0.55
+            },
+            {
+              "fold_id": 20,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 21,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 22,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 23,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 24,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 25,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 26,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 27,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 28,
+              "n_test": 6,
+              "positives": 0,
+              "roc_auc": null,
+              "pr_auc": null,
+              "committed_csv_roc_auc": null
+            },
+            {
+              "fold_id": 29,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 30,
+              "n_test": 7,
+              "positives": 2,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 31,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 32,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 33,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 34,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 35,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 36,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            }
+          ]
+        },
+        "H2": {
+          "reported_roc_auc_mean": 0.8432,
+          "reproduced_roc_auc_mean": 0.8431902329372567,
+          "abs_diff_vs_reported": 9.7670627432489e-06,
+          "folds_with_both_classes": 36,
+          "max_abs_fold_diff_vs_committed_csv": 5.551115123125783e-17,
+          "reproduces_within_tolerance": true,
+          "folds": [
+            {
+              "fold_id": 0,
+              "n_test": 20,
+              "positives": 10,
+              "roc_auc": 0.745,
+              "pr_auc": 0.6805555555555556,
+              "committed_csv_roc_auc": 0.745
+            },
+            {
+              "fold_id": 1,
+              "n_test": 24,
+              "positives": 11,
+              "roc_auc": 0.8426573426573426,
+              "pr_auc": 0.7381331087213441,
+              "committed_csv_roc_auc": 0.8426573426573426
+            },
+            {
+              "fold_id": 2,
+              "n_test": 12,
+              "positives": 3,
+              "roc_auc": 0.8888888888888888,
+              "pr_auc": 0.7555555555555555,
+              "committed_csv_roc_auc": 0.8888888888888888
+            },
+            {
+              "fold_id": 3,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 4,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.0,
+              "pr_auc": 0.16666666666666666,
+              "committed_csv_roc_auc": 0.0
+            },
+            {
+              "fold_id": 5,
+              "n_test": 9,
+              "positives": 4,
+              "roc_auc": 0.3,
+              "pr_auc": 0.4015873015873016,
+              "committed_csv_roc_auc": 0.3
+            },
+            {
+              "fold_id": 6,
+              "n_test": 9,
+              "positives": 4,
+              "roc_auc": 0.0,
+              "pr_auc": 0.3179563492063492,
+              "committed_csv_roc_auc": 0.0
+            },
+            {
+              "fold_id": 7,
+              "n_test": 8,
+              "positives": 3,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 8,
+              "n_test": 14,
+              "positives": 7,
+              "roc_auc": 0.40816326530612246,
+              "pr_auc": 0.4861943611943611,
+              "committed_csv_roc_auc": 0.4081632653061224
+            },
+            {
+              "fold_id": 9,
+              "n_test": 10,
+              "positives": 5,
+              "roc_auc": 0.0,
+              "pr_auc": 0.3543650793650793,
+              "committed_csv_roc_auc": 0.0
+            },
+            {
+              "fold_id": 10,
+              "n_test": 12,
+              "positives": 3,
+              "roc_auc": 0.5925925925925926,
+              "pr_auc": 0.5833333333333333,
+              "committed_csv_roc_auc": 0.5925925925925926
+            },
+            {
+              "fold_id": 11,
+              "n_test": 9,
+              "positives": 4,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 12,
+              "n_test": 20,
+              "positives": 10,
+              "roc_auc": 1.0,
+              "pr_auc": 0.9999999999999999,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 13,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 14,
+              "n_test": 16,
+              "positives": 8,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 15,
+              "n_test": 24,
+              "positives": 12,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 16,
+              "n_test": 66,
+              "positives": 33,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 17,
+              "n_test": 12,
+              "positives": 6,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 18,
+              "n_test": 14,
+              "positives": 6,
+              "roc_auc": 0.9479166666666666,
+              "pr_auc": 0.8809523809523809,
+              "committed_csv_roc_auc": 0.9479166666666666
+            },
+            {
+              "fold_id": 19,
+              "n_test": 12,
+              "positives": 3,
+              "roc_auc": 0.6296296296296295,
+              "pr_auc": 0.6388888888888888,
+              "committed_csv_roc_auc": 0.6296296296296295
+            },
+            {
+              "fold_id": 20,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 21,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 22,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 23,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 24,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 25,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 26,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 27,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 28,
+              "n_test": 6,
+              "positives": 0,
+              "roc_auc": null,
+              "pr_auc": null,
+              "committed_csv_roc_auc": null
+            },
+            {
+              "fold_id": 29,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 30,
+              "n_test": 7,
+              "positives": 2,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 31,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 32,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 33,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 34,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 35,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 36,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            }
+          ]
+        },
+        "H5": {
+          "reported_roc_auc_mean": 0.7701,
+          "reproduced_roc_auc_mean": 0.7701360544217688,
+          "abs_diff_vs_reported": 3.605442176879414e-05,
+          "folds_with_both_classes": 36,
+          "max_abs_fold_diff_vs_committed_csv": 9.020562075079397e-17,
+          "reproduces_within_tolerance": true,
+          "folds": [
+            {
+              "fold_id": 0,
+              "n_test": 20,
+              "positives": 10,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 1,
+              "n_test": 24,
+              "positives": 12,
+              "roc_auc": 0.0,
+              "pr_auc": 0.3298840794045398,
+              "committed_csv_roc_auc": 0.0
+            },
+            {
+              "fold_id": 2,
+              "n_test": 12,
+              "positives": 6,
+              "roc_auc": 0.7222222222222223,
+              "pr_auc": 0.8134920634920635,
+              "committed_csv_roc_auc": 0.7222222222222223
+            },
+            {
+              "fold_id": 3,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.0,
+              "pr_auc": 0.16666666666666666,
+              "committed_csv_roc_auc": 0.0
+            },
+            {
+              "fold_id": 4,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 5,
+              "n_test": 9,
+              "positives": 4,
+              "roc_auc": 0.3,
+              "pr_auc": 0.4015873015873016,
+              "committed_csv_roc_auc": 0.3
+            },
+            {
+              "fold_id": 6,
+              "n_test": 9,
+              "positives": 4,
+              "roc_auc": 0.04999999999999999,
+              "pr_auc": 0.32628968253968255,
+              "committed_csv_roc_auc": 0.0499999999999999
+            },
+            {
+              "fold_id": 7,
+              "n_test": 8,
+              "positives": 3,
+              "roc_auc": 0.0,
+              "pr_auc": 0.2757936507936508,
+              "committed_csv_roc_auc": 0.0
+            },
+            {
+              "fold_id": 8,
+              "n_test": 14,
+              "positives": 7,
+              "roc_auc": 0.24489795918367346,
+              "pr_auc": 0.4206959706959707,
+              "committed_csv_roc_auc": 0.2448979591836734
+            },
+            {
+              "fold_id": 9,
+              "n_test": 10,
+              "positives": 5,
+              "roc_auc": 0.27999999999999997,
+              "pr_auc": 0.42682539682539683,
+              "committed_csv_roc_auc": 0.2799999999999999
+            },
+            {
+              "fold_id": 10,
+              "n_test": 12,
+              "positives": 6,
+              "roc_auc": 0.5833333333333334,
+              "pr_auc": 0.6212121212121212,
+              "committed_csv_roc_auc": 0.5833333333333334
+            },
+            {
+              "fold_id": 11,
+              "n_test": 9,
+              "positives": 4,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 12,
+              "n_test": 20,
+              "positives": 10,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 13,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 14,
+              "n_test": 16,
+              "positives": 8,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 15,
+              "n_test": 24,
+              "positives": 12,
+              "roc_auc": 0.0,
+              "pr_auc": 0.331419167123838,
+              "committed_csv_roc_auc": 0.0
+            },
+            {
+              "fold_id": 16,
+              "n_test": 66,
+              "positives": 33,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 17,
+              "n_test": 12,
+              "positives": 6,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 18,
+              "n_test": 14,
+              "positives": 7,
+              "roc_auc": 1.0,
+              "pr_auc": 0.9999999999999998,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 19,
+              "n_test": 12,
+              "positives": 6,
+              "roc_auc": 0.9444444444444444,
+              "pr_auc": 0.9484126984126984,
+              "committed_csv_roc_auc": 0.9444444444444444
+            },
+            {
+              "fold_id": 20,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 21,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 22,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 23,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 24,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 25,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 26,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 27,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 28,
+              "n_test": 6,
+              "positives": 0,
+              "roc_auc": null,
+              "pr_auc": null,
+              "committed_csv_roc_auc": null
+            },
+            {
+              "fold_id": 29,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 30,
+              "n_test": 7,
+              "positives": 2,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 31,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 32,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 33,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 34,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 35,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 1.0,
+              "pr_auc": 1.0,
+              "committed_csv_roc_auc": 1.0
+            },
+            {
+              "fold_id": 36,
+              "n_test": 6,
+              "positives": 1,
+              "roc_auc": 0.6,
+              "pr_auc": 0.3333333333333333,
+              "committed_csv_roc_auc": 0.6
+            }
+          ]
+        }
+      }
+    }
+  }
+}

@@ -197,7 +197,6 @@ class _DynamicTacticMap(dict):
         "Discovery": "TA0007",
         "Impact": "TA0040",
         "Initial Access": "TA0001",
-        "Unknown/Other": "TA0000",
         "Reconnaissance": "TA0043",
         "Lateral Movement": "TA0008",
     }
@@ -216,9 +215,9 @@ class _DynamicTacticMap(dict):
         return self._kb
 
     def __getitem__(self, key: str) -> str:
-        return self.get(key, "TA0000")
+        return self.get(key, None)
 
-    def get(self, key: str, default: str = "TA0000") -> str:
+    def get(self, key: str, default=None):
         kb = self._get_kb()
         if kb is not None:
             tac = kb.get_tactic(key)

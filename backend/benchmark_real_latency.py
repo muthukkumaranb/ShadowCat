@@ -78,7 +78,7 @@ def run_benchmark(n_trials: int = 30, n_warmup: int = 5, n_fabric_trials: int = 
     print(f"\n[3/5] Warming up PyTorch inference engines & caches ({n_warmup} iterations)...")
     for i in range(n_warmup):
         seq_label, seq_df = test_sequences[i % len(test_sequences)]
-        _ = pipeline.predict(seq_df, source_type="flows")
+        _ = pipeline.predict(seq_df, source_type="windows")
     print(" -> Warmup completed successfully.")
 
     # 4. Timed Benchmark Runs (ML + Graph Traversal)
@@ -98,32 +98,23 @@ def run_benchmark(n_trials: int = 30, n_warmup: int = 5, n_fabric_trials: int = 
         # --- Component-level fine-grained profiling ---
         # A. Feature extraction from raw window dataframe
         t0 = time.perf_counter()
-        window_df = pipeline.extractor.extract(seq_df, source_type="flows")
-        model_tensor = pipeline.extractor.extract_model_tensor(seq_df, source_type="flows")
+        window_df = pipeline.extractor.extract(seq_df, source_type="windows")
+        model_tensor = pipeline.extractor.extract_model_tensor(seq_df, source_type="windows")
         seq_30x406 = np.ascontiguousarray(model_tensor[-30:], dtype=np.float32)
         seq_tensor = torch.as_tensor(seq_30x406, dtype=torch.float32).unsqueeze(0).to(pipeline.device)
         t_ext = time.perf_counter()
         extraction_latencies.append((t_ext - t0) * 1000.0)
 
-        # B. 32-dim PCA projection
+        # B. 32-dim PCA projection (each fold's own checkpoint PCA)
         t1 = time.perf_counter()
-        cols = pipeline.pca_features if (pipeline.pca_features is not None and len(pipeline.pca_features) == 406) else [f"f_{i}" for i in range(406)]
-        df_for_pca = pd.DataFrame(seq_30x406, columns=cols)
-        if getattr(pipeline, "pca_scaler", None) is not None:
-            scaled_vals = pipeline.pca_scaler.transform(df_for_pca[cols].to_numpy(dtype=np.float64))
-            df_for_pca = pd.DataFrame(scaled_vals, columns=cols)
-        transformed = pipeline.pca.transform(df_for_pca)
-        pca_cols = [f"pca_{i}" for i in range(32)]
-        seq_32 = transformed[pca_cols].to_numpy(dtype=np.float32)
-        seq_tensor_32 = torch.as_tensor(seq_32, dtype=torch.float32).unsqueeze(0).to(pipeline.device)
+        _ = [m.project(seq_30x406) for m in pipeline.stacked_detection_models]
         t_pca = time.perf_counter()
         pca_latencies.append((t_pca - t1) * 1000.0)
 
         # C. Stacked Residual LSTM 37-fold ensemble inference
         t2 = time.perf_counter()
-        curr_window_406 = seq_30x406[-1]
-        det_probs = [m.predict_proba(seq_tensor_32, curr_window_406) for m in pipeline.stacked_detection_models]
-        onset_hazards = pipeline._predict_hazard_ensemble(seq_30x406)
+        det_probs = [m.predict_proba(seq_30x406, pipeline.device) for m in pipeline.stacked_detection_models]
+        onset_hazards = pipeline._predict_onset_probability(seq_30x406)
         t_lstm = time.perf_counter()
         lstm_latencies.append((t_lstm - t2) * 1000.0)
 
@@ -161,7 +152,7 @@ def run_benchmark(n_trials: int = 30, n_warmup: int = 5, n_fabric_trials: int = 
 
         # G. Full end-to-end ML + Graph pipeline call
         t_e2e_0 = time.perf_counter()
-        res = pipeline.predict(seq_df, source_type="flows")
+        res = pipeline.predict(seq_df, source_type="windows")
         t_e2e_1 = time.perf_counter()
         total_ml_latencies.append((t_e2e_1 - t_e2e_0) * 1000.0)
 

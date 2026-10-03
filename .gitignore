@@ -1,4 +1,4 @@
-# Environments
+﻿# Environments
 .venv/
 env/
 venv/
@@ -71,3 +71,6 @@ backend/audit_chain.json
 *.pem
 !backend/admin_public_key.pem
 backend/keys/
+
+# Runtime outputs of backend.predict (alerts, lineage, audit chain, reports DB)
+runtime/

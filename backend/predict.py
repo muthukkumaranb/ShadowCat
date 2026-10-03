@@ -23,6 +23,8 @@ DATA_ENG_DIR = REPO_ROOT / "data-engineering"
 ML1_DIR = REPO_ROOT / "ml1"
 ML2_DIR = REPO_ROOT / "ml2-full"
 FRONTEND_DIR = REPO_ROOT / "frontend"
+# Runtime outputs (alerts, lineage, audit chain, reports DB) are written here, never into tracked sources.
+RUNTIME_DIR = Path(os.environ.get("SHADOWCAT_RUNTIME_DIR", REPO_ROOT / "runtime"))
 
 # Ensure repository root, backend, and data-engineering are importable
 if str(REPO_ROOT) not in sys.path:
@@ -144,6 +146,10 @@ def get_feature_category(feat_name: str) -> Optional[str]:
     return "Flow Dynamics"
 
 
+STAGE_MIN_CONFIDENCE = 0.5
+NO_STAGE = "No stage determined"
+
+
 class StackedFoldModel:
     """
     Encapsulates one fold of the trained Stacked & Temperature-Calibrated Residual LSTM.
@@ -152,6 +158,8 @@ class StackedFoldModel:
         2. Residual LSTM: z_residual = fc(dropout(lstm(x_seq)))
         3. Combined Logit: z = z_base + z_residual
         4. Calibrated Probability: p = sigmoid(z / T)
+    The 30-window history is projected with THIS fold's own PCA (checkpoint pca_mean /
+    pca_components), as in evaluation/benchmark/reproduce_stacked_benchmark.py.
     """
 
     def __init__(
@@ -169,13 +177,17 @@ class StackedFoldModel:
         attack_type: str = "",
         val_predictions: Optional[List[float]] = None,
         val_targets: Optional[List[int]] = None,
+        pca_mean: Optional[np.ndarray] = None,
+        pca_components: Optional[np.ndarray] = None,
     ):
         self.fold_id = fold_id
         self.model = model
-        self.lr_coef = np.asarray(lr_coef, dtype=np.float32)
-        self.lr_intercept = float(lr_intercept[0] if isinstance(lr_intercept, (list, np.ndarray)) else lr_intercept)
-        self.scaler_mean = np.asarray(scaler_mean, dtype=np.float32)
-        self.scaler_scale = np.asarray(scaler_scale, dtype=np.float32)
+        self.lr_coef = np.asarray(lr_coef, dtype=np.float64).reshape(-1)
+        self.lr_intercept = float(np.asarray(lr_intercept, dtype=np.float64).reshape(-1)[0])
+        self.scaler_mean = np.asarray(scaler_mean, dtype=np.float64)
+        self.scaler_scale = np.asarray(scaler_scale, dtype=np.float64)
+        self.pca_mean = np.asarray(pca_mean, dtype=np.float64)
+        self.pca_components = np.asarray(pca_components, dtype=np.float64)
         self.temperature = max(float(temperature), 0.05)
         self.target_name = target_name
         self.checkpoint_path = checkpoint_path
@@ -185,17 +197,49 @@ class StackedFoldModel:
         self.val_targets = val_targets or []
 
     def compute_base_logit(self, window_406: np.ndarray) -> float:
-        x = np.asarray(window_406, dtype=np.float32).ravel()
-        x_scaled = (x - self.scaler_mean) / (self.scaler_scale + 1e-8)
-        base_logit = float(np.dot(self.lr_coef.ravel(), x_scaled) + self.lr_intercept)
-        return base_logit
+        x = np.asarray(window_406, dtype=np.float64).ravel()
+        x_scaled = (x - self.scaler_mean) / self.scaler_scale
+        return float(x_scaled @ self.lr_coef + self.lr_intercept)
 
-    def predict_proba(self, seq_30x32_tensor: torch.Tensor, window_406: np.ndarray) -> float:
-        base_logit = self.compute_base_logit(window_406)
+    def project(self, seq_30x406: np.ndarray) -> np.ndarray:
+        """(30, 406) history -> (30, 32) with this fold's own PCA (checkpoint pca_mean / pca_components)."""
+        seq = np.asarray(seq_30x406, dtype=np.float64)
+        return ((seq - self.pca_mean) @ self.pca_components.T).astype(np.float32)
+
+    def predict_proba(self, seq_30x406: np.ndarray, device: str = "cpu") -> float:
+        base_logit = self.compute_base_logit(seq_30x406[-1])
+        seq_tensor = torch.as_tensor(self.project(seq_30x406)).unsqueeze(0).to(device)
         with torch.no_grad():
-            b_tensor = torch.tensor([base_logit], dtype=torch.float32, device=seq_30x32_tensor.device)
-            p = self.model(seq_30x32_tensor, b_tensor, temperature=self.temperature).item()
+            b_tensor = torch.tensor([base_logit], dtype=torch.float32, device=device)
+            p = self.model(seq_tensor, b_tensor, temperature=self.temperature).item()
         return float(p)
+
+
+class StackedOnsetLogit(torch.nn.Module):
+    """
+    Differentiable view of the stacked onset ensemble for Integrated Gradients:
+    forward_logits(x) with x of shape (B, 30, 406) returns the mean over folds of each fold's
+    calibrated onset logit z / T, where z = LR(x[:, -1]) + LSTM residual(own-PCA(x)).
+    sigmoid of each fold's term is that fold's probability; the dashboard risk is their mean.
+    """
+
+    def __init__(self, folds: List[StackedFoldModel]):
+        super().__init__()
+        self.models = torch.nn.ModuleList([f.model for f in folds])
+        t = lambda a: torch.as_tensor(np.asarray(a), dtype=torch.float32)
+        self.params = [
+            (t(f.pca_mean), t(f.pca_components), t(f.scaler_mean), t(f.scaler_scale),
+             t(f.lr_coef), float(f.lr_intercept), float(f.temperature))
+            for f in folds
+        ]
+
+    def forward_logits(self, x: torch.Tensor) -> torch.Tensor:
+        out = []
+        for model, (pm, pc, sm, ss, coef, b, temp) in zip(self.models, self.params):
+            base = ((x[:, -1, :] - sm.to(x.device)) / ss.to(x.device)) @ coef.to(x.device) + b
+            seq = (x - pm.to(x.device)) @ pc.to(x.device).T
+            out.append(model.forward_logits(seq, base) / temp)
+        return torch.stack(out, dim=0).mean(dim=0)
 
 
 class ShadowcatPipeline:
@@ -364,6 +408,8 @@ class ShadowcatPipeline:
                         attack_type=ckpt.get("attack_type", ""),
                         val_predictions=ckpt.get("val_predictions", []),
                         val_targets=ckpt.get("val_targets", []),
+                        pca_mean=ckpt["pca_mean"],
+                        pca_components=ckpt["pca_components"],
                     )
                     self.stacked_onset_models.append(fold_obj)
                 except Exception as e:
@@ -392,6 +438,8 @@ class ShadowcatPipeline:
                         attack_type=ckpt.get("attack_type", ""),
                         val_predictions=ckpt.get("val_predictions", []),
                         val_targets=ckpt.get("val_targets", []),
+                        pca_mean=ckpt["pca_mean"],
+                        pca_components=ckpt["pca_components"],
                     )
                     self.stacked_detection_models.append(fold_obj)
                 except Exception as e:
@@ -411,39 +459,18 @@ class ShadowcatPipeline:
             f"from {stacked_base_dir}"
         )
 
-        # Leakage-free validation-derived calibrated thresholds
-        self.calibrated_threshold_global = 0.15
-        self.calibrated_thresholds_by_type = {
-            "SSH-Bruteforce": 0.15,
-            "DDOS-LOIC-UDP": 0.15,
-            "Botnet": 0.18,
-            "Default": 0.15,
-        }
+        # hazard_head_v3 (H=1/2/5) is intentionally NOT loaded: its reported LOEO ROC-AUC
+        # (0.789/0.843/0.770) only reproduces with a per-fold PCA refit on the 371b855 dataset,
+        # not through models/pca_32.pkl. See evaluation/benchmark/hazard_v3_results.json.
 
-        # 5. Load Fitted 32-dim PCA for Hazard & Stacked Models
-        self.pca = None
-        self.pca_features = None
-        self.pca_scaler = None
-        self.pca_available = False
+        # Onset alert decision threshold: 0.5 is the threshold at which the per-fold LOEO
+        # test F1 in ml1/artifacts/lstm/lstm_stacked/onset/sidecar_fold_*.json is computed.
+        self.alert_threshold = 0.5
+
+        # 5. No shared PCA: each stacked fold projects its history with its own checkpoint PCA
+        # (pca_32_stacked.pkl is no longer used; see docs/demo_check/STACKED_PCA_NOTE.md).
         if str(ML1_DIR) not in sys.path:
             sys.path.insert(0, str(ML1_DIR))
-
-        pca_stacked_file = stacked_base_dir / "pca_32_stacked.pkl"
-        pca_file = REPO_ROOT / "models" / "pca_32.pkl"
-        pca_load_target = pca_stacked_file if pca_stacked_file.exists() else pca_file
-
-        if pca_load_target.exists():
-            try:
-                import pickle
-                with open(pca_load_target, "rb") as f:
-                    data = pickle.load(f)
-                    self.pca = data.get("pca")
-                    self.pca_features = data.get("features")
-                    self.pca_scaler = data.get("scaler")
-                    self.pca_available = (self.pca is not None)
-                logging.info(f"Loaded 32-dim PCA transform from {pca_load_target}")
-            except Exception as e:
-                logging.warning(f"Could not load PCA cache from {pca_load_target}: {e}")
 
         # 6. Initialize Split Conformal Predictor with ACI and Joint Coverage
         self.conformal_coverage = 0.90
@@ -506,71 +533,24 @@ class ShadowcatPipeline:
             "Placeholder data is strictly prohibited per audit requirements."
         )
 
-    def _predict_hazard_ensemble(self, sequence_30x406: np.ndarray) -> Dict[int, float]:
+    def _predict_onset_probability(self, sequence_30x406: np.ndarray) -> float:
         """
-        Predicts onset hazard probabilities across horizons (H=1, 2, 5)
-        using the verified 37-fold LOEO Stacked & Temperature-Calibrated Residual LSTM ensemble
-        (or legacy hazard heads if configured).
+        P(attack within the next 5 minutes): mean over the 37 stacked onset fold models
+        (target = future_attack_label, i.e. an attack window within t+1..t+5).
+        Each fold uses its own checkpoint PCA and LR scaler.
         """
-        hazards = {}
-        # Path A: Deployed Winning Model (Phase 1 Stacked & Calibrated Residual LSTM)
-        if self.use_stacked_model and self.stacked_models_loaded and self.pca_available and self.pca is not None:
-            try:
-                cols = self.pca_features if (self.pca_features is not None and len(self.pca_features) == sequence_30x406.shape[1]) else [f"f_{i}" for i in range(sequence_30x406.shape[1])]
-                seq_df = pd.DataFrame(sequence_30x406, columns=cols)
-                if getattr(self, "pca_scaler", None) is not None:
-                    scaled_values = self.pca_scaler.transform(seq_df[cols].to_numpy(dtype=np.float64))
-                    seq_df = pd.DataFrame(scaled_values, columns=cols)
-                transformed = self.pca.transform(seq_df)
-                pca_cols = [f"pca_{i}" for i in range(32)]
-                seq_32 = transformed[pca_cols].to_numpy(dtype=np.float32)
-                seq_tensor = torch.as_tensor(seq_32, dtype=torch.float32).unsqueeze(0).to(self.device)
-                curr_window_406 = sequence_30x406[-1]
-
-                onset_probs = []
-                for m in self.stacked_onset_models:
-                    p = m.predict_proba(seq_tensor, curr_window_406)
-                    onset_probs.append(p)
-                p_onset = float(np.mean(onset_probs)) if onset_probs else 0.08
-
-                # Multi-horizon trajectory calibrated on onset probability:
-                # H=1 is immediate next-window onset transition;
-                # H=2 and H=5 scale with multi-step progression
-                hazards = {
-                    1: float(np.clip(p_onset, 0.01, 0.99)),
-                    2: float(np.clip(p_onset * 1.12, 0.02, 0.99)),
-                    5: float(np.clip(p_onset * 1.25, 0.03, 0.99)),
-                }
-                return hazards
-            except Exception as e:
-                import logging
-                logging.error(f"Stacked hazard ensemble inference error: {e}")
-                raise RuntimeError(f"CRITICAL: Stacked hazard ensemble inference failed: {e}")
-
-        raise RuntimeError(
-            "CRITICAL: Stacked & Calibrated Residual LSTM ensemble is not loaded or PCA is unavailable! "
-            "Silent degradation to legacy models is strictly prohibited."
-        )
+        probs = [m.predict_proba(sequence_30x406, self.device) for m in self.stacked_onset_models]
+        return float(np.mean(probs))
 
     def _predict_detection_ensemble(self, sequence_30x406: np.ndarray) -> Optional[float]:
         """
-        Predicts current window attack detection probability using the 37-fold LOEO Stacked Residual LSTM ensemble.
+        Current-window attack probability: mean over the 37 stacked detection fold models,
+        each using its own checkpoint PCA and LR scaler.
         """
-        if not (self.use_stacked_model and len(self.stacked_detection_models) > 0 and self.pca_available and self.pca is not None):
+        if not (self.use_stacked_model and len(self.stacked_detection_models) > 0):
             return None
         try:
-            cols = self.pca_features if (self.pca_features is not None and len(self.pca_features) == sequence_30x406.shape[1]) else [f"f_{i}" for i in range(sequence_30x406.shape[1])]
-            seq_df = pd.DataFrame(sequence_30x406, columns=cols)
-            if getattr(self, "pca_scaler", None) is not None:
-                scaled_values = self.pca_scaler.transform(seq_df[cols].to_numpy(dtype=np.float64))
-                seq_df = pd.DataFrame(scaled_values, columns=cols)
-            transformed = self.pca.transform(seq_df)
-            pca_cols = [f"pca_{i}" for i in range(32)]
-            seq_32 = transformed[pca_cols].to_numpy(dtype=np.float32)
-            seq_tensor = torch.as_tensor(seq_32, dtype=torch.float32).unsqueeze(0).to(self.device)
-            curr_window_406 = sequence_30x406[-1]
-
-            probs = [m.predict_proba(seq_tensor, curr_window_406) for m in self.stacked_detection_models]
+            probs = [m.predict_proba(sequence_30x406, self.device) for m in self.stacked_detection_models]
             return float(np.mean(probs))
         except Exception as e:
             import logging
@@ -591,7 +571,7 @@ class ShadowcatPipeline:
         2. Sequence slicing with L=30 lookback, handling causal warm-up boundary.
         3. LSTM World Model continuous dynamics -> latent z(t) [64-dim], predicted state mean and std.
         4. Bypass fusion: z'(t) = z(t) (GNN held back per verified decision).
-        5. Hazard head ensemble -> onset hazard per horizon (H=1, 2, 5), cumulative P(event <= K).
+        5. Stacked onset ensemble -> P(attack within the next 5 minutes) (single probability).
         6. Stage Head -> MITRE ATT&CK stage label and tactic ID.
         7. Novelty / deviation score: observed vs predicted.
         8. Format complete payload adhering strictly to INTERFACE.md.
@@ -757,33 +737,11 @@ class ShadowcatPipeline:
         raw_novelty = float(np.mean(feature_deviations))
         novelty_score = float(1.0 / (1.0 + np.exp(-0.5 * (raw_novelty - 1.0))))
         novelty_score = float(np.clip(novelty_score, 0.05, 0.95))
-        novelty_status = "Expected Behavior Envelope" if novelty_score < 0.50 else "Elevated Behavioral Drift"
 
-        # Step 5: Hazard Head Ensemble & Cumulative Trajectory
-        hazards = self._predict_hazard_ensemble(seq_30x406)
-        raw_h1 = hazards.get(1, 0.08)
-        raw_h2 = hazards.get(2, 0.12)
-        raw_h5 = hazards.get(5, 0.18)
-
-        # Modulate hazard dynamically with empirical behavioral drift of this input
-        h_weight = float(np.clip(novelty_score, 0.1, 0.95))
-        h1 = float(np.clip(raw_h1 * 0.5 + h_weight * 0.5, 0.03, 0.95))
-        h2 = float(np.clip(raw_h2 * 0.5 + min(1.0, h_weight * 1.1) * 0.5, 0.04, 0.97))
-        h5 = float(np.clip(raw_h5 * 0.5 + min(1.0, h_weight * 1.2) * 0.5, 0.05, 0.99))
-
-        # Interpolate for H=3, 4
-        h3 = float(np.clip(h2 + (1.0 / 3.0) * (h5 - h2), 0.0, 1.0))
-        h4 = float(np.clip(h2 + (2.0 / 3.0) * (h5 - h2), 0.0, 1.0))
-        step_hazards = [h1, h2, h3, h4, h5]
-
-        # Cumulative risk P(event <= K) = 1 - prod(1 - h_k)
-        cum_risk = []
-        prod_surv = 1.0
-        for h_k in step_hazards:
-            prod_surv *= (1.0 - h_k)
-            cum_risk.append(float(np.clip(1.0 - prod_surv, 0.0, 1.0)))
-
-        risk_trajectory = step_hazards
+        # Step 5: Onset probability from the 37-fold stacked onset ensemble.
+        # Target = future_attack_label: an attack window within t+1..t+5 (1-minute windows).
+        # This is the only risk number the dashboard shows; no per-horizon values are produced.
+        p_onset = self._predict_onset_probability(seq_30x406)
 
         # Step 6: Stage Head Classification on Predicted Future State S_hat(t+1)
         # Grounded against the real MITRE ATT&CK STIX 2.1 knowledge base.
@@ -807,16 +765,28 @@ class ShadowcatPipeline:
                 pred_stage = StageClassificationHead.STAGE_CLASSES[stage_idx]
                 pred_conf = float(stage_probs[stage_idx])
 
-                selected_stage = pred_stage
                 is_heuristic = False
-                attr_source = f"StageClassificationHead (P(conf)={pred_conf:.2f})"
+                attr_source = f"StageClassificationHead (top class {pred_stage}, p={pred_conf:.2f})"
 
-                # Resolve against real MITRE Enterprise ATT&CK STIX corpus
-                stage_info = kb.resolve_stage(selected_stage)
+                # A stage is shown only if the head is confident (p > 0.5) in a real ATT&CK
+                # class. "Unknown/Other" has no ATT&CK ID and is never mapped to one.
+                if pred_conf > STAGE_MIN_CONFIDENCE and pred_stage != "Unknown/Other":
+                    selected_stage = pred_stage
+                    stage_info = kb.resolve_stage(selected_stage)
+                    stage_info["likely_next_techniques"] = kb.predict_likely_next_techniques(stage_info["technique_id"])
+                else:
+                    selected_stage = NO_STAGE
+                    stage_info = {
+                        "tactic_id": None, "tactic_name": None, "shortname": None, "description": None,
+                        "url": None, "technique_id": None, "technique_name": None,
+                        "technique_full_name": None, "technique_description": None,
+                        "technique_url": None, "is_active_attack": False,
+                        "likely_next_techniques": [],
+                    }
                 stage_info["is_heuristic_progression"] = is_heuristic
                 stage_info["attribution_source"] = attr_source
                 stage_info["stage_confidence"] = pred_conf
-                stage_info["likely_next_techniques"] = kb.predict_likely_next_techniques(selected_stage)
+                stage_info["stage_head_top_class"] = pred_stage
 
                 stage_names.append(selected_stage)
                 tactic_ids.append(stage_info["tactic_id"])
@@ -824,100 +794,62 @@ class ShadowcatPipeline:
                 heuristic_progression_flags.append(is_heuristic)
                 attribution_sources.append(attr_source)
 
-        # Step 7: Uncertainty & Prediction Bounds (including Split Conformal Prediction)
-        uncertainties = []
-        lower_bounds = []
-        upper_bounds = []
-        conformal_intervals = []
-        conformal_intervals_joint = []
-        conformal_credibility = []
-
-        # Split Conformal Prediction calibrated strictly on real empirical validation residuals
-        # Pooled across 37 LOEO folds with zero test-set leakage (NO dummy/placeholder data)
+        # Split conformal interval for the onset probability, calibrated on the pooled
+        # validation predictions of the same 37 onset fold models (no test windows).
         if not self.conformal_predictor.is_calibrated:
             real_val_preds, real_val_targets, self.conformal_cal_source = self._get_conformal_calibration_data()
             self.conformal_predictor.calibrate(real_val_preds, real_val_targets)
+        c_lb, c_ub = self.conformal_predictor.predict_interval(p_onset, horizon_idx=0)
+        c_lb_j, c_ub_j = self.conformal_predictor.predict_interval_joint(p_onset, horizon_idx=0)
+        conformal_interval = [round(c_lb, 4), round(c_ub, 4)]
+        conformal_interval_joint = [round(c_lb_j, 4), round(c_ub_j, 4)]
+        onset_alert = bool(p_onset >= self.alert_threshold)
 
-        for k in range(5):
-            # Model uncertainty sigma based on dynamics standard deviation
-            sigma = float(np.mean(rollout_stds[k]) * 0.15 + (k + 1) * 0.04)
-            sigma = float(np.clip(sigma, 0.02, 0.35))
-            uncertainties.append(sigma)
-            lb = float(np.clip(cum_risk[k] - 1.645 * sigma, 0.0, 1.0))
-            ub = float(np.clip(cum_risk[k] + 1.645 * sigma, 0.0, 1.0))
-            lower_bounds.append(lb)
-            upper_bounds.append(ub)
-
-            c_lb, c_ub = self.conformal_predictor.predict_interval(cum_risk[k], horizon_idx=k)
-            c_lb_j, c_ub_j = self.conformal_predictor.predict_interval_joint(cum_risk[k], horizon_idx=k)
-            conformal_intervals.append([round(c_lb, 4), round(c_ub, 4)])
-            conformal_intervals_joint.append([round(c_lb_j, 4), round(c_ub_j, 4)])
-            
-            # Compute conformal credibility for the UI dashboard based on interval width
-            width = c_ub - c_lb
-            credibility = "HIGH" if width < 0.2 else ("MEDIUM" if width < 0.4 else "LOW")
-            conformal_credibility.append(credibility)
-
-        # Step 8 & 9: Feature Attribution (Top Contributing Features)
-        attr_scores = np.abs(obs_state - pred_state)
+        # Step 8 & 9: Integrated Gradients on the stacked ONSET logit (the number shown as risk).
+        # Target: mean over the 37 onset folds of the calibrated logit z/T; baseline: all-zero
+        # (scaled) 30-window history; 15 interpolation steps.
         model_cols = UCSExtractor.MODEL_INPUT_COLUMNS
-
-        # Filter out presence masks so presence flags are never ranked as behavioral drivers
-        filtered_scores = attr_scores.copy()
-        for idx, col in enumerate(model_cols):
-            if get_feature_category(col) is None:
-                filtered_scores[idx] = -1.0
-
-        sorted_indices = np.argsort(filtered_scores)[::-1]
-        top_indices = [idx for idx in sorted_indices if filtered_scores[idx] >= 0][:5]
-
-        total_attr = float(np.sum(attr_scores[top_indices])) + 1e-6
         attributions = []
-        for idx in top_indices:
-            feat_name = model_cols[idx] if idx < len(model_cols) else f"Feature_{idx}"
-            clean_name = feat_name.replace("_", " ").title()
-            contrib = float(np.round(attr_scores[idx] / total_attr, 2))
-            cat = get_feature_category(feat_name) or "Flow Dynamics"
-            attributions.append({
-                "feature": clean_name,
-                "contribution": contrib,
-                "category": cat,
-                "delta": f"+{int(contrib * 400)}%" if contrib > 0.15 else "Baseline",
-            })
-
-        # Ensure contributions sum to ~1.0
-        sum_c = sum(a["contribution"] for a in attributions)
-        if sum_c > 0:
-            for a in attributions:
-                a["contribution"] = round(a["contribution"] / sum_c, 2)
-
-        # Temporal Attribution (TimeSHAP / Temporal Integrated Gradients - 100% Offline)
-        temporal_attributions = {}
         try:
-            attributor = TemporalAttributor(steps=15)
-            temporal_res = attributor.attribute(
-                model=self.world_model,
+            ig = TemporalAttributor(steps=15).attribute(
+                model=StackedOnsetLogit(self.stacked_onset_models),
                 x_sequence=seq_30x406,
                 feature_names=model_cols,
                 device=self.device,
             )
+            behavioural = [f for f in ig["feature_totals"] if get_feature_category(f["feature"]) is not None]
+            for f in sorted(behavioural, key=lambda f: f["abs_share"], reverse=True)[:5]:
+                attributions.append({
+                    "feature": f["feature"],
+                    "contribution": round(f["abs_share"], 4),
+                    "signed_attribution": round(f["signed_sum"], 4),
+                    "category": get_feature_category(f["feature"]),
+                    "method": "Integrated Gradients",
+                })
             temporal_attributions = {
-                "timestep_attributions": temporal_res.get("timestep_attributions", []),
-                "top_temporal_events": temporal_res.get("top_temporal_events", [])[:5],
+                "timestep_attributions": ig["timesteps"],
+                "top_temporal_events": ig["top_temporal_events"][:5],
+                "attribution_sum": round(ig["attribution_sum"], 4),
                 "lookback_windows": lookback,
-                "engine": "TimeSHAP / Temporal Integrated Gradients (Offline)",
+                "engine": "Integrated Gradients",
+                "target": "mean calibrated onset logit of the 37 stacked fold models",
+                "baseline": "all-zero scaled 30-window history",
+                "contribution_definition": "share of total |attribution| across all 406 inputs and 30 windows",
             }
         except Exception as e:
-            temporal_attributions = {
-                "timestep_attributions": [round(float(np.exp(-0.1 * (lookback - 1 - i))), 3) for i in range(lookback)],
-                "top_temporal_events": [],
-                "lookback_windows": lookback,
-                "engine": "TimeSHAP / Temporal Integrated Gradients (Fallback)",
-                "note": str(e),
-            }
+            temporal_attributions = {"engine": "Integrated Gradients", "error": str(e)}
 
-        # Step 10: Flagged Suspicious Flows from raw_input
+        # Step 10: Flows of the last window ranked by the onset LR stage (see _extract_flagged_flows)
         flagged_flows = self._extract_flagged_flows(raw_input, source_type)
+
+        # Window-level contributions to the onset LR-stage logit (coef x scaled value, fold mean)
+        lr_c = self._lr_contributions(seq_30x406[-1])
+        lr_order = [i for i in np.argsort(np.abs(lr_c))[::-1] if get_feature_category(model_cols[i]) is not None][:10]
+        lr_contributions = [
+            {"feature": model_cols[i], "contribution": round(float(lr_c[i]), 4),
+             "scaled_value": round(float(seq_30x406[-1][i]), 4)}
+            for i in lr_order
+        ]
 
         # Step 10b: Real Graph-Propagation Traversal over Actual Edge Data
         from backend.graph_traversal import compute_graph_traversal
@@ -937,7 +869,7 @@ class ShadowcatPipeline:
                 pipeline=self,
                 sequence_30x406=seq_30x406,
                 top_features=top_cand_names,
-                threshold=self.calibrated_threshold_global,
+                threshold=self.alert_threshold,
                 max_features=5,
             )
         except Exception as e:
@@ -951,20 +883,23 @@ class ShadowcatPipeline:
             }
 
         # Step 11: Construct Output Payload per INTERFACE.md
-        lead_times = ["1m 00s", "2m 00s", "3m 00s", "4m 00s", "5m 00s"]
-        labels = [
-            "t+1 (1 min) [Validated]",
-            "t+2 (2 min) [Validated]",
-            "t+3 (3 min) [Validated]",
-            "t+4 (4 min) [Exploratory Bound]",
-            "t+5 (5 min) [Exploratory Bound]",
-        ]
+        # Stage fields below come from the stage head applied to the world-model rollout
+        # S_hat(t+k), k=1..5. They carry no probability of attack.
+        rollout_labels = [f"t+{k} (world-model rollout S_hat(t+{k}))" for k in range(1, 6)]
 
         forecast_trajectory = {
             "window_id": window_id,
-            "horizons": [1, 2, 3, 4, 5],
-            "labels": labels,
-            "risk": [round(r, 2) for r in cum_risk],
+            "onset_probability": round(float(p_onset), 6),
+            "onset_probability_label": "P(attack within the next 5 minutes)",
+            "onset_model": (
+                "Stacked calibrated residual LSTM, mean of "
+                f"{len(self.stacked_onset_models)} LOEO fold models (target: attack window in t+1..t+5)"
+            ),
+            # Single-element list kept for consumers that read risk[0]; there is no per-horizon risk.
+            "risk": [round(float(p_onset), 6)],
+            "onset_alert": onset_alert,
+            "alert_threshold": self.alert_threshold,
+            "rollout_labels": rollout_labels,
             "stage": stage_names,
             "tactic_id": tactic_ids,
             "mitre_details": mitre_details,
@@ -976,44 +911,28 @@ class ShadowcatPipeline:
             "tactic_url": [m["url"] for m in mitre_details],
             "is_heuristic_progression": heuristic_progression_flags,
             "stage_attribution_source": attribution_sources,
-            "likely_next_techniques": [kb.predict_likely_next_techniques(s) for s in stage_names],
-            "lead_time": lead_times,
-            "uncertainty": [round(u, 2) for u in uncertainties],
-            "lower_bound": [round(lb, 2) for lb in lower_bounds],
-            "upper_bound": [round(ub, 2) for ub in upper_bounds],
-            "conformal_intervals": conformal_intervals,
-            "conformal_intervals_joint": conformal_intervals_joint,
-            "conformal_credibility": conformal_credibility,
+            "likely_next_techniques": [m["likely_next_techniques"] for m in mitre_details],
+            "stage_confidence": [m["stage_confidence"] for m in mitre_details],
+            "stage_head_top_class": [m["stage_head_top_class"] for m in mitre_details],
+            "stage_rule": f"stage shown only if stage-head top probability > {STAGE_MIN_CONFIDENCE} and class is not Unknown/Other",
+            "conformal_interval": conformal_interval,
+            "conformal_interval_joint": conformal_interval_joint,
             "conformal_coverage": self.conformal_coverage,
             "conformal_coverage_joint": 1.0 - self.conformal_predictor.alpha_joint,
-            "conformal_guarantee": f"{int(self.conformal_coverage * 100)}% finite-sample calibrated prediction interval",
             "conformal_calibration_source": self.conformal_cal_source,
             "conformal_sample_size": self.conformal_predictor.calibration_sample_size,
             "conformal_quantile": round(float(self.conformal_predictor.calibrated_quantile), 4),
-            "calibrated_threshold": self.calibrated_threshold_global,
-            "hazard_alert": any(r >= self.calibrated_threshold_global for r in cum_risk),
-            "calibrated_uncertainty": True,
-            "model_architecture": "Stacked & Calibrated Residual LSTM (Phase 1 Verified)",
+            "model_architecture": "Stacked & Calibrated Residual LSTM",
             "active_model_folds": len(self.stacked_onset_models),
-            "checkpoint_dir": str(self.stacked_base_dir / "onset"),
-            "source_branch": "37-Fold Stacked Calibrated Residual LSTM Ensemble + 32-dim PCA (Active)",
-            "protocol": "Chronological Split (K=1..3 Validated, K=5 Exploratory)",
-            "hazard_epistemic_note": "37-fold LOEO Stacked Residual LSTM ensemble actively evaluating input sequence across 32 PCA dimensions with behavioral drift modulation.",
+            "checkpoint_dir": (self.stacked_base_dir.relative_to(REPO_ROOT) / "onset").as_posix(),
             "is_mock": False,
         }
 
-        # Pack raw steps for legacy aggregator compatibility
         raw_steps = []
         for k in range(5):
             raw_steps.append({
                 "step": k + 1,
-                "horizon": labels[k],
-                "time_ahead": f"+{k+1}m",
-                "lead_time": lead_times[k],
-                "probability": round(cum_risk[k], 2),
-                "uncertainty": round(uncertainties[k], 2),
-                "lower_bound": round(lower_bounds[k], 2),
-                "upper_bound": round(upper_bounds[k], 2),
+                "horizon": rollout_labels[k],
                 "stage": stage_names[k],
                 "tactic_id": tactic_ids[k],
                 "tactic_name": mitre_details[k]["tactic_name"],
@@ -1029,48 +948,43 @@ class ShadowcatPipeline:
             })
         forecast_trajectory["raw_steps"] = raw_steps
 
-        # Compute telemetry statistics
-        active_endpoints = 42
-        if isinstance(raw_input, pd.DataFrame):
-            src_ips = raw_input["Src IP"] if "Src IP" in raw_input.columns else (raw_input["src_ip"] if "src_ip" in raw_input.columns else pd.Series([]))
-            dst_ips = raw_input["Dst IP"] if "Dst IP" in raw_input.columns else (raw_input["dst_ip"] if "dst_ip" in raw_input.columns else pd.Series([]))
-            all_ips = set(src_ips.dropna().unique()).union(set(dst_ips.dropna().unique()))
-            if len(all_ips) > 0:
-                active_endpoints = len(all_ips)
+        # Input statistics: only values computed from the input; None when the column is absent
+        cols = raw_input.columns if isinstance(raw_input, pd.DataFrame) else []
+        active_endpoints = None
+        ip_cols = [c for c in ("Src IP", "src_ip", "Dst IP", "dst_ip") if c in cols]
+        if ip_cols:
+            active_endpoints = int(pd.unique(pd.concat([raw_input[c] for c in ip_cols]).dropna()).size)
 
-        syn_ack_ratio = 4.8
-        if "SYN Flag Cnt" in raw_input.columns and "ACK Flag Cnt" in raw_input.columns:
-            syn_c = float(raw_input["SYN Flag Cnt"].sum())
-            ack_c = float(raw_input["ACK Flag Cnt"].sum()) + 1.0
-            syn_ack_ratio = round(syn_c / ack_c, 2)
+        syn_ack_ratio = None
+        if "SYN Flag Cnt" in cols and "ACK Flag Cnt" in cols:
+            syn_c = float(pd.to_numeric(raw_input["SYN Flag Cnt"], errors="coerce").sum())
+            ack_c = float(pd.to_numeric(raw_input["ACK Flag Cnt"], errors="coerce").sum())
+            syn_ack_ratio = round(syn_c / ack_c, 4) if ack_c > 0 else None
 
-        mean_pkt_size = int(raw_input["TotLen Fwd Pkts"].mean()) if "TotLen Fwd Pkts" in raw_input.columns and len(raw_input) > 0 else 312
+        packets_analyzed = None
+        if "Tot Fwd Pkts" in cols and "Tot Bwd Pkts" in cols:
+            packets_analyzed = int(pd.to_numeric(raw_input["Tot Fwd Pkts"], errors="coerce").sum()
+                                   + pd.to_numeric(raw_input["Tot Bwd Pkts"], errors="coerce").sum())
 
         novelty_payload = {
             "state_id": "S(t)",
-            "window_label": "Window t (Current)",
-            "dominant_behavior": "Probing & port sweeping" if novelty_score > 0.4 else "Nominal Enterprise Traffic",
+            # sigmoid(0.5 * (mean |S(t) - S_hat(t)| / sigma - 1)), clipped to [0.05, 0.95]
             "novelty_score": round(novelty_score, 2),
-            "novelty_status": novelty_status,
-            "active_endpoints": max(active_endpoints, 5),
+            "novelty_definition": "world-model deviation: sigmoid of mean |S(t) - S_hat(t)| / sigma over 406 features",
+            "active_endpoints": active_endpoints,
             "syn_ack_ratio": syn_ack_ratio,
-            "mean_packet_size": mean_pkt_size,
-            "entropy": 3.42,
             "flows_analyzed": len(raw_input),
-            "packets_analyzed": int(raw_input.get("Tot Fwd Pkts", pd.Series([len(raw_input) * 8])).sum()) if "Tot Fwd Pkts" in raw_input.columns else len(raw_input) * 8,
+            "input_rows_are": "UCS windows" if source_type == "windows" else "flows",
+            "packets_analyzed": packets_analyzed,
             "is_mock": False,
         }
 
-        # Analysis metadata
         analysis_metadata = {
-            "source": f"LIVE INFERENCE: {source_type.upper()} Stream",
-            "sensor_id": "TAP-DMZ-01",
-            "sensor_throughput": "10Gbps Ingress",
-            "window": "t+1 → t+5 (Live Operational)",
+            "source": f"{source_type} input",
+            "window": "1-minute windows, 30-window lookback",
             "window_duration": "60s",
             "duration_sec": 60,
             "lookback_windows": 30,
-            "rollout_horizons": 5,
             "timestamp": window_start,
             "is_mock": False,
         }
@@ -1083,18 +997,19 @@ class ShadowcatPipeline:
             "novelty_score": novelty_payload,
             "attributions": attributions,
             "flagged_flows": flagged_flows,
+            "lr_contributions": lr_contributions,
+            "lr_contribution_sum": round(float(lr_c.sum()), 4),
             "stage_predictions": stage_names,
-            "risk_scores": [round(r, 2) for r in cum_risk],
+            "risk_scores": [round(float(p_onset), 6)],
             "graph_topology": graph_topology,
             "graph_traversal": graph_traversal,
             "temporal_attributions": temporal_attributions,
             "conformal_forecast": {
                 "coverage": self.conformal_coverage,
                 "coverage_joint": 1.0 - self.conformal_predictor.alpha_joint,
-                "intervals": conformal_intervals,
-                "intervals_joint": conformal_intervals_joint,
-                "conformal_credibility": conformal_credibility,
-                "point_estimates": [round(r, 2) for r in cum_risk],
+                "intervals": [conformal_interval],
+                "intervals_joint": [conformal_interval_joint],
+                "point_estimates": [round(float(p_onset), 6)],
                 "method": "Split Conformal Prediction (37-Fold LOEO Validation-Calibrated)",
                 "sample_size": self.conformal_predictor.calibration_sample_size,
                 "quantile": round(float(self.conformal_predictor.calibrated_quantile), 4),
@@ -1107,12 +1022,13 @@ class ShadowcatPipeline:
         }
 
         # Fabric Notarization Hook with SHA-256 Fallback
-        if forecast_trajectory.get("hazard_alert"):
+        if onset_alert:
             import hashlib
             import logging
-            alert_str = f"{window_id}-{window_start}-{max(cum_risk)}"
+            max_hazard_val = float(p_onset)
+            alert_str = f"{window_id}-{window_start}-{max_hazard_val}"
             alert_hash = hashlib.sha256(alert_str.encode()).hexdigest()[:16]
-            severity = "HIGH" if max(cum_risk) > 0.8 else "MEDIUM"
+            severity = "HIGH" if max_hazard_val > 0.8 else "MEDIUM"
 
             fabric_ok = False
             try:
@@ -1132,7 +1048,7 @@ class ShadowcatPipeline:
                             "alert_hash": alert_hash,
                             "window_id": str(window_id),
                             "window_start": str(window_start),
-                            "max_risk": round(float(max(cum_risk)), 4),
+                            "max_risk": round(float(max_hazard_val), 4),
                             "severity": severity,
                             "notarized_via": "fabric",
                         }
@@ -1142,14 +1058,14 @@ class ShadowcatPipeline:
             else:
                 # Fall back to SHA-256 hash-chaining in backend/audit_chain.py
                 try:
-                    alerts_dir = Path(BACKEND_DIR) / "alerts"
+                    alerts_dir = RUNTIME_DIR / "alerts"
                     alerts_dir.mkdir(parents=True, exist_ok=True)
                     alert_file = alerts_dir / f"alert_{alert_hash}.json"
                     alert_record = {
                         "alert_hash": alert_hash,
                         "window_id": str(window_id),
                         "window_start": str(window_start),
-                        "max_risk": round(float(max(cum_risk)), 4),
+                        "max_risk": round(float(max_hazard_val), 4),
                         "severity": severity,
                         "notarized_via": "sha256_fallback",
                     }
@@ -1200,14 +1116,14 @@ class ShadowcatPipeline:
         feature_hash = hashlib.sha256(seq_30x406.tobytes()).hexdigest()
         model_id = "lstm_world_model_v4"
         pred_dict = {
-            "risk": [round(float(r), 4) for r in cum_risk],
+            "risk": [round(float(p_onset), 6)],
             "stages": stage_names,
             "novelty": round(float(novelty_score), 4),
         }
         prediction_hash = hashlib.sha256(json.dumps(pred_dict, sort_keys=True).encode("utf-8")).hexdigest()
 
         # Determine severity and target node
-        max_r = max(cum_risk) if len(cum_risk) > 0 else 0.0
+        max_r = float(p_onset)
         if max_r > 0.8:
             lineage_severity = "HIGH"
         elif max_r > 0.4:
@@ -1215,9 +1131,9 @@ class ShadowcatPipeline:
         else:
             lineage_severity = "LOW"
 
-        target_node = "172.31.69.21"
-        if len(flagged_flows) > 0 and flagged_flows[0].get("src_ip"):
-            target_node = str(flagged_flows[0]["src_ip"])
+        target_node = ""  # no host is known unless the input names one
+        if len(flagged_flows) > 0 and flagged_flows[0].get("source"):
+            target_node = str(flagged_flows[0]["source"])
         elif graph_traversal.get("start_node"):
             target_node = str(graph_traversal["start_node"])
 
@@ -1264,7 +1180,7 @@ class ShadowcatPipeline:
         if not lineage_ok:
             # Fall back to SHA-256 hash chaining in backend/alerts and audit_chain
             try:
-                alerts_dir = Path(BACKEND_DIR) / "alerts"
+                alerts_dir = RUNTIME_DIR / "alerts"
                 alerts_dir.mkdir(parents=True, exist_ok=True)
                 lin_file = alerts_dir / f"lineage_{lineage_id}.json"
                 with open(lin_file, "w", encoding="utf-8") as f:
@@ -1303,42 +1219,69 @@ class ShadowcatPipeline:
 
         return payload
 
-    def _extract_flagged_flows(self, raw_input: pd.DataFrame, source_type: str) -> List[Dict[str, Any]]:
-        """Extract top anomalous flow records from input DataFrame."""
-        if not isinstance(raw_input, pd.DataFrame) or len(raw_input) == 0:
+    def _lr_contributions(self, window_406: np.ndarray) -> np.ndarray:
+        """Per-feature contribution to the onset LR-stage logit for one window:
+        coef_j * (x_j - mean_j) / scale_j, averaged over the 37 onset folds (logit units)."""
+        x = np.asarray(window_406, dtype=np.float64)
+        return np.mean([f.lr_coef * (x - f.scaler_mean) / f.scaler_scale for f in self.stacked_onset_models], axis=0)
+
+    def _extract_flagged_flows(self, raw_input: pd.DataFrame, source_type: str, limit: int = 10) -> List[Dict[str, Any]]:
+        """
+        Ranks the flows of the input's last 1-minute window by the onset LR stage applied to
+        each flow's own values: for every window feature "<column>_mean" whose flow column is
+        present, the flow value is scaled exactly as the window feature is (UCS scaler, then the
+        fold's LR scaler) and multiplied by the fold's coefficient; the score is the sum over
+        those features, averaged over the 37 onset folds (logit units, higher = pushes the
+        onset probability up). Window input has no flows, so nothing is returned.
+        """
+        if source_type == "windows" or not isinstance(raw_input, pd.DataFrame) or "Timestamp" not in raw_input.columns:
             return []
+        ts = pd.to_datetime(raw_input["Timestamp"], format="%d/%m/%Y %H:%M:%S", errors="coerce")
+        if ts.isna().all():
+            return []
+        minute = ts.dt.floor("min")
+        last = raw_input[minute == minute.max()]
 
+        mapping = self.extractor.canonical_mapping.get("mapping", {})
+        cols = list(UCSExtractor.MODEL_INPUT_COLUMNS)
+        feats, raw_cols = [], []
+        for raw_col, canon in mapping.items():
+            name = f"{canon}_mean"
+            if raw_col in last.columns and name in cols:
+                feats.append(name)
+                raw_cols.append(raw_col)
+        if not feats:
+            return []
+        idx = [cols.index(f) for f in feats]
+        vals = last[raw_cols].apply(pd.to_numeric, errors="coerce").replace([np.inf, -np.inf], np.nan)
+        vals.columns = feats
+        ucs = self.extractor.scaler.transform(vals)[feats].to_numpy(dtype=np.float64)  # (n_flows, k)
+        contrib = np.mean([f.lr_coef[idx] * (ucs - f.scaler_mean[idx]) / f.scaler_scale[idx]
+                           for f in self.stacked_onset_models], axis=0)
+        scores = contrib.sum(axis=1)
+        order = np.argsort(scores)[::-1][:limit]
+
+        def col(*names):
+            return next((n for n in names if n in last.columns), None)
+
+        src_c, dst_c = col("Src IP", "src_ip"), col("Dst IP", "dst_ip")
+        sport_c, dport_c, proto_c = col("Src Port", "src_port"), col("Dst Port", "dst_port"), col("Protocol", "protocol")
         flows = []
-        df = raw_input.head(10).copy()
-
-        src_col = "Src IP" if "Src IP" in df.columns else ("src_ip" if "src_ip" in df.columns else None)
-        dst_col = "Dst IP" if "Dst IP" in df.columns else ("dst_ip" if "dst_ip" in df.columns else None)
-        sport_col = "Src Port" if "Src Port" in df.columns else ("src_port" if "src_port" in df.columns else None)
-        dport_col = "Dst Port" if "Dst Port" in df.columns else ("dst_port" if "dst_port" in df.columns else None)
-        proto_col = "Protocol" if "Protocol" in df.columns else ("protocol" if "protocol" in df.columns else None)
-
-        for i, row in df.iterrows():
-            f_id = f"FLW-{10490 + i}"
-            src = str(row[src_col]) if src_col else "10.0.2.15"
-            dst = str(row[dst_col]) if dst_col else "10.0.4.21"
-            sport = int(row[sport_col]) if sport_col and pd.notna(row[sport_col]) else 54100 + i
-            dport = int(row[dport_col]) if dport_col and pd.notna(row[dport_col]) else (22 if i % 2 == 0 else 88)
-            proto = "TCP" if not proto_col else ("TCP" if row[proto_col] == 6 else "UDP")
-
+        for r in order:
+            row = last.iloc[r]
+            top = np.argsort(contrib[r])[::-1][:3]
             flows.append({
-                "id": f_id,
-                "source": src,
-                "sport": sport,
-                "destination": dst,
-                "dport": dport,
-                "protocol": proto,
-                "reason": "Elevated connection rate / port scan pattern" if dport == 22 else "Kerberos authentication probe",
-                "risk": "High" if i < 3 else "Medium",
-                "pkts": int(row.get("Tot Fwd Pkts", 400 + i * 12)),
-                "bytes": int(row.get("TotLen Fwd Pkts", 25000 + i * 450)),
-                "is_mock": False,
+                "row": int(last.index[r]),
+                "timestamp": str(row["Timestamp"]),
+                "source": str(row[src_c]) if src_c else None,
+                "sport": str(row[sport_c]) if sport_c else None,
+                "destination": str(row[dst_c]) if dst_c else None,
+                "dport": str(row[dport_c]) if dport_c else None,
+                "protocol": str(row[proto_c]) if proto_c else None,
+                "lr_score": round(float(scores[r]), 4),
+                "top_features": ", ".join(f"{feats[j]} {contrib[r, j]:+.3f}" for j in top),
+                "dataset_label": str(row["Label"]) if "Label" in last.columns else None,
             })
-
         return flows
 
 

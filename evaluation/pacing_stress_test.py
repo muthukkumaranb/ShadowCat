@@ -67,7 +67,7 @@ def evaluate_pacing():
             
             seq_t = torch.as_tensor(seq, dtype=torch.float32).unsqueeze(0).to(device)
             det_prob = pipeline._predict_detection_ensemble(seq)
-            hazards = pipeline._predict_hazard_ensemble(seq)
+            hazards = pipeline._predict_onset_probability(seq)
             
             pred_det = 1 if (det_prob is not None and det_prob >= 0.5) else 0
             predictions_det.append(pred_det)
