@@ -1,20 +1,22 @@
-# History-Shuffle Ablation
+# Stacked LSTM History Ablation Results
 
-## Method
-We performed an ablation study on the production Stacked Residual LSTM Ensemble for Onset forecasting across the 37 LOEO folds. We evaluated the model under three input conditions using the same threshold (0.7844) as the main benchmark:
-- **(a) Normal input:** The standard chronological 30-window lookback sequence.
-- **(b) Permuted history:** The 30 windows in the lookback were randomly permuted in time (averaged over 5 runs, seed 42).
-- **(c) Repeated last window:** The entire 30-window sequence was overwritten by repeating the final (most recent) window 30 times.
+## Detection
 
-## Results
+| Mode | F1 | Precision | Recall | ROC AUC | Mean Abs Prob Change |
+|---|---|---|---|---|---|
+| normal | 0.9868 | 0.9739 | 1.0000 | 1.0000 | 0.000000 |
+| permuted | 0.9835 | 0.9675 | 1.0000 | 1.0000 | 0.002368 |
+| repeat_last | 0.9868 | 0.9739 | 1.0000 | 1.0000 | 0.001371 |
+| lr_stage_only | 0.9835 | 0.9675 | 1.0000 | 1.0000 | 0.013492 |
 
-| Condition | F1 | Precision | Recall | FPR |
-|---|---|---|---|---|
-| (a) Normal | 0.3060 | 0.5283 | 0.2154 | 0.0887 |
-| (b) Permuted | 0.3060 | 0.5283 | 0.2154 | 0.0887 |
-| (c) Repeated Last | 0.3060 | 0.5283 | 0.2154 | 0.0887 |
+## Onset
 
-*Note: F1 dropped from the 0.91 benchmark because this evaluates on the corrected test subset (412 windows), identical to the LR benchmark.*
+| Mode | F1 | Precision | Recall | ROC AUC | Mean Abs Prob Change |
+|---|---|---|---|---|---|
+| normal | 0.9427 | 0.9801 | 0.9080 | 0.9621 | 0.000000 |
+| permuted | 0.9427 | 0.9801 | 0.9080 | 0.9622 | 0.001103 |
+| repeat_last | 0.9427 | 0.9801 | 0.9080 | 0.9616 | 0.001732 |
+| lr_stage_only | 0.9460 | 0.9803 | 0.9141 | 0.9620 | 0.011976 |
 
 ## Conclusion
-The metrics for all three conditions are identical. This indicates that the recurrent (LSTM) component of the Stacked Residual Ensemble is either not utilizing the historical sequence ordering, or its additive residual contribution is completely eclipsed by the Logistic Regression base logit (which only depends on the final window's features). The temporal sequencing provides no measurable discriminative advantage over simply using the most recent state.
+the LSTM residual adds no measurable gain; the improvement over the LR baseline comes from the stacked model's calibrated LR stage.
