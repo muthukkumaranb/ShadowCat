@@ -4,6 +4,8 @@ import os
 import sys
 from datetime import datetime, timezone
 from typing import Optional
+from cryptography.hazmat.primitives.asymmetric import ed25519
+from cryptography.hazmat.primitives import serialization
 
 # Safe UTF-8 console output for Windows CLI environments
 if hasattr(sys.stdout, "reconfigure"):
@@ -108,6 +110,17 @@ def append_entry(
     entry_str = json.dumps(entry_content, sort_keys=True)
     entry_hash = hashlib.sha256(entry_str.encode()).hexdigest()
     entry_content["entry_hash"] = entry_hash
+    
+    priv_key_path = os.environ.get("SHADOWCAT_SIGNING_KEY")
+    if priv_key_path and os.path.exists(priv_key_path):
+        with open(priv_key_path, "rb") as f:
+            key_data = f.read()
+        try:
+            priv_key = serialization.load_pem_private_key(key_data, password=None)
+            sig = priv_key.sign(entry_hash.encode("utf-8"))
+            entry_content["signature"] = sig.hex()
+        except Exception as e:
+            pass
 
     chain.append(entry_content)
     _save_chain(chain, chain_path)
@@ -138,7 +151,7 @@ def verify_chain(chain_path: Optional[str] = None) -> tuple:
             )
 
         # Verify entry block integrity
-        entry_copy = {k: v for k, v in entry.items() if k != "entry_hash"}
+        entry_copy = {k: v for k, v in entry.items() if k not in ("entry_hash", "signature")}
         entry_str = json.dumps(entry_copy, sort_keys=True)
         computed_entry_hash = hashlib.sha256(entry_str.encode()).hexdigest()
         if computed_entry_hash != entry.get("entry_hash"):
@@ -146,6 +159,20 @@ def verify_chain(chain_path: Optional[str] = None) -> tuple:
                 f"Entry {i}: entry hash corrupted/mismatched "
                 f"(computed {computed_entry_hash[:12]}... vs recorded {str(entry.get('entry_hash'))[:12]}...)"
             )
+            
+        if "signature" in entry:
+            pub_key_path = os.path.join(os.path.dirname(__file__), "admin_public_key.pem")
+            if not os.path.exists(pub_key_path):
+                issues.append(f"Entry {i}: signature present but public key not found")
+            else:
+                with open(pub_key_path, "rb") as f:
+                    pub_key_bytes = f.read()
+                try:
+                    pub_key = serialization.load_pem_public_key(pub_key_bytes)
+                    sig = bytes.fromhex(entry["signature"])
+                    pub_key.verify(sig, entry["entry_hash"].encode("utf-8"))
+                except Exception:
+                    issues.append(f"Entry {i}: invalid signature")
 
         resolved = _resolve_path(entry.get("artifact_path", ""))
         if os.path.exists(resolved):
