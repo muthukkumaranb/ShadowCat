@@ -167,8 +167,19 @@ def _get_live_prediction() -> Dict[str, Any]:
     try:
         from backend.predict import predict
 
-        # Load canonical window slice for live demonstration
-        parquet_path = REPO_ROOT / "data-engineering" / "data" / "ucs" / "ucs_windows.parquet"
+        # Load canonical window slice for live demonstration.
+        # IMPORTANT: lstm_stacked models were trained on ucs_windows_models_v1.parquet (commit e200fdb),
+        # NOT on ucs_windows.parquet (which has different packet features since bee7536).
+        # Using the training-data-compatible file to avoid distribution mismatch.
+        parquet_path = REPO_ROOT / "data-engineering" / "data" / "ucs" / "ucs_windows_models_v1.parquet"
+        if not parquet_path.exists():
+            # Fallback to current file if models_v1 not present (accept mismatch, log warning)
+            import logging
+            logging.warning(
+                "ucs_windows_models_v1.parquet not found; falling back to ucs_windows.parquet. "
+                "Dashboard probabilities may not match LOEO benchmark (packet features differ)."
+            )
+            parquet_path = REPO_ROOT / "data-engineering" / "data" / "ucs" / "ucs_windows.parquet"
         if parquet_path.exists():
             df = pd.read_parquet(parquet_path).head(2500).copy()
             _CACHED_LIVE_PREDICTION = predict(df, source_type="flows")
