@@ -256,7 +256,7 @@ def render_page():
                     </span>
                 </div>
                 <div style="display: flex; gap: 0.5rem; font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_muted']}; margin-top: 0.25rem;">
-                    <span>STREAM ACTIVE</span> • <span style="color:{t['primary']}">RUNNING MONTE CARLO HEURISTICS</span> • <span>SYS_REF: 0x884F_A</span>
+                    <span>STREAM ACTIVE</span> • <span style="color:{t['primary']}">ACTIVE 37-FOLD LOEO EVALUATION</span> • <span>SYS_REF: 0x884F_A</span>
                 </div>
             </div>
             <!-- Dynamic quick counters -->
@@ -302,7 +302,7 @@ def render_page():
         with c_f2:
             time_f = st.radio(
                 "Time Horizon",
-                ["Last 15m", "Last 1h", "Last 24h", "All Time"],
+                ["Last 15 min", "Last 1h", "Last 24h", "All Time"],
                 horizontal=True,
                 index=1,
                 key=f"{key_prefix}_time",
@@ -320,7 +320,7 @@ def render_page():
         elif "Medium" in sev_f:
             res = [a for a in res if a["sev"] == "medium"]
 
-        if time_f == "Last 15m":
+        if time_f == "Last 15 min":
             res = [a for a in res if a["mins_ago"] <= 15]
         elif time_f == "Last 1h":
             res = [a for a in res if a["mins_ago"] <= 60]

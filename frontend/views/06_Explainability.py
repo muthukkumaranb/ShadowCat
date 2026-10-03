@@ -51,7 +51,7 @@ def render_page():
                 </h1>
             </div>
             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                <span class="soc-badge badge-neutral">Checkpoint: sc-threat-v4.1</span>
+                <span class="soc-badge badge-neutral">Model: Stacked Calibrated LSTM (37 Folds)</span>
                 <span class="soc-badge badge-neutral">Baseline: 30-Day Rolling Normal</span>
                 <span class="soc-badge {risk_badge_cls}">CURRENT RISK: {risk_val:.3f} ({risk_severity_txt})</span>
             </div>

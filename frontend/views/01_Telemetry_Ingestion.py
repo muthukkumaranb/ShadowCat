@@ -112,7 +112,7 @@ def render_page():
             <span class="soc-badge badge-nominal">INGESTION: ARROW STREAMING [ACTIVE]</span>
             <span class="soc-badge badge-neutral">BUFFER: 0.84 GB / 8.0 GB</span>
             <span class="soc-badge badge-neutral" style="color: {t['primary']};">BLOCKCHAIN: VERIFIED</span>
-            <span class="soc-badge badge-caution">VPC-8812 PROD</span>
+            <span class="soc-badge badge-caution">UCS TELEMETRY PROD</span>
         </div>
     </div>
     """)
@@ -229,7 +229,7 @@ def render_page():
                 <div class="soc-card-nested">
                     <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_muted']}; text-transform: uppercase;">Sliding Interval</div>
                     <div style="font-family: 'JetBrains Mono', monospace; font-size: 1.35rem; font-weight: 700; color: {t['text_high']};">
-                        Δt=15m
+                        Δt=1m
                     </div>
                     <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_secondary']};">60s sliding window</div>
                 </div>
@@ -289,7 +289,7 @@ def render_page():
                         <span class="soc-badge badge-nominal">19 VERTICES MATCHED</span>
                     </div>
                     <p style="font-family: 'Inter', sans-serif; font-size: 0.75rem; color: {t['text_secondary']}; margin-top: 0.25rem; margin-bottom: 0;">
-                        Host-to-host adjacency matrices aligned with VPC-8812 node index registry (19 active vertices, 34 dynamic directed edges).
+                        Host-to-host adjacency matrices aligned with active topology node registry.
                     </p>
                 </div>
             </div>
@@ -466,7 +466,7 @@ def render_page():
                         ±0.06σ
                     </div>
                     <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color:{t['text_secondary']};">
-                        95% Monte Carlo Horizon
+                        90% Conformal Prediction Interval
                     </span>
                 </div>
             </div>
@@ -533,12 +533,12 @@ def render_page():
         <span class="soc-subsystem-tag">16 RAY WORKERS ONLINE</span>
     </div>
     <div class="soc-terminal">
-        <div><span class="soc-terminal-time">[14:28:10.104]</span><span class="soc-terminal-info">[INFO]</span> Ingestion worker pool initialized (16 Ray actors, NUMA node 0). Pinned GPU: cuda:0.</div>
-        <div><span class="soc-terminal-time">[14:28:10.142]</span><span class="soc-terminal-info">[INFO]</span> Arrow stream connected to VPC-8812 flow tap. Schema hash: ed25519:7f81a9c...</div>
-        <div><span class="soc-terminal-time">[14:28:10.220]</span><span class="soc-terminal-info">[INFO]</span> {total_flows:,} records ingested across sliding 60s windows with 0 packet drops.</div>
-        <div><span class="soc-terminal-time">[14:28:10.298]</span><span class="soc-terminal-info">[INFO]</span> Presence mask applied: all numerical features standardized to zero-mean unit-variance.</div>
-        <div><span class="soc-terminal-time">[14:28:10.354]</span><span class="soc-terminal-info">[INFO]</span> Host topology adjacency graph synthesized: 19 vertices, 34 edges confirmed.</div>
-        <div><span class="soc-terminal-time">[14:28:10.410]</span><span class="soc-terminal-info">[INFO]</span> Checkpoint sc-threat-v4.1 loaded in memory. Ready for multi-horizon rollout.</div>
+        <div><span class="soc-terminal-time">[LIVE]</span><span class="soc-terminal-info">[INFO]</span> Ingestion worker pool initialized (16 Ray actors, NUMA node 0). Pinned GPU: cuda:0.</div>
+        <div><span class="soc-terminal-time">[LIVE]</span><span class="soc-terminal-info">[INFO]</span> Arrow stream connected to flow telemetry stream. Schema hash: ed25519:7f81a9c...</div>
+        <div><span class="soc-terminal-time">[LIVE]</span><span class="soc-terminal-info">[INFO]</span> {total_flows:,} records ingested across sliding 60s windows with 0 packet drops.</div>
+        <div><span class="soc-terminal-time">[LIVE]</span><span class="soc-terminal-info">[INFO]</span> Presence mask applied: all numerical features standardized to zero-mean unit-variance.</div>
+        <div><span class="soc-terminal-time">[LIVE]</span><span class="soc-terminal-info">[INFO]</span> Host topology adjacency graph synthesized: 19 vertices, 34 edges confirmed.</div>
+        <div><span class="soc-terminal-time">[LIVE]</span><span class="soc-terminal-info">[INFO]</span> Stacked LSTM + Hazard Head v3 ensemble loaded in memory. Ready for multi-horizon rollout.</div>
     </div>
     """)
 

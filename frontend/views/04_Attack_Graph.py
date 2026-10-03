@@ -176,7 +176,7 @@ def render_page():
             <div style="display: flex; align-items: center; gap: 0.5rem;">
                 <span class="soc-badge badge-nominal">HORIZON SCRUBBER [k = 0..5]</span>
                 <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: {t['text_high']}; font-weight: 600;">
-                    Temporal Graph Diffusion Simulation (Δt = 15m)
+                    Temporal Graph Diffusion Topology (Δt = 1m)
                 </span>
             </div>
             <div class="soc-badge {'badge-critical' if step_risk >= 0.5 else 'badge-nominal'}">

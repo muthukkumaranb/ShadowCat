@@ -98,11 +98,11 @@ def render_page():
                 <div style="display: flex; gap: 1rem; flex-wrap: wrap; font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_muted']};">
                     <span>WINDOW: <b style="color:{t['text_secondary']}">60s Sliding</b></span>
                     <span>•</span>
-                    <span>CHECKPOINT: <b style="color:{t['text_secondary']}">sc-threat-v4.1</b></span>
+                    <span>MODEL: <b style="color:{t['text_secondary']}">Stacked Calibrated LSTM</b></span>
                     <span>•</span>
                     <span>NODES: <b style="color:{t['primary']}">1,420 Active</b></span>
                     <span>•</span>
-                    <span>CONFIDENCE: <b style="color:{t['text_secondary']}">95.4% Monte Carlo</b></span>
+                    <span>CONFORMAL: <b style="color:{t['text_secondary']}">90% Coverage Calibrated</b></span>
                 </div>
             </div>
             <!-- Right: Uncertainty Sparkline Widget -->
@@ -139,9 +139,9 @@ def render_page():
                 </div>
                 <div style="display: flex; justify-content: space-between; font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_muted']}; padding-top: 2px;">
                     <span>t-30m</span>
-                    <span>t-15m</span>
+                    <span>t-1m</span>
                     <span style="color: {t['primary']}; font-weight: 700;">t₀</span>
-                    <span>t+15m</span>
+                    <span>t+1m</span>
                     <span>t+30m</span>
                     <span style="color: {risk_color}; font-weight: 700;">t+60m</span>
                 </div>

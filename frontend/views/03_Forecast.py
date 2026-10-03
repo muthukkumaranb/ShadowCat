@@ -57,7 +57,7 @@ def render_page():
     d_sweep = int(top_attr[2]["contribution"] * 100) if len(top_attr) > 2 else 17
 
     STEPS_DATA = []
-    base_times = ["14:28:10", "14:43:10", "14:58:10", "15:13:10", "15:28:10", "15:43:10"]
+    base_times = [f"t+{i}m" for i in range(6)]
     svg_x_coords = [350, 470, 590, 710, 830, 950]
 
     for i in range(6):
@@ -75,8 +75,8 @@ def render_page():
             ent_d = f"+{3.2 + i * 0.8:.1f}σ"
             prs = f"{1400 + i * 450:,}"
             prs_d = f"+{60 + i * 40}%"
-            prose_txt = f"Observed behavioral drift and elevated egress indicators consistent with {stg} stage progression at t+{i*15}m."
-            f_prose = f"Autonomous hazard ensemble projects forward compromise probability P(event <= k) reaching {r_val:.1%} by t+{i*15}m without quarantine intervention."
+            prose_txt = f"Observed behavioral drift and elevated egress indicators consistent with {stg} stage progression at t+{i}m."
+            f_prose = f"Autonomous hazard ensemble projects forward compromise probability P(event <= k) reaching {r_val:.1%} by t+{i}m without quarantine intervention."
         elif r_val >= 0.50:
             lvl = "ELEVATED"
             sig = f"±{0.04 + i*0.03:.2f}σ"
@@ -88,8 +88,8 @@ def render_page():
             ent_d = f"+{1.8 + i * 0.4:.1f}σ"
             prs = f"{900 + i * 150:,}"
             prs_d = f"+{25 + i * 10}%"
-            prose_txt = f"Elevated network dynamics and unusual flow volume detected during {stg} phase at t+{i*15}m."
-            f_prose = f"Forward autoregressive trajectory projects escalation risk reaching {r_val:.1%} at t+{i*15}m."
+            prose_txt = f"Elevated network dynamics and unusual flow volume detected during {stg} phase at t+{i}m."
+            f_prose = f"Forward autoregressive trajectory projects escalation risk reaching {r_val:.1%} at t+{i}m."
         elif r_val >= 0.25:
             lvl = "MODERATE"
             sig = f"±{0.03 + i*0.02:.2f}σ"
@@ -101,7 +101,7 @@ def render_page():
             ent_d = "+0.8σ"
             prs = f"{500 + i * 50:,}"
             prs_d = "+5%"
-            prose_txt = f"Minor telemetry drift observed at t+{i*15}m. Characteristics align with baseline fluctuations."
+            prose_txt = f"Minor telemetry drift observed at t+{i}m. Characteristics align with baseline fluctuations."
             f_prose = f"World model indicates moderate probability envelope of {r_val:.1%} with low lateral diffusion likelihood."
         else:
             lvl = "NOMINAL"
@@ -114,8 +114,8 @@ def render_page():
             ent_d = "0.0σ"
             prs = f"{320 + i * 20:,}"
             prs_d = "Baseline"
-            prose_txt = f"Continuous nominal telemetry envelope observed at t+{i*15}m. No anomalous lateral dispersion or privilege escalation indicators."
-            f_prose = f"Autoregressive world model projects stable baseline operation with low epistemic variance ({r_val:.1%} probability) across the {i*15}m horizon."
+            prose_txt = f"Continuous nominal telemetry envelope observed at t+{i}m. No anomalous lateral dispersion or privilege escalation indicators."
+            f_prose = f"Autoregressive world model projects stable baseline operation with low epistemic variance ({r_val:.1%} probability) across the {i}m horizon."
 
         STEPS_DATA.append({
             "k": i,
@@ -161,7 +161,7 @@ def render_page():
     peak_badge = "CRITICAL" if peak_p >= 0.75 else ("ELEVATED" if peak_p >= 0.5 else ("MODERATE" if peak_p >= 0.25 else "NOMINAL"))
     peak_delta = f"{peak_p - STEPS_DATA[0]['risk']:+.2f} at k=5"
     time_crit_label = "Threshold Passed" if peak_p >= 0.75 else ("Elevated Watch" if peak_p >= 0.5 else "Nominal Envelope")
-    time_crit_sub = "Crossed at t-08m" if peak_p >= 0.75 else ("Predicted at t+15m" if peak_p >= 0.5 else "Below 0.75 limit")
+    time_crit_sub = "High risk horizon at t+1m" if peak_p >= 0.75 else ("Predicted at t+1m" if peak_p >= 0.5 else "Below 0.75 limit")
 
     # Initialize active K step in session state
     if "forecast_k_step" not in st.session_state:
@@ -189,11 +189,11 @@ def render_page():
                     <span style="font-family: 'JetBrains Mono', monospace; font-size: 1.125rem; font-weight: 700; color: {t['text_high']}; text-transform: uppercase;">
                         Predictive Threat Trajectory Forecast
                     </span>
-                    <span class="soc-badge badge-neutral">Checkpoint: sc-threat-v4.1</span>
-                    <span class="soc-badge badge-nominal">95.4% Monte Carlo (10k runs)</span>
+                    <span class="soc-badge badge-neutral">Model: Stacked Calibrated LSTM (37 Folds)</span>
+                    <span class="soc-badge badge-nominal">90% Split Conformal Calibration</span>
                 </div>
                 <div style="display: flex; gap: 0.75rem; font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_muted']}; margin-top: 0.25rem;">
-                    <span>Last inference: <b style="color:{t['text_high']}">14:28:10 UTC</b></span>
+                    <span>Window Start: <b style="color:{t['text_high']}">{fc.get("window_id", "LIVE")}</b></span>
                     <span>•</span>
                     <span>Window: <b style="color:{t['text_high']}">60s sliding</b></span>
                     <span>•</span>
@@ -203,7 +203,7 @@ def render_page():
             <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
                 <div>
                     <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_muted']}; text-transform: uppercase; margin-right: 4px;">Horizon</span>
-                    <span class="soc-badge badge-neutral" style="padding: 2px 8px;">H = 1 (15m)</span>
+                    <span class="soc-badge badge-neutral" style="padding: 2px 8px;">H = 1 (1 min)</span>
                     <span class="soc-badge badge-neutral" style="padding: 2px 8px;">H = 2 (30m)</span>
                     <span class="soc-badge badge-nominal" style="padding: 2px 8px;">H = 5 (75m Primary)</span>
                 </div>
@@ -226,7 +226,7 @@ def render_page():
                     K-Step Forward Rollout Horizon Scrubber
                 </span>
                 <span class="soc-badge badge-nominal">[k = 0 .. 5]</span>
-                <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_muted']};">| Step Size: Δt = 15m</span>
+                <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_muted']};">| Step Size: Δt = 1 min</span>
             </div>
         </div>
         <!-- Realtime Projection State Telemetry Dashboard Strip -->
@@ -361,9 +361,9 @@ def render_page():
                 <circle cx="{active_step['svgX']}" cy="{active_step['svgY']}" r="3.5" fill="{t['primary']}" />
 
                 <text x="100" y="272" fill="{t['text_muted']}" font-family="JetBrains Mono" font-size="9" text-anchor="middle">t-30m</text>
-                <text x="220" y="272" fill="{t['text_muted']}" font-family="JetBrains Mono" font-size="9" text-anchor="middle">t-15m</text>
+                <text x="220" y="272" fill="{t['text_muted']}" font-family="JetBrains Mono" font-size="9" text-anchor="middle">t-1m</text>
                 <text x="350" y="272" fill="{t['text_high']}" font-family="JetBrains Mono" font-size="9" text-anchor="middle" font-weight="700">k=0 [NOW]</text>
-                <text x="470" y="272" fill="{t['text_muted']}" font-family="JetBrains Mono" font-size="9" text-anchor="middle">k=1 [+15m]</text>
+                <text x="470" y="272" fill="{t['text_muted']}" font-family="JetBrains Mono" font-size="9" text-anchor="middle">k=1 [+1m]</text>
                 <text x="590" y="272" fill="{t['text_muted']}" font-family="JetBrains Mono" font-size="9" text-anchor="middle">k=2 [+30m]</text>
                 <text x="710" y="272" fill="{t['text_muted']}" font-family="JetBrains Mono" font-size="9" text-anchor="middle">k=3 [+45m]</text>
                 <text x="830" y="272" fill="{t['text_muted']}" font-family="JetBrains Mono" font-size="9" text-anchor="middle">k=4 [+60m]</text>
@@ -371,7 +371,7 @@ def render_page():
             </svg>
         </div>
         <div style="display: flex; justify-content: space-between; font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_muted']}; margin-top: 0.35rem;">
-            <span>ENCLAVE: AWS-US-EAST-1 (VPC-8812) • AGENT LATENCY: 1.84ms • KALMAN FILTER DRIFT: &lt;0.004</span>
+            <span>SOURCE: UCS Flow Stream • INFERENCE PROTOCOL: 37-Fold LOEO Stacked Ensemble</span>
             <span style="color: {t['secondary'] if peak_p >= 0.5 else t['primary']}; font-weight: 700;">MITIGATION STATUS: {time_crit_label} (Est {active_step['window']})</span>
         </div>
     </div>
@@ -619,7 +619,7 @@ def render_page():
     p_col1, p_col2 = st.columns(2)
     with p_col1:
         if st.button("Simulate Mitigation (Preview Hazard Drop)", width='stretch'):
-            st.info("Simulated PB-608: Expected hazard drop -82% within 2 rollout intervals (t+15m to t+30m).")
+            st.info("Simulated PB-608: Expected hazard drop -82% within 2 rollout intervals (t+1m to t+2m).")
     with p_col2:
         if not is_quarantined:
             if st.button("Authorize Autonomous Quarantine", type="primary", width='stretch'):

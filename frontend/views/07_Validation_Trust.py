@@ -286,10 +286,10 @@ def render_page():
                     <span class="soc-badge badge-neutral" style="font-size: 0.6rem;">TRL 6</span>
                 </div>
                 <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; font-weight: 700; color: {t['text_high']};">
-                    sc-threat-v4.1-prod
+                    stacked_calibrated_lstm_37fold
                 </div>
                 <div style="font-family: 'Inter', sans-serif; font-size: 0.75rem; color: {t['text_muted']}; margin-bottom: 0.5rem;">
-                    Temporal Transformer + Kalman Ensemble
+                    Stacked Calibrated Residual LSTM Ensemble
                 </div>
                 <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_secondary']}; display: flex; flex-direction: column; gap: 0.2rem;">
                     <div style="display:flex; justify-content:space-between;"><span>PARAMS:</span> <b style="color:{t['text_high']}">48.2M FP16</b></div>
