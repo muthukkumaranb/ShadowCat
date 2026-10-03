@@ -63,15 +63,27 @@ onset.folds_reproducing_sidecar_f1 = 37
 - **Sequence:**
   ```powershell
   # Verified on fresh SHADOWCAT_RUNTIME_DIR
-  $env:SHADOWCAT_RUNTIME_DIR = "$freshDir"
+  $freshDir = "C:\Users\MUTHUKUMARAN\AppData\Local\Temp\sc_fresh_123"
+  Remove-Item -Recurse -Force $freshDir -ErrorAction SilentlyContinue
+  $env:SHADOWCAT_RUNTIME_DIR = $freshDir
   python backend/smoke_test.py
   python backend/verify_audit_chain.py
   ```
 - **Result:** PASS (exit code 0, verifier reports zero issues)
-- **Key Output Line:**
+- **Key Output:**
 ```text
+======================================================================
+TAMPER-EVIDENT AUDIT CHAIN VERIFICATION
+Total entries in chain: 3
+======================================================================
 ✅ AUDIT CHAIN VALID — all entries intact, no tampering detected.
-Total entries in chain: 3 (forecast_payload entries: 1)
+[i] Docker: not found — Fabric notarization will use SHA-256 fallback (this is fine)
+
+  [0] model_checkpoint       | 0fadd135cdf116bc... | LSTM world model (gaussian_next_state_best_v3_packetcov.pt) loaded into predict pipeline (SHA-256 fallback)
+  [1] prediction_lineage     | d5c543223f0b2aa8... | Prediction lineage lin_W_14-02-2018_20180214_014400_04289303 [LOW] (SHA-256 fallback)
+  [2] forecast_payload       | 80ebaa8d4f4046be... | Inference forecast for W_14-02-2018_20180214_014400
+
+Summary: Total entries in chain: 3 (forecast_payload entries: 1)
 ```
 
 ---
