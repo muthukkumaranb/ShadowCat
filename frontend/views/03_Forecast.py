@@ -33,19 +33,18 @@ def render_page():
     ml_risks = fc.get("risk", [])
     ml_stages = fc.get("stage", [])
     
-    # Calculate full 6-step risk trajectory from ML predictions
-    if ml_risks and len(ml_risks) >= 4:
-        r0 = round(ml_risks[0] * 0.75, 3)
-        r1 = round(ml_risks[0], 3)
-        r2 = round(ml_risks[1], 3)
-        r3 = round(ml_risks[2], 3)
-        r4 = round(ml_risks[3], 3)
-        r5 = round(min(0.99, max(0.02, ml_risks[3] + max(0.01, (ml_risks[3] - ml_risks[2]) * 0.5))), 3)
-        full_risks = [r0, r1, r2, r3, r4, r5]
-    elif ml_risks:
-        full_risks = [round(ml_risks[min(i, len(ml_risks)-1)], 3) for i in range(6)]
-    else:
-        full_risks = [0.05, 0.08, 0.12, 0.15, 0.18, 0.20]
+    # Calculate full 6-step risk trajectory from direct hazard probabilities (H=1, 2, 5)
+    h1_val = ml_risks[0] if (ml_risks and len(ml_risks) > 0 and ml_risks[0] is not None) else 0.08
+    h2_val = ml_risks[1] if (ml_risks and len(ml_risks) > 1 and ml_risks[1] is not None) else h1_val
+    h5_val = ml_risks[4] if (ml_risks and len(ml_risks) > 4 and ml_risks[4] is not None) else h2_val
+
+    r0 = round(float(h1_val) * 0.75, 3)
+    r1 = round(float(h1_val), 3)
+    r2 = round(float(h2_val), 3)
+    r3 = round(float(h2_val), 3)  # unmodelled visual guide
+    r4 = round(float(h2_val), 3)  # unmodelled visual guide
+    r5 = round(float(h5_val), 3)
+    full_risks = [r0, r1, r2, r3, r4, r5]
 
     max_r = max(full_risks)
     is_threat = (max_r >= 0.35)
@@ -119,10 +118,10 @@ def render_page():
 
         STEPS_DATA.append({
             "k": i,
-            "label": f"k = {i} [{'NOW' if i==0 else f'+{i*15}m'}]",
-            "tag": "NOW" if i == 0 else f"+{i*15}m",
-            "offset": f"+{i*15}m",
-            "time": f"{base_times[i]} UTC (+{i*15}m)",
+            "label": f"k = {i} [{'NOW' if i==0 else f'+{i}m'}]",
+            "tag": "NOW" if i == 0 else f"+{i}m",
+            "offset": f"+{i}m",
+            "time": f"{base_times[i]} UTC (+{i}m)",
             "risk": r_val,
             "level": lvl,
             "sigma": sig,
@@ -204,8 +203,8 @@ def render_page():
                 <div>
                     <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_muted']}; text-transform: uppercase; margin-right: 4px;">Horizon</span>
                     <span class="soc-badge badge-neutral" style="padding: 2px 8px;">H = 1 (1 min)</span>
-                    <span class="soc-badge badge-neutral" style="padding: 2px 8px;">H = 2 (30m)</span>
-                    <span class="soc-badge badge-nominal" style="padding: 2px 8px;">H = 5 (75m Primary)</span>
+                    <span class="soc-badge badge-neutral" style="padding: 2px 8px;">H = 2 (2 min)</span>
+                    <span class="soc-badge badge-nominal" style="padding: 2px 8px;">H = 5 (5 min)</span>
                 </div>
                 <div style="border-left: 1px solid {t['border']}; padding-left: 0.5rem;">
                     <!-- Conformal Credibility / Out-of-Distribution Diagnostic Flag (Task 3) -->
@@ -272,7 +271,7 @@ def render_page():
     for i, b_col in enumerate(btn_cols):
         with b_col:
             is_active = (i == curr_k)
-            btn_label = f"k = {i} [{'NOW' if i==0 else f'+{i*15}m'}]"
+            btn_label = f"k = {i} [{'NOW' if i==0 else f'+{i}m'}]"
             if st.button(btn_label, key=f"step_btn_{i}", type="primary" if is_active else "secondary", width='stretch'):
                 st.session_state.forecast_k_step = i
                 st.rerun()
@@ -364,10 +363,10 @@ def render_page():
                 <text x="220" y="272" fill="{t['text_muted']}" font-family="JetBrains Mono" font-size="9" text-anchor="middle">t-1m</text>
                 <text x="350" y="272" fill="{t['text_high']}" font-family="JetBrains Mono" font-size="9" text-anchor="middle" font-weight="700">k=0 [NOW]</text>
                 <text x="470" y="272" fill="{t['text_muted']}" font-family="JetBrains Mono" font-size="9" text-anchor="middle">k=1 [+1m]</text>
-                <text x="590" y="272" fill="{t['text_muted']}" font-family="JetBrains Mono" font-size="9" text-anchor="middle">k=2 [+30m]</text>
-                <text x="710" y="272" fill="{t['text_muted']}" font-family="JetBrains Mono" font-size="9" text-anchor="middle">k=3 [+45m]</text>
-                <text x="830" y="272" fill="{t['text_muted']}" font-family="JetBrains Mono" font-size="9" text-anchor="middle">k=4 [+60m]</text>
-                <text x="950" y="272" fill="{t['text_muted']}" font-family="JetBrains Mono" font-size="9" text-anchor="middle">k=5 [+75m]</text>
+                <text x="590" y="272" fill="{t['text_muted']}" font-family="JetBrains Mono" font-size="9" text-anchor="middle">k=2 [+2m]</text>
+                <text x="710" y="272" fill="{t['text_muted']}" font-family="JetBrains Mono" font-size="9" text-anchor="middle">k=3 [+3m]</text>
+                <text x="830" y="272" fill="{t['text_muted']}" font-family="JetBrains Mono" font-size="9" text-anchor="middle">k=4 [+4m]</text>
+                <text x="950" y="272" fill="{t['text_muted']}" font-family="JetBrains Mono" font-size="9" text-anchor="middle">k=5 [+5m]</text>
             </svg>
         </div>
         <div style="display: flex; justify-content: space-between; font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_muted']}; margin-top: 0.35rem;">
