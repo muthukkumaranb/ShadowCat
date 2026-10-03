@@ -411,6 +411,36 @@ class ShadowcatPipeline:
             f"from {stacked_base_dir}"
         )
 
+        # 4b. Load hazard_head_v3 direct LOEO models (H=1, 2, 5)
+        # These are LSTMClassifier fold models trained directly on the 32-dim PCA sequence.
+        # Version used: hazard_head_v3 (LOEO-validated, ROC-AUC 0.789/0.843/0.770 at H=1/2/5).
+        self.hazard_head_models: Dict[int, List] = {1: [], 2: [], 5: []}
+        hazard_head_base = ML1_DIR / "artifacts" / "lstm" / "hazard_head_v3"
+        for horizon in (1, 2, 5):
+            h_dir = hazard_head_base / f"H{horizon}"
+            if h_dir.exists():
+                for f in sorted(h_dir.glob("model_fold_*.pt")):
+                    try:
+                        from backend.models import LSTMClassifier
+                    except ImportError:
+                        from models import LSTMClassifier
+                    try:
+                        m_hh = LSTMClassifier(input_size=32, hidden_size=64, num_layers=1, dropout=0.2)
+                        state = torch.load(f, map_location=self.device, weights_only=False)
+                        if isinstance(state, dict) and "lstm.weight_ih_l0" in state:
+                            m_hh.load_state_dict(state)
+                        else:
+                            m_hh.load_state_dict(state.get("model_state_dict", state))
+                        m_hh.to(self.device)
+                        m_hh.eval()
+                        self.hazard_head_models[horizon].append(m_hh)
+                    except Exception as _he:
+                        logging.warning(f"Failed to load hazard head H={horizon} from {f}: {_he}")
+            logging.info(
+                f"[HAZARD HEAD] Loaded {len(self.hazard_head_models[horizon])} fold models for H={horizon} "
+                f"from {h_dir}"
+            )
+
         # Leakage-free validation-derived calibrated thresholds
         self.calibrated_threshold_global = 0.15
         self.calibrated_thresholds_by_type = {
@@ -508,48 +538,66 @@ class ShadowcatPipeline:
 
     def _predict_hazard_ensemble(self, sequence_30x406: np.ndarray) -> Dict[int, float]:
         """
-        Predicts onset hazard probabilities across horizons (H=1, 2, 5)
-        using the verified 37-fold LOEO Stacked & Temperature-Calibrated Residual LSTM ensemble
-        (or legacy hazard heads if configured).
+        Predicts onset hazard probabilities across horizons (H=1, 2, 5).
+
+        Source priority:
+          1. hazard_head_v3 direct LOEO models (H1/H2/H5) — real per-horizon probabilities,
+             LOEO-validated (ROC-AUC 0.789/0.843/0.770). Used whenever PCA is available.
+          2. Stacked ensemble H=1 only (no synthetic scaling for H=2/H=5).
+        H=3 and H=4 are not modelled and are NOT returned here.
         """
-        hazards = {}
-        # Path A: Deployed Winning Model (Phase 1 Stacked & Calibrated Residual LSTM)
-        if self.use_stacked_model and self.stacked_models_loaded and self.pca_available and self.pca is not None:
+        import logging
+        if not (self.pca_available and self.pca is not None):
+            raise RuntimeError(
+                "CRITICAL: PCA is unavailable — hazard head inference requires 32-dim PCA transform. "
+                "Silent degradation is strictly prohibited."
+            )
+
+        # Build PCA-reduced 32-dim sequence tensor (shared by both paths)
+        cols = self.pca_features if (
+            self.pca_features is not None and len(self.pca_features) == sequence_30x406.shape[1]
+        ) else [f"f_{i}" for i in range(sequence_30x406.shape[1])]
+        seq_df = pd.DataFrame(sequence_30x406, columns=cols)
+        if getattr(self, "pca_scaler", None) is not None:
+            scaled_values = self.pca_scaler.transform(seq_df[cols].to_numpy(dtype=np.float64))
+            seq_df = pd.DataFrame(scaled_values, columns=cols)
+        transformed = self.pca.transform(seq_df)
+        pca_cols = [f"pca_{i}" for i in range(32)]
+        seq_32 = transformed[pca_cols].to_numpy(dtype=np.float32)
+        seq_tensor = torch.as_tensor(seq_32, dtype=torch.float32).unsqueeze(0).to(self.device)
+
+        hazards: Dict[int, float] = {}
+
+        # Path A: hazard_head_v3 direct LOEO models — real per-horizon probabilities
+        for horizon in (1, 2, 5):
+            hh_models = self.hazard_head_models.get(horizon, [])
+            if hh_models:
+                with torch.no_grad():
+                    probs = [float(m(seq_tensor).cpu().numpy()[0]) for m in hh_models]
+                hazards[horizon] = float(np.clip(np.mean(probs), 0.0, 1.0))
+
+        if hazards:
+            logging.info(
+                f"[HAZARD HEAD v3] H=1: {hazards.get(1, 'n/a'):.4f}, "
+                f"H=2: {hazards.get(2, 'n/a'):.4f}, H=5: {hazards.get(5, 'n/a'):.4f}"
+            )
+            return hazards
+
+        # Path B fallback: stacked ensemble for H=1 only (no scaling to other horizons)
+        if self.use_stacked_model and self.stacked_models_loaded:
             try:
-                cols = self.pca_features if (self.pca_features is not None and len(self.pca_features) == sequence_30x406.shape[1]) else [f"f_{i}" for i in range(sequence_30x406.shape[1])]
-                seq_df = pd.DataFrame(sequence_30x406, columns=cols)
-                if getattr(self, "pca_scaler", None) is not None:
-                    scaled_values = self.pca_scaler.transform(seq_df[cols].to_numpy(dtype=np.float64))
-                    seq_df = pd.DataFrame(scaled_values, columns=cols)
-                transformed = self.pca.transform(seq_df)
-                pca_cols = [f"pca_{i}" for i in range(32)]
-                seq_32 = transformed[pca_cols].to_numpy(dtype=np.float32)
-                seq_tensor = torch.as_tensor(seq_32, dtype=torch.float32).unsqueeze(0).to(self.device)
                 curr_window_406 = sequence_30x406[-1]
-
-                onset_probs = []
-                for m in self.stacked_onset_models:
-                    p = m.predict_proba(seq_tensor, curr_window_406)
-                    onset_probs.append(p)
+                onset_probs = [m.predict_proba(seq_tensor, curr_window_406) for m in self.stacked_onset_models]
                 p_onset = float(np.mean(onset_probs)) if onset_probs else 0.08
-
-                # Multi-horizon trajectory calibrated on onset probability:
-                # H=1 is immediate next-window onset transition;
-                # H=2 and H=5 scale with multi-step progression
-                hazards = {
-                    1: float(np.clip(p_onset, 0.01, 0.99)),
-                    2: float(np.clip(p_onset * 1.12, 0.02, 0.99)),
-                    5: float(np.clip(p_onset * 1.25, 0.03, 0.99)),
-                }
+                hazards = {1: float(np.clip(p_onset, 0.0, 1.0))}
+                logging.info(f"[HAZARD PATH B] H=1 from stacked ensemble: {hazards[1]:.4f}")
                 return hazards
             except Exception as e:
-                import logging
-                logging.error(f"Stacked hazard ensemble inference error: {e}")
                 raise RuntimeError(f"CRITICAL: Stacked hazard ensemble inference failed: {e}")
 
         raise RuntimeError(
-            "CRITICAL: Stacked & Calibrated Residual LSTM ensemble is not loaded or PCA is unavailable! "
-            "Silent degradation to legacy models is strictly prohibited."
+            "CRITICAL: Neither hazard_head_v3 nor stacked ensemble is available for inference. "
+            "Silent degradation is strictly prohibited."
         )
 
     def _predict_detection_ensemble(self, sequence_30x406: np.ndarray) -> Optional[float]:
@@ -760,28 +808,28 @@ class ShadowcatPipeline:
         novelty_status = "Expected Behavior Envelope" if novelty_score < 0.50 else "Elevated Behavioral Drift"
 
         # Step 5: Hazard Head Ensemble & Cumulative Trajectory
+        # Real per-horizon probabilities from hazard_head_v3 LOEO models (H=1,2,5).
+        # H=3 and H=4 are not modelled — no interpolation or synthetic values.
         hazards = self._predict_hazard_ensemble(seq_30x406)
-        raw_h1 = hazards.get(1, 0.08)
-        raw_h2 = hazards.get(2, 0.12)
-        raw_h5 = hazards.get(5, 0.18)
+        h1 = hazards.get(1, None)
+        h2 = hazards.get(2, None)
+        h5 = hazards.get(5, None)
 
-        # Modulate hazard dynamically with empirical behavioral drift of this input
-        h_weight = float(np.clip(novelty_score, 0.1, 0.95))
-        h1 = float(np.clip(raw_h1 * 0.5 + h_weight * 0.5, 0.03, 0.95))
-        h2 = float(np.clip(raw_h2 * 0.5 + min(1.0, h_weight * 1.1) * 0.5, 0.04, 0.97))
-        h5 = float(np.clip(raw_h5 * 0.5 + min(1.0, h_weight * 1.2) * 0.5, 0.05, 0.99))
+        # step_hazards list for K=1..5; None = not modelled
+        step_hazards = [h1, h2, None, None, h5]
 
-        # Interpolate for H=3, 4
-        h3 = float(np.clip(h2 + (1.0 / 3.0) * (h5 - h2), 0.0, 1.0))
-        h4 = float(np.clip(h2 + (2.0 / 3.0) * (h5 - h2), 0.0, 1.0))
-        step_hazards = [h1, h2, h3, h4, h5]
-
-        # Cumulative risk P(event <= K) = 1 - prod(1 - h_k)
+        # Cumulative risk P(event <= K) = 1 - prod(1 - h_k) for modelled horizons only.
+        # Unmodelled horizons (H=3, H=4) carry forward the last known cumulative risk.
         cum_risk = []
         prod_surv = 1.0
+        last_known_cum = 0.0
         for h_k in step_hazards:
-            prod_surv *= (1.0 - h_k)
-            cum_risk.append(float(np.clip(1.0 - prod_surv, 0.0, 1.0)))
+            if h_k is not None:
+                prod_surv *= (1.0 - float(h_k))
+                last_known_cum = float(np.clip(1.0 - prod_surv, 0.0, 1.0))
+                cum_risk.append(last_known_cum)
+            else:
+                cum_risk.append(last_known_cum)  # carry-forward; NOT a real model estimate
 
         risk_trajectory = step_hazards
 
@@ -824,7 +872,26 @@ class ShadowcatPipeline:
                 heuristic_progression_flags.append(is_heuristic)
                 attribution_sources.append(attr_source)
 
-        # Step 7: Uncertainty & Prediction Bounds (including Split Conformal Prediction)
+        # s2-t2: Rollout-derived infiltration probability from stage head.
+        # P(attack at t+k) = 1 - P(Unknown/Other) from EXISTING stage head applied per k.
+        # Source: autoregressive world-model rollout K=1..5 (lines above).
+        unknown_class_idx = (
+            StageClassificationHead.STAGE_CLASSES.index("Unknown/Other")
+            if "Unknown/Other" in StageClassificationHead.STAGE_CLASSES
+            else None
+        )
+        rollout_infiltration_prob = []
+        with torch.no_grad():
+            for k in range(5):
+                s_hat_k = torch.as_tensor(rollout_means[k], dtype=torch.float32).unsqueeze(0).to(self.device)
+                stage_logits_k = self.stage_head(s_hat_k)
+                stage_probs_k = torch.softmax(stage_logits_k, dim=-1).cpu().numpy()[0]
+                if unknown_class_idx is not None and unknown_class_idx < len(stage_probs_k):
+                    p_unknown = float(stage_probs_k[unknown_class_idx])
+                else:
+                    p_unknown = float(stage_probs_k[-1])  # last class fallback
+                rollout_infiltration_prob.append(round(float(np.clip(1.0 - p_unknown, 0.0, 1.0)), 4))
+
         uncertainties = []
         lower_bounds = []
         upper_bounds = []
@@ -953,18 +1020,25 @@ class ShadowcatPipeline:
         # Step 11: Construct Output Payload per INTERFACE.md
         lead_times = ["1m 00s", "2m 00s", "3m 00s", "4m 00s", "5m 00s"]
         labels = [
-            "t+1 (1 min) [Validated]",
-            "t+2 (2 min) [Validated]",
-            "t+3 (3 min) [Validated]",
-            "t+4 (4 min) [Exploratory Bound]",
-            "t+5 (5 min) [Exploratory Bound]",
+            "t+1 (1 min) [hazard_head_v3 LOEO]",
+            "t+2 (2 min) [hazard_head_v3 LOEO]",
+            "t+3 (3 min) [not modelled]",
+            "t+4 (4 min) [not modelled]",
+            "t+5 (5 min) [hazard_head_v3 LOEO]",
         ]
+        # Indicate which horizons have real model outputs vs carry-forward
+        horizon_is_modelled = [True, True, False, False, True]
 
         forecast_trajectory = {
             "window_id": window_id,
             "horizons": [1, 2, 3, 4, 5],
             "labels": labels,
+            "horizon_is_modelled": horizon_is_modelled,
             "risk": [round(r, 2) for r in cum_risk],
+            "step_hazards": [
+                round(float(h), 4) if h is not None else None
+                for h in step_hazards
+            ],
             "stage": stage_names,
             "tactic_id": tactic_ids,
             "mitre_details": mitre_details,
@@ -978,7 +1052,12 @@ class ShadowcatPipeline:
             "stage_attribution_source": attribution_sources,
             "likely_next_techniques": [kb.predict_likely_next_techniques(s) for s in stage_names],
             "lead_time": lead_times,
+            # sigma-based uncertainty bands: labelled heuristic_band per s2-t1 (formula: mean(std)*0.15 + (k+1)*0.04)
+            # These are NOT conformal intervals. Conformal intervals are in conformal_intervals below.
             "uncertainty": [round(u, 2) for u in uncertainties],
+            "heuristic_band_lower": [round(lb, 2) for lb in lower_bounds],
+            "heuristic_band_upper": [round(ub, 2) for ub in upper_bounds],
+            # legacy keys kept for UI compatibility
             "lower_bound": [round(lb, 2) for lb in lower_bounds],
             "upper_bound": [round(ub, 2) for ub in upper_bounds],
             "conformal_intervals": conformal_intervals,
@@ -993,12 +1072,28 @@ class ShadowcatPipeline:
             "calibrated_threshold": self.calibrated_threshold_global,
             "hazard_alert": any(r >= self.calibrated_threshold_global for r in cum_risk),
             "calibrated_uncertainty": True,
+            # Hazard head source identification
+            "hazard_source": "hazard_head_v3 (LOEO-validated, ROC-AUC 0.789/0.843/0.770 at H=1/2/5)",
+            "hazard_head_folds": {h: len(self.hazard_head_models.get(h, [])) for h in (1, 2, 5)},
             "model_architecture": "Stacked & Calibrated Residual LSTM (Phase 1 Verified)",
             "active_model_folds": len(self.stacked_onset_models),
             "checkpoint_dir": str(self.stacked_base_dir / "onset"),
             "source_branch": "37-Fold Stacked Calibrated Residual LSTM Ensemble + 32-dim PCA (Active)",
-            "protocol": "Chronological Split (K=1..3 Validated, K=5 Exploratory)",
-            "hazard_epistemic_note": "37-fold LOEO Stacked Residual LSTM ensemble actively evaluating input sequence across 32 PCA dimensions with behavioral drift modulation.",
+            "protocol": "Chronological Split (H=1,2,5 LOEO-validated via hazard_head_v3; H=3,4 not modelled)",
+            "hazard_epistemic_note": (
+                "hazard_head_v3 LOEO-validated direct hazard heads for H=1/2/5. "
+                "H=3 and H=4 are not modelled. "
+                "Sigma band (heuristic_band_lower/upper) is a heuristic uncertainty estimate, NOT a conformal interval. "
+                "Use conformal_intervals for statistically calibrated bounds."
+            ),
+            # s2-t2: Rollout-derived infiltration probability
+            "rollout_infiltration_prob": rollout_infiltration_prob,
+            "rollout_infiltration_caption": (
+                "Forward-simulation risk (world-model rollout, K=1..5): "
+                "P(attack at t+k) = 1 - P(Unknown/Other) from stage head on rolled state S_hat(t+k). "
+                "Forward simulation does not yet beat a persistence baseline (H* = 0); "
+                "hazard heads are LOEO-validated (ROC-AUC 0.789/0.843/0.770)."
+            ),
             "is_mock": False,
         }
 
