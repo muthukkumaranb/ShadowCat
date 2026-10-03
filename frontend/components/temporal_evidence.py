@@ -24,8 +24,8 @@ def render_temporal_evidence(data: dict):
             "behavior": "Nominal baseline density (routine HTTPS/DNS)",
             "flows": 8410,
             "packets": 51200,
-            "attention_weight": 0.14,
-            "weight_pct": "14%",
+            "attention_weight": 0.10,
+            "weight_pct": "10%",
         },
         {
             "window": "Window t-1",
@@ -33,8 +33,8 @@ def render_temporal_evidence(data: dict):
             "behavior": "Reconnaissance probing & sequential port scan",
             "flows": 9840,
             "packets": 64120,
-            "attention_weight": 0.31,
-            "weight_pct": "31%",
+            "attention_weight": 0.25,
+            "weight_pct": "25%",
         },
         {
             "window": "Window t (Current)",
@@ -42,8 +42,8 @@ def render_temporal_evidence(data: dict):
             "behavior": "Elevated SYN burst activity & SSH authentication attempts",
             "flows": 12480,
             "packets": 84216,
-            "attention_weight": 0.55,
-            "weight_pct": "55%",
+            "attention_weight": 0.65,
+            "weight_pct": "65%",
         },
     ])
 

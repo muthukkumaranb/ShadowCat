@@ -32,7 +32,7 @@ from components.layered_explanation import render_layered_explanation, render_co
 
 # Spatial layout coordinates and asset criticality metadata (Reference 5-host baseline)
 DEFAULT_NODE_METADATA = {
-    "10.0.2.15": {
+    "172.31.69.21": {
         "x": 90, "y": 240, "base_r": 24,
         "criticality_tier": "Tier 3 (User Endpoint)",
         "criticality_short": "Tier 3",
@@ -53,7 +53,7 @@ DEFAULT_NODE_METADATA = {
         "clean_role": "SSH Jump Host",
         "is_dc": False
     },
-    "10.0.4.21": {
+    "172.31.69.1": {
         "x": 490, "y": 330, "base_r": 30,
         "criticality_tier": "Tier 2 (Auth Infrastructure)",
         "criticality_short": "Tier 2",
@@ -149,10 +149,10 @@ def generate_node_layout(
 
 
 BASE_TOPOLOGY_EDGES = [
-    ("10.0.2.15", "10.0.4.10", "Port 22/TCP (SSH Ingress)"),
-    ("10.0.2.15", "10.0.3.50", "Port 445/SMB (Storage Share)"),
-    ("10.0.4.10", "10.0.4.21", "Port 88/Kerberos (KDC Auth)"),
-    ("10.0.4.21", "10.0.5.1", "Port 389/LDAP (Directory Pivot)"),
+    ("172.31.69.21", "10.0.4.10", "Port 22/TCP (SSH Ingress)"),
+    ("172.31.69.21", "10.0.3.50", "Port 445/SMB (Storage Share)"),
+    ("10.0.4.10", "172.31.69.1", "Port 88/Kerberos (KDC Auth)"),
+    ("172.31.69.1", "10.0.5.1", "Port 389/LDAP (Directory Pivot)"),
     ("10.0.5.1", "10.0.3.50", "Volume Shadow Copy (Backup Enum)"),
 ]
 
