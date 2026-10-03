@@ -1,7 +1,7 @@
 """
 SHADOWCAT Backend - Explanatory Counterfactual Engine
 Computes minimal, realistic perturbations to input features that would bring
-a flagged window's hazard score below the calibrated alert threshold.
+a flagged window's onset probability below the alert threshold.
 
 Safeguards:
 1. Every candidate perturbation is strictly bounded to the empirical [1st, 99th]
@@ -29,7 +29,7 @@ DATA_ENG_DIR = REPO_ROOT / "data-engineering"
 MODELS_DIR = REPO_ROOT / "models"
 
 HONESTY_LABEL = (
-    "Model-based counterfactual under the hazard model's learned decision boundary — "
+    "Model-based counterfactual under the onset model's learned decision boundary — "
     "not a guarantee that this change would have prevented the actual attack, "
     "and not validated against real intervention data."
 )
@@ -168,7 +168,7 @@ class CounterfactualEngine:
                 "calibrated_threshold": target_threshold,
                 "perturbed_features": [],
                 "summary": (
-                    f"Current window hazard ({h0:.3f}) is already below the alert threshold ({target_threshold:.3f}). "
+                    f"Current window onset probability ({h0:.3f}) is already below the alert threshold ({target_threshold:.3f}). "
                     "No perturbation required."
                 ),
                 "honesty_label": HONESTY_LABEL,
@@ -305,7 +305,7 @@ class CounterfactualEngine:
         summary = (
             f"No realistic minimal change found within observed data bounds [1st, 99th percentile]. "
             f"Even reducing top driving features ({', '.join(candidate_cols[:3])}) to baseline, "
-            f"hazard score remained at {best_hazard:.3f} (above calibrated threshold {target_threshold:.3f})."
+            f"onset probability remained at {best_hazard:.3f} (above alert threshold {target_threshold:.3f})."
         )
         return {
             "status": "inconclusive",
@@ -386,7 +386,7 @@ class CounterfactualEngine:
         clause_str = " and ".join(clauses)
         return (
             f"{clause_str.capitalize()} would have kept this window below the alert threshold "
-            f"(hazard dropped from {h0:.3f} to {h_pert:.3f}, below calibrated threshold {threshold:.3f})."
+            f"(onset probability dropped from {h0:.3f} to {h_pert:.3f}, below alert threshold {threshold:.3f})."
         )
 
 

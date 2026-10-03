@@ -615,27 +615,16 @@ def get_host_risk_graph(episode_id: str = None, k_step: int = 2) -> dict:
 
 def get_attributions(window_id: str = None) -> list[dict]:
     """
-    Returns deletion-tested feature attribution rankings and percentage weights.
-    Consumed by: views/06_Explainability.py, components/explanation.py
+    Top input features by Integrated Gradients on the stacked onset logit for the active
+    prediction (empty list if none was computed).
+    Consumed by: views/06_Explainability.py, components/layered_explanation.py
     """
-    pred = _get_live_prediction()
-    items = pred.get("attributions", [])
-    for item in items:
-        item["is_mock"] = is_using_mock_data("attributions")
-    if not items:
-        # Canonical ShadowCat attribution fallback (CSE-CIC-IDS2018 Infiltration)
-        items = [
-            {"feature": "egress_burst_ratio", "contribution": 0.48, "category": "Packet Dynamics", "delta": "+380%", "is_mock": True},
-            {"feature": "beacon_jitter_variance", "contribution": 0.28, "category": "Temporal Rhythm", "delta": "+19.4%", "is_mock": True},
-            {"feature": "peer_fanout_entropy", "contribution": 0.16, "category": "Topology", "delta": "14 targets", "is_mock": True},
-            {"feature": "tls_cipher_entropy", "contribution": 0.08, "category": "Protocol Anomaly", "delta": "AES→RC4", "is_mock": True},
-        ]
-    return items
+    return list(_get_live_prediction().get("attributions", []))
 
 
 def get_temporal_attributions() -> dict:
     """
-    Returns TimeSHAP / Temporal Integrated Gradients attributions across lookback windows.
+    Integrated Gradients on the stacked onset logit, decomposed over the 30 lookback windows.
     Consumed by: views/06_Explainability.py
     """
     pred = _get_live_prediction()
@@ -644,30 +633,11 @@ def get_temporal_attributions() -> dict:
 
 def get_conformal_forecast() -> dict:
     """
-    Returns finite-sample calibrated split conformal prediction intervals and coverage.
-    Consumed by: views/03_Forecast.py, views/06_Explainability.py, components/layered_explanation.py
+    Split-conformal interval for the onset probability of the active prediction ({} if none).
+    Consumed by: views/06_Explainability.py
     """
-    pred = _get_live_prediction() or {}
-    cf = pred.get("conformal_forecast")
-    if cf and isinstance(cf, dict) and "intervals" in cf:
-        return cf
-
-    # Finite-sample distribution-free quantile fallback calibrated across validation split
-    fc = pred.get("forecast_trajectory", {})
-    risks = fc.get("risk", [0.84, 0.72, 0.58, 0.45, 0.38])
-    coverage = 0.90
-    q = 0.12  # empirical non-conformity quantile from LOEO validation split
-    intervals = [[round(max(0.0, float(r) - q), 3), round(min(1.0, float(r) + q), 3)] for r in risks]
-
-    return {
-        "coverage": coverage,
-        "alpha": 0.10,
-        "calibrated_quantile": q,
-        "intervals": intervals,
-        "sample_size": 37,
-        "guarantee": "Distribution-free finite-sample coverage >= 90%",
-        "is_mock": False,
-    }
+    cf = (_get_live_prediction() or {}).get("conformal_forecast")
+    return cf if isinstance(cf, dict) else {}
 
 
 def get_conformal_credibility(window_id: Optional[str] = None) -> Dict[str, Any]:

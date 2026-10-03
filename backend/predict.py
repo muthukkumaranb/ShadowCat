@@ -213,6 +213,33 @@ class StackedFoldModel:
         return float(p)
 
 
+class StackedOnsetLogit(torch.nn.Module):
+    """
+    Differentiable view of the stacked onset ensemble for Integrated Gradients:
+    forward_logits(x) with x of shape (B, 30, 406) returns the mean over folds of each fold's
+    calibrated onset logit z / T, where z = LR(x[:, -1]) + LSTM residual(own-PCA(x)).
+    sigmoid of each fold's term is that fold's probability; the dashboard risk is their mean.
+    """
+
+    def __init__(self, folds: List[StackedFoldModel]):
+        super().__init__()
+        self.models = torch.nn.ModuleList([f.model for f in folds])
+        t = lambda a: torch.as_tensor(np.asarray(a), dtype=torch.float32)
+        self.params = [
+            (t(f.pca_mean), t(f.pca_components), t(f.scaler_mean), t(f.scaler_scale),
+             t(f.lr_coef), float(f.lr_intercept), float(f.temperature))
+            for f in folds
+        ]
+
+    def forward_logits(self, x: torch.Tensor) -> torch.Tensor:
+        out = []
+        for model, (pm, pc, sm, ss, coef, b, temp) in zip(self.models, self.params):
+            base = ((x[:, -1, :] - sm.to(x.device)) / ss.to(x.device)) @ coef.to(x.device) + b
+            seq = (x - pm.to(x.device)) @ pc.to(x.device).T
+            out.append(model.forward_logits(seq, base) / temp)
+        return torch.stack(out, dim=0).mean(dim=0)
+
+
 class ShadowcatPipeline:
     """
     Production Inference Engine caching loaded weights and scalers.
@@ -777,63 +804,39 @@ class ShadowcatPipeline:
         conformal_interval_joint = [round(c_lb_j, 4), round(c_ub_j, 4)]
         onset_alert = bool(p_onset >= self.alert_threshold)
 
-        # Step 8 & 9: Feature Attribution (Top Contributing Features)
-        attr_scores = np.abs(obs_state - pred_state)
+        # Step 8 & 9: Integrated Gradients on the stacked ONSET logit (the number shown as risk).
+        # Target: mean over the 37 onset folds of the calibrated logit z/T; baseline: all-zero
+        # (scaled) 30-window history; 15 interpolation steps.
         model_cols = UCSExtractor.MODEL_INPUT_COLUMNS
-
-        # Filter out presence masks so presence flags are never ranked as behavioral drivers
-        filtered_scores = attr_scores.copy()
-        for idx, col in enumerate(model_cols):
-            if get_feature_category(col) is None:
-                filtered_scores[idx] = -1.0
-
-        sorted_indices = np.argsort(filtered_scores)[::-1]
-        top_indices = [idx for idx in sorted_indices if filtered_scores[idx] >= 0][:5]
-
-        total_attr = float(np.sum(attr_scores[top_indices])) + 1e-6
         attributions = []
-        for idx in top_indices:
-            feat_name = model_cols[idx] if idx < len(model_cols) else f"Feature_{idx}"
-            clean_name = feat_name.replace("_", " ").title()
-            contrib = float(np.round(attr_scores[idx] / total_attr, 2))
-            cat = get_feature_category(feat_name) or "Flow Dynamics"
-            attributions.append({
-                "feature": clean_name,
-                "contribution": contrib,
-                "category": cat,
-                "delta": f"+{int(contrib * 400)}%" if contrib > 0.15 else "Baseline",
-            })
-
-        # Ensure contributions sum to ~1.0
-        sum_c = sum(a["contribution"] for a in attributions)
-        if sum_c > 0:
-            for a in attributions:
-                a["contribution"] = round(a["contribution"] / sum_c, 2)
-
-        # Temporal Attribution (TimeSHAP / Temporal Integrated Gradients - 100% Offline)
-        temporal_attributions = {}
         try:
-            attributor = TemporalAttributor(steps=15)
-            temporal_res = attributor.attribute(
-                model=self.world_model,
+            ig = TemporalAttributor(steps=15).attribute(
+                model=StackedOnsetLogit(self.stacked_onset_models),
                 x_sequence=seq_30x406,
                 feature_names=model_cols,
                 device=self.device,
             )
+            behavioural = [f for f in ig["feature_totals"] if get_feature_category(f["feature"]) is not None]
+            for f in sorted(behavioural, key=lambda f: f["abs_share"], reverse=True)[:5]:
+                attributions.append({
+                    "feature": f["feature"],
+                    "contribution": round(f["abs_share"], 4),
+                    "signed_attribution": round(f["signed_sum"], 4),
+                    "category": get_feature_category(f["feature"]),
+                    "method": "Integrated Gradients",
+                })
             temporal_attributions = {
-                "timestep_attributions": temporal_res.get("timestep_attributions", []),
-                "top_temporal_events": temporal_res.get("top_temporal_events", [])[:5],
+                "timestep_attributions": ig["timesteps"],
+                "top_temporal_events": ig["top_temporal_events"][:5],
+                "attribution_sum": round(ig["attribution_sum"], 4),
                 "lookback_windows": lookback,
-                "engine": "TimeSHAP / Temporal Integrated Gradients (Offline)",
+                "engine": "Integrated Gradients",
+                "target": "mean calibrated onset logit of the 37 stacked fold models",
+                "baseline": "all-zero scaled 30-window history",
+                "contribution_definition": "share of total |attribution| across all 406 inputs and 30 windows",
             }
         except Exception as e:
-            temporal_attributions = {
-                "timestep_attributions": [round(float(np.exp(-0.1 * (lookback - 1 - i))), 3) for i in range(lookback)],
-                "top_temporal_events": [],
-                "lookback_windows": lookback,
-                "engine": "TimeSHAP / Temporal Integrated Gradients (Fallback)",
-                "note": str(e),
-            }
+            temporal_attributions = {"engine": "Integrated Gradients", "error": str(e)}
 
         # Step 10: Flagged Suspicious Flows from raw_input
         flagged_flows = self._extract_flagged_flows(raw_input, source_type)

@@ -11,7 +11,7 @@ def create_attribution_chart(explanation_data):
     """Creates a sleek horizontal bar chart showing feature-group attribution contributions."""
     features = [item["feature"] for item in reversed(explanation_data)]
     contributions = [item["contribution"] for item in reversed(explanation_data)]
-    deltas = [item["delta"] for item in reversed(explanation_data)]
+    signed = [item.get("signed_attribution") for item in reversed(explanation_data)]
 
     fig = go.Figure()
     fig.add_trace(go.Bar(
@@ -23,15 +23,15 @@ def create_attribution_chart(explanation_data):
             line=dict(color="rgba(255, 255, 255, 0.3)", width=1)
         ),
         text=[f"<b>{c*100:.0f}%</b>" for c in contributions],
-        customdata=deltas,
+        customdata=signed,
         textposition="outside",
         textfont=dict(color="#FFFFFF", size=11, family="'JetBrains Mono', monospace"),
-        hovertemplate="<b>%{y}</b><br>Attribution Weight: %{x:.1%}<br>Signal Deviation: %{customdata}<extra></extra>"
+        hovertemplate="<b>%{y}</b><br>Share of |attribution|: %{x:.1%}<br>Signed attribution: %{customdata}<extra></extra>"
     ))
 
     fig.update_layout(
         title=dict(
-            text="<b>Feature Attribution (Deletion-Tested · Integrated Gradients)</b>",
+            text="<b>Integrated Gradients on the onset logit</b>",
             font=dict(size=12, color="#FFFFFF")
         ),
         paper_bgcolor="#141414",

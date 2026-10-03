@@ -1,5 +1,5 @@
 """
-Temporal Attribution Engine (TimeSHAP / Temporal Integrated Gradients)
+Temporal Attribution Engine (Integrated Gradients over time steps and features)
 Decomposes recurrent neural network predictions across both time steps and features.
 Runs 100% offline with zero network dependencies.
 """
@@ -13,7 +13,7 @@ import torch.nn as nn
 class TemporalAttributor:
     """
     Computes cell-level, timestep-level, and feature-level attributions
-    for sequential models (e.g. LSTM) using Temporal Integrated Gradients / Path Attribution.
+    for sequential models (e.g. LSTM) using Integrated Gradients (path attribution).
     """
 
     def __init__(self, steps: int = 20):
@@ -145,6 +145,15 @@ class TemporalAttributor:
             "top_temporal_events": top_events,
             "temporal_dimension": T,
             "feature_dimension": D,
-            "attribution_method": "Temporal Integrated Gradients (TimeSHAP Equivalent)",
+            "feature_totals": [
+                {
+                    "feature": feature_names[f_idx] if f_idx < len(feature_names) else f"Feature_{f_idx}",
+                    "abs_share": float(feature_relative[f_idx]),
+                    "signed_sum": float(cell_attributions[:, f_idx].sum()),
+                }
+                for f_idx in range(D)
+            ],
+            "attribution_sum": float(cell_attributions.sum()),
+            "attribution_method": "Integrated Gradients",
             "is_offline": True,
         }
