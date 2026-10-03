@@ -835,30 +835,17 @@ class ShadowcatPipeline:
         novelty_score = float(np.clip(novelty_score, 0.05, 0.95))
         novelty_status = "Expected Behavior Envelope" if novelty_score < 0.50 else "Elevated Behavioral Drift"
 
-        # Step 5: Hazard Head Ensemble & Cumulative Trajectory
+        # Step 5: Direct Hazard Head Probabilities (H=1, 2, 5)
         # Real per-horizon probabilities from hazard_head_v3 LOEO models (H=1,2,5).
-        # H=3 and H=4 are not modelled — no interpolation or synthetic values.
+        # H=3 and H=4 are not modelled — no interpolation, synthetic values, or carry-forward.
+        # These heads predict P(attack at t+k), not per-step hazards; no cumulative formula or carry-forward.
         hazards = self._predict_hazard_ensemble(seq_30x406)
         h1 = hazards.get(1, None)
         h2 = hazards.get(2, None)
         h5 = hazards.get(5, None)
 
-        # step_hazards list for K=1..5; None = not modelled
+        # Three separate direct probabilities for modelled horizons; None for unmodelled
         step_hazards = [h1, h2, None, None, h5]
-
-        # Cumulative risk P(event <= K) = 1 - prod(1 - h_k) for modelled horizons only.
-        # Unmodelled horizons (H=3, H=4) carry forward the last known cumulative risk.
-        cum_risk = []
-        prod_surv = 1.0
-        last_known_cum = 0.0
-        for h_k in step_hazards:
-            if h_k is not None:
-                prod_surv *= (1.0 - float(h_k))
-                last_known_cum = float(np.clip(1.0 - prod_surv, 0.0, 1.0))
-                cum_risk.append(last_known_cum)
-            else:
-                cum_risk.append(last_known_cum)  # carry-forward; NOT a real model estimate
-
         risk_trajectory = step_hazards
 
         # Step 6: Stage Head Classification on Predicted Future State S_hat(t+1)
@@ -934,24 +921,32 @@ class ShadowcatPipeline:
             self.conformal_predictor.calibrate(real_val_preds, real_val_targets)
 
         for k in range(5):
+            h_k = step_hazards[k]
             # Model uncertainty sigma based on dynamics standard deviation
             sigma = float(np.mean(rollout_stds[k]) * 0.15 + (k + 1) * 0.04)
             sigma = float(np.clip(sigma, 0.02, 0.35))
             uncertainties.append(sigma)
-            lb = float(np.clip(cum_risk[k] - 1.645 * sigma, 0.0, 1.0))
-            ub = float(np.clip(cum_risk[k] + 1.645 * sigma, 0.0, 1.0))
-            lower_bounds.append(lb)
-            upper_bounds.append(ub)
+            if h_k is not None:
+                lb = float(np.clip(h_k - 1.645 * sigma, 0.0, 1.0))
+                ub = float(np.clip(h_k + 1.645 * sigma, 0.0, 1.0))
+                lower_bounds.append(lb)
+                upper_bounds.append(ub)
 
-            c_lb, c_ub = self.conformal_predictor.predict_interval(cum_risk[k], horizon_idx=k)
-            c_lb_j, c_ub_j = self.conformal_predictor.predict_interval_joint(cum_risk[k], horizon_idx=k)
-            conformal_intervals.append([round(c_lb, 4), round(c_ub, 4)])
-            conformal_intervals_joint.append([round(c_lb_j, 4), round(c_ub_j, 4)])
-            
-            # Compute conformal credibility for the UI dashboard based on interval width
-            width = c_ub - c_lb
-            credibility = "HIGH" if width < 0.2 else ("MEDIUM" if width < 0.4 else "LOW")
-            conformal_credibility.append(credibility)
+                c_lb, c_ub = self.conformal_predictor.predict_interval(h_k, horizon_idx=k)
+                c_lb_j, c_ub_j = self.conformal_predictor.predict_interval_joint(h_k, horizon_idx=k)
+                conformal_intervals.append([round(c_lb, 4), round(c_ub, 4)])
+                conformal_intervals_joint.append([round(c_lb_j, 4), round(c_ub_j, 4)])
+
+                # Compute conformal credibility for the UI dashboard based on interval width
+                width = c_ub - c_lb
+                credibility = "HIGH" if width < 0.2 else ("MEDIUM" if width < 0.4 else "LOW")
+                conformal_credibility.append(credibility)
+            else:
+                lower_bounds.append(None)
+                upper_bounds.append(None)
+                conformal_intervals.append(None)
+                conformal_intervals_joint.append(None)
+                conformal_credibility.append("NOT_MODELLED")
 
         # Step 8 & 9: Feature Attribution (Top Contributing Features)
         attr_scores = np.abs(obs_state - pred_state)
@@ -1062,9 +1057,9 @@ class ShadowcatPipeline:
             "horizons": [1, 2, 3, 4, 5],
             "labels": labels,
             "horizon_is_modelled": horizon_is_modelled,
-            "risk": [round(r, 2) for r in cum_risk],
+            "risk": [round(float(h), 6) if h is not None else None for h in step_hazards],
             "step_hazards": [
-                round(float(h), 4) if h is not None else None
+                round(float(h), 6) if h is not None else None
                 for h in step_hazards
             ],
             "stage": stage_names,
@@ -1083,11 +1078,11 @@ class ShadowcatPipeline:
             # sigma-based uncertainty bands: labelled heuristic_band per s2-t1 (formula: mean(std)*0.15 + (k+1)*0.04)
             # These are NOT conformal intervals. Conformal intervals are in conformal_intervals below.
             "uncertainty": [round(u, 2) for u in uncertainties],
-            "heuristic_band_lower": [round(lb, 2) for lb in lower_bounds],
-            "heuristic_band_upper": [round(ub, 2) for ub in upper_bounds],
+            "heuristic_band_lower": [round(lb, 4) if lb is not None else None for lb in lower_bounds],
+            "heuristic_band_upper": [round(ub, 4) if ub is not None else None for ub in upper_bounds],
             # legacy keys kept for UI compatibility
-            "lower_bound": [round(lb, 2) for lb in lower_bounds],
-            "upper_bound": [round(ub, 2) for ub in upper_bounds],
+            "lower_bound": [round(lb, 4) if lb is not None else None for lb in lower_bounds],
+            "upper_bound": [round(ub, 4) if ub is not None else None for ub in upper_bounds],
             "conformal_intervals": conformal_intervals,
             "conformal_intervals_joint": conformal_intervals_joint,
             "conformal_credibility": conformal_credibility,
@@ -1098,7 +1093,7 @@ class ShadowcatPipeline:
             "conformal_sample_size": self.conformal_predictor.calibration_sample_size,
             "conformal_quantile": round(float(self.conformal_predictor.calibrated_quantile), 4),
             "calibrated_threshold": self.calibrated_threshold_global,
-            "hazard_alert": any(r >= self.calibrated_threshold_global for r in cum_risk),
+            "hazard_alert": any(h is not None and h >= self.calibrated_threshold_global for h in step_hazards),
             "calibrated_uncertainty": True,
             # Hazard head source identification
             "hazard_source": "hazard_head_v3 (LOEO-validated, ROC-AUC 0.789/0.843/0.770 at H=1/2/5)",
@@ -1128,15 +1123,16 @@ class ShadowcatPipeline:
         # Pack raw steps for legacy aggregator compatibility
         raw_steps = []
         for k in range(5):
+            h_val = step_hazards[k]
             raw_steps.append({
                 "step": k + 1,
                 "horizon": labels[k],
                 "time_ahead": f"+{k+1}m",
                 "lead_time": lead_times[k],
-                "probability": round(cum_risk[k], 2),
-                "uncertainty": round(uncertainties[k], 2),
-                "lower_bound": round(lower_bounds[k], 2),
-                "upper_bound": round(upper_bounds[k], 2),
+                "probability": round(float(h_val), 6) if h_val is not None else None,
+                "uncertainty": round(uncertainties[k], 2) if h_val is not None else None,
+                "lower_bound": round(lower_bounds[k], 4) if lower_bounds[k] is not None else None,
+                "upper_bound": round(upper_bounds[k], 4) if upper_bounds[k] is not None else None,
                 "stage": stage_names[k],
                 "tactic_id": tactic_ids[k],
                 "tactic_name": mitre_details[k]["tactic_name"],
@@ -1207,7 +1203,7 @@ class ShadowcatPipeline:
             "attributions": attributions,
             "flagged_flows": flagged_flows,
             "stage_predictions": stage_names,
-            "risk_scores": [round(r, 2) for r in cum_risk],
+            "risk_scores": [round(float(h), 6) if h is not None else None for h in step_hazards],
             "graph_topology": graph_topology,
             "graph_traversal": graph_traversal,
             "temporal_attributions": temporal_attributions,
@@ -1217,7 +1213,7 @@ class ShadowcatPipeline:
                 "intervals": conformal_intervals,
                 "intervals_joint": conformal_intervals_joint,
                 "conformal_credibility": conformal_credibility,
-                "point_estimates": [round(r, 2) for r in cum_risk],
+                "point_estimates": [round(float(h), 6) if h is not None else None for h in step_hazards],
                 "method": "Split Conformal Prediction (37-Fold LOEO Validation-Calibrated)",
                 "sample_size": self.conformal_predictor.calibration_sample_size,
                 "quantile": round(float(self.conformal_predictor.calibrated_quantile), 4),
@@ -1233,9 +1229,11 @@ class ShadowcatPipeline:
         if forecast_trajectory.get("hazard_alert"):
             import hashlib
             import logging
-            alert_str = f"{window_id}-{window_start}-{max(cum_risk)}"
+            modelled_hazards = [h for h in step_hazards if h is not None]
+            max_hazard_val = max(modelled_hazards) if len(modelled_hazards) > 0 else 0.0
+            alert_str = f"{window_id}-{window_start}-{max_hazard_val}"
             alert_hash = hashlib.sha256(alert_str.encode()).hexdigest()[:16]
-            severity = "HIGH" if max(cum_risk) > 0.8 else "MEDIUM"
+            severity = "HIGH" if max_hazard_val > 0.8 else "MEDIUM"
 
             fabric_ok = False
             try:
@@ -1255,7 +1253,7 @@ class ShadowcatPipeline:
                             "alert_hash": alert_hash,
                             "window_id": str(window_id),
                             "window_start": str(window_start),
-                            "max_risk": round(float(max(cum_risk)), 4),
+                            "max_risk": round(float(max_hazard_val), 4),
                             "severity": severity,
                             "notarized_via": "fabric",
                         }
@@ -1272,7 +1270,7 @@ class ShadowcatPipeline:
                         "alert_hash": alert_hash,
                         "window_id": str(window_id),
                         "window_start": str(window_start),
-                        "max_risk": round(float(max(cum_risk)), 4),
+                        "max_risk": round(float(max_hazard_val), 4),
                         "severity": severity,
                         "notarized_via": "sha256_fallback",
                     }
@@ -1323,14 +1321,15 @@ class ShadowcatPipeline:
         feature_hash = hashlib.sha256(seq_30x406.tobytes()).hexdigest()
         model_id = "lstm_world_model_v4"
         pred_dict = {
-            "risk": [round(float(r), 4) for r in cum_risk],
+            "risk": [round(float(h), 6) if h is not None else None for h in step_hazards],
             "stages": stage_names,
             "novelty": round(float(novelty_score), 4),
         }
         prediction_hash = hashlib.sha256(json.dumps(pred_dict, sort_keys=True).encode("utf-8")).hexdigest()
 
         # Determine severity and target node
-        max_r = max(cum_risk) if len(cum_risk) > 0 else 0.0
+        modelled_hazards = [h for h in step_hazards if h is not None]
+        max_r = max(modelled_hazards) if len(modelled_hazards) > 0 else 0.0
         if max_r > 0.8:
             lineage_severity = "HIGH"
         elif max_r > 0.4:
