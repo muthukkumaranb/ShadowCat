@@ -4,6 +4,8 @@ import os
 import sys
 from datetime import datetime, timezone
 from typing import Optional
+from cryptography.hazmat.primitives.asymmetric import ed25519
+from cryptography.hazmat.primitives import serialization
 
 # Safe UTF-8 console output for Windows CLI environments
 if hasattr(sys.stdout, "reconfigure"):
@@ -12,7 +14,12 @@ if hasattr(sys.stdout, "reconfigure"):
     except Exception:
         pass
 
-CHAIN_PATH = os.path.join(os.path.dirname(__file__), "audit_chain.json")
+# Runtime chain lives outside tracked sources: <repo>/runtime/ (gitignored),
+# overridable with SHADOWCAT_RUNTIME_DIR.
+RUNTIME_DIR = os.environ.get(
+    "SHADOWCAT_RUNTIME_DIR", os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "runtime")
+)
+CHAIN_PATH = os.path.join(RUNTIME_DIR, "audit_chain.json")
 
 
 def _sha256_of_file(filepath: str) -> str:
@@ -54,11 +61,25 @@ def _resolve_path(stored_path: str) -> str:
     cand2 = os.path.normpath(os.path.join(repo_root, stored_path))
     if os.path.exists(cand2):
         return cand2
+    runtime_dir = os.environ.get("SHADOWCAT_RUNTIME_DIR")
+    if runtime_dir:
+        cand3 = os.path.normpath(os.path.join(runtime_dir, stored_path))
+        if os.path.exists(cand3):
+            return cand3
     return cand1
 
 
+def _get_chain_path(chain_path: Optional[str] = None) -> str:
+    if chain_path:
+        return chain_path
+    runtime_dir = os.environ.get(
+        "SHADOWCAT_RUNTIME_DIR", os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "runtime")
+    )
+    return os.path.join(runtime_dir, "audit_chain.json")
+
+
 def _load_chain(chain_path: Optional[str] = None) -> list:
-    path = chain_path or CHAIN_PATH
+    path = _get_chain_path(chain_path)
     if not os.path.exists(path):
         return []
     with open(path, "r", encoding="utf-8") as f:
@@ -66,7 +87,8 @@ def _load_chain(chain_path: Optional[str] = None) -> list:
 
 
 def _save_chain(chain: list, chain_path: Optional[str] = None) -> None:
-    path = chain_path or CHAIN_PATH
+    path = _get_chain_path(chain_path)
+    os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
         json.dump(chain, f, indent=2)
 
@@ -93,7 +115,10 @@ def append_entry(
 
     # Normalize relative path representation with forward slashes
     backend_dir = os.path.dirname(os.path.abspath(__file__))
-    rel_path = os.path.relpath(resolved_path, start=backend_dir).replace("\\", "/")
+    try:
+        rel_path = os.path.relpath(resolved_path, start=backend_dir).replace("\\", "/")
+    except ValueError:  # runtime dir on another drive (Windows): keep the absolute path
+        rel_path = os.path.abspath(resolved_path).replace("\\", "/")
 
     entry_content = {
         "index": len(chain),
@@ -108,6 +133,17 @@ def append_entry(
     entry_str = json.dumps(entry_content, sort_keys=True)
     entry_hash = hashlib.sha256(entry_str.encode()).hexdigest()
     entry_content["entry_hash"] = entry_hash
+    
+    priv_key_path = os.environ.get("SHADOWCAT_SIGNING_KEY")
+    if priv_key_path and os.path.exists(priv_key_path):
+        with open(priv_key_path, "rb") as f:
+            key_data = f.read()
+        try:
+            priv_key = serialization.load_pem_private_key(key_data, password=None)
+            sig = priv_key.sign(entry_hash.encode("utf-8"))
+            entry_content["signature"] = sig.hex()
+        except Exception as e:
+            pass
 
     chain.append(entry_content)
     _save_chain(chain, chain_path)
@@ -138,7 +174,7 @@ def verify_chain(chain_path: Optional[str] = None) -> tuple:
             )
 
         # Verify entry block integrity
-        entry_copy = {k: v for k, v in entry.items() if k != "entry_hash"}
+        entry_copy = {k: v for k, v in entry.items() if k not in ("entry_hash", "signature")}
         entry_str = json.dumps(entry_copy, sort_keys=True)
         computed_entry_hash = hashlib.sha256(entry_str.encode()).hexdigest()
         if computed_entry_hash != entry.get("entry_hash"):
@@ -146,6 +182,20 @@ def verify_chain(chain_path: Optional[str] = None) -> tuple:
                 f"Entry {i}: entry hash corrupted/mismatched "
                 f"(computed {computed_entry_hash[:12]}... vs recorded {str(entry.get('entry_hash'))[:12]}...)"
             )
+            
+        if "signature" in entry:
+            pub_key_path = os.path.join(os.path.dirname(__file__), "admin_public_key.pem")
+            if not os.path.exists(pub_key_path):
+                issues.append(f"Entry {i}: signature present but public key not found")
+            else:
+                with open(pub_key_path, "rb") as f:
+                    pub_key_bytes = f.read()
+                try:
+                    pub_key = serialization.load_pem_public_key(pub_key_bytes)
+                    sig = bytes.fromhex(entry["signature"])
+                    pub_key.verify(sig, entry["entry_hash"].encode("utf-8"))
+                except Exception:
+                    issues.append(f"Entry {i}: invalid signature")
 
         resolved = _resolve_path(entry.get("artifact_path", ""))
         if os.path.exists(resolved):

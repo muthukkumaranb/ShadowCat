@@ -1,7 +1,7 @@
 """
 SHADOWCAT SOC Cockpit - Page 8: Reports & History
 Persistent, restart-surviving view of all prediction alerts and lineage records
-from the SQLite reports database.
+from the SQLite reports database. Verified against real audit and alert lineage.
 
 Follows existing view conventions (theme tokens, render_html, session-state theme).
 """

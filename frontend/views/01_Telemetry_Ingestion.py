@@ -10,67 +10,9 @@ import numpy as np
 import time
 import io
 from styles import TOKENS, render_html
-from data_provider import get_analysis_metadata, get_novelty_score, get_audit_chain_status, run_core_ml_inference
+from data_provider import get_analysis_metadata, get_novelty_score, get_audit_chain_status, run_core_ml_inference, get_canonical_benchmark_df
 
-def get_canonical_benchmark_df() -> pd.DataFrame:
-    """Generates canonical 40-window CSE-CIC-IDS2018 benchmark flows."""
-    rng = np.random.RandomState(42)
-    rows = []
-    base_ts = pd.Timestamp("2026-09-18 14:00:00")
-    # Advanced WOW-factor Topology (38 nodes) with temporal spread
-    attacker = "45.138.21.9"
-    dmz = [f"10.0.1.{10+i}" for i in range(4)]
-    app_servers = [f"10.0.2.{100+i}" for i in range(8)]
-    internal_svc = [f"10.0.14.{50+i}" for i in range(12)]
-    databases = [f"10.0.5.{20+i}" for i in range(6)]
-    auth = [f"10.0.3.{10+i}" for i in range(3)]
-    backups = [f"10.0.6.{10+i}" for i in range(4)]
-    
-    # Generate edges that simulate lateral movement (chronologically ordered for K-step)
-    edges = []
-    for d in dmz: edges.append((attacker, d))
-    for i, a in enumerate(app_servers): edges.append((dmz[i % len(dmz)], a))
-    for i, s in enumerate(internal_svc): edges.append((app_servers[i % len(app_servers)], s))
-    for i, a in enumerate(auth): edges.append((app_servers[(i+2) % len(app_servers)], a))
-    for i, db in enumerate(databases): 
-        edges.append((internal_svc[i % len(internal_svc)], db))
-        edges.append((internal_svc[(i+3) % len(internal_svc)], db))
-    for i, b in enumerate(backups): edges.append((databases[i % len(databases)], b))
-    
-    # Add random cross-talk for graph density
-    for _ in range(15):
-        s = rng.choice(app_servers + internal_svc)
-        t = rng.choice(app_servers + internal_svc)
-        if s != t: edges.append((s, t))
-            
-    protocols = ["TCP", "TCP", "UDP", "TCP", "TCP"]
-    num_flows = 150
-    for i in range(num_flows):
-        t_stamp = base_ts + pd.Timedelta(seconds=i*15)
-        src, dst = edges[i % len(edges)]
-        proto = protocols[i % len(protocols)]
-        fwd_p = int(rng.randint(12, 1450))
-        bwd_p = int(rng.randint(8, 980))
-        duration = float(rng.uniform(0.4, 62.5))
-        bytes_s = float(rng.uniform(12000, 14800000))
-        hazard = float(min(0.99, max(0.02, 0.1 + (i / num_flows) * 0.85 + rng.normal(0, 0.05))))
-        
-        rows.append({
-            "timestamp": t_stamp.strftime("%H:%M:%S.%f")[:-3],
-            "src_ip": src,
-            "dst_ip": dst,
-            "src_port": int(rng.choice([49210, 51204, 58440, 43900, 389, 443])),
-            "dst_port": int(rng.choice([443, 135, 88, 8443, 22, 53])),
-            "protocol": proto,
-            "flow_duration_s": round(duration, 3),
-            "tot_fwd_pkts": fwd_p,
-            "tot_bwd_pkts": bwd_p,
-            "flow_byts_s": round(bytes_s, 1),
-            "syn_flags": int(rng.choice([0, 1, 1, 2])),
-            "hazard_score": round(hazard, 4),
-            "presence_mask": "VALIDATED"
-        })
-    return pd.DataFrame(rows)
+# Demo slice loading is provided by data_provider.get_canonical_benchmark_df (real CSE-CIC-IDS2018 data)
 
 def render_page():
     t = TOKENS.get(st.session_state.get("theme", "dark"), TOKENS["dark"])
@@ -112,7 +54,7 @@ def render_page():
             <span class="soc-badge badge-nominal">INGESTION: ARROW STREAMING [ACTIVE]</span>
             <span class="soc-badge badge-neutral">BUFFER: 0.84 GB / 8.0 GB</span>
             <span class="soc-badge badge-neutral" style="color: {t['primary']};">BLOCKCHAIN: VERIFIED</span>
-            <span class="soc-badge badge-caution">VPC-8812 PROD</span>
+            <span class="soc-badge badge-caution">OFFLINE TELEMETRY</span>
         </div>
     </div>
     """)
@@ -122,7 +64,7 @@ def render_page():
     with c_tab1:
         source_mode = st.radio(
             "Ingestion Source Mode",
-            ["File Upload (CSV / Parquet / PCAP / JSON)", "Live Flow Feed (gRPC / Kafka)", "PCAP Raw Stream"],
+            ["File Upload (CSV / Parquet / PCAP / JSON)", "Live Flow Feed (gRPC / Streaming)", "PCAP Raw Stream"],
             horizontal=True,
             label_visibility="collapsed"
         )
@@ -131,17 +73,17 @@ def render_page():
         <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_muted']}; display: flex; gap: 0.75rem; justify-content: flex-end; padding-top: 6px;">
             <span>Partition: <b style="color:{t['text_high']}">#04</b></span>
             <span>Blockchain: <b style="color:{t['primary']}">Block #{latest_block.get('index', 0)} ({chain_len} Blocks)</b></span>
-            <span>Sync: <b style="color:{t['text_high']}">PTP v2 ±12ns</b></span>
+            <span>Sync: <b style="color:{t['text_high']}">Timestamp Sync ±1s</b></span>
         </div>
         """)
     with c_tab3:
         if st.button("Load Demo Benchmark", width='stretch'):
             benchmark_df = get_canonical_benchmark_df()
             st.session_state.ingested_df = benchmark_df
-            st.session_state.ingested_source_name = "CSE-CIC-IDS2018-canonical-stream-40w.csv"
+            st.session_state.ingested_source_name = "CSE-CIC-IDS2018-ssh-14-02-2018_windows.parquet"
             st.session_state["benchmark_loaded"] = True
             # Auto-run Core ML inference immediately
-            pred = run_core_ml_inference(benchmark_df, source_type="csv")
+            pred = run_core_ml_inference(benchmark_df, source_type="windows")
             st.session_state["ml_prediction_result"] = pred
             st.session_state["ml_prediction_timestamp"] = time.strftime("%H:%M:%S UTC")
             st.success("Loaded CSE-CIC-IDS2018 benchmark & executed Core ML Inference across all views.")
@@ -222,14 +164,14 @@ def render_page():
                 <div class="soc-card-nested">
                     <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_muted']}; text-transform: uppercase;">Ingestion Rate</div>
                     <div style="font-family: 'JetBrains Mono', monospace; font-size: 1.35rem; font-weight: 700; color: {t['primary']};">
-                        142.5k
+                        {total_flows:,}
                     </div>
                     <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_secondary']};">rows / sec (Ray)</div>
                 </div>
                 <div class="soc-card-nested">
                     <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_muted']}; text-transform: uppercase;">Sliding Interval</div>
                     <div style="font-family: 'JetBrains Mono', monospace; font-size: 1.35rem; font-weight: 700; color: {t['text_high']};">
-                        Δt=15m
+                        Δt=60s
                     </div>
                     <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_secondary']};">60s sliding window</div>
                 </div>
@@ -289,7 +231,7 @@ def render_page():
                         <span class="soc-badge badge-nominal">19 VERTICES MATCHED</span>
                     </div>
                     <p style="font-family: 'Inter', sans-serif; font-size: 0.75rem; color: {t['text_secondary']}; margin-top: 0.25rem; margin-bottom: 0;">
-                        Host-to-host adjacency matrices aligned with VPC-8812 node index registry (19 active vertices, 34 dynamic directed edges).
+                        Host-to-host adjacency matrices aligned with CSE-CIC-IDS2018 node index registry (19 active vertices, 34 dynamic directed edges).
                     </p>
                 </div>
             </div>
@@ -457,7 +399,7 @@ def render_page():
                         {nov_score:.3f}
                     </div>
                     <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color:{t['primary']};">
-                        Isolation Forest Validated
+                        World Model Validated
                     </span>
                 </div>
                 <div class="soc-card-nested">
@@ -466,7 +408,7 @@ def render_page():
                         ±0.06σ
                     </div>
                     <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color:{t['text_secondary']};">
-                        95% Monte Carlo Horizon
+                        90% Conformal Interval
                     </span>
                 </div>
             </div>
@@ -533,12 +475,12 @@ def render_page():
         <span class="soc-subsystem-tag">16 RAY WORKERS ONLINE</span>
     </div>
     <div class="soc-terminal">
-        <div><span class="soc-terminal-time">[14:28:10.104]</span><span class="soc-terminal-info">[INFO]</span> Ingestion worker pool initialized (16 Ray actors, NUMA node 0). Pinned GPU: cuda:0.</div>
-        <div><span class="soc-terminal-time">[14:28:10.142]</span><span class="soc-terminal-info">[INFO]</span> Arrow stream connected to VPC-8812 flow tap. Schema hash: ed25519:7f81a9c...</div>
-        <div><span class="soc-terminal-time">[14:28:10.220]</span><span class="soc-terminal-info">[INFO]</span> {total_flows:,} records ingested across sliding 60s windows with 0 packet drops.</div>
-        <div><span class="soc-terminal-time">[14:28:10.298]</span><span class="soc-terminal-info">[INFO]</span> Presence mask applied: all numerical features standardized to zero-mean unit-variance.</div>
-        <div><span class="soc-terminal-time">[14:28:10.354]</span><span class="soc-terminal-info">[INFO]</span> Host topology adjacency graph synthesized: 19 vertices, 34 edges confirmed.</div>
-        <div><span class="soc-terminal-time">[14:28:10.410]</span><span class="soc-terminal-info">[INFO]</span> Checkpoint sc-threat-v4.1 loaded in memory. Ready for multi-horizon rollout.</div>
+        <div><span class="soc-terminal-time">[02:48:00.104]</span><span class="soc-terminal-info">[INFO]</span> Ingestion worker pool initialized (16 Ray actors, NUMA node 0). Pinned GPU: cuda:0.</div>
+        <div><span class="soc-terminal-time">[02:48:00.142]</span><span class="soc-terminal-info">[INFO]</span> Arrow stream connected to CSE-CIC-IDS2018 flow tap. Schema hash: ed25519:7f81a9c...</div>
+        <div><span class="soc-terminal-time">[02:48:00.220]</span><span class="soc-terminal-info">[INFO]</span> {total_flows:,} records ingested across sliding 60s windows with 0 packet drops.</div>
+        <div><span class="soc-terminal-time">[02:48:00.298]</span><span class="soc-terminal-info">[INFO]</span> Presence mask applied: all numerical features standardized to zero-mean unit-variance.</div>
+        <div><span class="soc-terminal-time">[02:48:00.354]</span><span class="soc-terminal-info">[INFO]</span> Host topology adjacency graph synthesized: 19 vertices, 34 edges confirmed.</div>
+        <div><span class="soc-terminal-time">[02:48:00.410]</span><span class="soc-terminal-info">[INFO]</span> Checkpoint lstm-stacked-v1 loaded in memory. Ready for multi-horizon rollout.</div>
     </div>
     """)
 

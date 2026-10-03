@@ -89,7 +89,7 @@ def render_page():
                         {risk_val:.2f} <span style="font-size: 1.125rem; font-weight: 400; color: {t['text_muted']};">/ 1.00</span>
                     </div>
                     <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.875rem; font-weight: 600; color: {risk_color};">
-                        {risk_delta} <span style="color: {t['text_muted']}; font-size: 0.75rem; font-weight: 400;">(last 45m window)</span>
+                        {risk_delta} <span style="color: {t['text_muted']}; font-size: 0.75rem; font-weight: 400;">(30-window lookback)</span>
                     </div>
                 </div>
                 <p style="font-family: 'Inter', sans-serif; font-size: 0.875rem; color: {t['text_high']}; margin-top: 0.5rem; margin-bottom: 0.75rem; line-height: 1.5;">
@@ -98,7 +98,7 @@ def render_page():
                 <div style="display: flex; gap: 1rem; flex-wrap: wrap; font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_muted']};">
                     <span>WINDOW: <b style="color:{t['text_secondary']}">60s Sliding</b></span>
                     <span>•</span>
-                    <span>CHECKPOINT: <b style="color:{t['text_secondary']}">sc-threat-v4.1</b></span>
+                    <span>CHECKPOINT: <b style="color:{t['text_secondary']}">lstm-stacked-v1</b></span>
                     <span>•</span>
                     <span>NODES: <b style="color:{t['primary']}">1,420 Active</b></span>
                     <span>•</span>
@@ -138,12 +138,12 @@ def render_page():
                     </svg>
                 </div>
                 <div style="display: flex; justify-content: space-between; font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_muted']}; padding-top: 2px;">
-                    <span>t-30m</span>
-                    <span>t-15m</span>
+                    <span>t-30w</span>
+                    <span>t-15w</span>
                     <span style="color: {t['primary']}; font-weight: 700;">t₀</span>
-                    <span>t+15m</span>
-                    <span>t+30m</span>
-                    <span style="color: {risk_color}; font-weight: 700;">t+60m</span>
+                    <span>t+1 (1m)</span>
+                    <span>t+3 (3m)</span>
+                    <span style="color: {risk_color}; font-weight: 700;">t+5 (5m)</span>
                 </div>
             </div>
         </div>
@@ -272,7 +272,7 @@ def render_page():
             </div>
             <div class="soc-stat-delta delta-threat">
                 <span>Z-SCORE: +3.41</span>
-                <span style="color: {t['text_muted']}; margin-left: auto;">Isolation Forest</span>
+                <span style="color: {t['text_muted']}; margin-left: auto;">World Model Deviation</span>
             </div>
         </div>
         """)
@@ -352,7 +352,7 @@ def render_page():
                 prose = f"Telemetry flow on {src} → {dst}:{dport} evaluated"
 
             alert_items.append({
-                "time": f"14:{max(0, 28 - i*2):02d}:10 UTC",
+                "time": f"02:{max(0, 48 - i*2):02d}:00 UTC",
                 "sev": sev,
                 "technique": technique,
                 "prose": prose,
@@ -361,16 +361,16 @@ def render_page():
 
     if not alert_items:
         alert_items = [
-            {"time": "14:28:09 UTC", "sev": "critical", "technique": "T1071.001 C2", "prose": "Egress burst spike (+410%) to uncatalogued foreign ASN 4837 with encrypted beaconing cadence", "target": "ip-10-0-14-88"},
-            {"time": "14:24:51 UTC", "sev": "critical", "technique": "T1059.004 LATERAL", "prose": "Unauthenticated RPC execution across host enclave subnet with abnormal peer fan-out", "target": "svc-auth-master"},
-            {"time": "14:21:30 UTC", "sev": "critical", "technique": "T1562.001 DEF IMPAIR", "prose": "Local audit logging daemon tamper attempt detected via memory hook on PID 4810", "target": "audit-vault"},
-            {"time": "14:19:12 UTC", "sev": "high", "technique": "T1046 NET DISCOVERY", "prose": "Rapid port sweeping scan detected from internal workstation cluster segment", "target": "ws-analyst-12"},
-            {"time": "14:16:44 UTC", "sev": "high", "technique": "T1021.002 SMB/RPC", "prose": "Repeated Kerberos ticket-granting service requests with non-existent SPNs (Kerberoasting probe)", "target": "dc-shadow-02"},
-            {"time": "14:14:02 UTC", "sev": "high", "technique": "T1571 NON-STD PORT", "prose": "Outbound TCP session established over port 8443 bypasses egress application proxy", "target": "analytics-agg-02"},
-            {"time": "14:12:00 UTC", "sev": "medium", "technique": "T1078 VALID ACCTS", "prose": "Simultaneous geo-distributed session tokens authenticated for high-privilege service principal", "target": "iam-sync-daemon"},
-            {"time": "14:05:18 UTC", "sev": "medium", "technique": "T1040 SNIFFING", "prose": "Promiscuous mode socket activation detected on internal bridge interface eth0.vlan14", "target": "k8s-worker-04"},
-            {"time": "13:58:33 UTC", "sev": "medium", "technique": "T1090 PROXY", "prose": "DNS tunneling heuristic cleared after automated isolation and quarantine sandbox verification", "target": "edge-gw-02"},
-            {"time": "13:45:10 UTC", "sev": "medium", "technique": "T1110 BRUTE FORCE", "prose": "High threshold of failed SSH authentications originating from staging bastion IP 10.0.1.55", "target": "bastion-stg-01"},
+            {"time": "02:48:00 UTC", "sev": "critical", "technique": "T1071.001 C2", "prose": "Egress burst spike (+410%) to uncatalogued foreign ASN 4837 with encrypted beaconing cadence", "target": "ip-10-0-14-88"},
+            {"time": "02:44:00 UTC", "sev": "critical", "technique": "T1059.004 LATERAL", "prose": "Unauthenticated RPC execution across host enclave subnet with abnormal peer fan-out", "target": "svc-auth-master"},
+            {"time": "02:41:00 UTC", "sev": "critical", "technique": "T1562.001 DEF IMPAIR", "prose": "Local audit logging daemon tamper attempt detected via memory hook on PID 4810", "target": "audit-vault"},
+            {"time": "02:38:00 UTC", "sev": "high", "technique": "T1046 NET DISCOVERY", "prose": "Rapid port sweeping scan detected from internal workstation cluster segment", "target": "ws-analyst-12"},
+            {"time": "02:35:00 UTC", "sev": "high", "technique": "T1021.002 SMB/RPC", "prose": "Repeated Kerberos ticket-granting service requests with non-existent SPNs (Kerberoasting probe)", "target": "dc-shadow-02"},
+            {"time": "02:32:00 UTC", "sev": "high", "technique": "T1571 NON-STD PORT", "prose": "Outbound TCP session established over port 8443 bypasses egress application proxy", "target": "analytics-agg-02"},
+            {"time": "02:29:00 UTC", "sev": "medium", "technique": "T1078 VALID ACCTS", "prose": "Simultaneous geo-distributed session tokens authenticated for high-privilege service principal", "target": "iam-sync-daemon"},
+            {"time": "02:25:00 UTC", "sev": "medium", "technique": "T1040 SNIFFING", "prose": "Promiscuous mode socket activation detected on internal bridge interface eth0.vlan14", "target": "k8s-worker-04"},
+            {"time": "02:20:00 UTC", "sev": "medium", "technique": "T1090 PROXY", "prose": "DNS tunneling heuristic cleared after automated isolation and quarantine sandbox verification", "target": "edge-gw-02"},
+            {"time": "02:18:00 UTC", "sev": "medium", "technique": "T1110 BRUTE FORCE", "prose": "High threshold of failed SSH authentications originating from staging bastion IP 10.0.1.55", "target": "bastion-stg-01"},
         ]
 
     cnt_crit = sum(1 for a in alert_items if a["sev"] == "critical")

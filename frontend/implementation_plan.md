@@ -150,9 +150,9 @@ DEMO_DATA = {
     ],
 
     "flagged_flows": [
-        {"source": "10.0.2.15", "destination": "10.0.4.21",
+        {"source": "172.31.69.21", "destination": "172.31.69.1",
          "protocol": "TCP", "reason": "SYN burst"},
-        {"source": "10.0.2.18", "destination": "10.0.4.21",
+        {"source": "10.0.2.18", "destination": "172.31.69.1",
          "protocol": "TCP", "reason": "Repeated connection attempts"},
         {"source": "10.0.2.31", "destination": "10.0.4.10",
          "protocol": "SSH", "reason": "Repeated authentication attempts"},
@@ -166,7 +166,7 @@ DEMO_DATA = {
 
     # ── NEW: Counterfactual Defence Simulation (Slide 2 USP) ──
     "counterfactual": {
-        "action": "Block source 10.0.2.15 at firewall",
+        "action": "Block source 172.31.69.21 at firewall",
         "original_trajectory": [0.21, 0.38, 0.67, 0.81],   # without defence
         "mitigated_trajectory": [0.21, 0.25, 0.30, 0.34],   # with defence
         "risk_reduction": "58%",
@@ -299,7 +299,7 @@ New section on the **Forecast page** (maps to Slide 2 USP):
 ┌─────────────────────────────────────────────────────────────┐
 │  COUNTERFACTUAL DEFENCE SIMULATION                          │
 │                                                             │
-│  What if: Block source 10.0.2.15 at firewall                │
+│  What if: Block source 172.31.69.21 at firewall                │
 │                                                             │
 │  ───── Original trajectory (no action)                       │
 │  - - - Mitigated trajectory (with defence)                   │

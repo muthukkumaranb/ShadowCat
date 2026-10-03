@@ -85,7 +85,7 @@ def calculate_entity_risk(
 
     # Entities to track
     known_hosts = list(node_roles.keys()) if node_roles else [
-        "10.0.2.15", "10.0.4.10", "10.0.4.21", "10.0.3.50", "10.0.5.1"
+        "172.31.69.21", "172.31.69.1"
     ]
 
     # Map each host to its simulated window contributions over lookback
@@ -116,19 +116,19 @@ def calculate_entity_risk(
             recency_factor = (w_idx + 1) / n_windows
             
             # Host-specific behavior simulation matching CSE-CIC-IDS2018 infiltration
-            if host_ip == "10.0.2.15":  # Patient Zero
+            if base_h >= 0.5:  # Elevated host risk
                 assigned_stage = "Reconnaissance" if w_idx < n_windows * 0.4 else "Initial Access"
                 win_hazard = min(0.98, max(0.15, base_h * (0.6 + recency_factor * 0.7)))
                 reason = "TCP SYN port sweep & HTTP boundary probe" if assigned_stage == "Reconnaissance" else "Brute-force SSH credential spray"
-            elif host_ip == "10.0.4.10":  # Jump Host (Breached)
+            elif False:  # Jump Host (Breached)
                 assigned_stage = "Credential Access" if w_idx > n_windows * 0.3 else "Reconnaissance"
                 win_hazard = min(0.96, max(0.12, base_h * (0.5 + recency_factor * 0.85)))
                 reason = "SSH PAM authentication failure burst (18 req/min)" if assigned_stage == "Credential Access" else "Inbound port scan response"
-            elif host_ip == "10.0.4.21":  # Auth Cluster (Target)
+            elif base_h >= 0.25:
                 assigned_stage = "Lateral Movement" if w_idx > n_windows * 0.6 else "Credential Access"
                 win_hazard = min(0.92, max(0.08, base_h * (0.3 + recency_factor * 0.9)))
                 reason = "Anomalous Kerberos TGS request spike (RC4 encryption)" if assigned_stage == "Lateral Movement" else "LDAP authentication query sweep"
-            elif host_ip == "10.0.5.1":  # Domain Controller
+            elif False:  # Domain Controller
                 assigned_stage = "Impact" if w_idx > n_windows * 0.8 else "Lateral Movement"
                 win_hazard = min(0.88, max(0.05, base_h * (0.2 + recency_factor * 0.8)))
                 reason = "Privileged directory replication request (DCSync pattern)" if assigned_stage == "Impact" else "Active Directory query burst"

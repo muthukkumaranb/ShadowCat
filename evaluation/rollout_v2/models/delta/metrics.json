@@ -1,0 +1,212 @@
+{
+  "protocol": "chronological split",
+  "representation": "UCS feature space supplied to the LSTM",
+  "target": "S(t+1) - S(t) (delta parameterisation)",
+  "model": {
+    "input_size": 406,
+    "hidden_size": 64,
+    "state_dim": 406,
+    "num_layers": 1,
+    "dropout": 0.2,
+    "epsilon": 0.0001,
+    "distribution": "diagonal Gaussian"
+  },
+  "train_count": 1687,
+  "validation_count": 255,
+  "test_count": 311,
+  "best_epoch": 30,
+  "best_validation_nll": 51.07815197121863,
+  "train_validation_nll_gap": 1265.424903869629,
+  "nll_diagnostics": {
+    "train": {
+      "mean": 1316.5029644080657,
+      "median": -0.5269771035014165,
+      "min": -1.3284484968425996,
+      "max": 428927.7739225067,
+      "std": 14143.31247345907,
+      "p50": -0.5269771035014165,
+      "p75": -0.2158457613303276,
+      "p90": 0.19073283515029726,
+      "p95": 2.067927995720023,
+      "p99": 48164.96308780958
+    },
+    "validation": {
+      "mean": 51.078156207332576,
+      "median": -0.8391108387530578,
+      "min": -1.2463408228904367,
+      "max": 11517.593700107256,
+      "std": 726.7949709308726,
+      "p50": -0.8391108387530578,
+      "p75": -0.47453731874506244,
+      "p90": -0.13483214223711856,
+      "p95": 0.22994216314929802,
+      "p99": 13.091163554278085
+    },
+    "test": {
+      "mean": 0.7119478266836715,
+      "median": 0.18137696974741646,
+      "min": -0.7727188189309593,
+      "max": 42.75618823593781,
+      "std": 3.470116490464628,
+      "p50": 0.18137696974741646,
+      "p75": 0.5211405992489473,
+      "p90": 0.8284102669400747,
+      "p95": 1.7784347747779599,
+      "p99": 12.992082702874518
+    }
+  },
+  "splits": {
+    "train": {
+      "mse": 359015.4375,
+      "rmse": 599.178955078125,
+      "mae": 6.820004940032959,
+      "nll": 1316.5030517578125,
+      "mean_predicted_std": 1.301970362663269,
+      "interval_width_80": 3.3370842933654785,
+      "interval_width_95": 5.103630542755127,
+      "coverage_80_nominal": 0.8,
+      "coverage_80_empirical": 0.897467156844137,
+      "coverage_95_nominal": 0.95,
+      "coverage_95_empirical": 0.9637944174665144
+    },
+    "validation": {
+      "mse": 2161.716064453125,
+      "rmse": 46.494258880615234,
+      "mae": 0.7537551522254944,
+      "nll": 51.078147888183594,
+      "mean_predicted_std": 1.659281849861145,
+      "interval_width_80": 4.252910614013672,
+      "interval_width_95": 6.504265785217285,
+      "coverage_80_nominal": 0.8,
+      "coverage_80_empirical": 0.9127982227373708,
+      "coverage_95_nominal": 0.95,
+      "coverage_95_empirical": 0.9695836955471844
+    },
+    "test": {
+      "mse": 13.992694854736328,
+      "rmse": 3.7406811714172363,
+      "mae": 0.5060808658599854,
+      "nll": 0.7119477391242981,
+      "mean_predicted_std": 0.8392078280448914,
+      "interval_width_80": 2.1509761810302734,
+      "interval_width_95": 3.2896342277526855,
+      "coverage_80_nominal": 0.8,
+      "coverage_80_empirical": 0.8956330286854736,
+      "coverage_95_nominal": 0.95,
+      "coverage_95_empirical": 0.955950137012339
+    }
+  },
+  "one_step_baselines": {
+    "persistence": {
+      "mse": 13.994985580444336,
+      "rmse": 3.7409873008728027,
+      "mae": 0.5026789903640747
+    },
+    "lagged_linear_pca": {
+      "mse": 191314.28125,
+      "rmse": 437.3948669433594,
+      "mae": 18.778411865234375
+    },
+    "lstm_gaussian_mean": {
+      "mse": 13.992694854736328,
+      "rmse": 3.7406811714172363,
+      "mae": 0.5060808658599854
+    },
+    "lagged_linear_representation": "PCA-reduced UCS",
+    "pca_components": 128,
+    "pca_fit": "purged training windows only",
+    "protocol": "chronological split"
+  },
+  "rollout": [
+    {
+      "mse": 10.300360679626465,
+      "rmse": 3.2094175815582275,
+      "mae": 0.48918041586875916,
+      "k": 1,
+      "model": "lstm_gaussian",
+      "protocol": "chronological split",
+      "mean_predicted_std": 0.8401301503181458,
+      "coverage_80_empirical": 0.8970010108952039,
+      "coverage_95_empirical": 0.9565635981450875
+    },
+    {
+      "k": 1,
+      "model": "persistence",
+      "protocol": "chronological split",
+      "mse": 10.301251411437988,
+      "rmse": 3.2095563411712646,
+      "mae": 0.4855441749095917
+    },
+    {
+      "k": 1,
+      "model": "lagged_linear_pca",
+      "protocol": "chronological split",
+      "mse": 192896.15625,
+      "rmse": 439.199462890625,
+      "mae": 18.69964027404785
+    },
+    {
+      "mse": 9.687881469726562,
+      "rmse": 3.1125361919403076,
+      "mae": 0.47480297088623047,
+      "k": 2,
+      "model": "lstm_gaussian",
+      "protocol": "chronological split",
+      "mean_predicted_std": 0.839238703250885,
+      "coverage_80_empirical": 0.9013976027342309,
+      "coverage_95_empirical": 0.959556168867637
+    },
+    {
+      "k": 2,
+      "model": "persistence",
+      "protocol": "chronological split",
+      "mse": 9.68753433227539,
+      "rmse": 3.112480401992798,
+      "mae": 0.46497800946235657
+    },
+    {
+      "k": 2,
+      "model": "lagged_linear_pca",
+      "protocol": "chronological split",
+      "mse": 4060254.5,
+      "rmse": 2015.00732421875,
+      "mae": 122.86871337890625
+    },
+    {
+      "mse": 15.564508438110352,
+      "rmse": 3.945188045501709,
+      "mae": 0.5407557487487793,
+      "k": 3,
+      "model": "lstm_gaussian",
+      "protocol": "chronological split",
+      "mean_predicted_std": 0.8370794057846069,
+      "coverage_80_empirical": 0.8810834229232521,
+      "coverage_95_empirical": 0.9500810320758653
+    },
+    {
+      "k": 3,
+      "model": "persistence",
+      "protocol": "chronological split",
+      "mse": 15.555100440979004,
+      "rmse": 3.943995475769043,
+      "mae": 0.519734263420105
+    },
+    {
+      "k": 3,
+      "model": "lagged_linear_pca",
+      "protocol": "chronological split",
+      "mse": 11331118.0,
+      "rmse": 3366.172607421875,
+      "mae": 169.8068389892578
+    }
+  ],
+  "deviation": {
+    "score": "mean absolute error of S(t+1) versus predicted mean",
+    "mean": 0.5060808658599854,
+    "median": 0.3995421528816223,
+    "p95": 0.936086893081665,
+    "roc_auc": 0.5138262322472849,
+    "pr_auc": 0.5513205364954535,
+    "protocol": "chronological split"
+  }
+}

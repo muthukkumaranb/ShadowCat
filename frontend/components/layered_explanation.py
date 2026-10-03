@@ -3,7 +3,7 @@ SHADOWCAT SOC Cockpit - Layered Explanation UI Component
 Restructures model explanations into 4 clear, hierarchical layers:
 - Layer 1: Verdict, predicted next MITRE ATT&CK stage, and estimated time-to-stage.
 - Layer 2: Conformal prediction confidence & uncertainty band + Conformal Credibility (OOD) status.
-- Layer 3: Top contributing features (Integrated Gradients / SHAP deletion weights).
+- Layer 3: Top contributing features (Integrated Gradients deletion weights).
 - Layer 4: Explanatory counterfactual statement with honesty & validation disclosures.
 """
 
@@ -194,7 +194,7 @@ def render_layered_explanation(
     """)
 
     # -------------------------------------------------------------------------
-    # LAYER 3: Top Contributing Features (SHAP / Integrated Gradients)
+    # LAYER 3: Top Contributing Features (Integrated Gradients)
     # -------------------------------------------------------------------------
     top_3 = attributions[:3] if attributions else [
         {"feature": "egress_burst_ratio", "contribution": 0.48, "category": "Packet Dynamics", "delta": "+380%"},

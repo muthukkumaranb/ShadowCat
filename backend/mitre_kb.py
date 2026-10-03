@@ -312,28 +312,32 @@ class MitreKnowledgeBase:
         stage_clean = str(stage_name).strip()
         stage_lower = stage_clean.lower()
 
-        # Handle non-attack / baseline / unknown
+        # Non-attack / unknown labels have no ATT&CK tactic or technique: return None IDs,
+        # never invented ones (TA0000 / T0000 are not ATT&CK IDs).
+        unresolved = {
+            "tactic_id": None,
+            "tactic_name": None,
+            "shortname": None,
+            "description": None,
+            "url": None,
+            "technique_id": None,
+            "technique_name": None,
+            "technique_full_name": None,
+            "technique_description": None,
+            "technique_url": None,
+            "is_active_attack": False,
+        }
         if stage_lower in ("unknown/other", "nominal baseline", "nominal traffic", "unknown", "none"):
-            return {
-                "tactic_id": "TA0000",
-                "tactic_name": "Unknown/Other",
-                "shortname": "unknown",
-                "description": "Baseline network behavior or telemetry activity not cleanly attributed to a specific MITRE ATT&CK tactic.",
-                "url": "https://attack.mitre.org/tactics/",
-                "technique_id": "T0000",
-                "technique_name": "Unclassified Telemetry Pattern",
-                "technique_full_name": "Baseline Network State",
-                "technique_description": "Network telemetry within operational bounds without active adversary technique indicators.",
-                "technique_url": "https://attack.mitre.org/",
-                "is_active_attack": False,
-            }
+            return dict(unresolved)
 
         # Resolve tactic directly from KB
         tac = self.get_tactic(stage_clean)
-        tactic_id = tac["id"] if tac else "TA0000"
-        tactic_name = tac["name"] if tac else stage_clean
-        tactic_desc = tac["description"] if tac else f"Adversary activity associated with {stage_clean}."
-        tactic_url = tac["url"] if tac else f"https://attack.mitre.org/tactics/{tactic_id}"
+        if not tac:
+            return dict(unresolved)
+        tactic_id = tac["id"]
+        tactic_name = tac["name"]
+        tactic_desc = tac["description"]
+        tactic_url = tac["url"]
 
         # Resolve primary technique
         canon_tech_id = CANONICAL_TECHNIQUES.get(stage_lower)
@@ -346,16 +350,12 @@ class MitreKnowledgeBase:
             tech_desc = tech_meta["description"]
             tech_url = tech_meta["url"]
         else:
-            tech_id = "T1046"
-            tech_name = "Network Activity"
-            tech_full = "Network Activity"
-            tech_desc = tactic_desc
-            tech_url = tactic_url
+            tech_id = tech_name = tech_full = tech_desc = tech_url = None
 
         return {
             "tactic_id": tactic_id,
             "tactic_name": tactic_name,
-            "shortname": tac.get("shortname", "") if tac else "",
+            "shortname": tac.get("shortname", ""),
             "description": tactic_desc,
             "url": tactic_url,
             "technique_id": tech_id,

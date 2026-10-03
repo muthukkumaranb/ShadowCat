@@ -137,7 +137,7 @@ def compute_graph_traversal(
             "total_edges": 0,
             "steps": [],
             "walked_edges": [],
-            "walked_edge_keys": set(),
+            "walked_edge_keys": [],
         }
 
     flagged_flows = flagged_flows or []
@@ -467,5 +467,5 @@ def compute_graph_traversal(
         "total_edges": len(graph_edges),
         "steps": steps,
         "walked_edges": walked_edges,
-        "walked_edge_keys": {(str(e.get("source")), str(e.get("target"))) for e in walked_edges},
+        "walked_edge_keys": sorted(list({(str(e.get("source")), str(e.get("target"))) for e in walked_edges})),
     }

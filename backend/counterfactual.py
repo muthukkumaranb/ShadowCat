@@ -1,7 +1,7 @@
 """
 SHADOWCAT Backend - Explanatory Counterfactual Engine
 Computes minimal, realistic perturbations to input features that would bring
-a flagged window's hazard score below the calibrated alert threshold.
+a flagged window's onset probability below the alert threshold.
 
 Safeguards:
 1. Every candidate perturbation is strictly bounded to the empirical [1st, 99th]
@@ -29,7 +29,7 @@ DATA_ENG_DIR = REPO_ROOT / "data-engineering"
 MODELS_DIR = REPO_ROOT / "models"
 
 HONESTY_LABEL = (
-    "Model-based counterfactual under the hazard model's learned decision boundary — "
+    "Model-based counterfactual under the onset model's learned decision boundary — "
     "not a guarantee that this change would have prevented the actual attack, "
     "and not validated against real intervention data."
 )
@@ -142,7 +142,7 @@ class CounterfactualEngine:
         Percentile clipping: [p01, p99] strictly enforced.
         """
         target_threshold = float(
-            threshold if threshold is not None else getattr(pipeline, "calibrated_threshold_global", 0.15)
+            threshold if threshold is not None else getattr(pipeline, "alert_threshold", 0.5)
         )
         if step_fractions is None:
             step_fractions = [0.15, 0.30, 0.50, 0.70, 0.85, 1.00]
@@ -157,8 +157,7 @@ class CounterfactualEngine:
             }
 
         # 1. Baseline Hazard Evaluation
-        initial_hazards = pipeline._predict_hazard_ensemble(sequence_30x406)
-        h0 = float(initial_hazards.get(1, 0.08))
+        h0 = float(pipeline._predict_onset_probability(sequence_30x406))
 
         if h0 < target_threshold:
             return {
@@ -169,7 +168,7 @@ class CounterfactualEngine:
                 "calibrated_threshold": target_threshold,
                 "perturbed_features": [],
                 "summary": (
-                    f"Current window hazard ({h0:.3f}) is already below the alert threshold ({target_threshold:.3f}). "
+                    f"Current window onset probability ({h0:.3f}) is already below the alert threshold ({target_threshold:.3f}). "
                     "No perturbation required."
                 ),
                 "honesty_label": HONESTY_LABEL,
@@ -227,8 +226,7 @@ class CounterfactualEngine:
                 s_pert = sequence_30x406.copy()
                 s_pert[-1, f_idx] = clipped_val
 
-                hazards_pert = pipeline._predict_hazard_ensemble(s_pert)
-                h_pert = float(hazards_pert.get(1, 0.08))
+                h_pert = float(pipeline._predict_onset_probability(s_pert))
                 if h_pert < best_hazard:
                     best_hazard = h_pert
 
@@ -273,8 +271,7 @@ class CounterfactualEngine:
                 s_test = s_accum.copy()
                 s_test[-1, f_idx] = clipped_val
 
-                hazards_pert = pipeline._predict_hazard_ensemble(s_test)
-                h_pert = float(hazards_pert.get(1, 0.08))
+                h_pert = float(pipeline._predict_onset_probability(s_test))
                 if h_pert < best_hazard:
                     best_hazard = h_pert
 
@@ -308,7 +305,7 @@ class CounterfactualEngine:
         summary = (
             f"No realistic minimal change found within observed data bounds [1st, 99th percentile]. "
             f"Even reducing top driving features ({', '.join(candidate_cols[:3])}) to baseline, "
-            f"hazard score remained at {best_hazard:.3f} (above calibrated threshold {target_threshold:.3f})."
+            f"onset probability remained at {best_hazard:.3f} (above alert threshold {target_threshold:.3f})."
         )
         return {
             "status": "inconclusive",
@@ -389,7 +386,7 @@ class CounterfactualEngine:
         clause_str = " and ".join(clauses)
         return (
             f"{clause_str.capitalize()} would have kept this window below the alert threshold "
-            f"(hazard dropped from {h0:.3f} to {h_pert:.3f}, below calibrated threshold {threshold:.3f})."
+            f"(onset probability dropped from {h0:.3f} to {h_pert:.3f}, below alert threshold {threshold:.3f})."
         )
 
 

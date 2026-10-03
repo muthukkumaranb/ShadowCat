@@ -75,7 +75,7 @@ def check_signature_ids():
 
 def benchmark_hazard_ensemble():
     print("\n" + "=" * 60)
-    print("3. HAZARD ENSEMBLE TIMING BENCHMARK (37 FOLDS)")
+    print("3. ONSET ENSEMBLE TIMING BENCHMARK (37 FOLDS)")
     print("=" * 60)
     from backend.predict import get_pipeline
     pipeline = get_pipeline()
@@ -83,10 +83,10 @@ def benchmark_hazard_ensemble():
 
     t0 = time.perf_counter()
     for _ in range(10):
-        hazards = pipeline._predict_hazard_ensemble(dummy_seq)
+        hazards = pipeline._predict_onset_probability(dummy_seq)
     elapsed = (time.perf_counter() - t0) / 10.0
-    print(f"Ensemble execution time per call (37 folds x 3 horizons): {elapsed * 1000.0:.2f} ms")
-    print(f"Hazards output: {hazards}")
+    print(f"Onset ensemble execution time per call (37 folds): {elapsed * 1000.0:.2f} ms")
+    print(f"Onset probability: {hazards}")
 
 if __name__ == "__main__":
     check_scalers()

@@ -1,0 +1,198 @@
+{
+  "data": "data-engineering/data/ucs/ucs_windows_models_v1.parquet",
+  "n_windows": 20,
+  "summary": {
+    "detection": {
+      "mean_abs_diff": 0.006772857650931198,
+      "max_abs_diff": 0.025827803321786802,
+      "pearson_r": 0.9994767538363699
+    },
+    "onset": {
+      "mean_abs_diff": 0.0064834635320113205,
+      "max_abs_diff": 0.017070328867113294,
+      "pearson_r": 0.999452462656045
+    }
+  },
+  "windows": [
+    {
+      "window_index": 268,
+      "window_start_utc": "2018-02-14 05:28:00+00:00",
+      "label_attack_type": "Benign",
+      "detection_single_pca": 0.1637466634950928,
+      "detection_per_fold_pca": 0.1595327041640475,
+      "onset_single_pca": 0.19327179161277977,
+      "onset_per_fold_pca": 0.1881009722883637
+    },
+    {
+      "window_index": 351,
+      "window_start_utc": "2018-02-14 09:48:00+00:00",
+      "label_attack_type": "Benign",
+      "detection_single_pca": 0.11043963301926851,
+      "detection_per_fold_pca": 0.10930184368044138,
+      "onset_single_pca": 0.11548630505598881,
+      "onset_per_fold_pca": 0.11392919246006657
+    },
+    {
+      "window_index": 394,
+      "window_start_utc": "2018-02-14 10:31:00+00:00",
+      "label_attack_type": "Benign",
+      "detection_single_pca": 0.32456487558178,
+      "detection_per_fold_pca": 0.3219602011345528,
+      "onset_single_pca": 0.42538644574783946,
+      "onset_per_fold_pca": 0.42904867513759715
+    },
+    {
+      "window_index": 396,
+      "window_start_utc": "2018-02-14 10:33:00+00:00",
+      "label_attack_type": "Benign",
+      "detection_single_pca": 0.7850019400184219,
+      "detection_per_fold_pca": 0.7891262673042916,
+      "onset_single_pca": 0.7410109027011974,
+      "onset_per_fold_pca": 0.7462725558796445
+    },
+    {
+      "window_index": 550,
+      "window_start_utc": "2018-02-21 02:02:00+00:00",
+      "label_attack_type": "Benign",
+      "detection_single_pca": 0.011730378633620524,
+      "detection_per_fold_pca": 0.011737453804994172,
+      "onset_single_pca": 0.02506359776079252,
+      "onset_per_fold_pca": 0.024855801082102936
+    },
+    {
+      "window_index": 562,
+      "window_start_utc": "2018-02-21 02:14:00+00:00",
+      "label_attack_type": "DDOS-HOIC",
+      "detection_single_pca": 0.9997707444268304,
+      "detection_per_fold_pca": 0.9997707669799393,
+      "onset_single_pca": 0.9998676825214077,
+      "onset_per_fold_pca": 0.9998676986307711
+    },
+    {
+      "window_index": 734,
+      "window_start_utc": "2018-02-22 01:21:00+00:00",
+      "label_attack_type": "Benign",
+      "detection_single_pca": 0.3674556290781176,
+      "detection_per_fold_pca": 0.37720662677610245,
+      "onset_single_pca": 0.4419565063876075,
+      "onset_per_fold_pca": 0.4578714459329038
+    },
+    {
+      "window_index": 846,
+      "window_start_utc": "2018-02-22 03:13:00+00:00",
+      "label_attack_type": "Benign",
+      "detection_single_pca": 0.18108725688747457,
+      "detection_per_fold_pca": 0.18435536878737244,
+      "onset_single_pca": 0.23276909682396296,
+      "onset_per_fold_pca": 0.24228337326565305
+    },
+    {
+      "window_index": 1242,
+      "window_start_utc": "2018-02-22 12:40:00+00:00",
+      "label_attack_type": "Benign",
+      "detection_single_pca": 0.21662621763912407,
+      "detection_per_fold_pca": 0.22149555042788788,
+      "onset_single_pca": 0.23973100088738106,
+      "onset_per_fold_pca": 0.2494923603293058
+    },
+    {
+      "window_index": 1297,
+      "window_start_utc": "2018-02-28 01:35:00+00:00",
+      "label_attack_type": "Benign",
+      "detection_single_pca": 0.4599166182247368,
+      "detection_per_fold_pca": 0.43408881490295,
+      "onset_single_pca": 0.5083368638077298,
+      "onset_per_fold_pca": 0.4912665349406165
+    },
+    {
+      "window_index": 1322,
+      "window_start_utc": "2018-02-28 02:00:00+00:00",
+      "label_attack_type": "Benign",
+      "detection_single_pca": 0.4676528170302108,
+      "detection_per_fold_pca": 0.46087463482006175,
+      "onset_single_pca": 0.4307149495627429,
+      "onset_per_fold_pca": 0.4290215324711155
+    },
+    {
+      "window_index": 1657,
+      "window_start_utc": "2018-02-28 10:05:00+00:00",
+      "label_attack_type": "Benign",
+      "detection_single_pca": 0.2775894983394726,
+      "detection_per_fold_pca": 0.2619355155809506,
+      "onset_single_pca": 0.2969677661721771,
+      "onset_per_fold_pca": 0.28582637173098485
+    },
+    {
+      "window_index": 1792,
+      "window_start_utc": "2018-02-28 12:20:00+00:00",
+      "label_attack_type": "Benign",
+      "detection_single_pca": 0.30092461568278234,
+      "detection_per_fold_pca": 0.28212130069732666,
+      "onset_single_pca": 0.3421208177869384,
+      "onset_per_fold_pca": 0.3285406344645732
+    },
+    {
+      "window_index": 2086,
+      "window_start_utc": "2018-03-01 08:54:00+00:00",
+      "label_attack_type": "Benign",
+      "detection_single_pca": 0.19880844360670527,
+      "detection_per_fold_pca": 0.18743493629468455,
+      "onset_single_pca": 0.259387022136031,
+      "onset_per_fold_pca": 0.2478253527267559
+    },
+    {
+      "window_index": 2133,
+      "window_start_utc": "2018-03-01 09:41:00+00:00",
+      "label_attack_type": "Benign",
+      "detection_single_pca": 0.24698670913238782,
+      "detection_per_fold_pca": 0.23306529828020045,
+      "onset_single_pca": 0.3001047231861063,
+      "onset_per_fold_pca": 0.28909922330766114
+    },
+    {
+      "window_index": 2357,
+      "window_start_utc": "2018-03-02 01:25:00+00:00",
+      "label_attack_type": "Benign",
+      "detection_single_pca": 0.7667662146929148,
+      "detection_per_fold_pca": 0.7603751807599455,
+      "onset_single_pca": 0.7417334817551278,
+      "onset_per_fold_pca": 0.7383634238629728
+    },
+    {
+      "window_index": 2498,
+      "window_start_utc": "2018-03-02 04:56:00+00:00",
+      "label_attack_type": "Benign",
+      "detection_single_pca": 0.22191036311355797,
+      "detection_per_fold_pca": 0.22276882323864344,
+      "onset_single_pca": 0.25843579402646505,
+      "onset_per_fold_pca": 0.26393351603198695
+    },
+    {
+      "window_index": 2538,
+      "window_start_utc": "2018-03-02 08:51:00+00:00",
+      "label_attack_type": "Benign",
+      "detection_single_pca": 0.1298590745474841,
+      "detection_per_fold_pca": 0.13032559796261625,
+      "onset_single_pca": 0.11094433867146035,
+      "onset_per_fold_pca": 0.11123052332550287
+    },
+    {
+      "window_index": 2577,
+      "window_start_utc": "2018-03-02 09:30:00+00:00",
+      "label_attack_type": "Benign",
+      "detection_single_pca": 0.18636386529416651,
+      "detection_per_fold_pca": 0.1835861699403943,
+      "onset_single_pca": 0.21375585568917765,
+      "onset_per_fold_pca": 0.2107716110107061
+    },
+    {
+      "window_index": 2750,
+      "window_start_utc": "2018-03-02 12:23:00+00:00",
+      "label_attack_type": "Benign",
+      "detection_single_pca": 0.8037678180514155,
+      "detection_per_fold_pca": 0.8011388698139706,
+      "onset_single_pca": 0.7825530606347162,
+      "onset_per_fold_pca": 0.7829814263292261
+    }
+  ]
+}
