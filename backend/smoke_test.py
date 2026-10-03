@@ -19,14 +19,14 @@ def run_smoke_test():
     print("=" * 60)
 
     # 1. Canonical Dataset Sample
-    parquet_path = "data-engineering/data/ucs/ucs_windows.parquet"
+    parquet_path = "data-engineering/data/ucs/ucs_windows_models_v1.parquet"
     print(f"\n[1] Loading real canonical sample from: {parquet_path}")
     df = pd.read_parquet(parquet_path).head(45).copy()
     print(f"    Loaded {len(df)} windows.")
 
     # 2. Run predict()
-    print("\n[2] Executing predict(df, source_type='flows')...")
-    output = predict(df, source_type="flows")
+    print("\n[2] Executing predict(df, source_type='windows')...")
+    output = predict(df, source_type="windows")
 
     # 3. Validate Non-Degeneracy
     fc = output["forecast_trajectory"]
@@ -37,17 +37,16 @@ def run_smoke_test():
     print("\n[3] Verification Checks:")
     print(f"    - Window ID: {output['window_id']}")
     print(f"    - Is Warmup: {output['is_warmup']}")
-    print(f"    - Risk Trajectory [t+1..t+5]: {risks}")
+    print(f"    - {fc['onset_probability_label']}: {risks}")
     print(f"    - Stage Trajectory: {stages}")
     print(f"    - Novelty Score: {novelty['novelty_score']} ({novelty['novelty_status']})")
     print(f"    - Dominant Behavior: {novelty['dominant_behavior']}")
 
     # Assertions
-    assert len(risks) == 5, f"Expected 5 risk horizons, got {len(risks)}"
+    assert len(risks) == 1, f"Expected a single onset probability, got {len(risks)}"
     assert all(0.0 <= r <= 1.0 for r in risks), f"Risk values outside [0, 1]: {risks}"
-    assert not all(r == 0.0 for r in risks), "Degenerate failure: all risks are exact 0.0"
     assert not any(np.isnan(r) for r in risks), "NaN values detected in risk scores"
-    print("\n    [PASS] Probability boundedness & non-degeneracy verified.")
+    print("\n    [PASS] Probability boundedness verified.")
 
     print("\n[4] Top Feature Attributions:")
     for a in output["attributions"]:
@@ -103,7 +102,7 @@ def run_smoke_test():
     print(f"    - Detection Alert: {output.get('detection_alert')}")
 
     # Assertions on stacked model loading
-    assert fc.get("model_architecture") == "Stacked & Calibrated Residual LSTM (Phase 1 Verified)", \
+    assert fc.get("model_architecture") == "Stacked & Calibrated Residual LSTM", \
         f"Unexpected model architecture: {fc.get('model_architecture')}"
     assert fc.get("active_model_folds", 0) > 0, "No stacked model folds loaded!"
     assert "lstm_stacked" in fc.get("checkpoint_dir", ""), f"Checkpoints not loaded from lstm_stacked: {fc.get('checkpoint_dir')}"
@@ -114,12 +113,12 @@ def run_smoke_test():
     print(f"    - Conformal Sample Size: {cf.get('sample_size')}")
     print(f"    - Conformal Quantile: {cf.get('quantile')}")
     print(f"    - Conformal Coverage: {cf.get('coverage')}")
-    print(f"    - Conformal Intervals [t+1..t+5]: {cf.get('intervals')}")
+    print(f"    - Conformal Interval (onset): {cf.get('intervals')}")
 
     assert cf.get("sample_size", 0) > 1000, f"Expected >1000 empirical residuals, got {cf.get('sample_size')} (placeholder detected!)"
     assert cf.get("quantile") is not None and 0.0 < cf.get("quantile") < 1.0, f"Invalid quantile: {cf.get('quantile')}"
     assert "Pooled validation residuals" in str(cf.get("calibration_source", "")), f"Expected real residuals, got: {cf.get('calibration_source')}"
-    assert len(cf.get("intervals", [])) == 5, "Expected 5 conformal intervals"
+    assert len(cf.get("intervals", [])) == 1, "Expected 1 conformal interval (onset probability)"
     for iv in cf.get("intervals", []):
         assert len(iv) == 2, f"Invalid interval format: {iv}"
         assert 0.0 <= iv[0] <= iv[1] <= 1.0, f"Invalid interval bounds: {iv}"

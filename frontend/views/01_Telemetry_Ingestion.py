@@ -170,7 +170,7 @@ def render_page():
                 st.session_state.ingested_df = df
                 st.session_state["_last_uploaded_name"] = fname
                 # Auto-execute live ML pipeline on newly uploaded data
-                s_type = "flows" if fname.endswith(".parquet") else "csv"
+                s_type = "windows" if fname.endswith(".parquet") else "csv"
                 pred = run_core_ml_inference(df, source_type=s_type)
                 st.session_state["ml_prediction_result"] = pred
                 st.session_state["ml_prediction_timestamp"] = time.strftime("%H:%M:%S UTC")

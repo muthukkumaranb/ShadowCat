@@ -47,8 +47,8 @@ def run_proof():
     slice_1 = df.iloc[0:30]
     slice_2 = df.iloc[35:65]
 
-    tensor_1 = pipeline.extractor.extract_model_tensor(slice_1, source_type="flows")
-    tensor_2 = pipeline.extractor.extract_model_tensor(slice_2, source_type="flows")
+    tensor_1 = pipeline.extractor.extract_model_tensor(slice_1, source_type="windows")
+    tensor_2 = pipeline.extractor.extract_model_tensor(slice_2, source_type="windows")
 
     t_tensor1 = torch.as_tensor(tensor_1, dtype=torch.float32).unsqueeze(0)
     t_tensor2 = torch.as_tensor(tensor_2, dtype=torch.float32).unsqueeze(0)
@@ -70,7 +70,7 @@ def run_proof():
     # 3. Full predict() output on real input
     print("\n--- ITEM 6 PROOF: Full predict() Output on Real Input ---")
     sample_df = df.iloc[10:55].copy()
-    full_output = predict(sample_df, source_type="flows")
+    full_output = predict(sample_df, source_type="windows")
     print(json.dumps(full_output, indent=2))
 
     # 4. Frontend mock badge disappearance proof

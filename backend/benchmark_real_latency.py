@@ -78,7 +78,7 @@ def run_benchmark(n_trials: int = 30, n_warmup: int = 5, n_fabric_trials: int = 
     print(f"\n[3/5] Warming up PyTorch inference engines & caches ({n_warmup} iterations)...")
     for i in range(n_warmup):
         seq_label, seq_df = test_sequences[i % len(test_sequences)]
-        _ = pipeline.predict(seq_df, source_type="flows")
+        _ = pipeline.predict(seq_df, source_type="windows")
     print(" -> Warmup completed successfully.")
 
     # 4. Timed Benchmark Runs (ML + Graph Traversal)
@@ -98,8 +98,8 @@ def run_benchmark(n_trials: int = 30, n_warmup: int = 5, n_fabric_trials: int = 
         # --- Component-level fine-grained profiling ---
         # A. Feature extraction from raw window dataframe
         t0 = time.perf_counter()
-        window_df = pipeline.extractor.extract(seq_df, source_type="flows")
-        model_tensor = pipeline.extractor.extract_model_tensor(seq_df, source_type="flows")
+        window_df = pipeline.extractor.extract(seq_df, source_type="windows")
+        model_tensor = pipeline.extractor.extract_model_tensor(seq_df, source_type="windows")
         seq_30x406 = np.ascontiguousarray(model_tensor[-30:], dtype=np.float32)
         seq_tensor = torch.as_tensor(seq_30x406, dtype=torch.float32).unsqueeze(0).to(pipeline.device)
         t_ext = time.perf_counter()
@@ -161,7 +161,7 @@ def run_benchmark(n_trials: int = 30, n_warmup: int = 5, n_fabric_trials: int = 
 
         # G. Full end-to-end ML + Graph pipeline call
         t_e2e_0 = time.perf_counter()
-        res = pipeline.predict(seq_df, source_type="flows")
+        res = pipeline.predict(seq_df, source_type="windows")
         t_e2e_1 = time.perf_counter()
         total_ml_latencies.append((t_e2e_1 - t_e2e_0) * 1000.0)
 

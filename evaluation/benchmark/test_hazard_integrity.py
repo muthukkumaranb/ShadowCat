@@ -36,7 +36,7 @@ def test_predict_has_no_per_horizon_hazards():
     from backend.predict import get_pipeline
 
     df = pd.read_parquet(_V1_PARQUET).head(40)
-    res = get_pipeline().predict(df, source_type="flows")
+    res = get_pipeline().predict(df, source_type="windows")
     fc = res["forecast_trajectory"]
     for key in ("step_hazards", "horizon_is_modelled", "hazard_source", "rollout_infiltration_prob"):
         assert key not in fc

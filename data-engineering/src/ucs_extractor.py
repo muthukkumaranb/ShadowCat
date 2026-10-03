@@ -177,6 +177,9 @@ class UCSExtractor:
                      mapping -> cleaning -> windowing -> packet fill -> imputation -> scaling.
             - 'pcap': Pre-extracted flow records with packet features present.
             - 'flows': Cleaned canonical flow records directly.
+            - 'windows': Already-built UCS windows (e.g. rows of ucs_windows*.parquet), which are
+                         already scaled and carry their own presence masks. Returned as-is
+                         (column selection only): no re-windowing, re-masking or re-scaling.
 
         Returns
         -------
@@ -186,8 +189,20 @@ class UCSExtractor:
         if raw_input is None or len(raw_input) == 0:
             raise ValueError("Input DataFrame is empty or None.")
 
-        if source_type not in ("csv", "pcap", "flows"):
-            raise ValueError(f"Invalid source_type '{source_type}'. Supported: 'csv', 'pcap', 'flows'")
+        if source_type not in ("csv", "pcap", "flows", "windows"):
+            raise ValueError(f"Invalid source_type '{source_type}'. Supported: 'csv', 'pcap', 'flows', 'windows'")
+
+        if source_type == "windows":
+            missing = [c for c in self.OUTPUT_COLUMNS if c not in raw_input.columns]
+            if missing:
+                raise SchemaValidationError(
+                    f"source_type='windows' needs the {len(self.OUTPUT_COLUMNS)} UCS window columns; "
+                    f"missing {len(missing)}: {missing[:10]}"
+                )
+            windows = raw_input.sort_values("window_start_utc")[self.OUTPUT_COLUMNS].reset_index(drop=True)
+            if windows[self.MASK_COLUMNS + self.MODEL_FEATURE_COLUMNS].isna().any().any():
+                raise SchemaValidationError("NaN values in UCS window feature columns")
+            return windows
 
         df = raw_input.copy()
 

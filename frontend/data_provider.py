@@ -180,7 +180,7 @@ def _get_live_prediction() -> Dict[str, Any]:
             parquet_path = REPO_ROOT / "data-engineering" / "data" / "ucs" / "ucs_windows.parquet"
         if parquet_path.exists():
             df = pd.read_parquet(parquet_path).head(2500).copy()
-            _CACHED_LIVE_PREDICTION = predict(df, source_type="flows")
+            _CACHED_LIVE_PREDICTION = predict(df, source_type="windows")
             return _CACHED_LIVE_PREDICTION
     except Exception as e:
         pass
@@ -229,6 +229,17 @@ def run_core_ml_inference(input_df: pd.DataFrame, source_type: str = "csv") -> D
     # Deduplicate existing columns in input_df
     if df.columns.duplicated().any():
         df = df.loc[:, ~df.columns.duplicated(keep="first")].copy()
+
+    if source_type == "windows":
+        # Already-built, already-scaled UCS windows: no flow-column normalization.
+        try:
+            pred = predict(df, source_type="windows")
+            _CACHED_LIVE_PREDICTION = pred
+            return pred
+        except Exception as e:
+            import traceback
+            return {"_inference_error": str(e), "_inference_traceback": traceback.format_exc(),
+                    "_critical_schema_failure": True}
 
     # Normalize timestamp column for UCSExtractor without duplicate keys
     ts_cols = [c for c in df.columns if c.lower() in ("timestamp", "timestamp_utc", "time", "ts", "date", "starttime")]

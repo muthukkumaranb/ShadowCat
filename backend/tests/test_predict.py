@@ -52,7 +52,7 @@ class TestBackendPipeline(unittest.TestCase):
         """Verify UCSExtractor returns exactly (N, 406) normalized tensor."""
         if self.canonical_windows is not None:
             sample_df = self.canonical_windows.head(35).copy()
-            tensor = self.pipeline.extractor.extract_model_tensor(sample_df, source_type="flows")
+            tensor = self.pipeline.extractor.extract_model_tensor(sample_df, source_type="windows")
             self.assertEqual(tensor.ndim, 2)
             self.assertEqual(tensor.shape[1], 406)
             self.assertFalse(np.isnan(tensor).any(), "NaN values found in extracted tensor")
@@ -90,7 +90,7 @@ class TestBackendPipeline(unittest.TestCase):
         """Verify predict() on real canonical windows produces valid, non-degenerate output."""
         if self.canonical_windows is not None:
             sample_df = self.canonical_windows.head(40).copy()
-            res = predict(sample_df, source_type="flows")
+            res = predict(sample_df, source_type="windows")
 
             # Check top-level keys
             self.assertIn("forecast_trajectory", res)
@@ -182,7 +182,7 @@ class TestBackendPipeline(unittest.TestCase):
         # Verify live predict output attributions
         if self.canonical_windows is not None:
             sample_df = self.canonical_windows.head(40).copy()
-            res = predict(sample_df, source_type="flows")
+            res = predict(sample_df, source_type="windows")
             attributions = res.get("attributions", [])
             self.assertGreater(len(attributions), 0, "Expected non-empty attributions list")
 
