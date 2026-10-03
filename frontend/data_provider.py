@@ -162,52 +162,48 @@ def _get_live_prediction() -> Dict[str, Any]:
     if _CACHED_LIVE_PREDICTION is not None:
         return _CACHED_LIVE_PREDICTION
 
+    # Default before the user loads anything: the committed benign demo slice
+    # (32 real UCS windows, see frontend/demo_data/slices.json).
     try:
         from backend.predict import predict
-
-        # Load canonical window slice for live demonstration.
-        # IMPORTANT: lstm_stacked models were trained on ucs_windows_models_v1.parquet (commit e200fdb),
-        # NOT on ucs_windows.parquet (which has different packet features since bee7536).
-        # Using the training-data-compatible file to avoid distribution mismatch.
-        parquet_path = REPO_ROOT / "data-engineering" / "data" / "ucs" / "ucs_windows_models_v1.parquet"
-        if not parquet_path.exists():
-            # Fallback to current file if models_v1 not present (accept mismatch, log warning)
-            import logging
-            logging.warning(
-                "ucs_windows_models_v1.parquet not found; falling back to ucs_windows.parquet. "
-                "Dashboard probabilities may not match LOEO benchmark (packet features differ)."
-            )
-            parquet_path = REPO_ROOT / "data-engineering" / "data" / "ucs" / "ucs_windows.parquet"
-        if parquet_path.exists():
-            df = pd.read_parquet(parquet_path).head(2500).copy()
-            _CACHED_LIVE_PREDICTION = predict(df, source_type="windows")
-            return _CACHED_LIVE_PREDICTION
-    except Exception as e:
-        pass
-
-    # Fallback to minimal live prediction if parquet not found
-    try:
-        from backend.predict import predict
-        dummy_flows = pd.DataFrame({
-            "Dst Port": [80, 443, 22] * 12,
-            "Protocol": [6, 6, 6] * 12,
-            "Timestamp": [f"14/02/2018 09:00:{i:02d}" for i in range(36)],
-            "Flow Duration": [1000000 + i * 1000 for i in range(36)],
-            "Tot Fwd Pkts": [10 + i for i in range(36)],
-            "Tot Bwd Pkts": [8 + i for i in range(36)],
-            "TotLen Fwd Pkts": [1000 + i * 50 for i in range(36)],
-            "TotLen Bwd Pkts": [800 + i * 40 for i in range(36)],
-            "Src IP": ["10.0.2.15"] * 36,
-            "Dst IP": ["10.0.4.21"] * 36,
-            "Src Port": [54000 + i for i in range(36)],
-        })
-        _CACHED_LIVE_PREDICTION = predict(dummy_flows, source_type="csv")
+        df = load_demo_slice(DEFAULT_DEMO_SLICE)
+        _CACHED_LIVE_PREDICTION = predict(df, source_type="windows")
         return _CACHED_LIVE_PREDICTION
     except Exception:
-        pass
+        return {}
 
-    # Ultimate fallback: return empty dict so all .get() callers use their inline defaults
-    return {}
+
+DEMO_DIR = PROJECT_ROOT / "demo_data"
+DEFAULT_DEMO_SLICE = "benign"
+
+
+def get_demo_slices() -> Dict[str, Any]:
+    """Metadata of the committed demo slices (frontend/demo_data/slices.json)."""
+    path = DEMO_DIR / "slices.json"
+    if not path.exists():
+        return {}
+    with open(path, "r", encoding="utf-8") as f:
+        return json.load(f).get("slices", {})
+
+
+def load_demo_slice(key: str) -> pd.DataFrame:
+    """The 32 UCS windows of a demo slice (rows of ucs_windows_models_v1.parquet)."""
+    meta = get_demo_slices()[key]
+    return pd.read_parquet(REPO_ROOT / meta["windows"])
+
+
+def get_active_source() -> str:
+    """Human-readable description of the data behind the active prediction."""
+    try:
+        import streamlit as st
+        if st.session_state.get("active_source"):
+            return st.session_state["active_source"]
+    except Exception:
+        pass
+    meta = get_demo_slices().get(DEFAULT_DEMO_SLICE)
+    if not meta:
+        return "no input loaded"
+    return f"Demo slice '{DEFAULT_DEMO_SLICE}' ({meta['time_range_utc'][0]} to {meta['time_range_utc'][1]} UTC)"
 
 
 def set_active_prediction(prediction_dict: Dict[str, Any]) -> None:
@@ -243,19 +239,23 @@ def run_core_ml_inference(input_df: pd.DataFrame, source_type: str = "csv") -> D
 
     # Normalize timestamp column for UCSExtractor without duplicate keys
     ts_cols = [c for c in df.columns if c.lower() in ("timestamp", "timestamp_utc", "time", "ts", "date", "starttime")]
-    if ts_cols:
-        ts_col = ts_cols[0]
-        try:
-            ts_series = pd.to_datetime(df[ts_col])
-            df["Timestamp"] = ts_series.dt.strftime("%d/%m/%Y %H:%M:%S")
-        except Exception:
-            df["Timestamp"] = [f"14/02/2018 09:00:{i%60:02d}" for i in range(len(df))]
-        # Drop redundant alternative timestamp columns to prevent duplicate mapping
-        for c in ts_cols:
-            if c != "Timestamp" and c in df.columns:
-                df = df.drop(columns=[c])
-    else:
-        df["Timestamp"] = [f"14/02/2018 09:00:{i%60:02d}" for i in range(len(df))]
+    if not ts_cols:
+        return {"_inference_error": "Input has no timestamp column; flows cannot be windowed.",
+                "_critical_schema_failure": True}
+    ts_col = ts_cols[0]
+    # CICFlowMeter writes day-first timestamps (dd/mm/YYYY); parse that format first so
+    # 02/03/2018 stays 2 March and is not read as 3 February.
+    ts_series = pd.to_datetime(df[ts_col], format="%d/%m/%Y %H:%M:%S", errors="coerce")
+    if ts_series.isna().all():
+        ts_series = pd.to_datetime(df[ts_col], dayfirst=True, errors="coerce")
+    if ts_series.isna().all():
+        return {"_inference_error": f"Could not parse timestamps in column '{ts_col}'.",
+                "_critical_schema_failure": True}
+    df["Timestamp"] = ts_series.dt.strftime("%d/%m/%Y %H:%M:%S")
+    # Drop redundant alternative timestamp columns to prevent duplicate mapping
+    for c in ts_cols:
+        if c != "Timestamp" and c in df.columns:
+            df = df.drop(columns=[c])
 
     # Normalize flow duration if present
     if "flow_duration_s" in df.columns and "Flow Duration" not in df.columns:
@@ -264,8 +264,6 @@ def run_core_ml_inference(input_df: pd.DataFrame, source_type: str = "csv") -> D
     elif "Dur" in df.columns and "Flow Duration" not in df.columns:
         df["Flow Duration"] = (df["Dur"] * 1000000).astype(int)
         df = df.drop(columns=["Dur"])
-    elif "Flow Duration" not in df.columns:
-        df["Flow Duration"] = 500000
 
     # Normalize packet count and byte count columns
     if "tot_fwd_pkts" in df.columns and "Tot Fwd Pkts" not in df.columns:
@@ -278,15 +276,10 @@ def run_core_ml_inference(input_df: pd.DataFrame, source_type: str = "csv") -> D
         df["TotLen Fwd Pkts"] = df["TotBytes"]
     elif "flow_byts_s" in df.columns and "TotLen Fwd Pkts" not in df.columns:
         df["TotLen Fwd Pkts"] = df["flow_byts_s"]
-    elif "TotLen Fwd Pkts" not in df.columns:
-        df["TotLen Fwd Pkts"] = 1000.0
 
     if "tot_bwd_pkts" in df.columns and "Tot Bwd Pkts" not in df.columns:
         df["Tot Bwd Pkts"] = df["tot_bwd_pkts"]
         df = df.drop(columns=["tot_bwd_pkts"])
-        
-    if "TotLen Bwd Pkts" not in df.columns:
-        df["TotLen Bwd Pkts"] = 1000.0
         
     if "src_ip" in df.columns and "Src IP" not in df.columns:
         df["Src IP"] = df["src_ip"]

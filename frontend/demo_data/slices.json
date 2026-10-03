@@ -1,0 +1,146 @@
+{
+  "generated_by": "frontend/scripts/build_demo_slices.py",
+  "dataset": "CSE-CIC-IDS2018",
+  "windows_source": "data-engineering/data/ucs/ucs_windows_models_v1.parquet",
+  "slices": {
+    "benign": {
+      "raw_csv": "frontend/demo_data/benign_02-03-2018.csv.gz",
+      "windows": "frontend/demo_data/benign_02-03-2018_windows.parquet",
+      "source_file": "Friday-02-03-2018_TrafficForML_CICFlowMeter.csv",
+      "rows": 47714,
+      "raw_minutes_present": 32,
+      "time_range_utc": [
+        "2018-03-02 04:55:00",
+        "2018-03-02 05:26:00"
+      ],
+      "episode_onset_utc": null,
+      "raw_label_counts": {
+        "Benign": 47714
+      },
+      "window_label_counts": {
+        "Benign": 32
+      },
+      "last_window": {
+        "label_binary": 0,
+        "future_attack_label": 0,
+        "label_attack_type": "Benign"
+      },
+      "csv_path_parity": {
+        "windows_compared": 32,
+        "flow_feature_columns": 388,
+        "flow_columns_within_1e-3_on_all_windows": 388,
+        "max_abs_diff_scaled_units": 9.154399177219164e-05,
+        "mask_has_packet_level_features": {
+          "csv_path": 0.0,
+          "training_windows": 1.0
+        }
+      },
+      "model_output": {
+        "windows": {
+          "onset_probability": 0.304508,
+          "detection_probability": 0.2704,
+          "error": null
+        },
+        "csv": {
+          "onset_probability": 1e-06,
+          "detection_probability": 0.0,
+          "error": null
+        }
+      }
+    },
+    "botnet": {
+      "raw_csv": "frontend/demo_data/botnet_02-03-2018.csv.gz",
+      "windows": "frontend/demo_data/botnet_02-03-2018_windows.parquet",
+      "source_file": "Friday-02-03-2018_TrafficForML_CICFlowMeter.csv",
+      "rows": 66026,
+      "raw_minutes_present": 32,
+      "time_range_utc": [
+        "2018-03-02 03:04:00",
+        "2018-03-02 03:35:00"
+      ],
+      "episode_onset_utc": "2018-03-02 03:31:00",
+      "raw_label_counts": {
+        "Benign": 40477,
+        "Bot": 25549
+      },
+      "window_label_counts": {
+        "Benign": 27,
+        "Botnet": 5
+      },
+      "last_window": {
+        "label_binary": 1,
+        "future_attack_label": 1,
+        "label_attack_type": "Botnet"
+      },
+      "csv_path_parity": {
+        "windows_compared": 32,
+        "flow_feature_columns": 388,
+        "flow_columns_within_1e-3_on_all_windows": 388,
+        "max_abs_diff_scaled_units": 0.0001427751290041801,
+        "mask_has_packet_level_features": {
+          "csv_path": 0.0,
+          "training_windows": 1.0
+        }
+      },
+      "model_output": {
+        "windows": {
+          "onset_probability": 0.941237,
+          "detection_probability": 0.9274,
+          "error": null
+        },
+        "csv": {
+          "onset_probability": 4e-06,
+          "detection_probability": 0.0,
+          "error": null
+        }
+      }
+    },
+    "ssh": {
+      "raw_csv": "frontend/demo_data/ssh_14-02-2018.csv.gz",
+      "windows": "frontend/demo_data/ssh_14-02-2018_windows.parquet",
+      "source_file": "Wednesday-14-02-2018_TrafficForML_CICFlowMeter.csv",
+      "rows": 66513,
+      "raw_minutes_present": 32,
+      "time_range_utc": [
+        "2018-02-14 02:17:00",
+        "2018-02-14 02:48:00"
+      ],
+      "episode_onset_utc": "2018-02-14 02:44:00",
+      "raw_label_counts": {
+        "SSH-Bruteforce": 66164,
+        "Benign": 349
+      },
+      "window_label_counts": {
+        "SSH-Bruteforce": 28,
+        "Benign": 4
+      },
+      "last_window": {
+        "label_binary": 1,
+        "future_attack_label": 1,
+        "label_attack_type": "SSH-Bruteforce"
+      },
+      "csv_path_parity": {
+        "windows_compared": 32,
+        "flow_feature_columns": 388,
+        "flow_columns_within_1e-3_on_all_windows": 110,
+        "max_abs_diff_scaled_units": 1167.7641832771221,
+        "mask_has_packet_level_features": {
+          "csv_path": 0.0,
+          "training_windows": 1.0
+        }
+      },
+      "model_output": {
+        "windows": {
+          "onset_probability": 0.887369,
+          "detection_probability": 0.9316,
+          "error": null
+        },
+        "csv": {
+          "onset_probability": 0.0,
+          "detection_probability": 0.0,
+          "error": null
+        }
+      }
+    }
+  }
+}
