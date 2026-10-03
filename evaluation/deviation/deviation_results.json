@@ -1,0 +1,94 @@
+{
+  "generated_by": "evaluation/deviation/deviation_eval.py",
+  "data": "data-engineering/data/ucs/ucs_windows.parquet",
+  "label": "(6-day dataset)",
+  "epochs": 2,
+  "loeo_folds": 40,
+  "loeo_pooled": {
+    "roc_auc": 0.8200559491677912,
+    "pr_auc": 0.7720743895660802,
+    "n": 768,
+    "positives": 312
+  },
+  "family_out_pooled": {
+    "roc_auc": 0.7069522802068642,
+    "pr_auc": 0.4855437635636378,
+    "n": 1730,
+    "positives": 312
+  },
+  "families": [
+    {
+      "family": "Botnet",
+      "episodes": 10,
+      "attack_windows": 48,
+      "status": "evaluated",
+      "loeo": {
+        "roc_auc": 0.7869047619047619,
+        "pr_auc": 0.7637423029303373,
+        "n": 118,
+        "positives": 48
+      },
+      "family_out": {
+        "roc_auc": 0.8376024590163935,
+        "pr_auc": 0.41845855648703295,
+        "n": 231,
+        "positives": 48
+      }
+    },
+    {
+      "family": "DDOS-HOIC",
+      "episodes": 1,
+      "attack_windows": 8,
+      "status": "not evaluable: 1 episode(s)"
+    },
+    {
+      "family": "DDOS-LOIC-UDP",
+      "episodes": 18,
+      "attack_windows": 19,
+      "status": "evaluated",
+      "loeo": {
+        "roc_auc": 1.0,
+        "pr_auc": 1.0,
+        "n": 115,
+        "positives": 19
+      },
+      "family_out": {
+        "roc_auc": 1.0,
+        "pr_auc": 1.0,
+        "n": 130,
+        "positives": 19
+      }
+    },
+    {
+      "family": "Infiltration-Compromise",
+      "episodes": 1,
+      "attack_windows": 97,
+      "status": "not evaluable: 1 episode(s)"
+    },
+    {
+      "family": "Infiltration-Portscan",
+      "episodes": 1,
+      "attack_windows": 58,
+      "status": "not evaluable: 1 episode(s)"
+    },
+    {
+      "family": "SSH-Bruteforce",
+      "episodes": 9,
+      "attack_windows": 82,
+      "status": "evaluated",
+      "loeo": {
+        "roc_auc": 1.0,
+        "pr_auc": 1.0,
+        "n": 179,
+        "positives": 82
+      },
+      "family_out": {
+        "roc_auc": 0.9938080495356036,
+        "pr_auc": 0.9142933406198798,
+        "n": 405,
+        "positives": 82
+      }
+    }
+  ],
+  "label_binary_1_with_attack_type_benign": 614
+}
