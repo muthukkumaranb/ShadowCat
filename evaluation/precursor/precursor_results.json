@@ -1,0 +1,83 @@
+{
+  "generated_by": "evaluation/precursor/precursor_eval.py",
+  "sources": {
+    "stacked_predictions": "a0687cf:ml1/artifacts/lstm/lstm_stacked/lstm_onset_loeo_test_predictions.csv",
+    "lr_predictions": "ml1/artifacts/lr_set_a_corrected/lr_onset_loeo_predictions.csv",
+    "labels": "e200fdb:data-engineering/data/ucs/ucs_windows.parquet"
+  },
+  "dataset_counts": {
+    "windows": 2787,
+    "onset_positive": 984,
+    "precursor": 71,
+    "in_progress_attack": 913
+  },
+  "test_counts": {
+    "windows": 412,
+    "precursor": 15,
+    "benign_not_precursor": 248,
+    "in_progress_attack": 149
+  },
+  "models": {
+    "stacked_ensemble": {
+      "matched_fpr_threshold": 0.3749103844165802,
+      "roc_auc_precursor_vs_benign_not_precursor": 0.625268817204301,
+      "precursor_recall_at_matched_fpr": 0.4,
+      "precursors_detected": 6,
+      "fpr_on_benign_not_precursor_at_threshold": 0.04435483870967742,
+      "lead_time_minutes_detected_precursors": {
+        "n": 6,
+        "mean": 3.0,
+        "min": 1.0,
+        "max": 5.0
+      },
+      "precursor_scores": [
+        0.492423,
+        0.38665,
+        0.397506,
+        0.378162,
+        0.265738,
+        0.359484,
+        0.3251,
+        0.414784,
+        0.309326,
+        0.377436,
+        0.001199,
+        0.001201,
+        0.000433,
+        0.069057,
+        0.000373
+      ]
+    },
+    "lr_baseline": {
+      "matched_fpr_threshold": 0.095056890855696,
+      "roc_auc_precursor_vs_benign_not_precursor": 0.5201612903225806,
+      "precursor_recall_at_matched_fpr": 0.2,
+      "precursors_detected": 3,
+      "fpr_on_benign_not_precursor_at_threshold": 0.04435483870967742,
+      "lead_time_minutes_detected_precursors": {
+        "n": 3,
+        "mean": 3.3333333333333335,
+        "min": 2.0,
+        "max": 5.0
+      },
+      "precursor_scores": [
+        0.472383,
+        0.040508,
+        0.116359,
+        0.222854,
+        0.007668,
+        0.012855,
+        0.005055,
+        0.065881,
+        0.006977,
+        0.009193,
+        0.0,
+        0.0,
+        0.0,
+        0.001686,
+        0.0
+      ]
+    }
+  },
+  "dataset_note": "(6-day dataset) the 10-day rebuild did not pass its check (fix/restore-10day-dataset, REBUILD_CHECK.json); these predictions are on the 6-day e200fdb dataset the models were trained on"
+}
