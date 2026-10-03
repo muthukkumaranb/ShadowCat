@@ -1,0 +1,163 @@
+{
+  "generated_by": "evaluation/rollout_v2/horizon_analysis_v2.py",
+  "dataset": "data-engineering/data/ucs/ucs_windows.parquet",
+  "dataset_note": "(6-day dataset)",
+  "configs": {
+    "gaussian | mean": {
+      "checkpoint": "evaluation/rollout_v2/models/gaussian/gaussian_next_state_best.pt",
+      "stage_head": "ml1/artifacts/lstm/stage_head_v3/stage_head_best.pt",
+      "delta": false,
+      "mc_samples": 0,
+      "per_k": {
+        "1": {
+          "model_f1": 0.4527578274284424,
+          "model_f1_std": 0.038253610232766584,
+          "persistence_f1": 0.9517056476134773,
+          "markov_f1": 0.6876219087655738
+        },
+        "2": {
+          "model_f1": 0.5526564297391207,
+          "model_f1_std": 0.22581127253813513,
+          "persistence_f1": 0.9347692690945962,
+          "markov_f1": 0.6153630634644898
+        },
+        "3": {
+          "model_f1": 0.552347293031999,
+          "model_f1_std": 0.2260375451675984,
+          "persistence_f1": 0.9178371794086541,
+          "markov_f1": 0.6062687228901971
+        },
+        "4": {
+          "model_f1": 0.5520365910757274,
+          "model_f1_std": 0.22626643777168667,
+          "persistence_f1": 0.914087056368135,
+          "markov_f1": 0.6103506228675111
+        },
+        "5": {
+          "model_f1": 0.5517243119521652,
+          "model_f1_std": 0.22649797703827176,
+          "persistence_f1": 0.9059483663887603,
+          "markov_f1": 0.6100383437439487
+        }
+      },
+      "h_star": 0
+    },
+    "gaussian | MC-32": {
+      "checkpoint": "evaluation/rollout_v2/models/gaussian/gaussian_next_state_best.pt",
+      "stage_head": "ml1/artifacts/lstm/stage_head_v3/stage_head_best.pt",
+      "delta": false,
+      "mc_samples": 32,
+      "per_k": {
+        "1": {
+          "model_f1": 0.5529640129954527,
+          "model_f1_std": 0.22558759347556892,
+          "persistence_f1": 0.9517056476134773,
+          "markov_f1": 0.6876219087655738
+        },
+        "2": {
+          "model_f1": 0.5526564297391207,
+          "model_f1_std": 0.22581127253813513,
+          "persistence_f1": 0.9347692690945962,
+          "markov_f1": 0.6153630634644898
+        },
+        "3": {
+          "model_f1": 0.552347293031999,
+          "model_f1_std": 0.2260375451675984,
+          "persistence_f1": 0.9178371794086541,
+          "markov_f1": 0.6062687228901971
+        },
+        "4": {
+          "model_f1": 0.5520365910757274,
+          "model_f1_std": 0.22626643777168667,
+          "persistence_f1": 0.914087056368135,
+          "markov_f1": 0.6103506228675111
+        },
+        "5": {
+          "model_f1": 0.5517243119521652,
+          "model_f1_std": 0.22649797703827176,
+          "persistence_f1": 0.9059483663887603,
+          "markov_f1": 0.6100383437439487
+        }
+      },
+      "h_star": 0
+    },
+    "delta | mean": {
+      "checkpoint": "evaluation/rollout_v2/models/delta/gaussian_next_state_best.pt",
+      "stage_head": "ml1/artifacts/lstm/stage_head_v3/stage_head_best.pt",
+      "delta": true,
+      "mc_samples": 0,
+      "per_k": {
+        "1": {
+          "model_f1": 0.18251708557862298,
+          "model_f1_std": 0.06001206877580403,
+          "persistence_f1": 0.9517056476134773,
+          "markov_f1": 0.6876219087655738
+        },
+        "2": {
+          "model_f1": 0.18414948810258758,
+          "model_f1_std": 0.06114877975273247,
+          "persistence_f1": 0.9347692690945962,
+          "markov_f1": 0.6153630634644898
+        },
+        "3": {
+          "model_f1": 0.18510189756374848,
+          "model_f1_std": 0.06130075385307037,
+          "persistence_f1": 0.9178371794086541,
+          "markov_f1": 0.6062687228901971
+        },
+        "4": {
+          "model_f1": 0.18599254799703316,
+          "model_f1_std": 0.06167399917799648,
+          "persistence_f1": 0.914087056368135,
+          "markov_f1": 0.6103506228675111
+        },
+        "5": {
+          "model_f1": 0.18428560933491772,
+          "model_f1_std": 0.061642460808510685,
+          "persistence_f1": 0.9059483663887603,
+          "markov_f1": 0.6100383437439487
+        }
+      },
+      "h_star": 0
+    },
+    "delta | MC-32": {
+      "checkpoint": "evaluation/rollout_v2/models/delta/gaussian_next_state_best.pt",
+      "stage_head": "ml1/artifacts/lstm/stage_head_v3/stage_head_best.pt",
+      "delta": true,
+      "mc_samples": 32,
+      "per_k": {
+        "1": {
+          "model_f1": 0.20829238949058837,
+          "model_f1_std": 0.046296508396624934,
+          "persistence_f1": 0.9517056476134773,
+          "markov_f1": 0.6876219087655738
+        },
+        "2": {
+          "model_f1": 0.23973117008370423,
+          "model_f1_std": 0.041170208417318006,
+          "persistence_f1": 0.9347692690945962,
+          "markov_f1": 0.6153630634644898
+        },
+        "3": {
+          "model_f1": 0.22712686616537617,
+          "model_f1_std": 0.04401788068496925,
+          "persistence_f1": 0.9178371794086541,
+          "markov_f1": 0.6062687228901971
+        },
+        "4": {
+          "model_f1": 0.22781334875750395,
+          "model_f1_std": 0.04417177666654907,
+          "persistence_f1": 0.914087056368135,
+          "markov_f1": 0.6103506228675111
+        },
+        "5": {
+          "model_f1": 0.24107822725744482,
+          "model_f1_std": 0.0409678695624863,
+          "persistence_f1": 0.9059483663887603,
+          "markov_f1": 0.6100383437439487
+        }
+      },
+      "h_star": 0
+    }
+  }
+}
