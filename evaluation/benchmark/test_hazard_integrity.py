@@ -1,135 +1,51 @@
 """
-s2-fix3: Real equivalence test for hazard head integrity.
-Replaces weak ratio variability tests with exact numerical equivalence verification.
-For 20 windows from ucs_windows_models_v1.parquet, asserts that the dashboard hazard H=1/2/5
-equals an independent computation (models/pca_32.pkl + scaler -> mean of the 37 fold models)
-within 1e-5 tolerance.
+Hazard-head integrity (s2-fix1b).
+
+hazard_head_v3 (H=1/2/5) is not shown by the dashboard: its reported LOEO ROC-AUC
+(0.789/0.843/0.770) does not reproduce through models/pca_32.pkl + scaler, the input
+path the dashboard would have to use (see evaluation/benchmark/reproduce_hazard_v3.py
+and hazard_v3_results.json). These tests pin that decision:
+  1. the committed reproduction result shows the pca_32.pkl path does NOT reproduce;
+  2. predict() returns a single onset probability and no per-horizon hazard values.
 """
-import pickle
+import json
 import sys
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 import pytest
-import torch
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
-
 sys.path.insert(0, str(REPO_ROOT))
-sys.path.insert(0, str(REPO_ROOT / "ml1"))
 sys.path.insert(0, str(REPO_ROOT / "backend"))
-sys.path.insert(0, str(REPO_ROOT / "data-engineering" / "src"))
 
 _V1_PARQUET = REPO_ROOT / "data-engineering" / "data" / "ucs" / "ucs_windows_models_v1.parquet"
-_PCA_FILE = REPO_ROOT / "models" / "pca_32.pkl"
-_HAZARD_BASE = REPO_ROOT / "ml1" / "artifacts" / "lstm" / "hazard_head_v3"
+_RESULTS = REPO_ROOT / "evaluation" / "benchmark" / "hazard_v3_results.json"
 
 
-def test_hazard_real_equivalence_20_windows():
-    """Assert dashboard hazard H=1, 2, 5 equals independent computation within 1e-5."""
+def test_hazard_v3_does_not_reproduce_via_pca32():
+    runs = json.loads(_RESULTS.read_text())["runs"]
+    pca32 = [r for r in runs.values() if r["pca_mode"] == "pca32"]
+    assert pca32, "no pca32 reproduction run recorded"
+    assert not any(r["all_horizons_reproduce"] for r in pca32)
+
+
+def test_predict_has_no_per_horizon_hazards():
     if not _V1_PARQUET.exists():
         pytest.skip(f"Dataset not found: {_V1_PARQUET}")
-    if not _PCA_FILE.exists():
-        pytest.skip(f"PCA file not found: {_PCA_FILE}")
-
-    from backend.models import LSTMClassifier
     from backend.predict import get_pipeline
-    from ucs_extractor import UCSExtractor
 
-    # 1. Independent setup: load PCA, scaler, features
-    with open(_PCA_FILE, "rb") as f:
-        pca_data = pickle.load(f)
-    h_pca = pca_data["pca"]
-    h_scaler = pca_data["scaler"]
-    h_features = pca_data["features"]
-
-    # Load 37 fold models independently for H=1, 2, 5
-    h_models = {1: [], 2: [], 5: []}
-    for h in (1, 2, 5):
-        h_dir = _HAZARD_BASE / f"H{h}"
-        assert h_dir.exists(), f"Hazard head dir missing: {h_dir}"
-        ckpt_files = sorted(h_dir.glob("model_fold_*.pt"))
-        assert len(ckpt_files) == 37, f"Expected 37 fold models for H={h}, got {len(ckpt_files)}"
-        for f_path in ckpt_files:
-            m = LSTMClassifier(input_size=32, hidden_size=64, num_layers=1, dropout=0.2)
-            state = torch.load(f_path, map_location="cpu", weights_only=False)
-            if isinstance(state, dict) and "lstm.weight_ih_l0" in state:
-                m.load_state_dict(state)
-            else:
-                m.load_state_dict(state.get("model_state_dict", state))
-            m.eval()
-            h_models[h].append(m)
-
-    # 2. Pipeline setup
-    pipeline = get_pipeline()
-    extractor = UCSExtractor()
-    df = pd.read_parquet(_V1_PARQUET)
-
-    n_windows = len(df)
-    assert n_windows >= 100, f"Expected >=100 windows, got {n_windows}"
-
-    rng = np.random.RandomState(42)
-    max_start = max(0, n_windows - 40)
-    starts = rng.choice(max_start + 1, size=20, replace=False)
-
-    max_diffs = {1: 0.0, 2: 0.0, 5: 0.0}
-
-    for start_idx in starts:
-        s = int(start_idx)
-        slice_df = df.iloc[s : s + 35].copy()
-
-        # A. Pipeline inference
-        pipe_res = pipeline.predict(slice_df, source_type="flows")
-        pipe_hazards = pipe_res["forecast_trajectory"]["step_hazards"]
-        p_h1 = pipe_hazards[0]
-        p_h2 = pipe_hazards[1]
-        p_h5 = pipe_hazards[4]
-
-        assert p_h1 is not None, "H=1 hazard is None"
-        assert p_h2 is not None, "H=2 hazard is None"
-        assert p_h5 is not None, "H=5 hazard is None"
-
-        # B. Independent computation
-        model_tensor = extractor.extract_model_tensor(slice_df, source_type="flows")
-        seq_406 = model_tensor[-30:].copy()  # (30, 406)
-
-        seq_df = pd.DataFrame(seq_406, columns=h_features)
-        scaled_df = pd.DataFrame(h_scaler.transform(seq_df[h_features]), columns=h_features)
-        pca_df = h_pca.transform(scaled_df)
-        pca_cols = [f"pca_{k}" for k in range(32)]
-        seq_32 = pca_df[pca_cols].to_numpy(dtype=np.float32)
-        seq_tensor = torch.as_tensor(seq_32).unsqueeze(0)
-
-        indep_probs = {}
-        with torch.no_grad():
-            for h in (1, 2, 5):
-                probs = [float(m(seq_tensor).cpu().numpy()[0]) for m in h_models[h]]
-                indep_probs[h] = float(np.mean(probs))
-
-        diff1 = abs(p_h1 - indep_probs[1])
-        diff2 = abs(p_h2 - indep_probs[2])
-        diff5 = abs(p_h5 - indep_probs[5])
-
-        max_diffs[1] = max(max_diffs[1], diff1)
-        max_diffs[2] = max(max_diffs[2], diff2)
-        max_diffs[5] = max(max_diffs[5], diff5)
-
-        assert diff1 < 1e-5, f"H=1 diff {diff1:.2e} >= 1e-5 (pipe={p_h1}, indep={indep_probs[1]})"
-        assert diff2 < 1e-5, f"H=2 diff {diff2:.2e} >= 1e-5 (pipe={p_h2}, indep={indep_probs[2]})"
-        assert diff5 < 1e-5, f"H=5 diff {diff5:.2e} >= 1e-5 (pipe={p_h5}, indep={indep_probs[5]})"
-
-    print(
-        f"\nEquivalence test PASSED across 20 windows! "
-        f"Max diffs: H1={max_diffs[1]:.2e}, H2={max_diffs[2]:.2e}, H5={max_diffs[5]:.2e}"
-    )
+    df = pd.read_parquet(_V1_PARQUET).head(40)
+    res = get_pipeline().predict(df, source_type="flows")
+    fc = res["forecast_trajectory"]
+    for key in ("step_hazards", "horizon_is_modelled", "hazard_source", "rollout_infiltration_prob"):
+        assert key not in fc
+    assert fc["risk"] == [fc["onset_probability"]]
+    assert fc["onset_probability_label"] == "P(attack within the next 5 minutes)"
+    assert 0.0 <= fc["onset_probability"] <= 1.0
 
 
 def test_dashboard_references_models_v1_parquet():
     """data_provider.py must reference ucs_windows_models_v1.parquet."""
-    dp_path = REPO_ROOT / "frontend" / "data_provider.py"
-    assert dp_path.exists(), f"data_provider.py not found at {dp_path}"
-    content = dp_path.read_text(encoding="utf-8")
-    assert "ucs_windows_models_v1.parquet" in content, (
-        "data_provider.py does not reference ucs_windows_models_v1.parquet"
-    )
+    content = (REPO_ROOT / "frontend" / "data_provider.py").read_text(encoding="utf-8")
+    assert "ucs_windows_models_v1.parquet" in content

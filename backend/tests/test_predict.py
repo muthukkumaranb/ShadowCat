@@ -2,7 +2,7 @@
 SHADOWCAT Backend - Comprehensive Test Suite
 Validates:
 1. Extraction & Normalization Contract (UCSExtractor)
-2. Model Architectures & Forward Passes (World Model, Hazard Heads, Stage Head)
+2. Model Architectures & Forward Passes (World Model, Stacked Onset Ensemble, Stage Head)
 3. Causal Sequence Slicing & Warm-up
 4. Probability Bounds & Monotonicity
 5. Full End-to-End predict() Non-Degeneracy & Schema Compliance
@@ -79,14 +79,12 @@ class TestBackendPipeline(unittest.TestCase):
         self.assertEqual(probs.shape, (4, 6))
         self.assertTrue(torch.allclose(probs.sum(dim=-1), torch.ones(4), atol=1e-5))
 
-    def test_hazard_head_ensemble(self):
-        """Verify hazard ensemble produces probabilities in [0, 1]."""
+    def test_onset_ensemble(self):
+        """Verify the stacked onset ensemble produces a probability in [0, 1]."""
         dummy_seq = np.random.randn(30, 406).astype(np.float32)
-        hazards = self.pipeline._predict_hazard_ensemble(dummy_seq)
-
-        for h, prob in hazards.items():
-            self.assertGreaterEqual(prob, 0.0, f"Hazard probability {prob} < 0")
-            self.assertLessEqual(prob, 1.0, f"Hazard probability {prob} > 1")
+        prob = self.pipeline._predict_onset_probability(dummy_seq)
+        self.assertGreaterEqual(prob, 0.0, f"Onset probability {prob} < 0")
+        self.assertLessEqual(prob, 1.0, f"Onset probability {prob} > 1")
 
     def test_end_to_end_predict_with_real_windows(self):
         """Verify predict() on real canonical windows produces valid, non-degenerate output."""
@@ -103,23 +101,12 @@ class TestBackendPipeline(unittest.TestCase):
 
             # Check forecast trajectory schema
             fc = res["forecast_trajectory"]
-            self.assertEqual(len(fc["horizons"]), 5)
-            self.assertEqual(len(fc["risk"]), 5)
-            self.assertEqual(len(fc["stage"]), 5)
-            self.assertEqual(len(fc["uncertainty"]), 5)
-
-            # Check probability bounds
-            for r in fc["risk"]:
-                self.assertGreaterEqual(r, 0.0)
-                self.assertLessEqual(r, 1.0)
-
-            # Check monotonic cumulative risk
-            for i in range(len(fc["risk"]) - 1):
-                self.assertLessEqual(
-                    fc["risk"][i],
-                    fc["risk"][i + 1] + 1e-5,
-                    f"Cumulative risk not monotonic: {fc['risk'][i]} > {fc['risk'][i+1]}",
-                )
+            # Single onset probability; no per-horizon or cumulative risk is produced
+            self.assertEqual(len(fc["risk"]), 1)
+            self.assertEqual(fc["risk"][0], fc["onset_probability"])
+            self.assertNotIn("step_hazards", fc)
+            self.assertGreaterEqual(fc["onset_probability"], 0.0)
+            self.assertLessEqual(fc["onset_probability"], 1.0)
 
             # Check novelty score
             nv = res["novelty_score"]
@@ -150,7 +137,7 @@ class TestBackendPipeline(unittest.TestCase):
         self.assertIn("attributions", res)
 
         fc = res["forecast_trajectory"]
-        self.assertEqual(len(fc["risk"]), 5)
+        self.assertEqual(len(fc["risk"]), 1)
         for r in fc["risk"]:
             self.assertGreaterEqual(r, 0.0)
             self.assertLessEqual(r, 1.0)

@@ -123,7 +123,7 @@ def run_benchmark(n_trials: int = 30, n_warmup: int = 5, n_fabric_trials: int = 
         t2 = time.perf_counter()
         curr_window_406 = seq_30x406[-1]
         det_probs = [m.predict_proba(seq_tensor_32, curr_window_406) for m in pipeline.stacked_detection_models]
-        onset_hazards = pipeline._predict_hazard_ensemble(seq_30x406)
+        onset_hazards = pipeline._predict_onset_probability(seq_30x406)
         t_lstm = time.perf_counter()
         lstm_latencies.append((t_lstm - t2) * 1000.0)
 

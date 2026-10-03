@@ -365,25 +365,21 @@ def get_analysis_metadata() -> dict:
 
 def get_forecast_trajectory(window_id: str = None) -> dict:
     """
-    Returns multi-step forward trajectory simulation across K=1..5 horizons,
-    including risk probabilities, stage mapping, calibrated uncertainty, and protocol metadata.
-    Consumed by: views/03_Forecast.py, components/forecast.py
+    Returns the forecast block of the active inference result: the stacked onset
+    probability P(attack within the next 5 minutes), its conformal interval and the
+    stage head output on the world-model rollout. Empty dict if no inference ran.
+    Consumed by: views/03_Forecast.py
     """
     pred = _get_live_prediction()
-    fc = pred.get("forecast_trajectory", {})
-
-    # Populate canonical mock fallbacks if live trajectory is absent
-    if not fc.get("risk"):
-        fc.setdefault("risk", [0.84, 0.72, 0.58, 0.45, 0.38])
-    if not fc.get("stage"):
-        fc.setdefault("stage", ["Credential Access", "Lateral Movement", "Impact", "Lateral Movement", "Impact"])
-    if not fc.get("lead_time"):
-        fc.setdefault("lead_time", ["1m 00s", "2m 00s", "3m 00s", "4m 00s", "5m 00s"])
-
-    fc["is_mock"] = is_using_mock_data("forecast_trajectory")
+    fc = dict(pred.get("forecast_trajectory", {}))
     if window_id:
         fc["window_id"] = window_id
     return fc
+
+
+def get_detection_probability() -> Optional[float]:
+    """Stacked detection ensemble probability for the current window, or None."""
+    return _get_live_prediction().get("detection_probability")
 
 
 def get_graph_topology() -> Optional[dict]:

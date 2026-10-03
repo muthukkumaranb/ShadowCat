@@ -142,7 +142,7 @@ class CounterfactualEngine:
         Percentile clipping: [p01, p99] strictly enforced.
         """
         target_threshold = float(
-            threshold if threshold is not None else getattr(pipeline, "calibrated_threshold_global", 0.15)
+            threshold if threshold is not None else getattr(pipeline, "alert_threshold", 0.5)
         )
         if step_fractions is None:
             step_fractions = [0.15, 0.30, 0.50, 0.70, 0.85, 1.00]
@@ -157,8 +157,7 @@ class CounterfactualEngine:
             }
 
         # 1. Baseline Hazard Evaluation
-        initial_hazards = pipeline._predict_hazard_ensemble(sequence_30x406)
-        h0 = float(initial_hazards.get(1, 0.08))
+        h0 = float(pipeline._predict_onset_probability(sequence_30x406))
 
         if h0 < target_threshold:
             return {
@@ -227,8 +226,7 @@ class CounterfactualEngine:
                 s_pert = sequence_30x406.copy()
                 s_pert[-1, f_idx] = clipped_val
 
-                hazards_pert = pipeline._predict_hazard_ensemble(s_pert)
-                h_pert = float(hazards_pert.get(1, 0.08))
+                h_pert = float(pipeline._predict_onset_probability(s_pert))
                 if h_pert < best_hazard:
                     best_hazard = h_pert
 
@@ -273,8 +271,7 @@ class CounterfactualEngine:
                 s_test = s_accum.copy()
                 s_test[-1, f_idx] = clipped_val
 
-                hazards_pert = pipeline._predict_hazard_ensemble(s_test)
-                h_pert = float(hazards_pert.get(1, 0.08))
+                h_pert = float(pipeline._predict_onset_probability(s_test))
                 if h_pert < best_hazard:
                     best_hazard = h_pert
 
