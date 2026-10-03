@@ -1058,7 +1058,8 @@ class ShadowcatPipeline:
             else:
                 # Fall back to SHA-256 hash-chaining in backend/audit_chain.py
                 try:
-                    alerts_dir = RUNTIME_DIR / "alerts"
+                    runtime_dir = Path(os.environ.get("SHADOWCAT_RUNTIME_DIR", RUNTIME_DIR))
+                    alerts_dir = runtime_dir / "alerts"
                     alerts_dir.mkdir(parents=True, exist_ok=True)
                     alert_file = alerts_dir / f"alert_{alert_hash}.json"
                     alert_record = {
@@ -1180,7 +1181,8 @@ class ShadowcatPipeline:
         if not lineage_ok:
             # Fall back to SHA-256 hash chaining in backend/alerts and audit_chain
             try:
-                alerts_dir = RUNTIME_DIR / "alerts"
+                runtime_dir = Path(os.environ.get("SHADOWCAT_RUNTIME_DIR", RUNTIME_DIR))
+                alerts_dir = runtime_dir / "alerts"
                 alerts_dir.mkdir(parents=True, exist_ok=True)
                 lin_file = alerts_dir / f"lineage_{lineage_id}.json"
                 with open(lin_file, "w", encoding="utf-8") as f:
@@ -1203,9 +1205,10 @@ class ShadowcatPipeline:
         forecast_trajectory["lineage"] = lineage_payload
 
         try:
-            forecasts_dir = os.path.join(BACKEND_DIR, "forecasts")
-            os.makedirs(forecasts_dir, exist_ok=True)
-            forecast_path = os.path.join(forecasts_dir, f"forecast_{window_id}.json")
+            runtime_dir = Path(os.environ.get("SHADOWCAT_RUNTIME_DIR", RUNTIME_DIR))
+            forecasts_dir = runtime_dir / "forecasts"
+            forecasts_dir.mkdir(parents=True, exist_ok=True)
+            forecast_path = str(forecasts_dir / f"forecast_{window_id}.json")
             with open(forecast_path, "w", encoding="utf-8") as f:
                 json.dump(payload, f, indent=2)
             append_audit_entry(

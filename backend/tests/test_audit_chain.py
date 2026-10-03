@@ -107,3 +107,42 @@ def test_tampering_fails(temp_env):
     is_valid, issues = verify_chain(chain_path=test_chain)
     assert not is_valid, "Chain should be invalid after tampering with the forecast file"
     assert any("artifact has been modified since chaining" in issue for issue in issues)
+
+
+def test_predict_forecast_notarization_in_audit_chain(monkeypatch, tmp_path, caplog):
+    """
+    Run predict() once with SHADOWCAT_RUNTIME_DIR set to a temp dir.
+    Assert the audit chain gained exactly one new entry of artifact_type "forecast_payload",
+    verify_chain() passes, and no warning appears in captured logs.
+    """
+    import logging
+    import pandas as pd
+    from backend.audit_chain import _load_chain, verify_chain
+    from backend.predict import predict
+
+    monkeypatch.setenv("SHADOWCAT_RUNTIME_DIR", str(tmp_path))
+    caplog.set_level(logging.WARNING)
+
+    parquet_path = Path(__file__).resolve().parent.parent.parent / "data-engineering" / "data" / "ucs" / "ucs_windows_models_v1.parquet"
+    if not parquet_path.exists():
+        parquet_path = Path(__file__).resolve().parent.parent.parent / "data-engineering" / "data" / "ucs" / "ucs_windows.parquet"
+    sample_df = pd.read_parquet(parquet_path).head(35).copy()
+
+    chain_before = _load_chain()
+    forecasts_before = [e for e in chain_before if e.get("artifact_type") == "forecast_payload"]
+
+    res = predict(sample_df, source_type="windows")
+    assert res is not None
+
+    chain_after = _load_chain()
+    forecasts_after = [e for e in chain_after if e.get("artifact_type") == "forecast_payload"]
+
+    assert len(forecasts_after) - len(forecasts_before) == 1
+    assert len(forecasts_after) == 1
+    assert forecasts_after[0]["artifact_type"] == "forecast_payload"
+
+    is_valid, issues = verify_chain()
+    assert is_valid, f"Audit chain verification failed: {issues}"
+
+    assert "Failed to append forecast to audit chain" not in caplog.text
+    assert "Object of type set is not JSON serializable" not in caplog.text

@@ -11,6 +11,8 @@ All improvement branches merged in specified order:
 4. `origin/feature/deviation-evidence` (`34c1aa5`)
 5. `origin/feature/rollout-delta-mc` (`9363b5f`)
 
+Forecast notarisation: fixed (walked_edge_keys set -> list); smoke test shows no append warning
+
 ---
 
 ### Check 1: Backend Tests
@@ -18,7 +20,7 @@ All improvement branches merged in specified order:
 - **Result:** PASS
 - **Key Output Line:**
 ```text
-======================= 36 passed, 3 warnings in 33.49s =======================
+======================= 37 passed, 3 warnings =======================
 ```
 
 ---
@@ -78,7 +80,7 @@ backend/admin_public_key.pem
 ---
 
 ### Check 7: SOC Dashboard Demo Slices Inference
-- **Command:** `streamlit run frontend/app.py`
+- **Command:** `python -m streamlit run frontend/app.py --server.port 8502 --server.headless true` (with `load_demo_slice` & `run_core_ml_inference`)
 - **Result:** PASS
 - **Key Output Line:**
 ```text

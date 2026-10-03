@@ -61,11 +61,25 @@ def _resolve_path(stored_path: str) -> str:
     cand2 = os.path.normpath(os.path.join(repo_root, stored_path))
     if os.path.exists(cand2):
         return cand2
+    runtime_dir = os.environ.get("SHADOWCAT_RUNTIME_DIR")
+    if runtime_dir:
+        cand3 = os.path.normpath(os.path.join(runtime_dir, stored_path))
+        if os.path.exists(cand3):
+            return cand3
     return cand1
 
 
+def _get_chain_path(chain_path: Optional[str] = None) -> str:
+    if chain_path:
+        return chain_path
+    runtime_dir = os.environ.get(
+        "SHADOWCAT_RUNTIME_DIR", os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "runtime")
+    )
+    return os.path.join(runtime_dir, "audit_chain.json")
+
+
 def _load_chain(chain_path: Optional[str] = None) -> list:
-    path = chain_path or CHAIN_PATH
+    path = _get_chain_path(chain_path)
     if not os.path.exists(path):
         return []
     with open(path, "r", encoding="utf-8") as f:
@@ -73,7 +87,7 @@ def _load_chain(chain_path: Optional[str] = None) -> list:
 
 
 def _save_chain(chain: list, chain_path: Optional[str] = None) -> None:
-    path = chain_path or CHAIN_PATH
+    path = _get_chain_path(chain_path)
     os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
         json.dump(chain, f, indent=2)
