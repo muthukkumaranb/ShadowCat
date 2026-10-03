@@ -117,7 +117,7 @@ def render_page():
                 ◇ NO RECORDS
             </div>
             <div style="font-family: 'Inter', sans-serif; font-size: 0.85rem; color: {t['text_secondary']}; max-width: 480px; margin: 0 auto; line-height: 1.6;">
-                No prediction reports have been captured yet. Run a live prediction
+                No prediction reports have been captured yet. Run a prediction
                 via the <strong>Telemetry Ingestion</strong> page to populate this view.
                 Records persist in the SQLite database and survive app restarts.
             </div>

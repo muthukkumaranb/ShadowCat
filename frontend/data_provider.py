@@ -1,7 +1,7 @@
 """
 SHADOWCAT - Authoritative Data Provider & Decoupled Access Boundary
 Single access interface connecting the UI layer to ML/DE pipeline models and live inference.
-Supports granular per-function provenance tracking (MOCK_STATUS) and auto-detection.
+Every accessor returns values from the active backend.predict result or a committed results file.
 """
 
 from __future__ import annotations
@@ -25,82 +25,6 @@ if str(REPO_ROOT / "backend") not in sys.path:
     sys.path.insert(0, str(REPO_ROOT / "backend"))
 if str(REPO_ROOT / "data-engineering") not in sys.path:
     sys.path.insert(0, str(REPO_ROOT / "data-engineering"))
-
-# -----------------------------------------------------------------------------
-# 1. Provenance Tracking & Checkpoint Auto-Detection
-# -----------------------------------------------------------------------------
-# Expected live model artifact paths relative to project root
-CHECKPOINT_PATHS = {
-    "forecast_trajectory": "models/world_model.pt",
-    "host_risk_graph": "models/gnn_topology.pt",
-    "attributions": "models/integrated_gradients.npz",
-    "novelty_score": "models/novelty_detector.pt",
-    "flagged_flows": "models/flow_classifier.pt",
-    "validation_data": "models/loeo_37fold_results.json",
-    "analysis_metadata": "models/telemetry_manifest.json",
-}
-
-# Manual fallback override dictionary (used if checkpoint files are not present)
-MOCK_STATUS = {
-    "forecast_trajectory": False,
-    "host_risk_graph": False,
-    "attributions": False,
-    "novelty_score": False,
-    "flagged_flows": False,
-    "validation_data": False,
-    "analysis_metadata": False,
-}
-
-
-def inference_status() -> str:
-    """
-    Returns 'live' if live model weights/pipeline are detected and operational,
-    otherwise returns 'mock'.
-    """
-    ckpt = PROJECT_ROOT / "models" / "world_model.pt"
-    if ckpt.is_file() and ckpt.stat().st_size > 0:
-        return "live"
-    if not MOCK_STATUS.get("forecast_trajectory", True):
-        return "live"
-    return "mock"
-
-
-def validation_status() -> str:
-    """
-    Returns 'validated_offline' if authoritative offline benchmark/validation results exist,
-    otherwise 'pending'.
-    """
-    ckpt = PROJECT_ROOT / "models" / "loeo_37fold_results.json"
-    if ckpt.is_file() and ckpt.stat().st_size > 0:
-        return "validated_offline"
-    return "pending"
-
-
-def is_using_mock_data(key: str) -> bool:
-    """
-    Returns False if live model artifact exists for this key,
-    otherwise falls back to MOCK_STATUS[key].
-    """
-    ckpt_rel = CHECKPOINT_PATHS.get(key)
-    if ckpt_rel:
-        ckpt_full = PROJECT_ROOT / ckpt_rel
-        if ckpt_full.is_file() and ckpt_full.stat().st_size > 0:
-            return False  # Live model checkpoint artifact detected!
-    return MOCK_STATUS.get(key, False)
-
-
-def get_mock_badge_html(key: str) -> str:
-    """
-    Returns styled [MOCK] badge HTML only if called directly during transition.
-    """
-    if is_using_mock_data(key):
-        return (
-            '<span class="badge-mock" style="background: rgba(224, 152, 43, 0.15); '
-            'border: 1px solid #E0982B; color: #E0982B; padding: 1px 6px; border-radius: 4px; '
-            'font-size: 0.68rem; font-weight: 700; font-family: \'JetBrains Mono\', monospace; '
-            'letter-spacing: 0.05em; margin-left: 6px; vertical-align: middle;">MOCK</span>'
-        )
-    return ""
 
 
 # -----------------------------------------------------------------------------
@@ -344,23 +268,9 @@ def run_core_ml_inference(input_df: pd.DataFrame, source_type: str = "csv") -> D
 
 def get_analysis_metadata() -> dict:
     """
-    Returns active telemetry session, sensor tap ID, and window timestamp.
-    Consumed by: components/header.py -> render_header()
+    Analysis metadata of the active prediction (input type, window size, last window time).
     """
-    pred = _get_live_prediction()
-    meta = pred.get("analysis_metadata", {})
-    return {
-        "source": meta.get("source", "LIVE PIPELINE: CSE-CIC-IDS2018 (Infiltration)"),
-        "sensor_id": meta.get("sensor_id", "TAP-DMZ-01"),
-        "sensor_throughput": meta.get("sensor_throughput", "10Gbps Ingress"),
-        "window": meta.get("window", "t+1 → t+5 (Live Operational)"),
-        "window_duration": "60s",
-        "duration_sec": 60,
-        "lookback_windows": 30,
-        "rollout_horizons": 5,
-        "timestamp": meta.get("timestamp", "2026-09-10 12:00:00 UTC"),
-        "is_mock": is_using_mock_data("analysis_metadata"),
-    }
+    return dict(_get_live_prediction().get("analysis_metadata", {}))
 
 
 def get_forecast_trajectory(window_id: str = None) -> dict:
@@ -609,7 +519,7 @@ def get_host_risk_graph(episode_id: str = None, k_step: int = 2) -> dict:
         "rollout_steps": ROLLOUT_DATA,
         "active_k_step": k_step,
         "disclaimer": "Demonstrated on the single infiltration case study (n = 1). Not a general lateral-movement forecasting capability.",
-        "is_mock": is_using_mock_data("host_risk_graph"),
+        "is_mock": True,  # scripted story; removed in s2b-t8
     }
 
 
@@ -662,52 +572,13 @@ def get_conformal_credibility(window_id: Optional[str] = None) -> Dict[str, Any]
     }
     """
     pred = _get_live_prediction() or {}
-
-    # Check if real conformal credibility field has been populated from feature/conformal-mimo
-    if "conformal_credibility" in pred and isinstance(pred["conformal_credibility"], dict):
+    # No out-of-distribution check is implemented in backend.predict; nothing is shown
+    # unless a real one populates the payload.
+    if isinstance(pred.get("conformal_credibility"), dict):
         cred = dict(pred["conformal_credibility"])
         cred["is_stub"] = False
         return cred
-
-    # Check session state override (e.g. for analyst demonstration of OOD detection alert)
-    try:
-        import streamlit as st
-        if st.session_state.get("simulate_ood_drift", False):
-            return {
-                "status": "out_of_distribution",
-                "is_in_distribution": False,
-                "credibility_score": 0.032,
-                "confidence_level": 0.95,
-                "drift_score": 0.784,
-                "drift_threshold": 0.450,
-                "badge_label": "MODEL CONFIDENCE: OUT-OF-DISTRIBUTION",
-                "badge_color": "#FF453A",
-                "advisory": "Model confidence degraded: inputs deviate significantly from validation distribution. Treat forecast with caution.",
-                "is_stub": False,
-                "source": "SIMULATION (Analyst Override)",
-            }
-    except Exception:
-        pass
-
-    # =========================================================================
-    # TODO (Team Integration): STUB awaiting branch 'feature/conformal-mimo'
-    # Person 1 is developing conformal MIMO drift detection. Once merged,
-    # the backend prediction dictionary will populate 'conformal_credibility'
-    # and this stub will be automatically superseded.
-    # =========================================================================
-    return {
-        "status": "in_distribution",
-        "is_in_distribution": True,
-        "credibility_score": 0.892,
-        "confidence_level": 0.95,
-        "drift_score": 0.142,
-        "drift_threshold": 0.450,
-        "badge_label": "MODEL CONFIDENCE: IN-DISTRIBUTION",
-        "badge_color": "#30D158",
-        "advisory": "Model operating within validated training distribution manifold (nominal conformal coverage).",
-        "is_stub": True,
-        "source": "STUB (Awaiting feature/conformal-mimo merge)",
-    }
+    return {"is_stub": True}
 
 
 def get_entity_risk_summary(
@@ -755,22 +626,15 @@ def get_novelty_score(window_id: str = None) -> dict:
     """
     pred = _get_live_prediction()
     nv = pred.get("novelty_score", {})
-    nv["is_mock"] = is_using_mock_data("novelty_score")
     return nv
 
 
 def get_flagged_flows(window_id: str = None, limit: int = None) -> list[dict]:
     """
-    Returns flagged suspicious network flows driving the forecast.
-    Consumed by: views/06_Explainability.py, components/evidence.py
+    Flows of the active input ranked by the backend's flow score (empty for window input).
     """
-    pred = _get_live_prediction()
-    flows = pred.get("flagged_flows", [])
-    if limit:
-        flows = flows[:limit]
-    for f in flows:
-        f["is_mock"] = is_using_mock_data("flagged_flows")
-    return flows
+    flows = list(_get_live_prediction().get("flagged_flows", []))
+    return flows[:limit] if limit else flows
 
 
 def get_validation_data() -> dict:
@@ -841,75 +705,18 @@ def get_audit_chain_status() -> dict:
 
 def get_live_notarization_status() -> dict:
     """
-    Returns the live notarization mechanism, real identifiers, and status (Fabric vs. SHA-256 fallback).
+    How the last prediction's alert / lineage record was notarized ("fabric",
+    "sha256_fallback", "none" or "failed"), as reported by backend.predict.
     Consumed by: views/07_Validation_Trust.py, views/02_Overview.py
     """
-    try:
-        pred = _get_live_prediction() or {}
-        forecast_traj = pred.get("forecast_trajectory") or {}
-        mech = pred.get("notarization_mechanism", forecast_traj.get("notarized_via", "fabric"))
-
-        # Real audit chain fallback index
-        chain_status = get_audit_chain_status() or {}
-        chain_len = chain_status.get("length", 0)
-        latest_idx = chain_len - 1 if chain_len > 0 else 0
-
-        # Real Fabric transaction key (alert_hash asset key used during inference)
-        cum_risk = pred.get("risk_scores") or [0.84]
-        window_id = pred.get("window_id", "W_14-02-2018_20180214_014400")
-        analysis_meta = pred.get("analysis_metadata") or {}
-        window_start = analysis_meta.get("window", "14/02/2018 01:44:00")
-        alert_str = f"{window_id}-{window_start}-{max(cum_risk)}"
-        import hashlib
-        alert_tx_id = hashlib.sha256(alert_str.encode()).hexdigest()[:16]
-
-        return {
-            "active_mechanism": mech,
-            "fabric_active": (mech == "fabric"),
-            "fallback_engaged": (mech == "sha256_fallback"),
-            "tx_id": alert_tx_id,
-            "fallback_index": latest_idx,
-            "channel": "shadowcat-notary-channel",
-        }
-    except Exception:
-        return {
-            "active_mechanism": "unknown",
-            "fabric_active": False,
-            "fallback_engaged": False,
-            "tx_id": "N/A",
-            "fallback_index": 0,
-            "channel": "shadowcat-notary-channel",
-        }
-
-
-def get_onchain_incident_responses() -> list:
-    """
-    Queries real auto-triggered IncidentResponseRecords directly from Fabric ledger.
-    Falls back to inspecting fallback alert records if Fabric is unreachable.
-    """
-    try:
-        from backend.fabric_bridge import query_all_incidents
-        incidents = query_all_incidents()
-        if incidents and isinstance(incidents, list):
-            return incidents
-    except Exception:
-        pass
-    # Fallback to inspecting alerts directory
-    alerts_dir = REPO_ROOT / "backend" / "alerts"
-    incidents = []
-    if alerts_dir.exists():
-        for af in alerts_dir.glob("alert_*.json"):
-            try:
-                with open(af, "r", encoding="utf-8") as f:
-                    rec = json.load(f)
-                    if rec.get("severity") in ("HIGH", "CRITICAL"):
-                        node = rec.get("target_node", "172.31.69.21")
-                        incidents.append({
-                            "incident_id": f"incident_{rec.get('alert_hash')}",
-                            "lineage_id": f"lin_{rec.get('alert_hash')}",
-                            "recommended_action": f"ISOLATE_HOST:{node}",
-                            "triggered_at": rec.get("window_start", "2026-09-26T10:00:00Z"),
-                        })
-            except Exception:
-                pass
+    pred = _get_live_prediction() or {}
+    mech = pred.get("notarization_mechanism", "none")
+    lineage = pred.get("lineage") or {}
+    return {
+        "active_mechanism": mech,
+        "fabric_active": mech == "fabric",
+        "fallback_engaged": mech == "sha256_fallback",
+        "lineage_id": lineage.get("lineage_id"),
+        "lineage_notarized_via": lineage.get("notarized_via"),
+    }
     return incidents

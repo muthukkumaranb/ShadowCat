@@ -735,7 +735,6 @@ class ShadowcatPipeline:
         raw_novelty = float(np.mean(feature_deviations))
         novelty_score = float(1.0 / (1.0 + np.exp(-0.5 * (raw_novelty - 1.0))))
         novelty_score = float(np.clip(novelty_score, 0.05, 0.95))
-        novelty_status = "Expected Behavior Envelope" if novelty_score < 0.50 else "Elevated Behavioral Drift"
 
         # Step 5: Onset probability from the 37-fold stacked onset ensemble.
         # Target = future_attack_label: an attack window within t+1..t+5 (1-minute windows).
@@ -914,7 +913,7 @@ class ShadowcatPipeline:
             "conformal_quantile": round(float(self.conformal_predictor.calibrated_quantile), 4),
             "model_architecture": "Stacked & Calibrated Residual LSTM",
             "active_model_folds": len(self.stacked_onset_models),
-            "checkpoint_dir": str(self.stacked_base_dir.relative_to(REPO_ROOT) / "onset"),
+            "checkpoint_dir": (self.stacked_base_dir.relative_to(REPO_ROOT) / "onset").as_posix(),
             "is_mock": False,
         }
 
@@ -938,48 +937,43 @@ class ShadowcatPipeline:
             })
         forecast_trajectory["raw_steps"] = raw_steps
 
-        # Compute telemetry statistics
-        active_endpoints = 42
-        if isinstance(raw_input, pd.DataFrame):
-            src_ips = raw_input["Src IP"] if "Src IP" in raw_input.columns else (raw_input["src_ip"] if "src_ip" in raw_input.columns else pd.Series([]))
-            dst_ips = raw_input["Dst IP"] if "Dst IP" in raw_input.columns else (raw_input["dst_ip"] if "dst_ip" in raw_input.columns else pd.Series([]))
-            all_ips = set(src_ips.dropna().unique()).union(set(dst_ips.dropna().unique()))
-            if len(all_ips) > 0:
-                active_endpoints = len(all_ips)
+        # Input statistics: only values computed from the input; None when the column is absent
+        cols = raw_input.columns if isinstance(raw_input, pd.DataFrame) else []
+        active_endpoints = None
+        ip_cols = [c for c in ("Src IP", "src_ip", "Dst IP", "dst_ip") if c in cols]
+        if ip_cols:
+            active_endpoints = int(pd.unique(pd.concat([raw_input[c] for c in ip_cols]).dropna()).size)
 
-        syn_ack_ratio = 4.8
-        if "SYN Flag Cnt" in raw_input.columns and "ACK Flag Cnt" in raw_input.columns:
-            syn_c = float(raw_input["SYN Flag Cnt"].sum())
-            ack_c = float(raw_input["ACK Flag Cnt"].sum()) + 1.0
-            syn_ack_ratio = round(syn_c / ack_c, 2)
+        syn_ack_ratio = None
+        if "SYN Flag Cnt" in cols and "ACK Flag Cnt" in cols:
+            syn_c = float(pd.to_numeric(raw_input["SYN Flag Cnt"], errors="coerce").sum())
+            ack_c = float(pd.to_numeric(raw_input["ACK Flag Cnt"], errors="coerce").sum())
+            syn_ack_ratio = round(syn_c / ack_c, 4) if ack_c > 0 else None
 
-        mean_pkt_size = int(raw_input["TotLen Fwd Pkts"].mean()) if "TotLen Fwd Pkts" in raw_input.columns and len(raw_input) > 0 else 312
+        packets_analyzed = None
+        if "Tot Fwd Pkts" in cols and "Tot Bwd Pkts" in cols:
+            packets_analyzed = int(pd.to_numeric(raw_input["Tot Fwd Pkts"], errors="coerce").sum()
+                                   + pd.to_numeric(raw_input["Tot Bwd Pkts"], errors="coerce").sum())
 
         novelty_payload = {
             "state_id": "S(t)",
-            "window_label": "Window t (Current)",
-            "dominant_behavior": "Probing & port sweeping" if novelty_score > 0.4 else "Nominal Enterprise Traffic",
+            # sigmoid(0.5 * (mean |S(t) - S_hat(t)| / sigma - 1)), clipped to [0.05, 0.95]
             "novelty_score": round(novelty_score, 2),
-            "novelty_status": novelty_status,
-            "active_endpoints": max(active_endpoints, 5),
+            "novelty_definition": "world-model deviation: sigmoid of mean |S(t) - S_hat(t)| / sigma over 406 features",
+            "active_endpoints": active_endpoints,
             "syn_ack_ratio": syn_ack_ratio,
-            "mean_packet_size": mean_pkt_size,
-            "entropy": 3.42,
             "flows_analyzed": len(raw_input),
-            "packets_analyzed": int(raw_input.get("Tot Fwd Pkts", pd.Series([len(raw_input) * 8])).sum()) if "Tot Fwd Pkts" in raw_input.columns else len(raw_input) * 8,
+            "input_rows_are": "UCS windows" if source_type == "windows" else "flows",
+            "packets_analyzed": packets_analyzed,
             "is_mock": False,
         }
 
-        # Analysis metadata
         analysis_metadata = {
-            "source": f"LIVE INFERENCE: {source_type.upper()} Stream",
-            "sensor_id": "TAP-DMZ-01",
-            "sensor_throughput": "10Gbps Ingress",
-            "window": "t+1 → t+5 (Live Operational)",
+            "source": f"{source_type} input",
+            "window": "1-minute windows, 30-window lookback",
             "window_duration": "60s",
             "duration_sec": 60,
             "lookback_windows": 30,
-            "rollout_horizons": 5,
             "timestamp": window_start,
             "is_mock": False,
         }
@@ -1124,9 +1118,9 @@ class ShadowcatPipeline:
         else:
             lineage_severity = "LOW"
 
-        target_node = "172.31.69.21"
-        if len(flagged_flows) > 0 and flagged_flows[0].get("src_ip"):
-            target_node = str(flagged_flows[0]["src_ip"])
+        target_node = ""  # no host is known unless the input names one
+        if len(flagged_flows) > 0 and flagged_flows[0].get("source"):
+            target_node = str(flagged_flows[0]["source"])
         elif graph_traversal.get("start_node"):
             target_node = str(graph_traversal["start_node"])
 

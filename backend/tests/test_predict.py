@@ -112,7 +112,7 @@ class TestBackendPipeline(unittest.TestCase):
             nv = res["novelty_score"]
             self.assertGreaterEqual(nv["novelty_score"], 0.0)
             self.assertLessEqual(nv["novelty_score"], 1.0)
-            self.assertIn(nv["novelty_status"], ["Expected Behavior Envelope", "Elevated Behavioral Drift"])
+            self.assertNotIn("entropy", nv)
 
     def test_predict_synthetic_csv_flow_input(self):
         """Verify predict() accepts raw CICFlowMeter CSV flows and produces valid output."""

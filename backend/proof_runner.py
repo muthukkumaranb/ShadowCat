@@ -73,14 +73,5 @@ def run_proof():
     full_output = predict(sample_df, source_type="windows")
     print(json.dumps(full_output, indent=2))
 
-    # 4. Frontend mock badge disappearance proof
-    print("\n--- ITEM 7 PROOF: Frontend Badge Check & Status ---")
-    print(f"data_provider.inference_status()  : {data_provider.inference_status()}")
-    print(f"data_provider.validation_status() : {data_provider.validation_status()}")
-    for k in data_provider.CHECKPOINT_PATHS:
-        is_mock = data_provider.is_using_mock_data(k)
-        badge_html = data_provider.get_mock_badge_html(k)
-        print(f"  Key '{k:<20}': is_mock={is_mock} | Badge HTML='{badge_html}' (Empty string = No Badge)")
-
 if __name__ == "__main__":
     run_proof()

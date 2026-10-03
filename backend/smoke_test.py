@@ -39,8 +39,7 @@ def run_smoke_test():
     print(f"    - Is Warmup: {output['is_warmup']}")
     print(f"    - {fc['onset_probability_label']}: {risks}")
     print(f"    - Stage Trajectory: {stages}")
-    print(f"    - Novelty Score: {novelty['novelty_score']} ({novelty['novelty_status']})")
-    print(f"    - Dominant Behavior: {novelty['dominant_behavior']}")
+    print(f"    - World-model deviation score: {novelty['novelty_score']}")
 
     # Assertions
     assert len(risks) == 1, f"Expected a single onset probability, got {len(risks)}"
@@ -50,7 +49,7 @@ def run_smoke_test():
 
     print("\n[4] Top Feature Attributions:")
     for a in output["attributions"]:
-        print(f"    - {a['feature']:<30}: {a['contribution']:.2f} ({a['category']}) | {a['delta']}")
+        print(f"    - {a['feature']:<30}: {a['contribution']:.2f} ({a['category']}) | IG signed {a['signed_attribution']:+.4f}")
 
     print("\n[5] Flagged Flows Sample:")
     for f in output["flagged_flows"][:3]:
