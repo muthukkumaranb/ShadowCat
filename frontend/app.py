@@ -49,6 +49,7 @@ with header_col1:
             <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.92rem; font-weight: 700; color: {t['text_high']}; letter-spacing: -0.01em;">
                 SHADOWCAT
             </span>
+            <span class="soc-topbar-tag" style="font-size: 0.6rem; padding: 1px 4px;">v2.4</span>
         </div>
     </div>
     """)
@@ -76,8 +77,9 @@ with header_col3:
     with col_status:
         render_html(f"""
         <div style="display: flex; align-items: center; justify-content: flex-end; padding-top: 5px;">
-            <span class="soc-badge badge-neutral" style="font-size: 0.62rem; padding: 3px 8px;">
-                OFFLINE // FILE INPUT
+            <span class="soc-live-badge" style="font-size: 0.62rem; padding: 3px 8px; border: 1px solid {t['primary']}; background: {t['surface_card']};">
+                <span class="soc-pulse-dot" style="width: 6px; height: 6px;"></span>
+                AIRGAPPED // LIVE
             </span>
         </div>
         """)

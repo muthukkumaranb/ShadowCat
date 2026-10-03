@@ -71,7 +71,7 @@ onset.folds_reproducing_sidecar_f1 = 37
 - **Key Output Line:**
 ```text
 ✅ AUDIT CHAIN VALID — all entries intact, no tampering detected.
-Total entries in chain: 3 (model_checkpoint, prediction_lineage, forecast_payload)
+Total entries in chain: 3 (forecast_payload entries: 1)
 ```
 
 ---
