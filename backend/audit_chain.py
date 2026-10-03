@@ -99,7 +99,10 @@ def append_entry(
 
     # Normalize relative path representation with forward slashes
     backend_dir = os.path.dirname(os.path.abspath(__file__))
-    rel_path = os.path.relpath(resolved_path, start=backend_dir).replace("\\", "/")
+    try:
+        rel_path = os.path.relpath(resolved_path, start=backend_dir).replace("\\", "/")
+    except ValueError:  # runtime dir on another drive (Windows): keep the absolute path
+        rel_path = os.path.abspath(resolved_path).replace("\\", "/")
 
     entry_content = {
         "index": len(chain),
