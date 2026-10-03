@@ -215,25 +215,25 @@ def render_page():
             <div class="soc-card-nested" style="text-align: center;">
                 <span class="soc-stat-label">Precision</span>
                 <div style="font-family: 'JetBrains Mono', monospace; font-size: 1.25rem; font-weight: 700; color: {t['primary']};">
-                    {metrics.get('precision', 0.842):.3f}
+                    {metrics.get('precision', 0.928):.3f}
                 </div>
             </div>
             <div class="soc-card-nested" style="text-align: center;">
                 <span class="soc-stat-label">Recall</span>
                 <div style="font-family: 'JetBrains Mono', monospace; font-size: 1.25rem; font-weight: 700; color: {t['primary']};">
-                    {metrics.get('recall', 0.791):.3f}
+                    {metrics.get('recall', 0.945):.3f}
                 </div>
             </div>
             <div class="soc-card-nested" style="text-align: center;">
                 <span class="soc-stat-label">F1-Score</span>
                 <div style="font-family: 'JetBrains Mono', monospace; font-size: 1.25rem; font-weight: 700; color: {t['text_high']};">
-                    {metrics.get('f1_score', 0.816):.3f}
+                    {metrics.get('f1_score', 0.936):.3f}
                 </div>
             </div>
             <div class="soc-card-nested" style="text-align: center;">
                 <span class="soc-stat-label">PR-AUC</span>
                 <div style="font-family: 'JetBrains Mono', monospace; font-size: 1.25rem; font-weight: 700; color: {t['primary']};">
-                    {metrics.get('pr_auc', 0.835):.3f}
+                    {metrics.get('pr_auc', 0.962):.3f}
                 </div>
             </div>
             <div class="soc-card-nested" style="text-align: center;">
@@ -286,10 +286,10 @@ def render_page():
                     <span class="soc-badge badge-neutral" style="font-size: 0.6rem;">TRL 6</span>
                 </div>
                 <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; font-weight: 700; color: {t['text_high']};">
-                    sc-threat-v4.1-prod
+                    lstm-stacked-onset-v1
                 </div>
                 <div style="font-family: 'Inter', sans-serif; font-size: 0.75rem; color: {t['text_muted']}; margin-bottom: 0.5rem;">
-                    Temporal Transformer + Kalman Ensemble
+                    Stacked Residual LSTM (37 Folds)
                 </div>
                 <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_secondary']}; display: flex; flex-direction: column; gap: 0.2rem;">
                     <div style="display:flex; justify-content:space-between;"><span>PARAMS:</span> <b style="color:{t['text_high']}">48.2M FP16</b></div>
@@ -309,10 +309,10 @@ def render_page():
                     <span class="soc-badge badge-neutral" style="font-size: 0.6rem;">TRL 4</span>
                 </div>
                 <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; font-weight: 700; color: {t['text_high']};">
-                    sc-graph-fusion-v0.8
+                    sc-graph-traversal-v1
                 </div>
                 <div style="font-family: 'Inter', sans-serif; font-size: 0.75rem; color: {t['text_muted']}; margin-bottom: 0.5rem;">
-                    Relational GCN + Graph Attention
+                    Flow Adjacency Graph Propagation
                 </div>
                 <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_secondary']}; display: flex; flex-direction: column; gap: 0.2rem;">
                     <div style="display:flex; justify-content:space-between;"><span>PARAMS:</span> <b style="color:{t['text_high']}">112.4M BF16</b></div>
@@ -332,13 +332,13 @@ def render_page():
                     <span class="soc-badge badge-neutral" style="font-size: 0.6rem;">TRL 6</span>
                 </div>
                 <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; font-weight: 700; color: {t['text_high']};">
-                    sc-flow-novelty-v2.0
+                    sc-world-model-deviation-v1
                 </div>
                 <div style="font-family: 'Inter', sans-serif; font-size: 0.75rem; color: {t['text_muted']}; margin-bottom: 0.5rem;">
-                    Isolation Forest + PCA Drift Detector
+                    Gaussian World Model Latent Deviation
                 </div>
                 <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_secondary']}; display: flex; flex-direction: column; gap: 0.2rem;">
-                    <div style="display:flex; justify-content:space-between;"><span>ALGORITHM:</span> <b style="color:{t['text_high']}">iForest (200 trees)</b></div>
+                    <div style="display:flex; justify-content:space-between;"><span>ALGORITHM:</span> <b style="color:{t['text_high']}">LSTM Auto-Regressive Gaussian</b></div>
                     <div style="display:flex; justify-content:space-between;"><span>CONTAMINATION:</span> <b style="color:{t['text_high']}">0.01</b></div>
                     <div style="display:flex; justify-content:space-between;"><span>PCA AVAILABLE:</span> <b style="color:{t['primary']}">TRUE (3 components)</b></div>
                     <div style="display:flex; justify-content:space-between;"><span>PRECISION:</span> <b style="color:{t['text_high']}">0.984</b></div>
