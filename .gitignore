@@ -67,3 +67,5 @@ stitich frontend/
 backend/alerts/
 backend/audit_chain.json
 
+# Runtime outputs of backend.predict (alerts, lineage, audit chain, reports DB)
+runtime/

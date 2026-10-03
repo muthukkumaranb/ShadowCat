@@ -23,6 +23,8 @@ DATA_ENG_DIR = REPO_ROOT / "data-engineering"
 ML1_DIR = REPO_ROOT / "ml1"
 ML2_DIR = REPO_ROOT / "ml2-full"
 FRONTEND_DIR = REPO_ROOT / "frontend"
+# Runtime outputs (alerts, lineage, audit chain, reports DB) are written here, never into tracked sources.
+RUNTIME_DIR = Path(os.environ.get("SHADOWCAT_RUNTIME_DIR", REPO_ROOT / "runtime"))
 
 # Ensure repository root, backend, and data-engineering are importable
 if str(REPO_ROOT) not in sys.path:
@@ -1056,7 +1058,7 @@ class ShadowcatPipeline:
             else:
                 # Fall back to SHA-256 hash-chaining in backend/audit_chain.py
                 try:
-                    alerts_dir = Path(BACKEND_DIR) / "alerts"
+                    alerts_dir = RUNTIME_DIR / "alerts"
                     alerts_dir.mkdir(parents=True, exist_ok=True)
                     alert_file = alerts_dir / f"alert_{alert_hash}.json"
                     alert_record = {
@@ -1178,7 +1180,7 @@ class ShadowcatPipeline:
         if not lineage_ok:
             # Fall back to SHA-256 hash chaining in backend/alerts and audit_chain
             try:
-                alerts_dir = Path(BACKEND_DIR) / "alerts"
+                alerts_dir = RUNTIME_DIR / "alerts"
                 alerts_dir.mkdir(parents=True, exist_ok=True)
                 lin_file = alerts_dir / f"lineage_{lineage_id}.json"
                 with open(lin_file, "w", encoding="utf-8") as f:

@@ -477,10 +477,11 @@ def get_mitre_data() -> list[dict]:
 
 def get_audit_chain_status() -> dict:
     """
-    Returns the status and entries of the blockchain-inspired tamper-evident audit chain.
+    Status and entries of the runtime SHA-256 audit chain (runtime/audit_chain.json).
     Consumed by: views/07_Validation_Trust.py
     """
-    chain_file = REPO_ROOT / "backend" / "audit_chain.json"
+    from audit_chain import CHAIN_PATH
+    chain_file = Path(CHAIN_PATH)
     if chain_file.exists():
         try:
             with open(chain_file, "r", encoding="utf-8") as f:

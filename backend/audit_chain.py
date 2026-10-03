@@ -12,7 +12,12 @@ if hasattr(sys.stdout, "reconfigure"):
     except Exception:
         pass
 
-CHAIN_PATH = os.path.join(os.path.dirname(__file__), "audit_chain.json")
+# Runtime chain lives outside tracked sources: <repo>/runtime/ (gitignored),
+# overridable with SHADOWCAT_RUNTIME_DIR.
+RUNTIME_DIR = os.environ.get(
+    "SHADOWCAT_RUNTIME_DIR", os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "runtime")
+)
+CHAIN_PATH = os.path.join(RUNTIME_DIR, "audit_chain.json")
 
 
 def _sha256_of_file(filepath: str) -> str:
@@ -67,6 +72,7 @@ def _load_chain(chain_path: Optional[str] = None) -> list:
 
 def _save_chain(chain: list, chain_path: Optional[str] = None) -> None:
     path = chain_path or CHAIN_PATH
+    os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
         json.dump(chain, f, indent=2)
 
