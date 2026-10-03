@@ -99,7 +99,12 @@ def render_input_panel():
                 help="Offline processing: features extracted strictly using local Scapy/PyShark without cloud transmission."
             )
             if pcap_file:
-                st.success(f"Loaded '{pcap_file.name}' ({pcap_file.size / 1024:.1f} KB). Extracting UCS packet + flow feature tensors...")
+                st.info(
+                    f"Loaded '{pcap_file.name}' ({pcap_file.size / 1024:.1f} KB). "
+                    "PCAP processing runs offline via "
+                    "data-engineering/src/ucs_extractor.py; "
+                    "upload the resulting CSV/Parquet on the Telemetry Ingestion page."
+                )
 
         elif mode == "Upload CSV (Flow-Only Schema)":
             csv_file = st.file_uploader(
