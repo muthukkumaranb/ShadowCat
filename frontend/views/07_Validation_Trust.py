@@ -16,7 +16,6 @@ from data_provider import get_validation_data, get_audit_chain_status, get_live_
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 PROVENANCE_FILES = [
-    "ml1/artifacts/lstm/lstm_stacked/pca_32_stacked.pkl",
     "ml1/artifacts/lstm/gaussian_next_state_best_v3_packetcov.pt",
     "ml1/artifacts/lstm/stage_head_v3/reeval_packetcov/stage_head_best.pt",
 ]
@@ -155,7 +154,7 @@ def render_page():
         <div class="soc-section-header"><div class="soc-section-title">Model files used by inference</div></div>
         <table><thead><tr><th>File</th><th>SHA-256</th></tr></thead><tbody>{rows}</tbody></table>
         <div style="font-family: 'Inter', sans-serif; font-size: 0.75rem; color: {t['text_muted']}; margin-top: 0.4rem;">
-            Plus 37 onset and 37 detection fold checkpoints in ml1/artifacts/lstm/lstm_stacked/.
+            Plus 37 onset and 37 detection fold checkpoints in ml1/artifacts/lstm/lstm_stacked/; each carries its own PCA and LR scaler.
         </div>
     </div>
     """)

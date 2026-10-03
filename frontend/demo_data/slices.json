@@ -37,8 +37,8 @@
       },
       "model_output": {
         "windows": {
-          "onset_probability": 0.304508,
-          "detection_probability": 0.2704,
+          "onset_probability": 0.31363,
+          "detection_probability": 0.2739,
           "error": null
         },
         "csv": {
@@ -84,8 +84,8 @@
       },
       "model_output": {
         "windows": {
-          "onset_probability": 0.941237,
-          "detection_probability": 0.9274,
+          "onset_probability": 0.942087,
+          "detection_probability": 0.9278,
           "error": null
         },
         "csv": {
@@ -131,8 +131,8 @@
       },
       "model_output": {
         "windows": {
-          "onset_probability": 0.887369,
-          "detection_probability": 0.9316,
+          "onset_probability": 0.88727,
+          "detection_probability": 0.9315,
           "error": null
         },
         "csv": {

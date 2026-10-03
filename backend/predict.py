@@ -152,6 +152,8 @@ class StackedFoldModel:
         2. Residual LSTM: z_residual = fc(dropout(lstm(x_seq)))
         3. Combined Logit: z = z_base + z_residual
         4. Calibrated Probability: p = sigmoid(z / T)
+    The 30-window history is projected with THIS fold's own PCA (checkpoint pca_mean /
+    pca_components), as in evaluation/benchmark/reproduce_stacked_benchmark.py.
     """
 
     def __init__(
@@ -169,13 +171,17 @@ class StackedFoldModel:
         attack_type: str = "",
         val_predictions: Optional[List[float]] = None,
         val_targets: Optional[List[int]] = None,
+        pca_mean: Optional[np.ndarray] = None,
+        pca_components: Optional[np.ndarray] = None,
     ):
         self.fold_id = fold_id
         self.model = model
-        self.lr_coef = np.asarray(lr_coef, dtype=np.float32)
-        self.lr_intercept = float(lr_intercept[0] if isinstance(lr_intercept, (list, np.ndarray)) else lr_intercept)
-        self.scaler_mean = np.asarray(scaler_mean, dtype=np.float32)
-        self.scaler_scale = np.asarray(scaler_scale, dtype=np.float32)
+        self.lr_coef = np.asarray(lr_coef, dtype=np.float64).reshape(-1)
+        self.lr_intercept = float(np.asarray(lr_intercept, dtype=np.float64).reshape(-1)[0])
+        self.scaler_mean = np.asarray(scaler_mean, dtype=np.float64)
+        self.scaler_scale = np.asarray(scaler_scale, dtype=np.float64)
+        self.pca_mean = np.asarray(pca_mean, dtype=np.float64)
+        self.pca_components = np.asarray(pca_components, dtype=np.float64)
         self.temperature = max(float(temperature), 0.05)
         self.target_name = target_name
         self.checkpoint_path = checkpoint_path
@@ -185,16 +191,21 @@ class StackedFoldModel:
         self.val_targets = val_targets or []
 
     def compute_base_logit(self, window_406: np.ndarray) -> float:
-        x = np.asarray(window_406, dtype=np.float32).ravel()
-        x_scaled = (x - self.scaler_mean) / (self.scaler_scale + 1e-8)
-        base_logit = float(np.dot(self.lr_coef.ravel(), x_scaled) + self.lr_intercept)
-        return base_logit
+        x = np.asarray(window_406, dtype=np.float64).ravel()
+        x_scaled = (x - self.scaler_mean) / self.scaler_scale
+        return float(x_scaled @ self.lr_coef + self.lr_intercept)
 
-    def predict_proba(self, seq_30x32_tensor: torch.Tensor, window_406: np.ndarray) -> float:
-        base_logit = self.compute_base_logit(window_406)
+    def project(self, seq_30x406: np.ndarray) -> np.ndarray:
+        """(30, 406) history -> (30, 32) with this fold's own PCA (checkpoint pca_mean / pca_components)."""
+        seq = np.asarray(seq_30x406, dtype=np.float64)
+        return ((seq - self.pca_mean) @ self.pca_components.T).astype(np.float32)
+
+    def predict_proba(self, seq_30x406: np.ndarray, device: str = "cpu") -> float:
+        base_logit = self.compute_base_logit(seq_30x406[-1])
+        seq_tensor = torch.as_tensor(self.project(seq_30x406)).unsqueeze(0).to(device)
         with torch.no_grad():
-            b_tensor = torch.tensor([base_logit], dtype=torch.float32, device=seq_30x32_tensor.device)
-            p = self.model(seq_30x32_tensor, b_tensor, temperature=self.temperature).item()
+            b_tensor = torch.tensor([base_logit], dtype=torch.float32, device=device)
+            p = self.model(seq_tensor, b_tensor, temperature=self.temperature).item()
         return float(p)
 
 
@@ -364,6 +375,8 @@ class ShadowcatPipeline:
                         attack_type=ckpt.get("attack_type", ""),
                         val_predictions=ckpt.get("val_predictions", []),
                         val_targets=ckpt.get("val_targets", []),
+                        pca_mean=ckpt["pca_mean"],
+                        pca_components=ckpt["pca_components"],
                     )
                     self.stacked_onset_models.append(fold_obj)
                 except Exception as e:
@@ -392,6 +405,8 @@ class ShadowcatPipeline:
                         attack_type=ckpt.get("attack_type", ""),
                         val_predictions=ckpt.get("val_predictions", []),
                         val_targets=ckpt.get("val_targets", []),
+                        pca_mean=ckpt["pca_mean"],
+                        pca_components=ckpt["pca_components"],
                     )
                     self.stacked_detection_models.append(fold_obj)
                 except Exception as e:
@@ -419,30 +434,10 @@ class ShadowcatPipeline:
         # test F1 in ml1/artifacts/lstm/lstm_stacked/onset/sidecar_fold_*.json is computed.
         self.alert_threshold = 0.5
 
-        # 5. Load Fitted 32-dim PCA for Hazard & Stacked Models
-        self.pca = None
-        self.pca_features = None
-        self.pca_scaler = None
-        self.pca_available = False
+        # 5. No shared PCA: each stacked fold projects its history with its own checkpoint PCA
+        # (pca_32_stacked.pkl is no longer used; see docs/demo_check/STACKED_PCA_NOTE.md).
         if str(ML1_DIR) not in sys.path:
             sys.path.insert(0, str(ML1_DIR))
-
-        pca_stacked_file = stacked_base_dir / "pca_32_stacked.pkl"
-        pca_file = REPO_ROOT / "models" / "pca_32.pkl"
-        pca_load_target = pca_stacked_file if pca_stacked_file.exists() else pca_file
-
-        if pca_load_target.exists():
-            try:
-                import pickle
-                with open(pca_load_target, "rb") as f:
-                    data = pickle.load(f)
-                    self.pca = data.get("pca")
-                    self.pca_features = data.get("features")
-                    self.pca_scaler = data.get("scaler")
-                    self.pca_available = (self.pca is not None)
-                logging.info(f"Loaded 32-dim PCA transform from {pca_load_target}")
-            except Exception as e:
-                logging.warning(f"Could not load PCA cache from {pca_load_target}: {e}")
 
         # 6. Initialize Split Conformal Predictor with ACI and Joint Coverage
         self.conformal_coverage = 0.90
@@ -505,41 +500,24 @@ class ShadowcatPipeline:
             "Placeholder data is strictly prohibited per audit requirements."
         )
 
-    def _stacked_seq_tensor(self, sequence_30x406: np.ndarray) -> torch.Tensor:
-        """32-dim PCA sequence tensor used by the stacked onset/detection ensembles."""
-        if not (self.pca_available and self.pca is not None):
-            raise RuntimeError("CRITICAL: 32-dim PCA transform for the stacked ensemble is unavailable.")
-        cols = self.pca_features if (self.pca_features is not None and len(self.pca_features) == sequence_30x406.shape[1]) else [f"f_{i}" for i in range(sequence_30x406.shape[1])]
-        seq_df = pd.DataFrame(sequence_30x406, columns=cols)
-        if getattr(self, "pca_scaler", None) is not None:
-            scaled_values = self.pca_scaler.transform(seq_df[cols].to_numpy(dtype=np.float64))
-            seq_df = pd.DataFrame(scaled_values, columns=cols)
-        transformed = self.pca.transform(seq_df)
-        pca_cols = [f"pca_{i}" for i in range(32)]
-        seq_32 = transformed[pca_cols].to_numpy(dtype=np.float32)
-        return torch.as_tensor(seq_32, dtype=torch.float32).unsqueeze(0).to(self.device)
-
     def _predict_onset_probability(self, sequence_30x406: np.ndarray) -> float:
         """
         P(attack within the next 5 minutes): mean over the 37 stacked onset fold models
         (target = future_attack_label, i.e. an attack window within t+1..t+5).
+        Each fold uses its own checkpoint PCA and LR scaler.
         """
-        seq_tensor = self._stacked_seq_tensor(sequence_30x406)
-        curr_window_406 = sequence_30x406[-1]
-        probs = [m.predict_proba(seq_tensor, curr_window_406) for m in self.stacked_onset_models]
+        probs = [m.predict_proba(sequence_30x406, self.device) for m in self.stacked_onset_models]
         return float(np.mean(probs))
 
     def _predict_detection_ensemble(self, sequence_30x406: np.ndarray) -> Optional[float]:
         """
-        Predicts current window attack detection probability using the 37-fold LOEO Stacked Residual LSTM ensemble.
+        Current-window attack probability: mean over the 37 stacked detection fold models,
+        each using its own checkpoint PCA and LR scaler.
         """
-        if not (self.use_stacked_model and len(self.stacked_detection_models) > 0 and self.pca_available and self.pca is not None):
+        if not (self.use_stacked_model and len(self.stacked_detection_models) > 0):
             return None
         try:
-            seq_tensor = self._stacked_seq_tensor(sequence_30x406)
-            curr_window_406 = sequence_30x406[-1]
-
-            probs = [m.predict_proba(seq_tensor, curr_window_406) for m in self.stacked_detection_models]
+            probs = [m.predict_proba(sequence_30x406, self.device) for m in self.stacked_detection_models]
             return float(np.mean(probs))
         except Exception as e:
             import logging

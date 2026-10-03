@@ -105,24 +105,15 @@ def run_benchmark(n_trials: int = 30, n_warmup: int = 5, n_fabric_trials: int = 
         t_ext = time.perf_counter()
         extraction_latencies.append((t_ext - t0) * 1000.0)
 
-        # B. 32-dim PCA projection
+        # B. 32-dim PCA projection (each fold's own checkpoint PCA)
         t1 = time.perf_counter()
-        cols = pipeline.pca_features if (pipeline.pca_features is not None and len(pipeline.pca_features) == 406) else [f"f_{i}" for i in range(406)]
-        df_for_pca = pd.DataFrame(seq_30x406, columns=cols)
-        if getattr(pipeline, "pca_scaler", None) is not None:
-            scaled_vals = pipeline.pca_scaler.transform(df_for_pca[cols].to_numpy(dtype=np.float64))
-            df_for_pca = pd.DataFrame(scaled_vals, columns=cols)
-        transformed = pipeline.pca.transform(df_for_pca)
-        pca_cols = [f"pca_{i}" for i in range(32)]
-        seq_32 = transformed[pca_cols].to_numpy(dtype=np.float32)
-        seq_tensor_32 = torch.as_tensor(seq_32, dtype=torch.float32).unsqueeze(0).to(pipeline.device)
+        _ = [m.project(seq_30x406) for m in pipeline.stacked_detection_models]
         t_pca = time.perf_counter()
         pca_latencies.append((t_pca - t1) * 1000.0)
 
         # C. Stacked Residual LSTM 37-fold ensemble inference
         t2 = time.perf_counter()
-        curr_window_406 = seq_30x406[-1]
-        det_probs = [m.predict_proba(seq_tensor_32, curr_window_406) for m in pipeline.stacked_detection_models]
+        det_probs = [m.predict_proba(seq_30x406, pipeline.device) for m in pipeline.stacked_detection_models]
         onset_hazards = pipeline._predict_onset_probability(seq_30x406)
         t_lstm = time.perf_counter()
         lstm_latencies.append((t_lstm - t2) * 1000.0)
