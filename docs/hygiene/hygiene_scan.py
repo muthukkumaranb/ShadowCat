@@ -71,7 +71,9 @@ def main():
            "relative to the repo root or the script's folders. Output files the script writes itself also match.", "",
            "| File | Untracked path literal(s) |", "|---|---|"]
     md += [f"| `{f}` | {', '.join('`' + x + '`' for x in m)} |" for f, m in missing.items()]
-    md += ["", "## 4. feature/dashboard-risk-ui merge test", "", "pending: s6-t4", ""]
+    merge_md = REPO / "docs/hygiene/merge_test.md"  # written by hand from the s6-t4 test run
+    md += ["", "## 4. feature/dashboard-risk-ui merge test", "",
+           merge_md.read_text().strip() if merge_md.exists() else "pending: s6-t4", ""]
     (REPO / "docs/HYGIENE_REPORT.md").write_text("\n".join(md))
     print(len(matches), len(abs_hits), len(missing))
 
