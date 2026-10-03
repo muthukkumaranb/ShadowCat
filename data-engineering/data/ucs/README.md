@@ -1,0 +1,1 @@
+The `lstm_stacked` models in `ml1/artifacts/lstm/lstm_stacked` were trained on `ucs_windows_models_v1.parquet` (from commit `e200fdb`). They were NOT trained on the current `ucs_windows.parquet` (which was updated in commit `bee7536` with changed packet features).
