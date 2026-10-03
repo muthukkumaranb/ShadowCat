@@ -1286,6 +1286,21 @@ class ShadowcatPipeline:
         payload["lineage"] = lineage_payload
         forecast_trajectory["lineage"] = lineage_payload
 
+        try:
+            forecasts_dir = os.path.join(BACKEND_DIR, "forecasts")
+            os.makedirs(forecasts_dir, exist_ok=True)
+            forecast_path = os.path.join(forecasts_dir, f"forecast_{window_id}.json")
+            with open(forecast_path, "w", encoding="utf-8") as f:
+                json.dump(payload, f, indent=2)
+            append_audit_entry(
+                artifact_path=forecast_path,
+                artifact_type="forecast_payload",
+                description=f"Inference forecast for {window_id}"
+            )
+        except Exception as e:
+            import logging
+            logging.warning(f"Failed to append forecast to audit chain: {e}")
+
         return payload
 
     def _extract_flagged_flows(self, raw_input: pd.DataFrame, source_type: str) -> List[Dict[str, Any]]:

@@ -1,0 +1,1 @@
+I have successfully verified that the SHADOWCAT SOC Cockpit (Streamlit application) runs locally without crashing on the canonical stream CSV. The dashboard initialized properly, all standard tabs were accessible, and real-time visualization of telemetry and forecasting metrics displayed as expected.

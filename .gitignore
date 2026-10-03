@@ -67,3 +67,7 @@ stitich frontend/
 backend/alerts/
 backend/audit_chain.json
 
+
+*.pem
+!backend/admin_public_key.pem
+backend/keys/
