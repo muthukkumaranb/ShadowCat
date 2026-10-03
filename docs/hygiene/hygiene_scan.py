@@ -73,8 +73,8 @@ def main():
     md += [f"| `{f}` | {', '.join('`' + x + '`' for x in m)} |" for f, m in missing.items()]
     merge_md = REPO / "docs/hygiene/merge_test.md"  # written by hand from the s6-t4 test run
     md += ["", "## 4. feature/dashboard-risk-ui merge test", "",
-           merge_md.read_text().strip() if merge_md.exists() else "pending: s6-t4", ""]
-    (REPO / "docs/HYGIENE_REPORT.md").write_text("\n".join(md))
+           merge_md.read_text(encoding="utf-8").strip() if merge_md.exists() else "pending: s6-t4", ""]
+    (REPO / "docs/HYGIENE_REPORT.md").write_text("\n".join(md), encoding="utf-8")
     print(len(matches), len(abs_hits), len(missing))
 
 
