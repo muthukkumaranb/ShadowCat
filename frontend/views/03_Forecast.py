@@ -377,6 +377,70 @@ def render_page():
     </div>
     """)
 
+    # s2-t2: DUAL SERIES — Forward-simulation risk vs Validated hazard risk
+    # Two clearly labelled series per master prompt s2-t2 requirement.
+    rollout_probs = fc.get("rollout_infiltration_prob", [])
+    hazard_h1 = fc.get("step_hazards", [None]*5)[0] if fc.get("step_hazards") else None
+    hazard_h2 = fc.get("step_hazards", [None]*5)[1] if fc.get("step_hazards") else None
+    hazard_h5 = fc.get("step_hazards", [None]*5)[4] if fc.get("step_hazards") else None
+    horizon_is_modelled = fc.get("horizon_is_modelled", [True]*5)
+
+    _rollout_cells = ""
+    for k_idx in range(5):
+        p_val = rollout_probs[k_idx] if k_idx < len(rollout_probs) else None
+        p_str = f"{p_val:.4f}" if p_val is not None else "—"
+        _rollout_cells += f"<td style='padding:4px 8px; text-align:right; font-family:JetBrains Mono,monospace; font-size:0.75rem; color:#fff;'>{p_str}</td>"
+
+    _hazard_cells = ""
+    _hazard_vals = {1: hazard_h1, 2: hazard_h2, 5: hazard_h5}
+    for k_idx, horizon in enumerate([1, 2, 3, 4, 5]):
+        modelled = horizon_is_modelled[k_idx] if k_idx < len(horizon_is_modelled) else False
+        if horizon in _hazard_vals and _hazard_vals[horizon] is not None:
+            p_val = _hazard_vals[horizon]
+            _hazard_cells += f"<td style='padding:4px 8px; text-align:right; font-family:JetBrains Mono,monospace; font-size:0.75rem; color:#2FB872; font-weight:700;'>{p_val:.4f}</td>"
+        elif not modelled:
+            _hazard_cells += "<td style='padding:4px 8px; text-align:right; font-family:JetBrains Mono,monospace; font-size:0.75rem; color:#555;'>not modelled</td>"
+        else:
+            _hazard_cells += "<td style='padding:4px 8px; text-align:right; font-family:JetBrains Mono,monospace; font-size:0.75rem; color:#555;'>—</td>"
+
+    render_html(f"""
+    <div class="soc-card" style="margin-bottom: 1rem; border-left: 3px solid #2FB872;">
+        <div style="font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 0.8125rem; color: {t['text_high']}; text-transform: uppercase; margin-bottom: 0.5rem;">
+            Dual Risk Series: Forward Simulation vs Validated Hazard Heads
+        </div>
+        <table style="width:100%; border-collapse:collapse; background:{t['surface_lowest']}; border-radius:4px; overflow:hidden;">
+            <thead>
+                <tr style="background:{t['border']};">
+                    <th style="padding:5px 8px; text-align:left; font-family:JetBrains Mono,monospace; font-size:0.7rem; color:#aaa; text-transform:uppercase; font-weight:600;">Series</th>
+                    {''.join(f"<th style='padding:5px 8px; text-align:right; font-family:JetBrains Mono,monospace; font-size:0.7rem; color:#aaa; text-transform:uppercase; font-weight:600;'>K={i+1}</th>" for i in range(5))}
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="border-bottom: 1px solid {t['border']};">
+                    <td style="padding:5px 8px; font-family:JetBrains Mono,monospace; font-size:0.72rem; color:#9ea3ac; white-space:nowrap;">
+                        <span style="display:inline-block; width:10px; height:2px; background:#9ea3ac; margin-right:5px; vertical-align:middle;"></span>
+                        Forward-simulation risk (world-model rollout, K=1..5)
+                    </td>
+                    {_rollout_cells}
+                </tr>
+                <tr>
+                    <td style="padding:5px 8px; font-family:JetBrains Mono,monospace; font-size:0.72rem; color:#2FB872; white-space:nowrap;">
+                        <span style="display:inline-block; width:10px; height:2px; background:#2FB872; margin-right:5px; vertical-align:middle;"></span>
+                        Validated hazard risk (direct hazard heads, H=1/2/5)
+                    </td>
+                    {_hazard_cells}
+                </tr>
+            </tbody>
+        </table>
+        <div style="font-family: 'Inter', sans-serif; font-size: 0.7rem; color: #6b7280; margin-top: 0.5rem; line-height: 1.5; padding: 0.35rem 0.5rem; background: rgba(255,255,255,0.03); border-radius: 3px; border-left: 2px solid #374151;">
+            <b style="color:#9ca3af;">Caption:</b>
+            Forward simulation does not yet beat a persistence baseline (H* = 0);
+            hazard heads are LOEO-validated (ROC-AUC 0.789/0.843/0.770).
+            H=3 and H=4 are not modelled by the direct hazard heads.
+        </div>
+    </div>
+    """)
+
     # TASK 2: Restructured 4-Layer Explanation UI (Replaces Flat Block)
     render_layered_explanation(
         step_k=curr_k,
