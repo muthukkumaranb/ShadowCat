@@ -82,8 +82,12 @@ def run_smoke_test():
     assert "mitre_details" in fc, "Forecast trajectory missing 'mitre_details'!"
     assert len(fc["mitre_details"]) == 5, f"Expected 5 mitre_details entries, got {len(fc['mitre_details'])}"
     for idx, md in enumerate(fc["mitre_details"]):
-        assert md["tactic_id"].startswith("TA"), f"Step {idx} invalid tactic_id: {md['tactic_id']}"
-        assert md["technique_id"].startswith("T"), f"Step {idx} invalid technique_id: {md['technique_id']}"
+        if fc["stage"][idx] == "No stage determined":
+            assert md["tactic_id"] is None and md["technique_id"] is None, f"Step {idx}: IDs without a stage"
+            continue
+        assert md["tactic_id"].startswith("TA") and md["tactic_id"] != "TA0000", f"Step {idx} invalid tactic_id: {md['tactic_id']}"
+        assert md["technique_id"].startswith("T") and md["technique_id"] != "T0000", f"Step {idx} invalid technique_id: {md['technique_id']}"
+        assert md["stage_confidence"] > 0.5, f"Step {idx} stage shown below 0.5 confidence"
         assert len(md["technique_description"]) > 20, f"Step {idx} empty technique description!"
         assert "is_heuristic_progression" in md, f"Step {idx} missing heuristic flag!"
         assert "attribution_source" in md, f"Step {idx} missing attribution source!"

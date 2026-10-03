@@ -207,50 +207,26 @@ def render_page():
         """)
 
     with m_col2:
-        raw_steps = fc.get("raw_steps", [])
-        if raw_steps and len(raw_steps) > 0:
-            active_step = raw_steps[0]
-            stage_id = active_step.get("technique_id", "T1190")
-            stage_tactic = active_step.get("tactic_name", "Initial Access")
-            stage_tech = active_step.get("technique_full_name", active_step.get("technique_name", "Exploit Public-Facing Application"))
-            stage_url = active_step.get("technique_url", f"https://attack.mitre.org/techniques/{stage_id.replace('.', '/')}")
-            stage_status = "Forecast Horizon t+1"
-            if active_step.get("is_heuristic_progression"):
-                stage_status = "Heuristic Rollout Projection"
-        elif len(mitre) > 1:
-            stage_id = mitre[1].get("technique_id", mitre[1].get("id", "T1190"))
-            stage_tactic = mitre[1].get("tactic_name", mitre[1].get("stage", "Initial Access"))
-            stage_tech = mitre[1].get("technique_full_name", mitre[1].get("technique_name", "Exploit Public-Facing Application"))
-            stage_url = mitre[1].get("technique_url", f"https://attack.mitre.org/techniques/{stage_id.replace('.', '/')}")
-            stage_status = mitre[1].get("status", "Active (Current)")
+        step1 = mitre[0] if mitre else {}
+        conf = step1.get("confidence")
+        conf_txt = f"stage head p = {conf:.2f} (top class {step1.get('stage_head_top_class')})" if conf is not None else ""
+        if step1.get("technique_id"):
+            stage_main = f"{step1['technique_id']} <a href=\"{step1['technique_url']}\" target=\"_blank\" style=\"font-size: 0.6875rem; color: {t['primary']};\">MITRE</a>"
+            stage_sub = f"{step1['tactic_name']} ({step1['tactic_id']}) / {step1['technique_full_name']}"
         else:
-            stage_id = "T1190"
-            stage_tactic = "Initial Access"
-            stage_tech = "Exploit Public-Facing Application"
-            stage_url = "https://attack.mitre.org/techniques/T1190"
-            stage_status = "Active (Current)"
+            stage_main = "No stage determined"
+            stage_sub = "Shown only when the stage head's top probability is > 0.5 for a class other than Unknown/Other."
 
         render_html(f"""
         <div class="soc-stat-card">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span class="soc-stat-label">Current ATT&CK Stage</span>
-                <span class="soc-badge badge-caution" style="font-size: 0.625rem; padding: 1px 5px;">STAGE</span>
-            </div>
+            <span class="soc-stat-label">Stage head on world-model state S_hat(t+1)</span>
             <div style="margin: 0.35rem 0;">
-                <div class="soc-stat-val" style="display: flex; align-items: baseline; gap: 0.4rem;">
-                    <span>{stage_id}</span>
-                    <a href="{stage_url}" target="_blank" style="font-size: 0.6875rem; color: {t['primary']}; text-decoration: underline; font-family: 'JetBrains Mono', monospace;">
-                        MITRE ↗
-                    </a>
-                </div>
+                <div class="soc-stat-val" style="font-size: 1.05rem;">{stage_main}</div>
                 <div style="font-family: 'Inter', sans-serif; font-size: 0.75rem; color: {t['text_secondary']}; margin-top: 0.25rem;">
-                    {stage_tactic} / {stage_tech}
+                    {stage_sub}
                 </div>
             </div>
-            <div class="soc-stat-delta" style="color: {t['tertiary']};">
-                <span class="soc-badge badge-caution" style="padding: 0.1rem 0.4rem; font-size: 0.625rem;">{stage_status}</span>
-                <span style="color: {t['text_muted']}; margin-left: auto;">Verified STIX 2.1</span>
-            </div>
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: {t['text_muted']};">{conf_txt}</div>
         </div>
         """)
 

@@ -13,6 +13,7 @@ import components.cytoscape_attack_graph
 importlib.reload(components.cytoscape_attack_graph)
 from components.cytoscape_attack_graph import render_cytoscape_graph
 from data_provider import (
+    get_mitre_data,
     get_host_risk_graph,
     get_graph_topology,
     get_forecast_trajectory,
@@ -364,34 +365,22 @@ def render_page():
                 badge_type = "badge-nominal"
 
             # Resolve dynamic MITRE technique from real STIX knowledge base
-            raw_steps = fc.get("raw_steps", [])
-            if raw_steps and curr_k < len(raw_steps):
-                mitre_step = raw_steps[curr_k]
-                tech_id_display = mitre_step.get("technique_id", "T1071.001")
-                tech_name_display = mitre_step.get("technique_full_name", mitre_step.get("technique_name", "Web Protocols"))
-                tech_url_display = mitre_step.get("technique_url", f"https://attack.mitre.org/techniques/{tech_id_display.replace('.', '/')}")
-                tech_desc_display = mitre_step.get("technique_description", "")
-                is_heur = mitre_step.get("is_heuristic_progression", False)
-                step_conf = mitre_step.get("probability", 0.94)
+            # Gated stage-head output for rollout step t+1 (no stage if p <= 0.5 or Unknown/Other)
+            mitre_steps = get_mitre_data()
+            ms = mitre_steps[0] if mitre_steps else {}
+            if ms.get("technique_id"):
+                mitre_html = (
+                    f"<div style=\"font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; font-weight: 700; color: {t['primary']};\">"
+                    f"{ms['tactic_name']} ({ms['tactic_id']}) / {ms['technique_id']} {ms['technique_full_name']}</div>"
+                    f"<div style=\"font-size: 0.7rem; color: {t['text_muted']};\">stage head p = {ms['confidence']:.2f} on S_hat(t+1) &bull; "
+                    f"<a href=\"{ms['technique_url']}\" target=\"_blank\">MITRE reference</a></div>"
+                )
             else:
-                try:
-                    from backend.mitre_kb import get_mitre_kb
-                    kb = get_mitre_kb()
-                    stage_k = ml_stages[min(curr_k, len(ml_stages)-1)] if ml_stages else "Credential Access"
-                    sinfo = kb.resolve_stage(stage_k)
-                    tech_id_display = sinfo["technique_id"]
-                    tech_name_display = sinfo["technique_full_name"]
-                    tech_url_display = sinfo["technique_url"]
-                    tech_desc_display = sinfo["technique_description"]
-                    is_heur = False
-                    step_conf = step_risk
-                except Exception:
-                    tech_id_display = "T1071.001"
-                    tech_name_display = "Application Layer Protocol: Web Protocols"
-                    tech_url_display = "https://attack.mitre.org/techniques/T1071/001"
-                    tech_desc_display = "Adversaries may communicate using application layer protocols associated with web traffic."
-                    is_heur = False
-                    step_conf = 0.94
+                mitre_html = (
+                    f"<div style=\"font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: {t['text_secondary']};\">No stage determined</div>"
+                    f"<div style=\"font-size: 0.7rem; color: {t['text_muted']};\">Stage-head top class {ms.get('stage_head_top_class')} "
+                    f"(p = {ms.get('confidence') if ms.get('confidence') is None else round(ms['confidence'], 2)}); shown only if p &gt; 0.5 and not Unknown/Other.</div>"
+                )
 
             render_html(f"""
             <div class="soc-card" style="padding: 1rem;">
@@ -452,22 +441,9 @@ def render_page():
                 <!-- MITRE ATT&CK Alignment -->
                 <div class="soc-card-nested" style="margin-bottom: 0.75rem;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
-                        <span class="soc-stat-label">MITRE ATT&CK Alignment</span>
-                        <span class="soc-badge {'badge-caution' if is_heur else 'badge-critical'}" style="font-size: 0.625rem;">
-                            {"HEURISTIC PROJECTION" if is_heur else f"P(conf) = {step_conf:.2f}"}
-                        </span>
+                        <span class="soc-stat-label">MITRE ATT&CK stage (window-level, not per host)</span>
                     </div>
-                    <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; font-weight: 700; color: {t['primary']};">
-                        {tech_id_display} — {tech_name_display}
-                    </div>
-                    <div style="font-family: 'Inter', sans-serif; font-size: 0.70rem; color: {t['text_muted']}; margin-top: 0.25rem; line-height: 1.3;">
-                        {tech_desc_display[:140]}...
-                    </div>
-                    <div style="margin-top: 0.4rem; padding-top: 0.25rem; border-top: 1px dashed {t['border']};">
-                        <a href="{tech_url_display}" target="_blank" style="color: {t['primary']}; font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; text-decoration: underline;">
-                            Official MITRE ATT&CK Ref: {tech_id_display} ↗
-                        </a>
-                    </div>
+                    {mitre_html}
                 </div>
             </div>
             """)

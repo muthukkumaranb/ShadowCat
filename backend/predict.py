@@ -144,6 +144,10 @@ def get_feature_category(feat_name: str) -> Optional[str]:
     return "Flow Dynamics"
 
 
+STAGE_MIN_CONFIDENCE = 0.5
+NO_STAGE = "No stage determined"
+
+
 class StackedFoldModel:
     """
     Encapsulates one fold of the trained Stacked & Temperature-Calibrated Residual LSTM.
@@ -733,16 +737,28 @@ class ShadowcatPipeline:
                 pred_stage = StageClassificationHead.STAGE_CLASSES[stage_idx]
                 pred_conf = float(stage_probs[stage_idx])
 
-                selected_stage = pred_stage
                 is_heuristic = False
-                attr_source = f"StageClassificationHead (P(conf)={pred_conf:.2f})"
+                attr_source = f"StageClassificationHead (top class {pred_stage}, p={pred_conf:.2f})"
 
-                # Resolve against real MITRE Enterprise ATT&CK STIX corpus
-                stage_info = kb.resolve_stage(selected_stage)
+                # A stage is shown only if the head is confident (p > 0.5) in a real ATT&CK
+                # class. "Unknown/Other" has no ATT&CK ID and is never mapped to one.
+                if pred_conf > STAGE_MIN_CONFIDENCE and pred_stage != "Unknown/Other":
+                    selected_stage = pred_stage
+                    stage_info = kb.resolve_stage(selected_stage)
+                    stage_info["likely_next_techniques"] = kb.predict_likely_next_techniques(stage_info["technique_id"])
+                else:
+                    selected_stage = NO_STAGE
+                    stage_info = {
+                        "tactic_id": None, "tactic_name": None, "shortname": None, "description": None,
+                        "url": None, "technique_id": None, "technique_name": None,
+                        "technique_full_name": None, "technique_description": None,
+                        "technique_url": None, "is_active_attack": False,
+                        "likely_next_techniques": [],
+                    }
                 stage_info["is_heuristic_progression"] = is_heuristic
                 stage_info["attribution_source"] = attr_source
                 stage_info["stage_confidence"] = pred_conf
-                stage_info["likely_next_techniques"] = kb.predict_likely_next_techniques(selected_stage)
+                stage_info["stage_head_top_class"] = pred_stage
 
                 stage_names.append(selected_stage)
                 tactic_ids.append(stage_info["tactic_id"])
@@ -882,7 +898,10 @@ class ShadowcatPipeline:
             "tactic_url": [m["url"] for m in mitre_details],
             "is_heuristic_progression": heuristic_progression_flags,
             "stage_attribution_source": attribution_sources,
-            "likely_next_techniques": [kb.predict_likely_next_techniques(s) for s in stage_names],
+            "likely_next_techniques": [m["likely_next_techniques"] for m in mitre_details],
+            "stage_confidence": [m["stage_confidence"] for m in mitre_details],
+            "stage_head_top_class": [m["stage_head_top_class"] for m in mitre_details],
+            "stage_rule": f"stage shown only if stage-head top probability > {STAGE_MIN_CONFIDENCE} and class is not Unknown/Other",
             "conformal_interval": conformal_interval,
             "conformal_interval_joint": conformal_interval_joint,
             "conformal_coverage": self.conformal_coverage,

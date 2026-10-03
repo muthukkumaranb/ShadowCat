@@ -9,7 +9,7 @@ import html
 
 import streamlit as st
 from styles import TOKENS, render_html
-from data_provider import get_forecast_trajectory, get_detection_probability
+from data_provider import get_forecast_trajectory, get_detection_probability, get_mitre_data
 
 
 def _fmt(p):
@@ -91,6 +91,41 @@ def render_page():
             </div>
         </div>
         """)
+
+    # Stage head on the world-model rollout (gated: p > 0.5 and not Unknown/Other)
+    stages = get_mitre_data()
+    rows = ""
+    for s in stages:
+        if s["technique_id"]:
+            stage_cell = (f"{html.escape(s['tactic_name'])} ({s['tactic_id']}) / "
+                          f"<a href=\"{s['technique_url']}\" target=\"_blank\">{s['technique_id']} {html.escape(s['technique_full_name'])}</a>")
+        else:
+            stage_cell = "No stage determined"
+        conf = s.get("confidence")
+        rows += (f"<tr><td>{s['step']}</td><td>{stage_cell}</td>"
+                 f"<td>{html.escape(str(s.get('stage_head_top_class')))} ({'—' if conf is None else f'{conf:.2f}'})</td></tr>")
+    next_cards = ""
+    first = next((s for s in stages if s["technique_id"]), None)
+    if first:
+        for tech in first.get("likely_next_techniques", [])[:3]:
+            next_cards += (f"<li><a href=\"{tech.get('url', '#')}\" target=\"_blank\">{tech.get('technique_id')}</a> "
+                           f"{html.escape(str(tech.get('technique_name')))} (next tactic: {html.escape(str(tech.get('target_tactic')))})</li>")
+    next_html = (f"<div style='margin-top: 0.6rem; font-family: Inter, sans-serif; font-size: 0.78rem; color: {t['text_secondary']};'>"
+                 f"Techniques that commonly follow {first['technique_id']} in the MITRE ATT&amp;CK STIX corpus "
+                 f"(corpus lookup, not a model prediction):<ul>{next_cards}</ul></div>") if next_cards else ""
+    render_html(f"""
+    <div class="soc-card" style="margin-top: 1rem;">
+        <span class="soc-section-title">Stage head on the world-model rollout S_hat(t+k)</span>
+        <table style="margin-top: 0.4rem;">
+            <thead><tr><th>Step</th><th>Stage shown</th><th>Stage-head top class (p)</th></tr></thead>
+            <tbody>{rows or '<tr><td colspan="3">No stage output</td></tr>'}</tbody>
+        </table>
+        <div style="font-family: 'Inter', sans-serif; font-size: 0.72rem; color: {t['text_muted']}; margin-top: 0.4rem;">
+            {html.escape(fc.get('stage_rule', ''))}. The rollout does not beat persistence (H* = 0), so later steps carry no extra forecasting skill.
+        </div>
+        {next_html}
+    </div>
+    """)
 
     render_html(f"""
     <div class="soc-card" style="margin-top: 1rem;">
