@@ -1,0 +1,91 @@
+{
+  "generated_by": "data-engineering/src/check_10day_rebuild.py",
+  "reference": "a0ae7bc:data-engineering/data/ucs/ucs_windows.parquet",
+  "all_passed": false,
+  "checks": {
+    "1_windows_and_days": {
+      "passed": true,
+      "rebuilt_windows": 4545,
+      "rebuilt_distinct_source_days": 10,
+      "source_days": [
+        "01-03-2018",
+        "02-03-2018",
+        "14-02-2018",
+        "15-02-2018",
+        "16-02-2018",
+        "20-02-2018",
+        "21-02-2018",
+        "22-02-2018",
+        "23-02-2018",
+        "28-02-2018"
+      ],
+      "reference_windows": 4545
+    },
+    "2_order_and_labels": {
+      "passed": true,
+      "window_start_utc_identical": true,
+      "label_attack_type_identical": true
+    },
+    "3_numeric_columns": {
+      "passed": true,
+      "schema_features": 406,
+      "rebuilt_numeric_columns": 408,
+      "unexpected": [],
+      "missing": []
+    },
+    "4_feature_values": {
+      "passed": false,
+      "columns_not_close": 226,
+      "first_columns_not_close": [
+        "duration_microsec_mean",
+        "duration_microsec_std",
+        "duration_microsec_sum",
+        "packet_count_fwd_mean",
+        "packet_count_fwd_std",
+        "packet_count_fwd_sum",
+        "packet_count_bwd_mean",
+        "packet_count_bwd_std",
+        "packet_count_bwd_sum",
+        "byte_count_fwd_mean",
+        "byte_count_fwd_std",
+        "byte_count_fwd_sum",
+        "byte_count_bwd_mean",
+        "byte_count_bwd_std",
+        "byte_count_bwd_sum",
+        "fwd_pkt_len_max_mean",
+        "fwd_pkt_len_max_std",
+        "fwd_pkt_len_max_sum",
+        "fwd_pkt_len_min_mean",
+        "fwd_pkt_len_min_std"
+      ],
+      "not_close_by_aggregation": {
+        "mean": {
+          "columns": 77,
+          "not_close": 67
+        },
+        "std": {
+          "columns": 78,
+          "not_close": 68
+        },
+        "sum": {
+          "columns": 77,
+          "not_close": 63
+        },
+        "min": {
+          "columns": 78,
+          "not_close": 2
+        },
+        "max": {
+          "columns": 78,
+          "not_close": 16
+        },
+        "other": {
+          "columns": 18,
+          "not_close": 10
+        }
+      },
+      "rows_with_any_difference": 4545,
+      "max_abs_diff": 3149.217391304348
+    }
+  }
+}
