@@ -10,67 +10,9 @@ import numpy as np
 import time
 import io
 from styles import TOKENS, render_html
-from data_provider import get_analysis_metadata, get_novelty_score, get_audit_chain_status, run_core_ml_inference
+from data_provider import get_analysis_metadata, get_novelty_score, get_audit_chain_status, run_core_ml_inference, get_canonical_benchmark_df
 
-def get_canonical_benchmark_df() -> pd.DataFrame:
-    """Generates canonical 40-window CSE-CIC-IDS2018 benchmark flows."""
-    rng = np.random.RandomState(42)
-    rows = []
-    base_ts = pd.Timestamp("2026-09-18 14:00:00")
-    # Advanced WOW-factor Topology (38 nodes) with temporal spread
-    attacker = "45.138.21.9"
-    dmz = [f"10.0.1.{10+i}" for i in range(4)]
-    app_servers = [f"10.0.2.{100+i}" for i in range(8)]
-    internal_svc = [f"10.0.14.{50+i}" for i in range(12)]
-    databases = [f"10.0.5.{20+i}" for i in range(6)]
-    auth = [f"10.0.3.{10+i}" for i in range(3)]
-    backups = [f"10.0.6.{10+i}" for i in range(4)]
-    
-    # Generate edges that simulate lateral movement (chronologically ordered for K-step)
-    edges = []
-    for d in dmz: edges.append((attacker, d))
-    for i, a in enumerate(app_servers): edges.append((dmz[i % len(dmz)], a))
-    for i, s in enumerate(internal_svc): edges.append((app_servers[i % len(app_servers)], s))
-    for i, a in enumerate(auth): edges.append((app_servers[(i+2) % len(app_servers)], a))
-    for i, db in enumerate(databases): 
-        edges.append((internal_svc[i % len(internal_svc)], db))
-        edges.append((internal_svc[(i+3) % len(internal_svc)], db))
-    for i, b in enumerate(backups): edges.append((databases[i % len(databases)], b))
-    
-    # Add random cross-talk for graph density
-    for _ in range(15):
-        s = rng.choice(app_servers + internal_svc)
-        t = rng.choice(app_servers + internal_svc)
-        if s != t: edges.append((s, t))
-            
-    protocols = ["TCP", "TCP", "UDP", "TCP", "TCP"]
-    num_flows = 150
-    for i in range(num_flows):
-        t_stamp = base_ts + pd.Timedelta(seconds=i*15)
-        src, dst = edges[i % len(edges)]
-        proto = protocols[i % len(protocols)]
-        fwd_p = int(rng.randint(12, 1450))
-        bwd_p = int(rng.randint(8, 980))
-        duration = float(rng.uniform(0.4, 62.5))
-        bytes_s = float(rng.uniform(12000, 14800000))
-        hazard = float(min(0.99, max(0.02, 0.1 + (i / num_flows) * 0.85 + rng.normal(0, 0.05))))
-        
-        rows.append({
-            "timestamp": t_stamp.strftime("%H:%M:%S.%f")[:-3],
-            "src_ip": src,
-            "dst_ip": dst,
-            "src_port": int(rng.choice([49210, 51204, 58440, 43900, 389, 443])),
-            "dst_port": int(rng.choice([443, 135, 88, 8443, 22, 53])),
-            "protocol": proto,
-            "flow_duration_s": round(duration, 3),
-            "tot_fwd_pkts": fwd_p,
-            "tot_bwd_pkts": bwd_p,
-            "flow_byts_s": round(bytes_s, 1),
-            "syn_flags": int(rng.choice([0, 1, 1, 2])),
-            "hazard_score": round(hazard, 4),
-            "presence_mask": "VALIDATED"
-        })
-    return pd.DataFrame(rows)
+# Demo slice loading is provided by data_provider.get_canonical_benchmark_df (real CSE-CIC-IDS2018 data)
 
 def render_page():
     t = TOKENS.get(st.session_state.get("theme", "dark"), TOKENS["dark"])
@@ -138,10 +80,10 @@ def render_page():
         if st.button("Load Demo Benchmark", width='stretch'):
             benchmark_df = get_canonical_benchmark_df()
             st.session_state.ingested_df = benchmark_df
-            st.session_state.ingested_source_name = "CSE-CIC-IDS2018-canonical-stream-40w.csv"
+            st.session_state.ingested_source_name = "CSE-CIC-IDS2018-ssh-14-02-2018_windows.parquet"
             st.session_state["benchmark_loaded"] = True
             # Auto-run Core ML inference immediately
-            pred = run_core_ml_inference(benchmark_df, source_type="csv")
+            pred = run_core_ml_inference(benchmark_df, source_type="windows")
             st.session_state["ml_prediction_result"] = pred
             st.session_state["ml_prediction_timestamp"] = time.strftime("%H:%M:%S UTC")
             st.success("Loaded CSE-CIC-IDS2018 benchmark & executed Core ML Inference across all views.")
