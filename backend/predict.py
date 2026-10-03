@@ -837,8 +837,17 @@ class ShadowcatPipeline:
         except Exception as e:
             temporal_attributions = {"engine": "Integrated Gradients", "error": str(e)}
 
-        # Step 10: Flagged Suspicious Flows from raw_input
+        # Step 10: Flows of the last window ranked by the onset LR stage (see _extract_flagged_flows)
         flagged_flows = self._extract_flagged_flows(raw_input, source_type)
+
+        # Window-level contributions to the onset LR-stage logit (coef x scaled value, fold mean)
+        lr_c = self._lr_contributions(seq_30x406[-1])
+        lr_order = [i for i in np.argsort(np.abs(lr_c))[::-1] if get_feature_category(model_cols[i]) is not None][:10]
+        lr_contributions = [
+            {"feature": model_cols[i], "contribution": round(float(lr_c[i]), 4),
+             "scaled_value": round(float(seq_30x406[-1][i]), 4)}
+            for i in lr_order
+        ]
 
         # Step 10b: Real Graph-Propagation Traversal over Actual Edge Data
         from backend.graph_traversal import compute_graph_traversal
@@ -986,6 +995,8 @@ class ShadowcatPipeline:
             "novelty_score": novelty_payload,
             "attributions": attributions,
             "flagged_flows": flagged_flows,
+            "lr_contributions": lr_contributions,
+            "lr_contribution_sum": round(float(lr_c.sum()), 4),
             "stage_predictions": stage_names,
             "risk_scores": [round(float(p_onset), 6)],
             "graph_topology": graph_topology,
@@ -1191,42 +1202,69 @@ class ShadowcatPipeline:
 
         return payload
 
-    def _extract_flagged_flows(self, raw_input: pd.DataFrame, source_type: str) -> List[Dict[str, Any]]:
-        """Extract top anomalous flow records from input DataFrame."""
-        if not isinstance(raw_input, pd.DataFrame) or len(raw_input) == 0:
+    def _lr_contributions(self, window_406: np.ndarray) -> np.ndarray:
+        """Per-feature contribution to the onset LR-stage logit for one window:
+        coef_j * (x_j - mean_j) / scale_j, averaged over the 37 onset folds (logit units)."""
+        x = np.asarray(window_406, dtype=np.float64)
+        return np.mean([f.lr_coef * (x - f.scaler_mean) / f.scaler_scale for f in self.stacked_onset_models], axis=0)
+
+    def _extract_flagged_flows(self, raw_input: pd.DataFrame, source_type: str, limit: int = 10) -> List[Dict[str, Any]]:
+        """
+        Ranks the flows of the input's last 1-minute window by the onset LR stage applied to
+        each flow's own values: for every window feature "<column>_mean" whose flow column is
+        present, the flow value is scaled exactly as the window feature is (UCS scaler, then the
+        fold's LR scaler) and multiplied by the fold's coefficient; the score is the sum over
+        those features, averaged over the 37 onset folds (logit units, higher = pushes the
+        onset probability up). Window input has no flows, so nothing is returned.
+        """
+        if source_type == "windows" or not isinstance(raw_input, pd.DataFrame) or "Timestamp" not in raw_input.columns:
             return []
+        ts = pd.to_datetime(raw_input["Timestamp"], format="%d/%m/%Y %H:%M:%S", errors="coerce")
+        if ts.isna().all():
+            return []
+        minute = ts.dt.floor("min")
+        last = raw_input[minute == minute.max()]
 
+        mapping = self.extractor.canonical_mapping.get("mapping", {})
+        cols = list(UCSExtractor.MODEL_INPUT_COLUMNS)
+        feats, raw_cols = [], []
+        for raw_col, canon in mapping.items():
+            name = f"{canon}_mean"
+            if raw_col in last.columns and name in cols:
+                feats.append(name)
+                raw_cols.append(raw_col)
+        if not feats:
+            return []
+        idx = [cols.index(f) for f in feats]
+        vals = last[raw_cols].apply(pd.to_numeric, errors="coerce").replace([np.inf, -np.inf], np.nan)
+        vals.columns = feats
+        ucs = self.extractor.scaler.transform(vals)[feats].to_numpy(dtype=np.float64)  # (n_flows, k)
+        contrib = np.mean([f.lr_coef[idx] * (ucs - f.scaler_mean[idx]) / f.scaler_scale[idx]
+                           for f in self.stacked_onset_models], axis=0)
+        scores = contrib.sum(axis=1)
+        order = np.argsort(scores)[::-1][:limit]
+
+        def col(*names):
+            return next((n for n in names if n in last.columns), None)
+
+        src_c, dst_c = col("Src IP", "src_ip"), col("Dst IP", "dst_ip")
+        sport_c, dport_c, proto_c = col("Src Port", "src_port"), col("Dst Port", "dst_port"), col("Protocol", "protocol")
         flows = []
-        df = raw_input.head(10).copy()
-
-        src_col = "Src IP" if "Src IP" in df.columns else ("src_ip" if "src_ip" in df.columns else None)
-        dst_col = "Dst IP" if "Dst IP" in df.columns else ("dst_ip" if "dst_ip" in df.columns else None)
-        sport_col = "Src Port" if "Src Port" in df.columns else ("src_port" if "src_port" in df.columns else None)
-        dport_col = "Dst Port" if "Dst Port" in df.columns else ("dst_port" if "dst_port" in df.columns else None)
-        proto_col = "Protocol" if "Protocol" in df.columns else ("protocol" if "protocol" in df.columns else None)
-
-        for i, row in df.iterrows():
-            f_id = f"FLW-{10490 + i}"
-            src = str(row[src_col]) if src_col else "10.0.2.15"
-            dst = str(row[dst_col]) if dst_col else "10.0.4.21"
-            sport = int(row[sport_col]) if sport_col and pd.notna(row[sport_col]) else 54100 + i
-            dport = int(row[dport_col]) if dport_col and pd.notna(row[dport_col]) else (22 if i % 2 == 0 else 88)
-            proto = "TCP" if not proto_col else ("TCP" if row[proto_col] == 6 else "UDP")
-
+        for r in order:
+            row = last.iloc[r]
+            top = np.argsort(contrib[r])[::-1][:3]
             flows.append({
-                "id": f_id,
-                "source": src,
-                "sport": sport,
-                "destination": dst,
-                "dport": dport,
-                "protocol": proto,
-                "reason": "Elevated connection rate / port scan pattern" if dport == 22 else "Kerberos authentication probe",
-                "risk": "High" if i < 3 else "Medium",
-                "pkts": int(row.get("Tot Fwd Pkts", 400 + i * 12)),
-                "bytes": int(row.get("TotLen Fwd Pkts", 25000 + i * 450)),
-                "is_mock": False,
+                "row": int(last.index[r]),
+                "timestamp": str(row["Timestamp"]),
+                "source": str(row[src_c]) if src_c else None,
+                "sport": str(row[sport_c]) if sport_c else None,
+                "destination": str(row[dst_c]) if dst_c else None,
+                "dport": str(row[dport_c]) if dport_c else None,
+                "protocol": str(row[proto_c]) if proto_c else None,
+                "lr_score": round(float(scores[r]), 4),
+                "top_features": ", ".join(f"{feats[j]} {contrib[r, j]:+.3f}" for j in top),
+                "dataset_label": str(row["Label"]) if "Label" in last.columns else None,
             })
-
         return flows
 
 
