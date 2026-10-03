@@ -1,4 +1,5 @@
 # CIC-IDS2017 Exploratory Report
+Status: INCONCLUSIVE — CLOSED. Combined-data world model does not beat persistence (H* = 0). Not merged to main.
 
 ## 1. Executive Summary
 This report details the final exploratory integration of the CIC-IDS2017 dataset into the Unified Cyber State (UCS) pipeline. Following rigorous validation, we successfully reconstructed the temporal dataset using real chronological ordering at the day-level, while within-day timing remains synthetic due to critical source omissions. The inclusion of the 2017 data exposes vulnerabilities in relying on chronological test splits and reinforces the necessity of the LOEO protocol. 
@@ -24,14 +25,16 @@ The 0.4234 zero-shot F1 proves that some volume-based heuristics transfer, thoug
 
 ## 4. Leakage-Free Generalization (Gate 0)
 When evaluating the cleanly-rebuilt combined dataset using the strict Gate 0 Leave-One-Episode-Out (LOEO) protocol, the model successfully demonstrated strong precision in generalizing across isolated episodes:
-* **Set A (Traffic+Packet)**: F1 = 0.6971, Precision = 0.8795, Recall = 0.5774 *(Protocol: Episode-Grouped Diagnostic)*
-* **Set B (Schedule-Only)**: F1 = 0.4340, Precision = 0.3635, Recall = 0.5386 *(Protocol: Episode-Grouped Diagnostic)*
+* **Set A (Traffic+Packet)**: F1 = 0.6971, Precision = 0.8795, Recall = 0.5774 *(Protocol: Episode-Grouped Diagnostic - not independently re-verified)*
+* **Set B (Schedule-Only)**: F1 = 0.4340, Precision = 0.3635, Recall = 0.5386 *(Protocol: Episode-Grouped Diagnostic - not independently re-verified)*
 
 ## 5. Next-State Horizon Predictability (H*)
-The world model was fully trained on the cleanly rebuilt 406-feature combined dataset (yielding `gaussian_next_state_best.pt`). Because the pipeline was corrected to strictly enforce the canonical 406-feature schema (preventing 2017-specific metadata from leaking into the numeric feature matrix), the model was evaluated flawlessly without ad-hoc zero-padding or truncation. However, the world model failed to predict the next state better than the persistence baseline, resulting in an inconclusive H* metric.
+The world model was fully trained on the cleanly rebuilt 406-feature combined dataset (yielding `gaussian_next_state_best.pt`). Because the pipeline was corrected to strictly enforce the canonical 406-feature schema (preventing 2017-specific metadata from leaking into the numeric feature matrix), the model was evaluated flawlessly without ad-hoc zero-padding or truncation. However, the world model failed to predict the next state better than the persistence baseline, resulting in an inconclusive H* metric. An earlier version of this report showed 2018-only numbers by mistake.
 * **World Model Horizon Predictability**: H* = 0
-* **Model F1**: 0.3572
-* **Persistence Baseline**: 0.9789
+* **Model F1**: 0.2136–0.2137 at K=1–5
+* **Persistence Baseline**: 0.6051 / 0.6313 / 0.6608 / 0.6526 / 0.6562
 
 ## 6. Conclusion
-The pipeline now seamlessly and natively scales to accommodate the flow-only constraints of CIC-IDS2017 while strictly preserving the canonical 406-feature matrix. The structural pipeline issues that previously caused feature dimension mismatches (426 vs 406) have been permanently resolved at the source (mapper/cleaner ingestion). However, the true strength of the architecture relies on high-fidelity packet-level dynamics and precise chronological network topologies. Models trained on the combined dataset experience significant H* degradation due to the synthetic within-day chronological ordering and lack of PCAP features in the 2017 partition. Fine-tuning sequences should be strictly limited to the CSE-CIC-IDS2018 distributions where full telemetry is natively maintained.
+The pipeline now seamlessly and natively scales to accommodate the flow-only constraints of CIC-IDS2017 while strictly preserving the canonical 406-feature matrix. The structural pipeline issues that previously caused feature dimension mismatches (426 vs 406) have been permanently resolved at the source (mapper/cleaner ingestion). 2017 provides 384 of 406 schema features. The 22 absent ones are window_size_fwd/bwd_* (10) plus 12 pkt_* features. They are zero-filled, with mask_has_packet_level_features = 0 on all 2017 rows.
+
+However, the true strength of the architecture relies on high-fidelity packet-level dynamics and precise chronological network topologies. Models trained on the combined dataset experience significant H* degradation due to the synthetic within-day chronological ordering and lack of PCAP features in the 2017 partition. Fine-tuning sequences should be strictly limited to the CSE-CIC-IDS2018 distributions where full telemetry is natively maintained.
