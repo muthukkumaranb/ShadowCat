@@ -15,6 +15,8 @@ import pandas as pd
 import torch
 import yaml
 import json
+import hashlib
+from datetime import datetime, timezone
 
 # Resolve repository paths
 BACKEND_DIR = Path(__file__).resolve().parent
@@ -1208,9 +1210,14 @@ class ShadowcatPipeline:
             runtime_dir = Path(os.environ.get("SHADOWCAT_RUNTIME_DIR", RUNTIME_DIR))
             forecasts_dir = runtime_dir / "forecasts"
             forecasts_dir.mkdir(parents=True, exist_ok=True)
-            forecast_path = str(forecasts_dir / f"forecast_{window_id}.json")
-            with open(forecast_path, "w", encoding="utf-8") as f:
-                json.dump(payload, f, indent=2)
+            payload_str = json.dumps(payload, indent=2)
+            payload_hash = hashlib.sha256(payload_str.encode("utf-8")).hexdigest()[:8]
+            now_utc = datetime.now(timezone.utc)
+            ts_str = now_utc.strftime("%Y%m%d_%H%M%S_%f")
+            forecast_filename = f"forecast_{window_id}_{ts_str}_{payload_hash}.json"
+            forecast_path = str(forecasts_dir / forecast_filename)
+            with open(forecast_path, "x", encoding="utf-8") as f:
+                f.write(payload_str)
             append_audit_entry(
                 artifact_path=forecast_path,
                 artifact_type="forecast_payload",

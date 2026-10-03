@@ -111,13 +111,13 @@ def test_tampering_fails(temp_env):
 
 def test_predict_forecast_notarization_in_audit_chain(monkeypatch, tmp_path, caplog):
     """
-    Run predict() once with SHADOWCAT_RUNTIME_DIR set to a temp dir.
-    Assert the audit chain gained exactly one new entry of artifact_type "forecast_payload",
-    verify_chain() passes, and no warning appears in captured logs.
+    Run predict() 3 times on the SAME window with SHADOWCAT_RUNTIME_DIR set to tmp_path.
+    Assert there are 3 new forecast_payload entries, 3 distinct forecast files,
+    verify_chain() reports zero issues, and no warning appears in captured logs.
     """
     import logging
     import pandas as pd
-    from backend.audit_chain import _load_chain, verify_chain
+    from backend.audit_chain import _load_chain, verify_chain, _resolve_path
     from backend.predict import predict
 
     monkeypatch.setenv("SHADOWCAT_RUNTIME_DIR", str(tmp_path))
@@ -131,18 +131,28 @@ def test_predict_forecast_notarization_in_audit_chain(monkeypatch, tmp_path, cap
     chain_before = _load_chain()
     forecasts_before = [e for e in chain_before if e.get("artifact_type") == "forecast_payload"]
 
-    res = predict(sample_df, source_type="windows")
-    assert res is not None
+    for _ in range(3):
+        res = predict(sample_df, source_type="windows")
+        assert res is not None
 
     chain_after = _load_chain()
     forecasts_after = [e for e in chain_after if e.get("artifact_type") == "forecast_payload"]
 
-    assert len(forecasts_after) - len(forecasts_before) == 1
-    assert len(forecasts_after) == 1
-    assert forecasts_after[0]["artifact_type"] == "forecast_payload"
+    # Assert 3 new forecast_payload entries
+    new_forecasts = forecasts_after[len(forecasts_before):]
+    assert len(new_forecasts) == 3
 
+    # Assert 3 distinct forecast files
+    forecast_paths = [e["artifact_path"] for e in new_forecasts]
+    assert len(set(forecast_paths)) == 3
+    for fp in forecast_paths:
+        resolved = _resolve_path(fp)
+        assert os.path.exists(resolved)
+
+    # Assert verify_chain() reports zero issues
     is_valid, issues = verify_chain()
     assert is_valid, f"Audit chain verification failed: {issues}"
+    assert len(issues) == 0
 
     assert "Failed to append forecast to audit chain" not in caplog.text
     assert "Object of type set is not JSON serializable" not in caplog.text

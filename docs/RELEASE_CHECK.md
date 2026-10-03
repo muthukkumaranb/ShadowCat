@@ -11,7 +11,7 @@ All improvement branches merged in specified order:
 4. `origin/feature/deviation-evidence` (`34c1aa5`)
 5. `origin/feature/rollout-delta-mc` (`9363b5f`)
 
-Forecast notarisation: fixed (walked_edge_keys set -> list); smoke test shows no append warning
+Forecast notarisation: fixed (walked_edge_keys set -> list); smoke test shows no append warning; forecast files unique with exclusive creation ("x").
 
 ---
 
@@ -60,11 +60,18 @@ onset.folds_reproducing_sidecar_f1 = 37
 ---
 
 ### Check 5: Tamper-Evident Audit Chain Verification
-- **Command:** `python backend/verify_audit_chain.py`
-- **Result:** PASS (exit code 0)
+- **Sequence:**
+  ```powershell
+  # Verified on fresh SHADOWCAT_RUNTIME_DIR
+  $env:SHADOWCAT_RUNTIME_DIR = "$freshDir"
+  python backend/smoke_test.py
+  python backend/verify_audit_chain.py
+  ```
+- **Result:** PASS (exit code 0, verifier reports zero issues)
 - **Key Output Line:**
 ```text
-AUDIT CHAIN VALID — all entries intact, no tampering detected.
+✅ AUDIT CHAIN VALID — all entries intact, no tampering detected.
+Total entries in chain: 3 (model_checkpoint, prediction_lineage, forecast_payload)
 ```
 
 ---
