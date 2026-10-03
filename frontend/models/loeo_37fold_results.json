@@ -1,66 +1,713 @@
 {
-  "metrics": {
-    "precision": 0.842,
-    "recall": 0.791,
-    "f1_score": 0.816,
-    "pr_auc": 0.835,
-    "fpr": 0.048
+  "generated_by": "frontend/scripts/build_validation_json.py",
+  "sources": {
+    "stacked_per_fold": "ml1/artifacts/lstm/lstm_stacked/{detection,onset}/sidecar_fold_*.json",
+    "lr_per_fold": "ml1/artifacts/lr_set_a_corrected/lr_{detection,onset}_loeo_per_fold.csv",
+    "matched_fpr_and_ablation": "evaluation/benchmark/stacked_benchmark_results.json",
+    "benchmark_data_file": "data-engineering/data/ucs/ucs_windows_models_v1.parquet"
   },
-  "loeo_summary": {
-    "protocol": "Leave-One-Episode-Out (LOEO 37-Fold Cross-Validation)",
-    "description": "Evaluated across 37 held-out episodic attack sequences to eliminate temporal and schedule leakage.",
-    "folds_tested": 37,
-    "mean_pr_auc": 0.821,
-    "variance": 0.014
+  "protocol": "Leave-One-Episode-Out, 37 folds (ml1/artifacts/loeo/corrected_37fold_manifest.json); threshold 0.5 for per-fold metrics",
+  "tasks": {
+    "detection": {
+      "target": "label_binary",
+      "folds": 37,
+      "stacked_mean": {
+        "f1": 0.9962306081709066,
+        "precision": 0.9928870811223752,
+        "recall": 1.0,
+        "fpr": 0.008026208026208027,
+        "roc_auc": 1.0
+      },
+      "roc_auc_defined_folds": {
+        "stacked": 37,
+        "lr": 37
+      },
+      "lr_mean": {
+        "f1": 0.972972972972973,
+        "precision": 0.972972972972973,
+        "recall": 0.972972972972973,
+        "fpr": 0.0,
+        "roc_auc": 0.998337180155362
+      },
+      "lr_folds_f1_eq_1": 36,
+      "lr_folds_f1_eq_0": [
+        16
+      ],
+      "per_fold": [
+        {
+          "fold_id": 0,
+          "held_out_episode_id": "02-03-2018_Botnet_0",
+          "attack_type": "Botnet",
+          "n_test": 20,
+          "stacked_f1": 0.9523809523809523,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 1,
+          "held_out_episode_id": "02-03-2018_Botnet_1",
+          "attack_type": "Botnet",
+          "n_test": 24,
+          "stacked_f1": 0.9230769230769231,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 2,
+          "held_out_episode_id": "02-03-2018_Botnet_2",
+          "attack_type": "Botnet",
+          "n_test": 12,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 3,
+          "held_out_episode_id": "02-03-2018_Botnet_3",
+          "attack_type": "Botnet",
+          "n_test": 6,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 4,
+          "held_out_episode_id": "02-03-2018_Botnet_4",
+          "attack_type": "Botnet",
+          "n_test": 6,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 5,
+          "held_out_episode_id": "02-03-2018_Botnet_5",
+          "attack_type": "Botnet",
+          "n_test": 9,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 6,
+          "held_out_episode_id": "02-03-2018_Botnet_6",
+          "attack_type": "Botnet",
+          "n_test": 9,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 7,
+          "held_out_episode_id": "02-03-2018_Botnet_7",
+          "attack_type": "Botnet",
+          "n_test": 8,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 8,
+          "held_out_episode_id": "02-03-2018_Botnet_8",
+          "attack_type": "Botnet",
+          "n_test": 14,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 9,
+          "held_out_episode_id": "02-03-2018_Botnet_9",
+          "attack_type": "Botnet",
+          "n_test": 10,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 10,
+          "held_out_episode_id": "14-02-2018_SSH-Bruteforce_0",
+          "attack_type": "SSH-Bruteforce",
+          "n_test": 12,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 11,
+          "held_out_episode_id": "14-02-2018_SSH-Bruteforce_1",
+          "attack_type": "SSH-Bruteforce",
+          "n_test": 9,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 12,
+          "held_out_episode_id": "14-02-2018_SSH-Bruteforce_2",
+          "attack_type": "SSH-Bruteforce",
+          "n_test": 20,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 13,
+          "held_out_episode_id": "14-02-2018_SSH-Bruteforce_3",
+          "attack_type": "SSH-Bruteforce",
+          "n_test": 6,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 14,
+          "held_out_episode_id": "14-02-2018_SSH-Bruteforce_4",
+          "attack_type": "SSH-Bruteforce",
+          "n_test": 16,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 15,
+          "held_out_episode_id": "14-02-2018_SSH-Bruteforce_5",
+          "attack_type": "SSH-Bruteforce",
+          "n_test": 24,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 16,
+          "held_out_episode_id": "14-02-2018_SSH-Bruteforce_6",
+          "attack_type": "SSH-Bruteforce",
+          "n_test": 66,
+          "stacked_f1": 0.9850746268656716,
+          "lr_f1": 0.0
+        },
+        {
+          "fold_id": 17,
+          "held_out_episode_id": "14-02-2018_SSH-Bruteforce_7",
+          "attack_type": "SSH-Bruteforce",
+          "n_test": 12,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 18,
+          "held_out_episode_id": "14-02-2018_SSH-Bruteforce_8",
+          "attack_type": "SSH-Bruteforce",
+          "n_test": 14,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 19,
+          "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_0",
+          "attack_type": "DDOS-LOIC-UDP",
+          "n_test": 12,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 20,
+          "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_1",
+          "attack_type": "DDOS-LOIC-UDP",
+          "n_test": 6,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 21,
+          "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_10",
+          "attack_type": "DDOS-LOIC-UDP",
+          "n_test": 6,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 22,
+          "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_11",
+          "attack_type": "DDOS-LOIC-UDP",
+          "n_test": 6,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 23,
+          "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_12",
+          "attack_type": "DDOS-LOIC-UDP",
+          "n_test": 6,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 24,
+          "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_13",
+          "attack_type": "DDOS-LOIC-UDP",
+          "n_test": 6,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 25,
+          "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_14",
+          "attack_type": "DDOS-LOIC-UDP",
+          "n_test": 6,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 26,
+          "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_15",
+          "attack_type": "DDOS-LOIC-UDP",
+          "n_test": 6,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 27,
+          "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_16",
+          "attack_type": "DDOS-LOIC-UDP",
+          "n_test": 6,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 28,
+          "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_17",
+          "attack_type": "DDOS-LOIC-UDP",
+          "n_test": 6,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 29,
+          "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_2",
+          "attack_type": "DDOS-LOIC-UDP",
+          "n_test": 6,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 30,
+          "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_3",
+          "attack_type": "DDOS-LOIC-UDP",
+          "n_test": 7,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 31,
+          "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_4",
+          "attack_type": "DDOS-LOIC-UDP",
+          "n_test": 6,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 32,
+          "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_5",
+          "attack_type": "DDOS-LOIC-UDP",
+          "n_test": 6,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 33,
+          "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_6",
+          "attack_type": "DDOS-LOIC-UDP",
+          "n_test": 6,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 34,
+          "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_7",
+          "attack_type": "DDOS-LOIC-UDP",
+          "n_test": 6,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 35,
+          "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_8",
+          "attack_type": "DDOS-LOIC-UDP",
+          "n_test": 6,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 36,
+          "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_9",
+          "attack_type": "DDOS-LOIC-UDP",
+          "n_test": 6,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        }
+      ],
+      "matched_fpr": {
+        "test_windows": 412,
+        "positives": 149,
+        "stacked": {
+          "threshold": 0.4014016389846802,
+          "f1": 0.9581993569131833,
+          "precision": 0.9197530864197531,
+          "recall": 1.0,
+          "fpr": 0.049429657794676805
+        },
+        "lr": {
+          "threshold": 0.0522912710606373,
+          "f1": 0.8710801393728222,
+          "precision": 0.9057971014492754,
+          "recall": 0.8389261744966443,
+          "fpr": 0.049429657794676805
+        },
+        "note": "threshold chosen on pooled test predictions for both models (same procedure for both)"
+      },
+      "history_ablation_f1_at_0.5": {
+        "normal": 0.9867549668874173,
+        "permuted": 0.9834983498349835,
+        "repeat_last": 0.9867549668874173,
+        "lr_stage_only": 0.9834983498349835
+      }
+    },
+    "onset": {
+      "target": "future_attack_label",
+      "folds": 37,
+      "stacked_mean": {
+        "f1": 0.9126898326898327,
+        "precision": 0.9684369684369685,
+        "recall": 0.9054054054054054,
+        "fpr": 0.009459459459459458,
+        "roc_auc": 0.9637345679012346
+      },
+      "roc_auc_defined_folds": {
+        "stacked": 36,
+        "lr": 36
+      },
+      "lr_mean": {
+        "f1": 0.8880308880308879,
+        "precision": 0.9459459459459459,
+        "recall": 0.8783783783783784,
+        "fpr": 0.0045045045045045045,
+        "roc_auc": 0.9547176308539945
+      },
+      "lr_folds_f1_eq_1": 32,
+      "lr_folds_f1_eq_0": [
+        16,
+        28
+      ],
+      "per_fold": [
+        {
+          "fold_id": 0,
+          "held_out_episode_id": "02-03-2018_Botnet_0",
+          "attack_type": "Botnet",
+          "n_test": 20,
+          "stacked_f1": 0.9523809523809523,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 1,
+          "held_out_episode_id": "02-03-2018_Botnet_1",
+          "attack_type": "Botnet",
+          "n_test": 24,
+          "stacked_f1": 0.96,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 2,
+          "held_out_episode_id": "02-03-2018_Botnet_2",
+          "attack_type": "Botnet",
+          "n_test": 12,
+          "stacked_f1": 0.2857142857142857,
+          "lr_f1": 0.2857142857142857
+        },
+        {
+          "fold_id": 3,
+          "held_out_episode_id": "02-03-2018_Botnet_3",
+          "attack_type": "Botnet",
+          "n_test": 6,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 4,
+          "held_out_episode_id": "02-03-2018_Botnet_4",
+          "attack_type": "Botnet",
+          "n_test": 6,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 5,
+          "held_out_episode_id": "02-03-2018_Botnet_5",
+          "attack_type": "Botnet",
+          "n_test": 9,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 6,
+          "held_out_episode_id": "02-03-2018_Botnet_6",
+          "attack_type": "Botnet",
+          "n_test": 9,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 7,
+          "held_out_episode_id": "02-03-2018_Botnet_7",
+          "attack_type": "Botnet",
+          "n_test": 8,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 8,
+          "held_out_episode_id": "02-03-2018_Botnet_8",
+          "attack_type": "Botnet",
+          "n_test": 14,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 9,
+          "held_out_episode_id": "02-03-2018_Botnet_9",
+          "attack_type": "Botnet",
+          "n_test": 10,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 10,
+          "held_out_episode_id": "14-02-2018_SSH-Bruteforce_0",
+          "attack_type": "SSH-Bruteforce",
+          "n_test": 12,
+          "stacked_f1": 0.2857142857142857,
+          "lr_f1": 0.2857142857142857
+        },
+        {
+          "fold_id": 11,
+          "held_out_episode_id": "14-02-2018_SSH-Bruteforce_1",
+          "attack_type": "SSH-Bruteforce",
+          "n_test": 9,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 12,
+          "held_out_episode_id": "14-02-2018_SSH-Bruteforce_2",
+          "attack_type": "SSH-Bruteforce",
+          "n_test": 20,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 13,
+          "held_out_episode_id": "14-02-2018_SSH-Bruteforce_3",
+          "attack_type": "SSH-Bruteforce",
+          "n_test": 6,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 14,
+          "held_out_episode_id": "14-02-2018_SSH-Bruteforce_4",
+          "attack_type": "SSH-Bruteforce",
+          "n_test": 16,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 15,
+          "held_out_episode_id": "14-02-2018_SSH-Bruteforce_5",
+          "attack_type": "SSH-Bruteforce",
+          "n_test": 24,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 16,
+          "held_out_episode_id": "14-02-2018_SSH-Bruteforce_6",
+          "attack_type": "SSH-Bruteforce",
+          "n_test": 66,
+          "stacked_f1": 1.0,
+          "lr_f1": 0.0
+        },
+        {
+          "fold_id": 17,
+          "held_out_episode_id": "14-02-2018_SSH-Bruteforce_7",
+          "attack_type": "SSH-Bruteforce",
+          "n_test": 12,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 18,
+          "held_out_episode_id": "14-02-2018_SSH-Bruteforce_8",
+          "attack_type": "SSH-Bruteforce",
+          "n_test": 14,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 19,
+          "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_0",
+          "attack_type": "DDOS-LOIC-UDP",
+          "n_test": 12,
+          "stacked_f1": 0.2857142857142857,
+          "lr_f1": 0.2857142857142857
+        },
+        {
+          "fold_id": 20,
+          "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_1",
+          "attack_type": "DDOS-LOIC-UDP",
+          "n_test": 6,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 21,
+          "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_10",
+          "attack_type": "DDOS-LOIC-UDP",
+          "n_test": 6,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 22,
+          "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_11",
+          "attack_type": "DDOS-LOIC-UDP",
+          "n_test": 6,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 23,
+          "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_12",
+          "attack_type": "DDOS-LOIC-UDP",
+          "n_test": 6,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 24,
+          "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_13",
+          "attack_type": "DDOS-LOIC-UDP",
+          "n_test": 6,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 25,
+          "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_14",
+          "attack_type": "DDOS-LOIC-UDP",
+          "n_test": 6,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 26,
+          "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_15",
+          "attack_type": "DDOS-LOIC-UDP",
+          "n_test": 6,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 27,
+          "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_16",
+          "attack_type": "DDOS-LOIC-UDP",
+          "n_test": 6,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 28,
+          "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_17",
+          "attack_type": "DDOS-LOIC-UDP",
+          "n_test": 6,
+          "stacked_f1": 0.0,
+          "lr_f1": 0.0
+        },
+        {
+          "fold_id": 29,
+          "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_2",
+          "attack_type": "DDOS-LOIC-UDP",
+          "n_test": 6,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 30,
+          "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_3",
+          "attack_type": "DDOS-LOIC-UDP",
+          "n_test": 7,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 31,
+          "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_4",
+          "attack_type": "DDOS-LOIC-UDP",
+          "n_test": 6,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 32,
+          "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_5",
+          "attack_type": "DDOS-LOIC-UDP",
+          "n_test": 6,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 33,
+          "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_6",
+          "attack_type": "DDOS-LOIC-UDP",
+          "n_test": 6,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 34,
+          "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_7",
+          "attack_type": "DDOS-LOIC-UDP",
+          "n_test": 6,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 35,
+          "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_8",
+          "attack_type": "DDOS-LOIC-UDP",
+          "n_test": 6,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        },
+        {
+          "fold_id": 36,
+          "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_9",
+          "attack_type": "DDOS-LOIC-UDP",
+          "n_test": 6,
+          "stacked_f1": 1.0,
+          "lr_f1": 1.0
+        }
+      ],
+      "matched_fpr": {
+        "test_windows": 412,
+        "positives": 163,
+        "stacked": {
+          "threshold": 0.3749103844165802,
+          "f1": 0.9361702127659575,
+          "precision": 0.927710843373494,
+          "recall": 0.9447852760736196,
+          "fpr": 0.04819277108433735
+        },
+        "lr": {
+          "threshold": 0.095056890855696,
+          "f1": 0.8294314381270903,
+          "precision": 0.9117647058823529,
+          "recall": 0.7607361963190185,
+          "fpr": 0.04819277108433735
+        },
+        "note": "threshold chosen on pooled test predictions for both models (same procedure for both)"
+      },
+      "history_ablation_f1_at_0.5": {
+        "normal": 0.9426751592356688,
+        "permuted": 0.9426751592356688,
+        "repeat_last": 0.9426751592356688,
+        "lr_stage_only": 0.946031746031746
+      }
+    }
   },
-  "horizons": [
-    {
-      "horizon": "t+1 (1 min)",
-      "status": "Reliable",
-      "f1": 0.88,
-      "error_growth": "Low",
-      "verdict": "Validated for automated alerting"
-    },
-    {
-      "horizon": "t+2 (2 min)",
-      "status": "Reliable",
-      "f1": 0.82,
-      "error_growth": "Controlled",
-      "verdict": "Validated for SOC queue prioritization"
-    },
-    {
-      "horizon": "t+3 (3 min)",
-      "status": "Informative",
-      "f1": 0.74,
-      "error_growth": "Moderate",
-      "verdict": "Validated for human analyst escalation review"
-    },
-    {
-      "horizon": "t+4 (4 min)",
-      "status": "Exploratory",
-      "f1": 0.63,
-      "error_growth": "Compounding",
-      "verdict": "Informational trend indicator only"
-    },
-    {
-      "horizon": "t+5 (5 min) [H=5 Primary]",
-      "status": "Benchmark Bound",
-      "f1": 0.58,
-      "error_growth": "Epistemic Limit",
-      "verdict": "Primary DE evaluation horizon (H=5) under LOEO 37-fold"
-    }
-  ],
-  "leakage_controls": [
-    {
-      "layer": "Temporal Partitioning",
-      "check": "Passed",
-      "detail": "Strict chronological split; no future packets in state window"
-    },
-    {
-      "layer": "Graph Neighbor Sampling",
-      "check": "Passed",
-      "detail": "Sub-graph induction restricted to historical edges t_window"
-    }
-  ],
-  "is_mock": false
+  "h_star_note": "The world model's multi-step rollout does not beat a persistence baseline at any K=1..5 (predictability horizon H* = 0); see evaluation/horizon_analysis/advancement_summary.md.",
+  "lr_results_caveat": "ml1/artifacts/lr_set_a_corrected/ also contains SUPERSEDED_INVALID_PROTOCOL.md, committed in the same commit as these LR results (5d3641f)."
 }
