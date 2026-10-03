@@ -352,7 +352,7 @@ def render_page():
                 prose = f"Telemetry flow on {src} → {dst}:{dport} evaluated"
 
             alert_items.append({
-                "time": f"14:{max(0, 28 - i*2):02d}:10 UTC",
+                "time": f.get("timestamp", f"t-{i+1}m"),
                 "sev": sev,
                 "technique": technique,
                 "prose": prose,
@@ -361,16 +361,16 @@ def render_page():
 
     if not alert_items:
         alert_items = [
-            {"time": "14:28:09 UTC", "sev": "critical", "technique": "T1071.001 C2", "prose": "Egress burst spike (+410%) to uncatalogued foreign ASN 4837 with encrypted beaconing cadence", "target": "ip-10-0-14-88"},
-            {"time": "14:24:51 UTC", "sev": "critical", "technique": "T1059.004 LATERAL", "prose": "Unauthenticated RPC execution across host enclave subnet with abnormal peer fan-out", "target": "svc-auth-master"},
-            {"time": "14:21:30 UTC", "sev": "critical", "technique": "T1562.001 DEF IMPAIR", "prose": "Local audit logging daemon tamper attempt detected via memory hook on PID 4810", "target": "audit-vault"},
-            {"time": "14:19:12 UTC", "sev": "high", "technique": "T1046 NET DISCOVERY", "prose": "Rapid port sweeping scan detected from internal workstation cluster segment", "target": "ws-analyst-12"},
-            {"time": "14:16:44 UTC", "sev": "high", "technique": "T1021.002 SMB/RPC", "prose": "Repeated Kerberos ticket-granting service requests with non-existent SPNs (Kerberoasting probe)", "target": "dc-shadow-02"},
-            {"time": "14:14:02 UTC", "sev": "high", "technique": "T1571 NON-STD PORT", "prose": "Outbound TCP session established over port 8443 bypasses egress application proxy", "target": "analytics-agg-02"},
-            {"time": "14:12:00 UTC", "sev": "medium", "technique": "T1078 VALID ACCTS", "prose": "Simultaneous geo-distributed session tokens authenticated for high-privilege service principal", "target": "iam-sync-daemon"},
-            {"time": "14:05:18 UTC", "sev": "medium", "technique": "T1040 SNIFFING", "prose": "Promiscuous mode socket activation detected on internal bridge interface eth0.vlan14", "target": "k8s-worker-04"},
-            {"time": "13:58:33 UTC", "sev": "medium", "technique": "T1090 PROXY", "prose": "DNS tunneling heuristic cleared after automated isolation and quarantine sandbox verification", "target": "edge-gw-02"},
-            {"time": "13:45:10 UTC", "sev": "medium", "technique": "T1110 BRUTE FORCE", "prose": "High threshold of failed SSH authentications originating from staging bastion IP 10.0.1.55", "target": "bastion-stg-01"},
+            {"time": "t-1m", "sev": "critical", "technique": "T1071.001 C2", "prose": "Egress burst spike (+410%) to uncatalogued foreign ASN 4837 with encrypted beaconing cadence", "target": "ip-10-0-14-88"},
+            {"time": "t-2m", "sev": "critical", "technique": "T1059.004 LATERAL", "prose": "Unauthenticated RPC execution across host enclave subnet with abnormal peer fan-out", "target": "svc-auth-master"},
+            {"time": "t-3m", "sev": "critical", "technique": "T1562.001 DEF IMPAIR", "prose": "Local audit logging daemon tamper attempt detected via memory hook on PID 4810", "target": "audit-vault"},
+            {"time": "t-4m", "sev": "high", "technique": "T1046 NET DISCOVERY", "prose": "Rapid port sweeping scan detected from internal workstation cluster segment", "target": "ws-analyst-12"},
+            {"time": "t-5m", "sev": "high", "technique": "T1021.002 SMB/RPC", "prose": "Repeated Kerberos ticket-granting service requests with non-existent SPNs (Kerberoasting probe)", "target": "dc-shadow-02"},
+            {"time": "t-6m", "sev": "high", "technique": "T1571 NON-STD PORT", "prose": "Outbound TCP session established over port 8443 bypasses egress application proxy", "target": "analytics-agg-02"},
+            {"time": "t-7m", "sev": "medium", "technique": "T1078 VALID ACCTS", "prose": "Simultaneous geo-distributed session tokens authenticated for high-privilege service principal", "target": "iam-sync-daemon"},
+            {"time": "t-8m", "sev": "medium", "technique": "T1040 SNIFFING", "prose": "Promiscuous mode socket activation detected on internal bridge interface eth0.vlan14", "target": "k8s-worker-04"},
+            {"time": "t-9m", "sev": "medium", "technique": "T1090 PROXY", "prose": "DNS tunneling heuristic cleared after automated isolation and quarantine sandbox verification", "target": "edge-gw-02"},
+            {"time": "t-10m", "sev": "medium", "technique": "T1110 BRUTE FORCE", "prose": "High threshold of failed SSH authentications originating from staging bastion IP 10.0.1.55", "target": "bastion-stg-01"},
         ]
 
     cnt_crit = sum(1 for a in alert_items if a["sev"] == "critical")

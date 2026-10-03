@@ -25,7 +25,7 @@ def render_page():
     default_alerts = [
         {
             "id": "ALT-9941",
-            "time": "14:28:09 UTC",
+            "time": "t-1m",
             "mins_ago": 8,
             "sev": "critical",
             "technique": "T1071.001 • C2: Web Protocols",
@@ -45,7 +45,7 @@ def render_page():
         },
         {
             "id": "ALT-9938",
-            "time": "14:24:51 UTC",
+            "time": "t-2m",
             "mins_ago": 12,
             "sev": "critical",
             "technique": "T1059.004 • Lateral Movement",
@@ -64,7 +64,7 @@ def render_page():
         },
         {
             "id": "ALT-9935",
-            "time": "14:21:30 UTC",
+            "time": "t-3m",
             "mins_ago": 15,
             "sev": "critical",
             "technique": "T1562.001 • Defense Impairment",
@@ -83,7 +83,7 @@ def render_page():
         },
         {
             "id": "ALT-9932",
-            "time": "14:19:12 UTC",
+            "time": "t-4m",
             "mins_ago": 18,
             "sev": "high",
             "technique": "T1046 • Network Discovery",
@@ -102,7 +102,7 @@ def render_page():
         },
         {
             "id": "ALT-9929",
-            "time": "14:16:44 UTC",
+            "time": "t-5m",
             "mins_ago": 24,
             "sev": "high",
             "technique": "T1021.002 • SMB / Kerberoasting Probe",
@@ -121,7 +121,7 @@ def render_page():
         },
         {
             "id": "ALT-9926",
-            "time": "14:14:02 UTC",
+            "time": "t-6m",
             "mins_ago": 35,
             "sev": "high",
             "technique": "T1571 • Non-Standard Port Protocol",
@@ -140,7 +140,7 @@ def render_page():
         },
         {
             "id": "ALT-9925",
-            "time": "14:12:00 UTC",
+            "time": "t-7m",
             "mins_ago": 48,
             "sev": "medium",
             "technique": "T1078 • Valid Accounts",
@@ -159,7 +159,7 @@ def render_page():
         },
         {
             "id": "ALT-9920",
-            "time": "13:45:10 UTC",
+            "time": "t-8m",
             "mins_ago": 85,
             "sev": "medium",
             "technique": "T1110 • Brute Force",
@@ -178,7 +178,7 @@ def render_page():
         },
         {
             "id": "ALT-9914",
-            "time": "12:10:00 UTC",
+            "time": "t-9m",
             "mins_ago": 180,
             "sev": "medium",
             "technique": "T1040 • Network Sniffing",
@@ -216,7 +216,7 @@ def render_page():
 
             live_alerts.append({
                 "id": f"ALT-{9950 - i*3}",
-                "time": f"14:{max(0, 28 - i*2):02d}:10 UTC",
+                "time": flw.get("timestamp", f"t-{i+1}m"),
                 "mins_ago": 2 + i * 4,
                 "sev": sev,
                 "technique": f"T1071.001 • {curr_stage} ({proto})",
