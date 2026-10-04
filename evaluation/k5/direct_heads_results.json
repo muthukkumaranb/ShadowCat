@@ -5,16 +5,17 @@
   "features": "ml1/artifacts/lr_set_a/set_a_features.json",
   "horizons": {
     "1": {
-      "n_test_windows": 410,
-      "positives": 150,
-      "negatives": 260,
+      "n_test_windows": 412,
+      "positives": 151,
+      "negatives": 261,
+      "already_in_attack": 148,
       "direct_lr_head": {
-        "roc_auc": 0.9882,
-        "pr_auc": 0.9905,
-        "threshold_5pct_fpr": 0.122,
-        "recall_5pct_fpr": 0.98,
-        "precision_5pct_fpr": 0.9187,
-        "fpr_actual": 0.05
+        "roc_auc": 0.9851,
+        "pr_auc": 0.9772,
+        "threshold_5pct_fpr": 0.1372,
+        "recall_5pct_fpr": 0.9801,
+        "precision_5pct_fpr": 0.9193,
+        "fpr_actual": 0.0498
       },
       "rollout_onset_probability": {
         "roc_auc": 0.4142,
@@ -24,22 +25,51 @@
         "precision_5pct_fpr": 0.0,
         "fpr_actual": 0.05
       },
-      "comparison": {
-        "roc_auc_diff_direct_minus_rollout": 0.574,
-        "pr_auc_diff_direct_minus_rollout": 0.6902,
-        "recall_5pct_fpr_diff": null
+      "persistence": {
+        "roc_auc": 0.9882,
+        "pr_auc": 0.9808,
+        "threshold_5pct_fpr": 1.0,
+        "recall_5pct_fpr": 0.9801,
+        "precision_5pct_fpr": 0.9933,
+        "fpr_actual": 0.0038
+      },
+      "precursor_only": {
+        "n_test_windows": 263,
+        "positives": 3,
+        "direct_lr_head": {
+          "roc_auc": 0.4077,
+          "pr_auc": 0.0136,
+          "threshold_5pct_fpr": 0.122,
+          "recall_5pct_fpr": 0.0,
+          "precision_5pct_fpr": 0.0,
+          "fpr_actual": 0.05
+        },
+        "rollout_onset_probability": {
+          "roc_auc": null,
+          "pr_auc": null,
+          "recall_5pct_fpr": null
+        },
+        "persistence": {
+          "roc_auc": 0.5,
+          "pr_auc": 0.0114,
+          "threshold_5pct_fpr": 0.0,
+          "recall_5pct_fpr": 1.0,
+          "precision_5pct_fpr": 0.0114,
+          "fpr_actual": 1.0
+        }
       }
     },
     "2": {
-      "n_test_windows": 410,
-      "positives": 153,
+      "n_test_windows": 411,
+      "positives": 154,
       "negatives": 257,
+      "already_in_attack": 148,
       "direct_lr_head": {
-        "roc_auc": 0.9784,
-        "pr_auc": 0.9822,
+        "roc_auc": 0.9785,
+        "pr_auc": 0.9824,
         "threshold_5pct_fpr": 0.1503,
-        "recall_5pct_fpr": 0.9608,
-        "precision_5pct_fpr": 0.9245,
+        "recall_5pct_fpr": 0.961,
+        "precision_5pct_fpr": 0.925,
         "fpr_actual": 0.0467
       },
       "rollout_onset_probability": {
@@ -50,22 +80,51 @@
         "precision_5pct_fpr": 0.0769,
         "fpr_actual": 0.0467
       },
-      "comparison": {
-        "roc_auc_diff_direct_minus_rollout": 0.5223,
-        "pr_auc_diff_direct_minus_rollout": 0.6531,
-        "recall_5pct_fpr_diff": 0.9543
+      "persistence": {
+        "roc_auc": 0.9805,
+        "pr_auc": 0.9756,
+        "threshold_5pct_fpr": 1.0,
+        "recall_5pct_fpr": 0.961,
+        "precision_5pct_fpr": 1.0,
+        "fpr_actual": 0.0
+      },
+      "precursor_only": {
+        "n_test_windows": 263,
+        "positives": 6,
+        "direct_lr_head": {
+          "roc_auc": 0.4494,
+          "pr_auc": 0.0242,
+          "threshold_5pct_fpr": 0.1503,
+          "recall_5pct_fpr": 0.0,
+          "precision_5pct_fpr": 0.0,
+          "fpr_actual": 0.0467
+        },
+        "rollout_onset_probability": {
+          "roc_auc": null,
+          "pr_auc": null,
+          "recall_5pct_fpr": null
+        },
+        "persistence": {
+          "roc_auc": 0.5,
+          "pr_auc": 0.0228,
+          "threshold_5pct_fpr": 0.0,
+          "recall_5pct_fpr": 1.0,
+          "precision_5pct_fpr": 0.0228,
+          "fpr_actual": 1.0
+        }
       }
     },
     "3": {
-      "n_test_windows": 410,
-      "positives": 156,
+      "n_test_windows": 411,
+      "positives": 157,
       "negatives": 254,
+      "already_in_attack": 148,
       "direct_lr_head": {
-        "roc_auc": 0.97,
-        "pr_auc": 0.9772,
+        "roc_auc": 0.9702,
+        "pr_auc": 0.9774,
         "threshold_5pct_fpr": 0.1771,
-        "recall_5pct_fpr": 0.9423,
-        "precision_5pct_fpr": 0.9245,
+        "recall_5pct_fpr": 0.9427,
+        "precision_5pct_fpr": 0.925,
         "fpr_actual": 0.0472
       },
       "rollout_onset_probability": {
@@ -76,16 +135,45 @@
         "precision_5pct_fpr": 0.0769,
         "fpr_actual": 0.0472
       },
-      "comparison": {
-        "roc_auc_diff_direct_minus_rollout": 0.5393,
-        "pr_auc_diff_direct_minus_rollout": 0.6495,
-        "recall_5pct_fpr_diff": 0.9359
+      "persistence": {
+        "roc_auc": 0.9713,
+        "pr_auc": 0.9646,
+        "threshold_5pct_fpr": 1.0,
+        "recall_5pct_fpr": 0.9427,
+        "precision_5pct_fpr": 1.0,
+        "fpr_actual": 0.0
+      },
+      "precursor_only": {
+        "n_test_windows": 263,
+        "positives": 9,
+        "direct_lr_head": {
+          "roc_auc": 0.4803,
+          "pr_auc": 0.0504,
+          "threshold_5pct_fpr": 0.1771,
+          "recall_5pct_fpr": 0.0,
+          "precision_5pct_fpr": 0.0,
+          "fpr_actual": 0.0472
+        },
+        "rollout_onset_probability": {
+          "roc_auc": null,
+          "pr_auc": null,
+          "recall_5pct_fpr": null
+        },
+        "persistence": {
+          "roc_auc": 0.5,
+          "pr_auc": 0.0342,
+          "threshold_5pct_fpr": 0.0,
+          "recall_5pct_fpr": 1.0,
+          "precision_5pct_fpr": 0.0342,
+          "fpr_actual": 1.0
+        }
       }
     },
     "4": {
       "n_test_windows": 410,
       "positives": 159,
       "negatives": 251,
+      "already_in_attack": 147,
       "direct_lr_head": {
         "roc_auc": 0.9592,
         "pr_auc": 0.9694,
@@ -102,16 +190,45 @@
         "precision_5pct_fpr": 0.0,
         "fpr_actual": 0.0478
       },
-      "comparison": {
-        "roc_auc_diff_direct_minus_rollout": 0.5449,
-        "pr_auc_diff_direct_minus_rollout": 0.6472,
-        "recall_5pct_fpr_diff": null
+      "persistence": {
+        "roc_auc": 0.9623,
+        "pr_auc": 0.9538,
+        "threshold_5pct_fpr": 1.0,
+        "recall_5pct_fpr": 0.9245,
+        "precision_5pct_fpr": 1.0,
+        "fpr_actual": 0.0
+      },
+      "precursor_only": {
+        "n_test_windows": 263,
+        "positives": 12,
+        "direct_lr_head": {
+          "roc_auc": 0.4602,
+          "pr_auc": 0.057,
+          "threshold_5pct_fpr": 0.1787,
+          "recall_5pct_fpr": 0.0833,
+          "precision_5pct_fpr": 0.0769,
+          "fpr_actual": 0.0478
+        },
+        "rollout_onset_probability": {
+          "roc_auc": null,
+          "pr_auc": null,
+          "recall_5pct_fpr": null
+        },
+        "persistence": {
+          "roc_auc": 0.5,
+          "pr_auc": 0.0456,
+          "threshold_5pct_fpr": 0.0,
+          "recall_5pct_fpr": 1.0,
+          "precision_5pct_fpr": 0.0456,
+          "fpr_actual": 1.0
+        }
       }
     },
     "5": {
       "n_test_windows": 410,
       "positives": 162,
       "negatives": 248,
+      "already_in_attack": 147,
       "direct_lr_head": {
         "roc_auc": 0.9519,
         "pr_auc": 0.9646,
@@ -128,10 +245,38 @@
         "precision_5pct_fpr": 0.0,
         "fpr_actual": 0.0484
       },
-      "comparison": {
-        "roc_auc_diff_direct_minus_rollout": 0.5552,
-        "pr_auc_diff_direct_minus_rollout": 0.6444,
-        "recall_5pct_fpr_diff": null
+      "persistence": {
+        "roc_auc": 0.9537,
+        "pr_auc": 0.944,
+        "threshold_5pct_fpr": 1.0,
+        "recall_5pct_fpr": 0.9074,
+        "precision_5pct_fpr": 1.0,
+        "fpr_actual": 0.0
+      },
+      "precursor_only": {
+        "n_test_windows": 263,
+        "positives": 15,
+        "direct_lr_head": {
+          "roc_auc": 0.4801,
+          "pr_auc": 0.0888,
+          "threshold_5pct_fpr": 0.1679,
+          "recall_5pct_fpr": 0.0667,
+          "precision_5pct_fpr": 0.0769,
+          "fpr_actual": 0.0484
+        },
+        "rollout_onset_probability": {
+          "roc_auc": null,
+          "pr_auc": null,
+          "recall_5pct_fpr": null
+        },
+        "persistence": {
+          "roc_auc": 0.5,
+          "pr_auc": 0.057,
+          "threshold_5pct_fpr": 0.0,
+          "recall_5pct_fpr": 1.0,
+          "precision_5pct_fpr": 0.057,
+          "fpr_actual": 1.0
+        }
       }
     }
   }
