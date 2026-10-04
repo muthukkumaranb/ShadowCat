@@ -106,7 +106,7 @@ def render_layered_explanation(
         verdict_color = "#FF9F0A"
         verdict_icon = "🟠"
     else:
-        verdict_badge = "NOMINAL BASELINE TRAJECTORY"
+        verdict_badge = "BENIGN BASELINE TRAJECTORY"
         verdict_color = "#30D158"
         verdict_icon = "🟢"
 

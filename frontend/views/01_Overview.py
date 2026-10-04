@@ -20,7 +20,7 @@ with col_spark:
 with col_state:
     current_hazard = risk_probs[-1] if risk_probs else 0
     state_color = "#39FF88" if current_hazard < 0.4 else ("#FFB84D" if current_hazard < 0.7 else "#FF3B5C")
-    state_text = "NOMINAL" if current_hazard < 0.4 else ("ELEVATED" if current_hazard < 0.7 else "CRITICAL")
+    state_text = "BASELINE" if current_hazard < 0.4 else ("ELEVATED" if current_hazard < 0.7 else "CRITICAL")
     
     st.markdown(f"<div style='text-align: center; padding: 20px; background-color: var(--surface-card); border-radius: 8px; border: 1px solid var(--border-color);'>"
                 f"<h1 style='color: {state_color}; margin: 0;'>{state_text}</h1>"

@@ -187,7 +187,7 @@ DEMO_DATA = {
 not-today-hackers/
 │
 ├── app.py                      ← Entry point / Overview page
-├── mock_data.py                ← ALL demo values (single source)
+├── data_provider.py            ← ALL demo values (single source)
 ├── styles.py                   ← Theme CSS + sidebar helper
 │
 ├── components/
@@ -352,9 +352,9 @@ Two lines on the same Plotly chart:
 ## Backend Integration Point (Unchanged)
 
 ```python
-# Before (mock):
-from mock_data import DEMO_DATA
-data = DEMO_DATA
+# Before (initial):
+from data_provider import get_demo_data
+data = get_demo_data()
 
 # After (real):
 data = predict(input_data)
@@ -367,7 +367,7 @@ The frontend consumes `data["forecast"]`, `data["counterfactual"]`, etc. It does
 ## Build Phases
 
 ### Phase 1 — Foundation (5 files)
-`.streamlit/config.toml`, `requirements.txt`, `mock_data.py`, `styles.py`, `components/__init__.py`
+`.streamlit/config.toml`, `requirements.txt`, `data_provider.py`, `styles.py`, `components/__init__.py`
 
 ### Phase 2 — Components (5 files)
 `header.py`, `state.py`, `forecast.py` (now with uncertainty bands), `explanation.py`, `evidence.py`

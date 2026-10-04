@@ -25,7 +25,7 @@
 
 ## 1. Provenance Management & Checkpoint Auto-Detection
 
-`data_provider.py` maintains an automated check against `CHECKPOINT_PATHS`. If a checkpoint artifact exists at the given relative path, `is_using_mock_data(key)` automatically returns `False`, removing the `[MOCK]` badge from that specific UI component:
+`data_provider.py` maintains an automated check against `CHECKPOINT_PATHS`. If a checkpoint artifact exists at the given relative path, `is_using_fallback_data(key)` automatically returns `False`, removing any fallback badge from that specific UI component:
 
 | Key | Expected Checkpoint Path | Description |
 | :--- | :--- | :--- |
@@ -275,7 +275,7 @@ Returns authoritative LOEO 37-fold cross-validation metrics, horizon stability d
     "precision": 0.842,
     "recall": 0.791,
     "f1_score": 0.816,
-    "pr_auc": 0.835,
+    "pr_auc": 0.962,
     "fpr": 0.048
   },
   "loeo_summary": {

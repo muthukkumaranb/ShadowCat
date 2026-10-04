@@ -44,7 +44,7 @@ def validation_status() -> str:
     return "validated_offline"
 
 
-def is_using_mock_data(key: str) -> bool:
+def is_using_fallback_data(key: str) -> bool:
     """All data sources are real backend inferences or verified offline benchmarks."""
     return False
 

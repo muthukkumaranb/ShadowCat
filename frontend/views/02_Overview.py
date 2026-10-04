@@ -52,7 +52,7 @@ def render_page():
         risk_color = t['text_secondary']
         risk_delta = f"+{risk_val - 0.1:.2f}"
     else:
-        risk_label = "NOMINAL // LOW RISK ENVELOPE"
+        risk_label = "BASELINE // LOW RISK ENVELOPE"
         risk_badge_cls = "badge-nominal"
         risk_color = t['primary']
         risk_delta = f"{risk_val:.2f}"
@@ -180,7 +180,7 @@ def render_page():
         n_med = 0
         n_low = max(1, len(flows) // 5)
         stat_badge_cls = "badge-nominal"
-        stat_badge_txt = "NOMINAL"
+        stat_badge_txt = "BASELINE"
         delta_threat_txt = "Zero threat delta"
     n_total_alerts = n_crit + n_med + n_low
 
@@ -423,7 +423,7 @@ def render_page():
             <div>
                 <span class="soc-pulse-dot" style="display: inline-block;"></span> INGESTION BUFFER: 4,812 EVT/SEC • 0 DROPPED PACKETS
             </div>
-            <span style="color: {t['primary']};">PIPELINE NOMINAL // 0x9F41</span>
+            <span style="color: {t['primary']};">PIPELINE BASELINE // 0x9F41</span>
         </div>
     </div>
     """)

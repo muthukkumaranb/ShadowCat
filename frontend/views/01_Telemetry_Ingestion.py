@@ -360,7 +360,7 @@ def render_page():
             risk_label = "MODERATE WATCH"
         else:
             badge_cls = "badge-nominal"
-            risk_label = "NOMINAL ENVELOPE"
+            risk_label = "BASELINE ENVELOPE"
 
         render_html(f"""
         <div class="soc-card" style="border-left: 4px solid {t['secondary'] if max_r >= 0.75 else (t.get('tertiary', '#FFB84D') if max_r >= 0.5 else t['primary'])}; margin-top: 1rem; margin-bottom: 1rem;">
