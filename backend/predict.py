@@ -465,9 +465,61 @@ class ShadowcatPipeline:
         # (0.789/0.843/0.770) only reproduces with a per-fold PCA refit on the 371b855 dataset,
         # not through models/pca_32.pkl. See evaluation/benchmark/hazard_v3_results.json.
 
-        # Onset alert decision threshold: 0.5 is the threshold at which the per-fold LOEO
-        # test F1 in ml1/artifacts/lstm/lstm_stacked/onset/sidecar_fold_*.json is computed.
         self.alert_threshold = 0.5
+
+        # 4b. Load Current-Window Family / ATT&CK Stage Classifier (Phase B)
+        self.family_classifier_models: List[Dict[str, Any]] = []
+        family_dir = ML1_DIR / "artifacts" / "family_classifier"
+        if family_dir.exists():
+            import joblib
+            for f in sorted(family_dir.glob("model_fold_*.joblib")):
+                try:
+                    art = joblib.load(f)
+                    self.family_classifier_models.append(art)
+                except Exception as e:
+                    import logging
+                    logging.warning(f"Failed to load family classifier from {f}: {e}")
+
+        # Load 5% FPR detection threshold from stacked_benchmark_results.json
+        self.detection_threshold_5pct_fpr = 0.4014016389846802
+        bench_path = REPO_ROOT / "evaluation" / "benchmark" / "stacked_benchmark_results.json"
+        if bench_path.exists():
+            try:
+                with open(bench_path, "r", encoding="utf-8") as f:
+                    bench_data = json.load(f)
+                self.detection_threshold_5pct_fpr = float(
+                    bench_data["detection"]["matched_fpr_5pct"]["stacked_ensemble"]["threshold"]
+                )
+            except Exception as e:
+                import logging
+                logging.warning(f"Failed to load detection 5% FPR threshold from {bench_path}: {e}")
+
+        # Load family tactic macro F1 from family_results.json
+        self.family_loeo_macro_f1 = 0.6402
+        fam_res_path = REPO_ROOT / "evaluation" / "family" / "family_results.json"
+        if fam_res_path.exists():
+            try:
+                with open(fam_res_path, "r", encoding="utf-8") as f:
+                    fam_res_data = json.load(f)
+                self.family_loeo_macro_f1 = float(
+                    fam_res_data["loeo_evaluation"]["macro_f1_tactic"]
+                )
+            except Exception as e:
+                import logging
+                logging.warning(f"Failed to load family results from {fam_res_path}: {e}")
+
+        # Load mapping from family_to_attck.yaml
+        self.family_to_attck: Dict[str, Any] = {}
+        mapping_path = DATA_ENG_DIR / "configs" / "family_to_attck.yaml"
+        if mapping_path.exists():
+            try:
+                with open(mapping_path, "r", encoding="utf-8") as f:
+                    mcfg = yaml.safe_load(f)
+                self.family_to_attck = mcfg.get("families", {})
+            except Exception as e:
+                import logging
+                logging.warning(f"Failed to load family_to_attck mapping: {e}")
+
 
         # 5. No shared PCA: each stacked fold projects its history with its own checkpoint PCA
         # (pca_32_stacked.pkl is no longer used; see docs/demo_check/STACKED_PCA_NOTE.md).
@@ -558,6 +610,79 @@ class ShadowcatPipeline:
             import logging
             logging.warning(f"Stacked detection ensemble error: {e}")
             return None
+
+    def _predict_current_stage(
+        self,
+        window_406: np.ndarray,
+        detection_prob: Optional[float],
+    ) -> Dict[str, Any]:
+        """
+        Current-window ATT&CK stage prediction (Phase B).
+        Gated by stacked detection probability >= 5% FPR threshold from stacked_benchmark_results.json.
+        """
+        det_p = float(detection_prob) if detection_prob is not None else 0.0
+        source_str = f"family classifier (current window, LOEO macro-F1 = {self.family_loeo_macro_f1:.4f})"
+
+        if det_p < self.detection_threshold_5pct_fpr:
+            return {
+                "current_stage": "No attack detected",
+                "current_stage_confidence": None,
+                "current_stage_source": source_str,
+                "current_stage_family": None,
+                "current_stage_tactic_id": None,
+                "current_stage_url": None,
+                "is_attack_detected": False,
+            }
+
+        if not self.family_classifier_models:
+            return {
+                "current_stage": "Attack (family not classified)",
+                "current_stage_confidence": None,
+                "current_stage_source": source_str,
+                "current_stage_family": None,
+                "current_stage_tactic_id": None,
+                "current_stage_url": None,
+                "is_attack_detected": True,
+            }
+
+        # Average probabilities across loaded fold models
+        all_classes = set()
+        for art in self.family_classifier_models:
+            all_classes.update(art["classes"])
+        canonical_classes = sorted(list(all_classes))
+        class_to_idx = {c: i for i, c in enumerate(canonical_classes)}
+
+        x_raw = np.asarray(window_406, dtype=np.float64).reshape(1, -1)
+        ensemble_probs = np.zeros(len(canonical_classes), dtype=np.float64)
+
+        for art in self.family_classifier_models:
+            clf = art["model"]
+            scaler = art["scaler"]
+            classes = art["classes"]
+            x_scaled = scaler.transform(x_raw)
+            p = clf.predict_proba(x_scaled)[0]
+            for local_idx, c in enumerate(classes):
+                ensemble_probs[class_to_idx[c]] += p[local_idx]
+
+        ensemble_probs /= len(self.family_classifier_models)
+        best_idx = int(np.argmax(ensemble_probs))
+        pred_family = canonical_classes[best_idx]
+        confidence = float(ensemble_probs[best_idx])
+
+        family_meta = self.family_to_attck.get(pred_family, {})
+        tactic_name = family_meta.get("tactic_name") or pred_family
+        tactic_id = family_meta.get("tactic_id")
+        url = family_meta.get("url")
+
+        return {
+            "current_stage": tactic_name,
+            "current_stage_confidence": round(float(confidence), 4),
+            "current_stage_source": source_str,
+            "current_stage_family": pred_family,
+            "current_stage_tactic_id": tactic_id,
+            "current_stage_url": url,
+            "is_attack_detected": True,
+        }
 
     def predict(
         self,
@@ -885,6 +1010,14 @@ class ShadowcatPipeline:
             }
 
         # Step 11: Construct Output Payload per INTERFACE.md
+        # Detection probability for current-window gating
+        p_detection = (
+            float(self._predict_detection_ensemble(seq_30x406))
+            if (self.use_stacked_model and self.stacked_models_loaded and len(self.stacked_detection_models) > 0)
+            else None
+        )
+        current_stage_info = self._predict_current_stage(seq_30x406[-1], p_detection)
+
         # Stage fields below come from the stage head applied to the world-model rollout
         # S_hat(t+k), k=1..5. They carry no probability of attack.
         rollout_labels = [f"t+{k} (world-model rollout S_hat(t+{k}))" for k in range(1, 6)]
@@ -897,6 +1030,16 @@ class ShadowcatPipeline:
                 "Stacked calibrated residual LSTM, mean of "
                 f"{len(self.stacked_onset_models)} LOEO fold models (target: attack window in t+1..t+5)"
             ),
+            # Current-window ATT&CK stage (Phase B)
+            "current_stage": current_stage_info["current_stage"],
+            "current_stage_confidence": current_stage_info["current_stage_confidence"],
+            "current_stage_source": current_stage_info["current_stage_source"],
+            "current_stage_family": current_stage_info["current_stage_family"],
+            "current_stage_tactic_id": current_stage_info["current_stage_tactic_id"],
+            "current_stage_url": current_stage_info["current_stage_url"],
+            # World-model rollout stage prediction (renamed to rollout_stage_k per Phase B)
+            "rollout_stage_k": stage_names,
+            "rollout_stage_k_note": "world-model rollout, not validated",
             # Single-element list kept for consumers that read risk[0]; there is no per-horizon risk.
             "risk": [round(float(p_onset), 6)],
             "onset_alert": onset_alert,
@@ -1001,6 +1144,14 @@ class ShadowcatPipeline:
             "flagged_flows": flagged_flows,
             "lr_contributions": lr_contributions,
             "lr_contribution_sum": round(float(lr_c.sum()), 4),
+            "current_stage": current_stage_info["current_stage"],
+            "current_stage_confidence": current_stage_info["current_stage_confidence"],
+            "current_stage_source": current_stage_info["current_stage_source"],
+            "current_stage_family": current_stage_info["current_stage_family"],
+            "current_stage_tactic_id": current_stage_info["current_stage_tactic_id"],
+            "current_stage_url": current_stage_info["current_stage_url"],
+            "rollout_stage_k": stage_names,
+            "rollout_stage_k_note": "world-model rollout, not validated",
             "stage_predictions": stage_names,
             "risk_scores": [round(float(p_onset), 6)],
             "graph_topology": graph_topology,
@@ -1018,8 +1169,8 @@ class ShadowcatPipeline:
                 "calibration_source": self.conformal_cal_source,
                 "aci_mode": self.conformal_predictor.aci_mode,
             },
-            "detection_probability": round(self._predict_detection_ensemble(seq_30x406), 4) if (self.use_stacked_model and self.stacked_models_loaded and len(self.stacked_detection_models) > 0) else None,
-            "detection_alert": bool(self._predict_detection_ensemble(seq_30x406) >= 0.5) if (self.use_stacked_model and self.stacked_models_loaded and len(self.stacked_detection_models) > 0) else False,
+            "detection_probability": round(p_detection, 4) if p_detection is not None else None,
+            "detection_alert": bool(p_detection >= 0.5) if p_detection is not None else False,
             "counterfactual": counterfactual_result,
         }
 
