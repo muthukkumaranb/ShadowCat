@@ -1,0 +1,1317 @@
+{
+  "scenario": "russellmitchell",
+  "inspection_time": "2026-10-04T11:35:17.798838+00:00",
+  "directory_tree_line_count": 156,
+  "pcap_files_count": 2,
+  "pcap_files": [
+    {
+      "path": "data-engineering/data/ait/raw\\russellmitchell\\gather\\attacker_0\\logs\\ait.aecid.attacker.wpdiscuz\\traffic.pcap",
+      "file_size_bytes": 324142517,
+      "link_type": 113,
+      "snaplen": 262144,
+      "packet_count": 682840,
+      "total_bytes": 313217053,
+      "start_ts_unix": 1642686470.743391,
+      "end_ts_unix": 1642999097.102834,
+      "start_ts_utc": "2022-01-20T13:47:50.743391+00:00",
+      "end_ts_utc": "2022-01-24T04:38:17.102834+00:00",
+      "duration_seconds": 312626.36,
+      "host": "attacker_0",
+      "rel_path": "gather\\attacker_0\\logs\\ait.aecid.attacker.wpdiscuz\\traffic.pcap"
+    },
+    {
+      "path": "data-engineering/data/ait/raw\\russellmitchell\\gather\\attacker_0\\logs\\dnsteal\\traffic.pcap",
+      "file_size_bytes": 442066091,
+      "link_type": 113,
+      "snaplen": 262144,
+      "packet_count": 1192295,
+      "total_bytes": 422989347,
+      "start_ts_unix": 1642682899.071873,
+      "end_ts_unix": 1643032203.248663,
+      "start_ts_utc": "2022-01-20T12:48:19.071873+00:00",
+      "end_ts_utc": "2022-01-24T13:50:03.248663+00:00",
+      "duration_seconds": 349304.18,
+      "host": "attacker_0",
+      "rel_path": "gather\\attacker_0\\logs\\dnsteal\\traffic.pcap"
+    }
+  ],
+  "label_files_count": 8,
+  "label_files": {
+    "labels\\inet-firewall\\logs\\dnsmasq.log": {
+      "label_count": 54035,
+      "fields": [
+        "labels",
+        "line",
+        "rules"
+      ],
+      "unique_labels": [
+        "attacker",
+        "dirb",
+        "dns_scan",
+        "dnsteal",
+        "dnsteal-dropped",
+        "dnsteal-received",
+        "escalate",
+        "foothold",
+        "network_scan",
+        "service_scan",
+        "traceroute",
+        "webshell_cmd",
+        "wpscan"
+      ],
+      "unique_rules": [
+        "attacker.foothold.dnsmasq.dns_scan_probe",
+        "attacker.foothold.dnsmasq.traceroute",
+        "attacker.foothold.dnsmasq.webshell",
+        "attacker.foothold.dnsmasq.wpscan",
+        "attacker_foothold_dnsmasq_dirb_parent_query",
+        "attacker_foothold_dnsmasq_dirb_sub_query",
+        "attacker_foothold_dnsmasq_dns_brute_scan_parent_query",
+        "attacker_foothold_dnsmasq_dns_brute_scan_sub_query",
+        "attacker_foothold_dnsmasq_nmap_scan_parent_query",
+        "attacker_foothold_dnsmasq_nmap_scan_sub_query",
+        "attacker_foothold_dnsmasq_service_scan_parent_query",
+        "attacker_foothold_dnsmasq_service_scan_sub_query",
+        "dnsteal.domain.dropped",
+        "dnsteal.domain.dropped-retry",
+        "dnsteal.domain.match",
+        "dnsteal.domain.received"
+      ],
+      "first_line": 1,
+      "last_line": 254393
+    },
+    "labels\\internal_share\\logs\\audit\\audit.log": {
+      "label_count": 2,
+      "fields": [
+        "labels",
+        "line",
+        "rules"
+      ],
+      "unique_labels": [
+        "attacker",
+        "dnsteal",
+        "exfiltration-service"
+      ],
+      "unique_rules": [
+        "exfil.service"
+      ],
+      "first_line": 667,
+      "last_line": 668
+    },
+    "labels\\intranet_server\\logs\\apache2\\intranet.smith.russellmitchell.com-access.log.2": {
+      "label_count": 7695,
+      "fields": [
+        "labels",
+        "line",
+        "rules"
+      ],
+      "unique_labels": [
+        "attacker_http",
+        "dirb",
+        "escalate",
+        "foothold",
+        "service_scan",
+        "webshell_cmd",
+        "webshell_upload",
+        "wpscan"
+      ],
+      "unique_rules": [
+        "attacker.dirb.time",
+        "attacker.escalate.webshell.cmd.http",
+        "attacker.escalate.webshell.cmd.http_prepare_crack",
+        "attacker.foothold.apache.access",
+        "attacker.foothold.apache.access_error",
+        "attacker.service_scan",
+        "attacker.webshell.upload.seq",
+        "attacker.wpscan.time"
+      ],
+      "first_line": 832,
+      "last_line": 8529
+    },
+    "labels\\intranet_server\\logs\\apache2\\intranet.smith.russellmitchell.com-error.log.2": {
+      "label_count": 36,
+      "fields": [
+        "labels",
+        "line",
+        "rules"
+      ],
+      "unique_labels": [
+        "attacker_http",
+        "dirb",
+        "foothold",
+        "wpscan"
+      ],
+      "unique_rules": [
+        "attacker.dirb.time",
+        "attacker.foothold.apache.access_error",
+        "attacker.foothold.apache.error",
+        "attacker.foothold.apache.error_substring",
+        "attacker.wpscan.time"
+      ],
+      "first_line": 1,
+      "last_line": 36
+    },
+    "labels\\intranet_server\\logs\\audit\\audit.log": {
+      "label_count": 9,
+      "fields": [
+        "labels",
+        "line",
+        "rules"
+      ],
+      "unique_labels": [
+        "attacker_change_user",
+        "escalate",
+        "escalated_command",
+        "escalated_sudo_command"
+      ],
+      "unique_rules": [
+        "attacker.escalate.audit.su.login",
+        "attacker.escalate.audit.sudo.command.events",
+        "attacker.escalate.audit.sudo.command.start"
+      ],
+      "first_line": 1860,
+      "last_line": 1868
+    },
+    "labels\\intranet_server\\logs\\auth.log": {
+      "label_count": 8,
+      "fields": [
+        "labels",
+        "line",
+        "rules"
+      ],
+      "unique_labels": [
+        "attacker_change_user",
+        "escalate",
+        "escalated_command",
+        "escalated_sudo_command",
+        "escalated_sudo_session"
+      ],
+      "unique_rules": [
+        "attacker.escalate.audit.sudo.command.start",
+        "attacker.escalate.su.login",
+        "attacker.escalate.sudo.command",
+        "attacker.escalate.sudo.open",
+        "attacker.escalate.systemd.newsession.after"
+      ],
+      "first_line": 145,
+      "last_line": 152
+    },
+    "labels\\monitoring\\logs\\logstash\\intranet-server\\2022-01-24-system.cpu.log": {
+      "label_count": 49,
+      "fields": [
+        "labels",
+        "line",
+        "rules"
+      ],
+      "unique_labels": [
+        "crack_passwords",
+        "escalate"
+      ],
+      "unique_rules": [
+        "attacker.escalate.wpcrack"
+      ],
+      "first_line": 321,
+      "last_line": 369
+    },
+    "labels\\vpn\\logs\\openvpn.log": {
+      "label_count": 28,
+      "fields": [
+        "labels",
+        "line",
+        "rules"
+      ],
+      "unique_labels": [
+        "attacker_vpn",
+        "foothold"
+      ],
+      "unique_rules": [
+        "attacker.foothold.vpn.ip"
+      ],
+      "first_line": 4331,
+      "last_line": 4358
+    }
+  },
+  "all_unique_labels": [
+    "attacker",
+    "attacker_change_user",
+    "attacker_http",
+    "attacker_vpn",
+    "crack_passwords",
+    "dirb",
+    "dns_scan",
+    "dnsteal",
+    "dnsteal-dropped",
+    "dnsteal-received",
+    "escalate",
+    "escalated_command",
+    "escalated_sudo_command",
+    "escalated_sudo_session",
+    "exfiltration-service",
+    "foothold",
+    "network_scan",
+    "service_scan",
+    "traceroute",
+    "webshell_cmd",
+    "webshell_upload",
+    "wpscan"
+  ],
+  "attacks_log_path": "gather\\attacker_0\\logs\\attacks.log",
+  "attacks_log_entries": [
+    {
+      "timestamp": "2022-01-24 03:01:00.063877+00:00",
+      "message": "vpn_connect",
+      "raw": "2022-01-24 03:01:00.063877+00:00 vpn_connect"
+    },
+    {
+      "timestamp": "2022-01-24 03:01:17.723042+00:00",
+      "message": "traceroute_internet",
+      "raw": "2022-01-24 03:01:17.723042+00:00 traceroute_internet"
+    },
+    {
+      "timestamp": "2022-01-24 03:01:20.969099+00:00",
+      "message": "dns_brute_force",
+      "raw": "2022-01-24 03:01:20.969099+00:00 dns_brute_force"
+    },
+    {
+      "timestamp": "2022-01-24 03:01:28.456313+00:00",
+      "message": "host_discover_dmz",
+      "raw": "2022-01-24 03:01:28.456313+00:00 host_discover_dmz"
+    },
+    {
+      "timestamp": "2022-01-24 03:36:38.963403+00:00",
+      "message": "host_discover_local",
+      "raw": "2022-01-24 03:36:38.963403+00:00 host_discover_local"
+    },
+    {
+      "timestamp": "2022-01-24 03:56:46.825579+00:00",
+      "message": "service_scan",
+      "raw": "2022-01-24 03:56:46.825579+00:00 service_scan"
+    },
+    {
+      "timestamp": "2022-01-24 03:57:26.435577+00:00",
+      "message": "recon_networks_finish",
+      "raw": "2022-01-24 03:57:26.435577+00:00 recon_networks_finish"
+    },
+    {
+      "timestamp": "2022-01-24 03:57:26.436714+00:00",
+      "message": "dirb_scan",
+      "raw": "2022-01-24 03:57:26.436714+00:00 dirb_scan"
+    },
+    {
+      "timestamp": "2022-01-24 03:57:48.934650+00:00",
+      "message": "wpscan",
+      "raw": "2022-01-24 03:57:48.934650+00:00 wpscan"
+    },
+    {
+      "timestamp": "2022-01-24 03:58:20.020490+00:00",
+      "message": "upload_rce_shell",
+      "raw": "2022-01-24 03:58:20.020490+00:00 upload_rce_shell"
+    },
+    {
+      "timestamp": "2022-01-24 03:58:23.348462+00:00",
+      "message": "check_whoami",
+      "raw": "2022-01-24 03:58:23.348462+00:00 check_whoami"
+    },
+    {
+      "timestamp": "2022-01-24 03:58:25.108981+00:00",
+      "message": "check_uname_r",
+      "raw": "2022-01-24 03:58:25.108981+00:00 check_uname_r"
+    },
+    {
+      "timestamp": "2022-01-24 03:58:27.041422+00:00",
+      "message": "read_profile",
+      "raw": "2022-01-24 03:58:27.041422+00:00 read_profile"
+    },
+    {
+      "timestamp": "2022-01-24 03:58:28.528493+00:00",
+      "message": "check_who",
+      "raw": "2022-01-24 03:58:28.528493+00:00 check_who"
+    },
+    {
+      "timestamp": "2022-01-24 03:58:30.292820+00:00",
+      "message": "check_meminfo",
+      "raw": "2022-01-24 03:58:30.292820+00:00 check_meminfo"
+    },
+    {
+      "timestamp": "2022-01-24 03:58:33.828771+00:00",
+      "message": "check_uname_a",
+      "raw": "2022-01-24 03:58:33.828771+00:00 check_uname_a"
+    },
+    {
+      "timestamp": "2022-01-24 03:58:36.383526+00:00",
+      "message": "check_user_id",
+      "raw": "2022-01-24 03:58:36.383526+00:00 check_user_id"
+    },
+    {
+      "timestamp": "2022-01-24 03:58:39.247353+00:00",
+      "message": "check_df",
+      "raw": "2022-01-24 03:58:39.247353+00:00 check_df"
+    },
+    {
+      "timestamp": "2022-01-24 03:58:40.944504+00:00",
+      "message": "check_netstat_nat",
+      "raw": "2022-01-24 03:58:40.944504+00:00 check_netstat_nat"
+    },
+    {
+      "timestamp": "2022-01-24 03:58:42.198977+00:00",
+      "message": "check_id",
+      "raw": "2022-01-24 03:58:42.198977+00:00 check_id"
+    },
+    {
+      "timestamp": "2022-01-24 03:58:43.400876+00:00",
+      "message": "read_resolv",
+      "raw": "2022-01-24 03:58:43.400876+00:00 read_resolv"
+    },
+    {
+      "timestamp": "2022-01-24 03:58:44.632721+00:00",
+      "message": "check_netstat_t",
+      "raw": "2022-01-24 03:58:44.632721+00:00 check_netstat_t"
+    },
+    {
+      "timestamp": "2022-01-24 03:58:48.259736+00:00",
+      "message": "list_home",
+      "raw": "2022-01-24 03:58:48.259736+00:00 list_home"
+    },
+    {
+      "timestamp": "2022-01-24 03:58:49.562813+00:00",
+      "message": "check_last",
+      "raw": "2022-01-24 03:58:49.562813+00:00 check_last"
+    },
+    {
+      "timestamp": "2022-01-24 03:58:51.585727+00:00",
+      "message": "list_web_dir",
+      "raw": "2022-01-24 03:58:51.585727+00:00 list_web_dir"
+    },
+    {
+      "timestamp": "2022-01-24 03:58:54.219952+00:00",
+      "message": "check_date",
+      "raw": "2022-01-24 03:58:54.219952+00:00 check_date"
+    },
+    {
+      "timestamp": "2022-01-24 03:58:55.463292+00:00",
+      "message": "list_www",
+      "raw": "2022-01-24 03:58:55.463292+00:00 list_www"
+    },
+    {
+      "timestamp": "2022-01-24 03:58:57.641124+00:00",
+      "message": "check_netstat_l",
+      "raw": "2022-01-24 03:58:57.641124+00:00 check_netstat_l"
+    },
+    {
+      "timestamp": "2022-01-24 03:59:00.791636+00:00",
+      "message": "clear",
+      "raw": "2022-01-24 03:59:00.791636+00:00 clear"
+    },
+    {
+      "timestamp": "2022-01-24 03:59:02.283150+00:00",
+      "message": "check_wp_config",
+      "raw": "2022-01-24 03:59:02.283150+00:00 check_wp_config"
+    },
+    {
+      "timestamp": "2022-01-24 03:59:03.740619+00:00",
+      "message": "check_ps_a",
+      "raw": "2022-01-24 03:59:03.740619+00:00 check_ps_a"
+    },
+    {
+      "timestamp": "2022-01-24 03:59:05.928341+00:00",
+      "message": "read_passwd",
+      "raw": "2022-01-24 03:59:05.928341+00:00 read_passwd"
+    },
+    {
+      "timestamp": "2022-01-24 03:59:09.511060+00:00",
+      "message": "check_release",
+      "raw": "2022-01-24 03:59:09.511060+00:00 check_release"
+    },
+    {
+      "timestamp": "2022-01-24 03:59:12.977191+00:00",
+      "message": "check_cpuinfo",
+      "raw": "2022-01-24 03:59:12.977191+00:00 check_cpuinfo"
+    },
+    {
+      "timestamp": "2022-01-24 03:59:14.207842+00:00",
+      "message": "dump_wp_users",
+      "raw": "2022-01-24 03:59:14.207842+00:00 dump_wp_users"
+    },
+    {
+      "timestamp": "2022-01-24 03:59:16.923431+00:00",
+      "message": "read_group",
+      "raw": "2022-01-24 03:59:16.923431+00:00 read_group"
+    },
+    {
+      "timestamp": "2022-01-24 03:59:18.310719+00:00",
+      "message": "check_uptime",
+      "raw": "2022-01-24 03:59:18.310719+00:00 check_uptime"
+    },
+    {
+      "timestamp": "2022-01-24 03:59:19.790753+00:00",
+      "message": "check_network_config",
+      "raw": "2022-01-24 03:59:19.790753+00:00 check_network_config"
+    },
+    {
+      "timestamp": "2022-01-24 03:59:22.176229+00:00",
+      "message": "recon_host_finish",
+      "raw": "2022-01-24 03:59:22.176229+00:00 recon_host_finish"
+    },
+    {
+      "timestamp": "2022-01-24 03:59:22.177425+00:00",
+      "message": "decide_crack_method",
+      "raw": "2022-01-24 03:59:22.177425+00:00 decide_crack_method"
+    },
+    {
+      "timestamp": "2022-01-24 03:59:22.182453+00:00",
+      "message": "crack_wphash",
+      "raw": "2022-01-24 03:59:22.182453+00:00 crack_wphash"
+    },
+    {
+      "timestamp": "2022-01-24 04:36:57.885350+00:00",
+      "message": "reverse_shell_listen",
+      "raw": "2022-01-24 04:36:57.885350+00:00 reverse_shell_listen"
+    },
+    {
+      "timestamp": "2022-01-24 04:36:59.577594+00:00",
+      "message": "open_reverse_shell",
+      "raw": "2022-01-24 04:36:59.577594+00:00 open_reverse_shell"
+    },
+    {
+      "timestamp": "2022-01-24 04:37:25.836115+00:00",
+      "message": "wait_reverse_shell",
+      "raw": "2022-01-24 04:37:25.836115+00:00 wait_reverse_shell"
+    },
+    {
+      "timestamp": "2022-01-24 04:37:39.739109+00:00",
+      "message": "open_pty",
+      "raw": "2022-01-24 04:37:39.739109+00:00 open_pty"
+    },
+    {
+      "timestamp": "2022-01-24 04:37:40.530254+00:00",
+      "message": "login_user",
+      "raw": "2022-01-24 04:37:40.530254+00:00 login_user"
+    },
+    {
+      "timestamp": "2022-01-24 04:37:53.496765+00:00",
+      "message": "read_fstab",
+      "raw": "2022-01-24 04:37:53.496765+00:00 read_fstab"
+    },
+    {
+      "timestamp": "2022-01-24 04:37:55.374578+00:00",
+      "message": "check_ps_aux",
+      "raw": "2022-01-24 04:37:55.374578+00:00 check_ps_aux"
+    },
+    {
+      "timestamp": "2022-01-24 04:37:58.370156+00:00",
+      "message": "check_sudo",
+      "raw": "2022-01-24 04:37:58.370156+00:00 check_sudo"
+    },
+    {
+      "timestamp": "2022-01-24 04:38:01.850376+00:00",
+      "message": "check_uname_ar",
+      "raw": "2022-01-24 04:38:01.850376+00:00 check_uname_ar"
+    },
+    {
+      "timestamp": "2022-01-24 04:38:04.866547+00:00",
+      "message": "list_shadow",
+      "raw": "2022-01-24 04:38:04.866547+00:00 list_shadow"
+    },
+    {
+      "timestamp": "2022-01-24 04:38:06.227784+00:00",
+      "message": "read_shadow",
+      "raw": "2022-01-24 04:38:06.227784+00:00 read_shadow"
+    },
+    {
+      "timestamp": "2022-01-24 04:38:09.938128+00:00",
+      "message": "check_ifconfig",
+      "raw": "2022-01-24 04:38:09.938128+00:00 check_ifconfig"
+    },
+    {
+      "timestamp": "2022-01-24 04:38:11.767134+00:00",
+      "message": "vpn_disconnect",
+      "raw": "2022-01-24 04:38:11.767134+00:00 vpn_disconnect"
+    },
+    {
+      "timestamp": "2022-01-24 13:50:03.250776+00:00",
+      "message": "dnsteal_stop",
+      "raw": "2022-01-24 13:50:03.250776+00:00 dnsteal_stop"
+    }
+  ],
+  "step_timestamps_from_attacks_log": {
+    "vpn_connect": {
+      "earliest": "2022-01-24 03:01:00.063877+00:00",
+      "latest": "2022-01-24 03:01:00.063877+00:00",
+      "count": 1
+    },
+    "traceroute_internet": {
+      "earliest": "2022-01-24 03:01:17.723042+00:00",
+      "latest": "2022-01-24 03:01:17.723042+00:00",
+      "count": 1
+    },
+    "dns_brute_force": {
+      "earliest": "2022-01-24 03:01:20.969099+00:00",
+      "latest": "2022-01-24 03:01:20.969099+00:00",
+      "count": 1
+    },
+    "host_discover_dmz": {
+      "earliest": "2022-01-24 03:01:28.456313+00:00",
+      "latest": "2022-01-24 03:01:28.456313+00:00",
+      "count": 1
+    },
+    "host_discover_local": {
+      "earliest": "2022-01-24 03:36:38.963403+00:00",
+      "latest": "2022-01-24 03:36:38.963403+00:00",
+      "count": 1
+    },
+    "service_scan": {
+      "earliest": "2022-01-24 03:56:46.825579+00:00",
+      "latest": "2022-01-24 03:56:46.825579+00:00",
+      "count": 1
+    },
+    "recon_networks_finish": {
+      "earliest": "2022-01-24 03:57:26.435577+00:00",
+      "latest": "2022-01-24 03:57:26.435577+00:00",
+      "count": 1
+    },
+    "dirb_scan": {
+      "earliest": "2022-01-24 03:57:26.436714+00:00",
+      "latest": "2022-01-24 03:57:26.436714+00:00",
+      "count": 1
+    },
+    "wpscan": {
+      "earliest": "2022-01-24 03:57:48.934650+00:00",
+      "latest": "2022-01-24 03:57:48.934650+00:00",
+      "count": 1
+    },
+    "upload_rce_shell": {
+      "earliest": "2022-01-24 03:58:20.020490+00:00",
+      "latest": "2022-01-24 03:58:20.020490+00:00",
+      "count": 1
+    },
+    "check_whoami": {
+      "earliest": "2022-01-24 03:58:23.348462+00:00",
+      "latest": "2022-01-24 03:58:23.348462+00:00",
+      "count": 1
+    },
+    "check_uname_r": {
+      "earliest": "2022-01-24 03:58:25.108981+00:00",
+      "latest": "2022-01-24 03:58:25.108981+00:00",
+      "count": 1
+    },
+    "read_profile": {
+      "earliest": "2022-01-24 03:58:27.041422+00:00",
+      "latest": "2022-01-24 03:58:27.041422+00:00",
+      "count": 1
+    },
+    "check_who": {
+      "earliest": "2022-01-24 03:58:28.528493+00:00",
+      "latest": "2022-01-24 03:58:28.528493+00:00",
+      "count": 1
+    },
+    "check_meminfo": {
+      "earliest": "2022-01-24 03:58:30.292820+00:00",
+      "latest": "2022-01-24 03:58:30.292820+00:00",
+      "count": 1
+    },
+    "check_uname_a": {
+      "earliest": "2022-01-24 03:58:33.828771+00:00",
+      "latest": "2022-01-24 03:58:33.828771+00:00",
+      "count": 1
+    },
+    "check_user_id": {
+      "earliest": "2022-01-24 03:58:36.383526+00:00",
+      "latest": "2022-01-24 03:58:36.383526+00:00",
+      "count": 1
+    },
+    "check_df": {
+      "earliest": "2022-01-24 03:58:39.247353+00:00",
+      "latest": "2022-01-24 03:58:39.247353+00:00",
+      "count": 1
+    },
+    "check_netstat_nat": {
+      "earliest": "2022-01-24 03:58:40.944504+00:00",
+      "latest": "2022-01-24 03:58:40.944504+00:00",
+      "count": 1
+    },
+    "check_id": {
+      "earliest": "2022-01-24 03:58:42.198977+00:00",
+      "latest": "2022-01-24 03:58:42.198977+00:00",
+      "count": 1
+    },
+    "read_resolv": {
+      "earliest": "2022-01-24 03:58:43.400876+00:00",
+      "latest": "2022-01-24 03:58:43.400876+00:00",
+      "count": 1
+    },
+    "check_netstat_t": {
+      "earliest": "2022-01-24 03:58:44.632721+00:00",
+      "latest": "2022-01-24 03:58:44.632721+00:00",
+      "count": 1
+    },
+    "list_home": {
+      "earliest": "2022-01-24 03:58:48.259736+00:00",
+      "latest": "2022-01-24 03:58:48.259736+00:00",
+      "count": 1
+    },
+    "check_last": {
+      "earliest": "2022-01-24 03:58:49.562813+00:00",
+      "latest": "2022-01-24 03:58:49.562813+00:00",
+      "count": 1
+    },
+    "list_web_dir": {
+      "earliest": "2022-01-24 03:58:51.585727+00:00",
+      "latest": "2022-01-24 03:58:51.585727+00:00",
+      "count": 1
+    },
+    "check_date": {
+      "earliest": "2022-01-24 03:58:54.219952+00:00",
+      "latest": "2022-01-24 03:58:54.219952+00:00",
+      "count": 1
+    },
+    "list_www": {
+      "earliest": "2022-01-24 03:58:55.463292+00:00",
+      "latest": "2022-01-24 03:58:55.463292+00:00",
+      "count": 1
+    },
+    "check_netstat_l": {
+      "earliest": "2022-01-24 03:58:57.641124+00:00",
+      "latest": "2022-01-24 03:58:57.641124+00:00",
+      "count": 1
+    },
+    "clear": {
+      "earliest": "2022-01-24 03:59:00.791636+00:00",
+      "latest": "2022-01-24 03:59:00.791636+00:00",
+      "count": 1
+    },
+    "check_wp_config": {
+      "earliest": "2022-01-24 03:59:02.283150+00:00",
+      "latest": "2022-01-24 03:59:02.283150+00:00",
+      "count": 1
+    },
+    "check_ps_a": {
+      "earliest": "2022-01-24 03:59:03.740619+00:00",
+      "latest": "2022-01-24 03:59:03.740619+00:00",
+      "count": 1
+    },
+    "read_passwd": {
+      "earliest": "2022-01-24 03:59:05.928341+00:00",
+      "latest": "2022-01-24 03:59:05.928341+00:00",
+      "count": 1
+    },
+    "check_release": {
+      "earliest": "2022-01-24 03:59:09.511060+00:00",
+      "latest": "2022-01-24 03:59:09.511060+00:00",
+      "count": 1
+    },
+    "check_cpuinfo": {
+      "earliest": "2022-01-24 03:59:12.977191+00:00",
+      "latest": "2022-01-24 03:59:12.977191+00:00",
+      "count": 1
+    },
+    "dump_wp_users": {
+      "earliest": "2022-01-24 03:59:14.207842+00:00",
+      "latest": "2022-01-24 03:59:14.207842+00:00",
+      "count": 1
+    },
+    "read_group": {
+      "earliest": "2022-01-24 03:59:16.923431+00:00",
+      "latest": "2022-01-24 03:59:16.923431+00:00",
+      "count": 1
+    },
+    "check_uptime": {
+      "earliest": "2022-01-24 03:59:18.310719+00:00",
+      "latest": "2022-01-24 03:59:18.310719+00:00",
+      "count": 1
+    },
+    "check_network_config": {
+      "earliest": "2022-01-24 03:59:19.790753+00:00",
+      "latest": "2022-01-24 03:59:19.790753+00:00",
+      "count": 1
+    },
+    "recon_host_finish": {
+      "earliest": "2022-01-24 03:59:22.176229+00:00",
+      "latest": "2022-01-24 03:59:22.176229+00:00",
+      "count": 1
+    },
+    "decide_crack_method": {
+      "earliest": "2022-01-24 03:59:22.177425+00:00",
+      "latest": "2022-01-24 03:59:22.177425+00:00",
+      "count": 1
+    },
+    "crack_wphash": {
+      "earliest": "2022-01-24 03:59:22.182453+00:00",
+      "latest": "2022-01-24 03:59:22.182453+00:00",
+      "count": 1
+    },
+    "reverse_shell_listen": {
+      "earliest": "2022-01-24 04:36:57.885350+00:00",
+      "latest": "2022-01-24 04:36:57.885350+00:00",
+      "count": 1
+    },
+    "open_reverse_shell": {
+      "earliest": "2022-01-24 04:36:59.577594+00:00",
+      "latest": "2022-01-24 04:36:59.577594+00:00",
+      "count": 1
+    },
+    "wait_reverse_shell": {
+      "earliest": "2022-01-24 04:37:25.836115+00:00",
+      "latest": "2022-01-24 04:37:25.836115+00:00",
+      "count": 1
+    },
+    "open_pty": {
+      "earliest": "2022-01-24 04:37:39.739109+00:00",
+      "latest": "2022-01-24 04:37:39.739109+00:00",
+      "count": 1
+    },
+    "login_user": {
+      "earliest": "2022-01-24 04:37:40.530254+00:00",
+      "latest": "2022-01-24 04:37:40.530254+00:00",
+      "count": 1
+    },
+    "read_fstab": {
+      "earliest": "2022-01-24 04:37:53.496765+00:00",
+      "latest": "2022-01-24 04:37:53.496765+00:00",
+      "count": 1
+    },
+    "check_ps_aux": {
+      "earliest": "2022-01-24 04:37:55.374578+00:00",
+      "latest": "2022-01-24 04:37:55.374578+00:00",
+      "count": 1
+    },
+    "check_sudo": {
+      "earliest": "2022-01-24 04:37:58.370156+00:00",
+      "latest": "2022-01-24 04:37:58.370156+00:00",
+      "count": 1
+    },
+    "check_uname_ar": {
+      "earliest": "2022-01-24 04:38:01.850376+00:00",
+      "latest": "2022-01-24 04:38:01.850376+00:00",
+      "count": 1
+    },
+    "list_shadow": {
+      "earliest": "2022-01-24 04:38:04.866547+00:00",
+      "latest": "2022-01-24 04:38:04.866547+00:00",
+      "count": 1
+    },
+    "read_shadow": {
+      "earliest": "2022-01-24 04:38:06.227784+00:00",
+      "latest": "2022-01-24 04:38:06.227784+00:00",
+      "count": 1
+    },
+    "check_ifconfig": {
+      "earliest": "2022-01-24 04:38:09.938128+00:00",
+      "latest": "2022-01-24 04:38:09.938128+00:00",
+      "count": 1
+    },
+    "vpn_disconnect": {
+      "earliest": "2022-01-24 04:38:11.767134+00:00",
+      "latest": "2022-01-24 04:38:11.767134+00:00",
+      "count": 1
+    },
+    "dnsteal_stop": {
+      "earliest": "2022-01-24 13:50:03.250776+00:00",
+      "latest": "2022-01-24 13:50:03.250776+00:00",
+      "count": 1
+    }
+  },
+  "label_derived_timestamps": {
+    "labels\\inet-firewall\\logs\\dnsmasq.log": {
+      "dnsteal": {
+        "earliest": "Jan 21 00:00:09",
+        "latest": "Jan 24 13:52:15",
+        "count": 53054
+      },
+      "attacker": {
+        "earliest": "Jan 21 00:00:09",
+        "latest": "Jan 24 13:52:15",
+        "count": 53054
+      },
+      "dnsteal-received": {
+        "earliest": "Jan 21 00:00:09",
+        "latest": "Jan 24 13:50:03",
+        "count": 53006
+      },
+      "traceroute": {
+        "earliest": "Jan 24 03:01:17",
+        "latest": "Jan 24 03:01:17",
+        "count": 4
+      },
+      "foothold": {
+        "earliest": "Jan 24 03:01:17",
+        "latest": "Jan 24 03:57:49",
+        "count": 969
+      },
+      "dns_scan": {
+        "earliest": "Jan 24 03:01:21",
+        "latest": "Jan 24 03:01:21",
+        "count": 414
+      },
+      "network_scan": {
+        "earliest": "Jan 24 03:02:33",
+        "latest": "Jan 24 03:37:04",
+        "count": 92
+      },
+      "service_scan": {
+        "earliest": "Jan 24 03:56:47",
+        "latest": "Jan 24 03:57:17",
+        "count": 443
+      },
+      "dirb": {
+        "earliest": "Jan 24 03:57:26",
+        "latest": "Jan 24 03:57:26",
+        "count": 8
+      },
+      "wpscan": {
+        "earliest": "Jan 24 03:57:49",
+        "latest": "Jan 24 03:57:49",
+        "count": 8
+      },
+      "webshell_cmd": {
+        "earliest": "Jan 24 03:59:22",
+        "latest": "Jan 24 03:59:22",
+        "count": 12
+      },
+      "escalate": {
+        "earliest": "Jan 24 03:59:22",
+        "latest": "Jan 24 03:59:22",
+        "count": 12
+      },
+      "dnsteal-dropped": {
+        "earliest": "Jan 24 13:50:24",
+        "latest": "Jan 24 13:52:15",
+        "count": 48
+      }
+    },
+    "labels\\internal_share\\logs\\audit\\audit.log": {
+      "dnsteal": {
+        "earliest": "1643032239.298",
+        "latest": "1643032239.298",
+        "count": 2
+      },
+      "exfiltration-service": {
+        "earliest": "1643032239.298",
+        "latest": "1643032239.298",
+        "count": 2
+      },
+      "attacker": {
+        "earliest": "1643032239.298",
+        "latest": "1643032239.298",
+        "count": 2
+      }
+    },
+    "labels\\intranet_server\\logs\\apache2\\intranet.smith.russellmitchell.com-access.log.2": {
+      "service_scan": {
+        "earliest": "24/Jan/2022:03:56:53 +0000",
+        "latest": "24/Jan/2022:03:57:01 +0000",
+        "count": 12
+      },
+      "foothold": {
+        "earliest": "24/Jan/2022:03:56:53 +0000",
+        "latest": "24/Jan/2022:03:59:19 +0000",
+        "count": 7691
+      },
+      "attacker_http": {
+        "earliest": "24/Jan/2022:03:57:01 +0000",
+        "latest": "24/Jan/2022:03:59:19 +0000",
+        "count": 7687
+      },
+      "dirb": {
+        "earliest": "24/Jan/2022:03:57:26 +0000",
+        "latest": "24/Jan/2022:03:57:39 +0000",
+        "count": 4462
+      },
+      "wpscan": {
+        "earliest": "24/Jan/2022:03:57:52 +0000",
+        "latest": "24/Jan/2022:03:58:12 +0000",
+        "count": 3186
+      },
+      "webshell_upload": {
+        "earliest": "24/Jan/2022:03:58:20 +0000",
+        "latest": "24/Jan/2022:03:58:20 +0000",
+        "count": 3
+      },
+      "webshell_cmd": {
+        "earliest": "24/Jan/2022:03:58:23 +0000",
+        "latest": "24/Jan/2022:03:59:48 +0000",
+        "count": 32
+      },
+      "escalate": {
+        "earliest": "24/Jan/2022:03:59:22 +0000",
+        "latest": "24/Jan/2022:03:59:48 +0000",
+        "count": 4
+      }
+    },
+    "labels\\intranet_server\\logs\\apache2\\intranet.smith.russellmitchell.com-error.log.2": {
+      "attacker_http": {
+        "earliest": "Jan 24 03:57:26",
+        "latest": "Jan 24 03:58:09",
+        "count": 36
+      },
+      "foothold": {
+        "earliest": "Jan 24 03:57:26",
+        "latest": "Jan 24 03:58:09",
+        "count": 36
+      },
+      "dirb": {
+        "earliest": "Jan 24 03:57:26",
+        "latest": "Jan 24 03:57:39",
+        "count": 23
+      },
+      "wpscan": {
+        "earliest": "Jan 24 03:57:53",
+        "latest": "Jan 24 03:58:09",
+        "count": 13
+      }
+    },
+    "labels\\intranet_server\\logs\\audit\\audit.log": {
+      "attacker_change_user": {
+        "earliest": "1642999060.603",
+        "latest": "1642999060.627",
+        "count": 4
+      },
+      "escalate": {
+        "earliest": "1642999060.603",
+        "latest": "1642999086.247",
+        "count": 9
+      },
+      "escalated_command": {
+        "earliest": "1642999086.239",
+        "latest": "1642999086.247",
+        "count": 5
+      },
+      "escalated_sudo_command": {
+        "earliest": "1642999086.239",
+        "latest": "1642999086.247",
+        "count": 5
+      }
+    },
+    "labels\\intranet_server\\logs\\auth.log": {
+      "attacker_change_user": {
+        "earliest": "Jan 24 04:37:40",
+        "latest": "Jan 24 04:37:40",
+        "count": 4
+      },
+      "escalate": {
+        "earliest": "Jan 24 04:37:40",
+        "latest": "Jan 24 04:38:06",
+        "count": 8
+      },
+      "escalated_command": {
+        "earliest": "Jan 24 04:37:40",
+        "latest": "Jan 24 04:38:06",
+        "count": 5
+      },
+      "escalated_sudo_command": {
+        "earliest": "Jan 24 04:37:40",
+        "latest": "Jan 24 04:38:06",
+        "count": 5
+      },
+      "escalated_sudo_session": {
+        "earliest": "Jan 24 04:38:06",
+        "latest": "Jan 24 04:38:06",
+        "count": 3
+      }
+    }
+  },
+  "dataset_yml": null,
+  "servers_yml": null,
+  "step_order": [
+    {
+      "name": "vpn_connect",
+      "start": "2022-01-24 03:01:00.063877+00:00",
+      "end": "2022-01-24 03:01:00.063877+00:00"
+    },
+    {
+      "name": "traceroute_internet",
+      "start": "2022-01-24 03:01:17.723042+00:00",
+      "end": "2022-01-24 03:01:17.723042+00:00"
+    },
+    {
+      "name": "dns_brute_force",
+      "start": "2022-01-24 03:01:20.969099+00:00",
+      "end": "2022-01-24 03:01:20.969099+00:00"
+    },
+    {
+      "name": "host_discover_dmz",
+      "start": "2022-01-24 03:01:28.456313+00:00",
+      "end": "2022-01-24 03:01:28.456313+00:00"
+    },
+    {
+      "name": "host_discover_local",
+      "start": "2022-01-24 03:36:38.963403+00:00",
+      "end": "2022-01-24 03:36:38.963403+00:00"
+    },
+    {
+      "name": "service_scan",
+      "start": "2022-01-24 03:56:46.825579+00:00",
+      "end": "2022-01-24 03:56:46.825579+00:00"
+    },
+    {
+      "name": "recon_networks_finish",
+      "start": "2022-01-24 03:57:26.435577+00:00",
+      "end": "2022-01-24 03:57:26.435577+00:00"
+    },
+    {
+      "name": "dirb_scan",
+      "start": "2022-01-24 03:57:26.436714+00:00",
+      "end": "2022-01-24 03:57:26.436714+00:00"
+    },
+    {
+      "name": "wpscan",
+      "start": "2022-01-24 03:57:48.934650+00:00",
+      "end": "2022-01-24 03:57:48.934650+00:00"
+    },
+    {
+      "name": "upload_rce_shell",
+      "start": "2022-01-24 03:58:20.020490+00:00",
+      "end": "2022-01-24 03:58:20.020490+00:00"
+    },
+    {
+      "name": "check_whoami",
+      "start": "2022-01-24 03:58:23.348462+00:00",
+      "end": "2022-01-24 03:58:23.348462+00:00"
+    },
+    {
+      "name": "check_uname_r",
+      "start": "2022-01-24 03:58:25.108981+00:00",
+      "end": "2022-01-24 03:58:25.108981+00:00"
+    },
+    {
+      "name": "read_profile",
+      "start": "2022-01-24 03:58:27.041422+00:00",
+      "end": "2022-01-24 03:58:27.041422+00:00"
+    },
+    {
+      "name": "check_who",
+      "start": "2022-01-24 03:58:28.528493+00:00",
+      "end": "2022-01-24 03:58:28.528493+00:00"
+    },
+    {
+      "name": "check_meminfo",
+      "start": "2022-01-24 03:58:30.292820+00:00",
+      "end": "2022-01-24 03:58:30.292820+00:00"
+    },
+    {
+      "name": "check_uname_a",
+      "start": "2022-01-24 03:58:33.828771+00:00",
+      "end": "2022-01-24 03:58:33.828771+00:00"
+    },
+    {
+      "name": "check_user_id",
+      "start": "2022-01-24 03:58:36.383526+00:00",
+      "end": "2022-01-24 03:58:36.383526+00:00"
+    },
+    {
+      "name": "check_df",
+      "start": "2022-01-24 03:58:39.247353+00:00",
+      "end": "2022-01-24 03:58:39.247353+00:00"
+    },
+    {
+      "name": "check_netstat_nat",
+      "start": "2022-01-24 03:58:40.944504+00:00",
+      "end": "2022-01-24 03:58:40.944504+00:00"
+    },
+    {
+      "name": "check_id",
+      "start": "2022-01-24 03:58:42.198977+00:00",
+      "end": "2022-01-24 03:58:42.198977+00:00"
+    },
+    {
+      "name": "read_resolv",
+      "start": "2022-01-24 03:58:43.400876+00:00",
+      "end": "2022-01-24 03:58:43.400876+00:00"
+    },
+    {
+      "name": "check_netstat_t",
+      "start": "2022-01-24 03:58:44.632721+00:00",
+      "end": "2022-01-24 03:58:44.632721+00:00"
+    },
+    {
+      "name": "list_home",
+      "start": "2022-01-24 03:58:48.259736+00:00",
+      "end": "2022-01-24 03:58:48.259736+00:00"
+    },
+    {
+      "name": "check_last",
+      "start": "2022-01-24 03:58:49.562813+00:00",
+      "end": "2022-01-24 03:58:49.562813+00:00"
+    },
+    {
+      "name": "list_web_dir",
+      "start": "2022-01-24 03:58:51.585727+00:00",
+      "end": "2022-01-24 03:58:51.585727+00:00"
+    },
+    {
+      "name": "check_date",
+      "start": "2022-01-24 03:58:54.219952+00:00",
+      "end": "2022-01-24 03:58:54.219952+00:00"
+    },
+    {
+      "name": "list_www",
+      "start": "2022-01-24 03:58:55.463292+00:00",
+      "end": "2022-01-24 03:58:55.463292+00:00"
+    },
+    {
+      "name": "check_netstat_l",
+      "start": "2022-01-24 03:58:57.641124+00:00",
+      "end": "2022-01-24 03:58:57.641124+00:00"
+    },
+    {
+      "name": "clear",
+      "start": "2022-01-24 03:59:00.791636+00:00",
+      "end": "2022-01-24 03:59:00.791636+00:00"
+    },
+    {
+      "name": "check_wp_config",
+      "start": "2022-01-24 03:59:02.283150+00:00",
+      "end": "2022-01-24 03:59:02.283150+00:00"
+    },
+    {
+      "name": "check_ps_a",
+      "start": "2022-01-24 03:59:03.740619+00:00",
+      "end": "2022-01-24 03:59:03.740619+00:00"
+    },
+    {
+      "name": "read_passwd",
+      "start": "2022-01-24 03:59:05.928341+00:00",
+      "end": "2022-01-24 03:59:05.928341+00:00"
+    },
+    {
+      "name": "check_release",
+      "start": "2022-01-24 03:59:09.511060+00:00",
+      "end": "2022-01-24 03:59:09.511060+00:00"
+    },
+    {
+      "name": "check_cpuinfo",
+      "start": "2022-01-24 03:59:12.977191+00:00",
+      "end": "2022-01-24 03:59:12.977191+00:00"
+    },
+    {
+      "name": "dump_wp_users",
+      "start": "2022-01-24 03:59:14.207842+00:00",
+      "end": "2022-01-24 03:59:14.207842+00:00"
+    },
+    {
+      "name": "read_group",
+      "start": "2022-01-24 03:59:16.923431+00:00",
+      "end": "2022-01-24 03:59:16.923431+00:00"
+    },
+    {
+      "name": "check_uptime",
+      "start": "2022-01-24 03:59:18.310719+00:00",
+      "end": "2022-01-24 03:59:18.310719+00:00"
+    },
+    {
+      "name": "check_network_config",
+      "start": "2022-01-24 03:59:19.790753+00:00",
+      "end": "2022-01-24 03:59:19.790753+00:00"
+    },
+    {
+      "name": "recon_host_finish",
+      "start": "2022-01-24 03:59:22.176229+00:00",
+      "end": "2022-01-24 03:59:22.176229+00:00"
+    },
+    {
+      "name": "decide_crack_method",
+      "start": "2022-01-24 03:59:22.177425+00:00",
+      "end": "2022-01-24 03:59:22.177425+00:00"
+    },
+    {
+      "name": "crack_wphash",
+      "start": "2022-01-24 03:59:22.182453+00:00",
+      "end": "2022-01-24 03:59:22.182453+00:00"
+    },
+    {
+      "name": "reverse_shell_listen",
+      "start": "2022-01-24 04:36:57.885350+00:00",
+      "end": "2022-01-24 04:36:57.885350+00:00"
+    },
+    {
+      "name": "open_reverse_shell",
+      "start": "2022-01-24 04:36:59.577594+00:00",
+      "end": "2022-01-24 04:36:59.577594+00:00"
+    },
+    {
+      "name": "wait_reverse_shell",
+      "start": "2022-01-24 04:37:25.836115+00:00",
+      "end": "2022-01-24 04:37:25.836115+00:00"
+    },
+    {
+      "name": "open_pty",
+      "start": "2022-01-24 04:37:39.739109+00:00",
+      "end": "2022-01-24 04:37:39.739109+00:00"
+    },
+    {
+      "name": "login_user",
+      "start": "2022-01-24 04:37:40.530254+00:00",
+      "end": "2022-01-24 04:37:40.530254+00:00"
+    },
+    {
+      "name": "read_fstab",
+      "start": "2022-01-24 04:37:53.496765+00:00",
+      "end": "2022-01-24 04:37:53.496765+00:00"
+    },
+    {
+      "name": "check_ps_aux",
+      "start": "2022-01-24 04:37:55.374578+00:00",
+      "end": "2022-01-24 04:37:55.374578+00:00"
+    },
+    {
+      "name": "check_sudo",
+      "start": "2022-01-24 04:37:58.370156+00:00",
+      "end": "2022-01-24 04:37:58.370156+00:00"
+    },
+    {
+      "name": "check_uname_ar",
+      "start": "2022-01-24 04:38:01.850376+00:00",
+      "end": "2022-01-24 04:38:01.850376+00:00"
+    },
+    {
+      "name": "list_shadow",
+      "start": "2022-01-24 04:38:04.866547+00:00",
+      "end": "2022-01-24 04:38:04.866547+00:00"
+    },
+    {
+      "name": "read_shadow",
+      "start": "2022-01-24 04:38:06.227784+00:00",
+      "end": "2022-01-24 04:38:06.227784+00:00"
+    },
+    {
+      "name": "check_ifconfig",
+      "start": "2022-01-24 04:38:09.938128+00:00",
+      "end": "2022-01-24 04:38:09.938128+00:00"
+    },
+    {
+      "name": "vpn_disconnect",
+      "start": "2022-01-24 04:38:11.767134+00:00",
+      "end": "2022-01-24 04:38:11.767134+00:00"
+    },
+    {
+      "name": "dnsteal_stop",
+      "start": "2022-01-24 13:50:03.250776+00:00",
+      "end": "2022-01-24 13:50:03.250776+00:00"
+    }
+  ],
+  "overlapping_steps": "none",
+  "timezone_alignment": {
+    "attack_start_utc": "2022-01-24T03:01:00.063877+00:00",
+    "pcaps_covering_attack_start": [
+      {
+        "pcap": "gather\\attacker_0\\logs\\ait.aecid.attacker.wpdiscuz\\traffic.pcap",
+        "pcap_start": "2022-01-20T13:47:50.743391+00:00",
+        "pcap_end": "2022-01-24T04:38:17.102834+00:00",
+        "attack_start_within_pcap": true
+      },
+      {
+        "pcap": "gather\\attacker_0\\logs\\dnsteal\\traffic.pcap",
+        "pcap_start": "2022-01-20T12:48:19.071873+00:00",
+        "pcap_end": "2022-01-24T13:50:03.248663+00:00",
+        "attack_start_within_pcap": true
+      }
+    ],
+    "assessment": "ALIGNED \u2014 pcap and attacks.log timestamps both appear to be UTC"
+  },
+  "can_label_windows": "YES",
+  "window_label_reason": "attacks.log provides per-step start/end timestamps in UTC. pcap files contain packet timestamps in UTC. Timezone alignment confirmed by checking that the first attack step's start time falls within the time range of at least one pcap file. Each 1-minute window can be assigned an attack-step label by checking if the window's time interval overlaps with any step's [start, end] interval.",
+  "window_label_caveats": [
+    "Overlapping steps (especially exfiltration) require a precedence rule.",
+    "Timestamps come from attacks.log, not from packet-level ground truth.",
+    "Benign windows are those outside all step intervals."
+  ]
+}
