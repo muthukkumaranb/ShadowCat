@@ -1,0 +1,578 @@
+{
+  "generated_by": "evaluation/k5/direct_heads_eval.py",
+  "dataset": "data-engineering/data/ucs/ucs_windows_models_v1.parquet",
+  "manifest": "ml1/artifacts/loeo/corrected_37fold_manifest.json",
+  "features": "ml1/artifacts/lr_set_a/set_a_features.json",
+  "horizons": {
+    "1": {
+      "n_test_windows": 410,
+      "positives": 150,
+      "negatives": 260,
+      "already_in_attack": 147,
+      "direct_lr_head": {
+        "roc_auc": 0.9882,
+        "pr_auc": 0.9905,
+        "threshold_5pct_fpr": 0.122,
+        "recall_5pct_fpr": 0.98,
+        "precision_5pct_fpr": 0.9187,
+        "fpr_actual": 0.05
+      },
+      "rollout_onset_probability": {
+        "roc_auc": 0.6756,
+        "pr_auc": 0.4819,
+        "threshold_5pct_fpr": 0.2569,
+        "recall_5pct_fpr": 0.0933,
+        "precision_5pct_fpr": 0.5185,
+        "fpr_actual": 0.05
+      },
+      "persistence": {
+        "roc_auc": 0.99,
+        "pr_auc": 0.9873,
+        "threshold_5pct_fpr": 1.0,
+        "recall_5pct_fpr": 0.98,
+        "precision_5pct_fpr": 1.0,
+        "fpr_actual": 0.0
+      },
+      "inverse_persistence": {
+        "roc_auc": 0.01,
+        "pr_auc": 0.3588,
+        "threshold_5pct_fpr": 1.0,
+        "recall_5pct_fpr": 0.02,
+        "precision_5pct_fpr": 0.0114,
+        "fpr_actual": 1.0
+      },
+      "precursor_only": {
+        "n_test_windows": 263,
+        "positives": 3,
+        "direct_lr_head": {
+          "roc_auc": 0.4077,
+          "pr_auc": 0.0136,
+          "threshold_5pct_fpr": 0.122,
+          "recall_5pct_fpr": 0.0,
+          "precision_5pct_fpr": 0.0,
+          "fpr_actual": 0.05
+        },
+        "rollout_onset_probability": {
+          "roc_auc": 0.5641,
+          "pr_auc": 0.0171,
+          "threshold_5pct_fpr": 0.2569,
+          "recall_5pct_fpr": 0.0,
+          "precision_5pct_fpr": 0.0,
+          "fpr_actual": 0.05
+        },
+        "persistence": {
+          "roc_auc": 0.5,
+          "pr_auc": 0.0114,
+          "threshold_5pct_fpr": 0.0,
+          "recall_5pct_fpr": 1.0,
+          "precision_5pct_fpr": 0.0114,
+          "fpr_actual": 1.0
+        },
+        "inverse_persistence": {
+          "roc_auc": 0.5,
+          "pr_auc": 0.0114,
+          "threshold_5pct_fpr": 1.0,
+          "recall_5pct_fpr": 1.0,
+          "precision_5pct_fpr": 0.0114,
+          "fpr_actual": 1.0
+        }
+      },
+      "onset_vs_benign": {
+        "n_test_windows": 263,
+        "positives": 3,
+        "direct_lr_head": {
+          "roc_auc": 0.4077,
+          "pr_auc": 0.0136,
+          "threshold_5pct_fpr": 0.122,
+          "recall_5pct_fpr": 0.0,
+          "precision_5pct_fpr": 0.0,
+          "fpr_actual": 0.05
+        },
+        "rollout_onset_probability": {
+          "roc_auc": 0.5641,
+          "pr_auc": 0.0171,
+          "threshold_5pct_fpr": 0.2569,
+          "recall_5pct_fpr": 0.0,
+          "precision_5pct_fpr": 0.0,
+          "fpr_actual": 0.05,
+          "episode_bootstrap_95ci": [
+            0.3111,
+            0.7377
+          ]
+        },
+        "persistence": {
+          "roc_auc": 0.5,
+          "pr_auc": 0.0114,
+          "threshold_5pct_fpr": 0.0,
+          "recall_5pct_fpr": 1.0,
+          "precision_5pct_fpr": 0.0114,
+          "fpr_actual": 1.0
+        },
+        "inverse_persistence": {
+          "roc_auc": 0.5,
+          "pr_auc": 0.0114,
+          "threshold_5pct_fpr": 1.0,
+          "recall_5pct_fpr": 1.0,
+          "precision_5pct_fpr": 0.0114,
+          "fpr_actual": 1.0
+        }
+      }
+    },
+    "2": {
+      "n_test_windows": 410,
+      "positives": 153,
+      "negatives": 257,
+      "already_in_attack": 147,
+      "direct_lr_head": {
+        "roc_auc": 0.9784,
+        "pr_auc": 0.9822,
+        "threshold_5pct_fpr": 0.1503,
+        "recall_5pct_fpr": 0.9608,
+        "precision_5pct_fpr": 0.9245,
+        "fpr_actual": 0.0467
+      },
+      "rollout_onset_probability": {
+        "roc_auc": 0.7527,
+        "pr_auc": 0.6039,
+        "threshold_5pct_fpr": 0.2102,
+        "recall_5pct_fpr": 0.281,
+        "precision_5pct_fpr": 0.7818,
+        "fpr_actual": 0.0467
+      },
+      "persistence": {
+        "roc_auc": 0.9804,
+        "pr_auc": 0.9754,
+        "threshold_5pct_fpr": 1.0,
+        "recall_5pct_fpr": 0.9608,
+        "precision_5pct_fpr": 1.0,
+        "fpr_actual": 0.0
+      },
+      "inverse_persistence": {
+        "roc_auc": 0.0196,
+        "pr_auc": 0.3594,
+        "threshold_5pct_fpr": 1.0,
+        "recall_5pct_fpr": 0.0392,
+        "precision_5pct_fpr": 0.0228,
+        "fpr_actual": 1.0
+      },
+      "precursor_only": {
+        "n_test_windows": 263,
+        "positives": 6,
+        "direct_lr_head": {
+          "roc_auc": 0.4494,
+          "pr_auc": 0.0242,
+          "threshold_5pct_fpr": 0.1503,
+          "recall_5pct_fpr": 0.0,
+          "precision_5pct_fpr": 0.0,
+          "fpr_actual": 0.0467
+        },
+        "rollout_onset_probability": {
+          "roc_auc": 0.6556,
+          "pr_auc": 0.0473,
+          "threshold_5pct_fpr": 0.2267,
+          "recall_5pct_fpr": 0.1667,
+          "precision_5pct_fpr": 0.0769,
+          "fpr_actual": 0.0467
+        },
+        "persistence": {
+          "roc_auc": 0.5,
+          "pr_auc": 0.0228,
+          "threshold_5pct_fpr": 0.0,
+          "recall_5pct_fpr": 1.0,
+          "precision_5pct_fpr": 0.0228,
+          "fpr_actual": 1.0
+        },
+        "inverse_persistence": {
+          "roc_auc": 0.5,
+          "pr_auc": 0.0228,
+          "threshold_5pct_fpr": 1.0,
+          "recall_5pct_fpr": 1.0,
+          "precision_5pct_fpr": 0.0228,
+          "fpr_actual": 1.0
+        }
+      },
+      "onset_vs_benign": {
+        "n_test_windows": 263,
+        "positives": 6,
+        "direct_lr_head": {
+          "roc_auc": 0.4494,
+          "pr_auc": 0.0242,
+          "threshold_5pct_fpr": 0.1503,
+          "recall_5pct_fpr": 0.0,
+          "precision_5pct_fpr": 0.0,
+          "fpr_actual": 0.0467
+        },
+        "rollout_onset_probability": {
+          "roc_auc": 0.6556,
+          "pr_auc": 0.0473,
+          "threshold_5pct_fpr": 0.2267,
+          "recall_5pct_fpr": 0.1667,
+          "precision_5pct_fpr": 0.0769,
+          "fpr_actual": 0.0467,
+          "episode_bootstrap_95ci": [
+            0.4044,
+            0.9239
+          ]
+        },
+        "persistence": {
+          "roc_auc": 0.5,
+          "pr_auc": 0.0228,
+          "threshold_5pct_fpr": 0.0,
+          "recall_5pct_fpr": 1.0,
+          "precision_5pct_fpr": 0.0228,
+          "fpr_actual": 1.0
+        },
+        "inverse_persistence": {
+          "roc_auc": 0.5,
+          "pr_auc": 0.0228,
+          "threshold_5pct_fpr": 1.0,
+          "recall_5pct_fpr": 1.0,
+          "precision_5pct_fpr": 0.0228,
+          "fpr_actual": 1.0
+        }
+      }
+    },
+    "3": {
+      "n_test_windows": 410,
+      "positives": 156,
+      "negatives": 254,
+      "already_in_attack": 147,
+      "direct_lr_head": {
+        "roc_auc": 0.97,
+        "pr_auc": 0.9772,
+        "threshold_5pct_fpr": 0.1771,
+        "recall_5pct_fpr": 0.9423,
+        "precision_5pct_fpr": 0.9245,
+        "fpr_actual": 0.0472
+      },
+      "rollout_onset_probability": {
+        "roc_auc": 0.7527,
+        "pr_auc": 0.6612,
+        "threshold_5pct_fpr": 0.2278,
+        "recall_5pct_fpr": 0.3077,
+        "precision_5pct_fpr": 0.8,
+        "fpr_actual": 0.0472
+      },
+      "persistence": {
+        "roc_auc": 0.9712,
+        "pr_auc": 0.9643,
+        "threshold_5pct_fpr": 1.0,
+        "recall_5pct_fpr": 0.9423,
+        "precision_5pct_fpr": 1.0,
+        "fpr_actual": 0.0
+      },
+      "inverse_persistence": {
+        "roc_auc": 0.0288,
+        "pr_auc": 0.3605,
+        "threshold_5pct_fpr": 1.0,
+        "recall_5pct_fpr": 0.0577,
+        "precision_5pct_fpr": 0.0342,
+        "fpr_actual": 1.0
+      },
+      "precursor_only": {
+        "n_test_windows": 263,
+        "positives": 9,
+        "direct_lr_head": {
+          "roc_auc": 0.4803,
+          "pr_auc": 0.0504,
+          "threshold_5pct_fpr": 0.1771,
+          "recall_5pct_fpr": 0.0,
+          "precision_5pct_fpr": 0.0,
+          "fpr_actual": 0.0472
+        },
+        "rollout_onset_probability": {
+          "roc_auc": 0.6829,
+          "pr_auc": 0.1714,
+          "threshold_5pct_fpr": 0.2278,
+          "recall_5pct_fpr": 0.2222,
+          "precision_5pct_fpr": 0.1429,
+          "fpr_actual": 0.0472
+        },
+        "persistence": {
+          "roc_auc": 0.5,
+          "pr_auc": 0.0342,
+          "threshold_5pct_fpr": 0.0,
+          "recall_5pct_fpr": 1.0,
+          "precision_5pct_fpr": 0.0342,
+          "fpr_actual": 1.0
+        },
+        "inverse_persistence": {
+          "roc_auc": 0.5,
+          "pr_auc": 0.0342,
+          "threshold_5pct_fpr": 1.0,
+          "recall_5pct_fpr": 1.0,
+          "precision_5pct_fpr": 0.0342,
+          "fpr_actual": 1.0
+        }
+      },
+      "onset_vs_benign": {
+        "n_test_windows": 263,
+        "positives": 9,
+        "direct_lr_head": {
+          "roc_auc": 0.4803,
+          "pr_auc": 0.0504,
+          "threshold_5pct_fpr": 0.1771,
+          "recall_5pct_fpr": 0.0,
+          "precision_5pct_fpr": 0.0,
+          "fpr_actual": 0.0472
+        },
+        "rollout_onset_probability": {
+          "roc_auc": 0.6829,
+          "pr_auc": 0.1714,
+          "threshold_5pct_fpr": 0.2278,
+          "recall_5pct_fpr": 0.2222,
+          "precision_5pct_fpr": 0.1429,
+          "fpr_actual": 0.0472,
+          "episode_bootstrap_95ci": [
+            0.4525,
+            0.9202
+          ]
+        },
+        "persistence": {
+          "roc_auc": 0.5,
+          "pr_auc": 0.0342,
+          "threshold_5pct_fpr": 0.0,
+          "recall_5pct_fpr": 1.0,
+          "precision_5pct_fpr": 0.0342,
+          "fpr_actual": 1.0
+        },
+        "inverse_persistence": {
+          "roc_auc": 0.5,
+          "pr_auc": 0.0342,
+          "threshold_5pct_fpr": 1.0,
+          "recall_5pct_fpr": 1.0,
+          "precision_5pct_fpr": 0.0342,
+          "fpr_actual": 1.0
+        }
+      }
+    },
+    "4": {
+      "n_test_windows": 410,
+      "positives": 159,
+      "negatives": 251,
+      "already_in_attack": 147,
+      "direct_lr_head": {
+        "roc_auc": 0.9592,
+        "pr_auc": 0.9694,
+        "threshold_5pct_fpr": 0.1787,
+        "recall_5pct_fpr": 0.9308,
+        "precision_5pct_fpr": 0.925,
+        "fpr_actual": 0.0478
+      },
+      "rollout_onset_probability": {
+        "roc_auc": 0.738,
+        "pr_auc": 0.6622,
+        "threshold_5pct_fpr": 0.2505,
+        "recall_5pct_fpr": 0.3082,
+        "precision_5pct_fpr": 0.8033,
+        "fpr_actual": 0.0478
+      },
+      "persistence": {
+        "roc_auc": 0.9623,
+        "pr_auc": 0.9538,
+        "threshold_5pct_fpr": 1.0,
+        "recall_5pct_fpr": 0.9245,
+        "precision_5pct_fpr": 1.0,
+        "fpr_actual": 0.0
+      },
+      "inverse_persistence": {
+        "roc_auc": 0.0377,
+        "pr_auc": 0.362,
+        "threshold_5pct_fpr": 1.0,
+        "recall_5pct_fpr": 0.0755,
+        "precision_5pct_fpr": 0.0456,
+        "fpr_actual": 1.0
+      },
+      "precursor_only": {
+        "n_test_windows": 263,
+        "positives": 12,
+        "direct_lr_head": {
+          "roc_auc": 0.4602,
+          "pr_auc": 0.057,
+          "threshold_5pct_fpr": 0.1787,
+          "recall_5pct_fpr": 0.0833,
+          "precision_5pct_fpr": 0.0769,
+          "fpr_actual": 0.0478
+        },
+        "rollout_onset_probability": {
+          "roc_auc": 0.6667,
+          "pr_auc": 0.1183,
+          "threshold_5pct_fpr": 0.2505,
+          "recall_5pct_fpr": 0.1667,
+          "precision_5pct_fpr": 0.1429,
+          "fpr_actual": 0.0478
+        },
+        "persistence": {
+          "roc_auc": 0.5,
+          "pr_auc": 0.0456,
+          "threshold_5pct_fpr": 0.0,
+          "recall_5pct_fpr": 1.0,
+          "precision_5pct_fpr": 0.0456,
+          "fpr_actual": 1.0
+        },
+        "inverse_persistence": {
+          "roc_auc": 0.5,
+          "pr_auc": 0.0456,
+          "threshold_5pct_fpr": 1.0,
+          "recall_5pct_fpr": 1.0,
+          "precision_5pct_fpr": 0.0456,
+          "fpr_actual": 1.0
+        }
+      },
+      "onset_vs_benign": {
+        "n_test_windows": 263,
+        "positives": 12,
+        "direct_lr_head": {
+          "roc_auc": 0.4602,
+          "pr_auc": 0.057,
+          "threshold_5pct_fpr": 0.1787,
+          "recall_5pct_fpr": 0.0833,
+          "precision_5pct_fpr": 0.0769,
+          "fpr_actual": 0.0478
+        },
+        "rollout_onset_probability": {
+          "roc_auc": 0.6667,
+          "pr_auc": 0.1183,
+          "threshold_5pct_fpr": 0.2505,
+          "recall_5pct_fpr": 0.1667,
+          "precision_5pct_fpr": 0.1429,
+          "fpr_actual": 0.0478,
+          "episode_bootstrap_95ci": [
+            0.439,
+            0.9031
+          ]
+        },
+        "persistence": {
+          "roc_auc": 0.5,
+          "pr_auc": 0.0456,
+          "threshold_5pct_fpr": 0.0,
+          "recall_5pct_fpr": 1.0,
+          "precision_5pct_fpr": 0.0456,
+          "fpr_actual": 1.0
+        },
+        "inverse_persistence": {
+          "roc_auc": 0.5,
+          "pr_auc": 0.0456,
+          "threshold_5pct_fpr": 1.0,
+          "recall_5pct_fpr": 1.0,
+          "precision_5pct_fpr": 0.0456,
+          "fpr_actual": 1.0
+        }
+      }
+    },
+    "5": {
+      "n_test_windows": 410,
+      "positives": 162,
+      "negatives": 248,
+      "already_in_attack": 147,
+      "direct_lr_head": {
+        "roc_auc": 0.9519,
+        "pr_auc": 0.9646,
+        "threshold_5pct_fpr": 0.1679,
+        "recall_5pct_fpr": 0.9136,
+        "precision_5pct_fpr": 0.925,
+        "fpr_actual": 0.0484
+      },
+      "rollout_onset_probability": {
+        "roc_auc": 0.7013,
+        "pr_auc": 0.6399,
+        "threshold_5pct_fpr": 0.2879,
+        "recall_5pct_fpr": 0.2963,
+        "precision_5pct_fpr": 0.8,
+        "fpr_actual": 0.0484
+      },
+      "persistence": {
+        "roc_auc": 0.9537,
+        "pr_auc": 0.944,
+        "threshold_5pct_fpr": 1.0,
+        "recall_5pct_fpr": 0.9074,
+        "precision_5pct_fpr": 1.0,
+        "fpr_actual": 0.0
+      },
+      "inverse_persistence": {
+        "roc_auc": 0.0463,
+        "pr_auc": 0.3638,
+        "threshold_5pct_fpr": 1.0,
+        "recall_5pct_fpr": 0.0926,
+        "precision_5pct_fpr": 0.057,
+        "fpr_actual": 1.0
+      },
+      "precursor_only": {
+        "n_test_windows": 263,
+        "positives": 15,
+        "direct_lr_head": {
+          "roc_auc": 0.4801,
+          "pr_auc": 0.0888,
+          "threshold_5pct_fpr": 0.1679,
+          "recall_5pct_fpr": 0.0667,
+          "precision_5pct_fpr": 0.0769,
+          "fpr_actual": 0.0484
+        },
+        "rollout_onset_probability": {
+          "roc_auc": 0.5258,
+          "pr_auc": 0.0594,
+          "threshold_5pct_fpr": 0.2879,
+          "recall_5pct_fpr": 0.0,
+          "precision_5pct_fpr": 0.0,
+          "fpr_actual": 0.0484
+        },
+        "persistence": {
+          "roc_auc": 0.5,
+          "pr_auc": 0.057,
+          "threshold_5pct_fpr": 0.0,
+          "recall_5pct_fpr": 1.0,
+          "precision_5pct_fpr": 0.057,
+          "fpr_actual": 1.0
+        },
+        "inverse_persistence": {
+          "roc_auc": 0.5,
+          "pr_auc": 0.057,
+          "threshold_5pct_fpr": 1.0,
+          "recall_5pct_fpr": 1.0,
+          "precision_5pct_fpr": 0.057,
+          "fpr_actual": 1.0
+        }
+      },
+      "onset_vs_benign": {
+        "n_test_windows": 263,
+        "positives": 15,
+        "direct_lr_head": {
+          "roc_auc": 0.4801,
+          "pr_auc": 0.0888,
+          "threshold_5pct_fpr": 0.1679,
+          "recall_5pct_fpr": 0.0667,
+          "precision_5pct_fpr": 0.0769,
+          "fpr_actual": 0.0484
+        },
+        "rollout_onset_probability": {
+          "roc_auc": 0.5258,
+          "pr_auc": 0.0594,
+          "threshold_5pct_fpr": 0.2879,
+          "recall_5pct_fpr": 0.0,
+          "precision_5pct_fpr": 0.0,
+          "fpr_actual": 0.0484,
+          "episode_bootstrap_95ci": [
+            0.3611,
+            0.704
+          ]
+        },
+        "persistence": {
+          "roc_auc": 0.5,
+          "pr_auc": 0.057,
+          "threshold_5pct_fpr": 0.0,
+          "recall_5pct_fpr": 1.0,
+          "precision_5pct_fpr": 0.057,
+          "fpr_actual": 1.0
+        },
+        "inverse_persistence": {
+          "roc_auc": 0.5,
+          "pr_auc": 0.057,
+          "threshold_5pct_fpr": 1.0,
+          "recall_5pct_fpr": 1.0,
+          "precision_5pct_fpr": 0.057,
+          "fpr_actual": 1.0
+        }
+      }
+    }
+  }
+}
