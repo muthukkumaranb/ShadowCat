@@ -17,7 +17,7 @@ def render_page():
     fc = get_forecast_trajectory()
     credibility = get_conformal_credibility()
     ml_risks = fc.get("risk", [])
-    risk_val = ml_risks[0] if ml_risks else 0.05
+    risk_val = ml_risks[0] if ml_risks else "—"
     # Map curr_stage from the backend root payload (not the rollout list)
     pred_raw = _get_live_prediction() if '_get_live_prediction' in globals() else {}
     if not pred_raw:
@@ -25,7 +25,7 @@ def render_page():
         from data_provider import _get_live_prediction
         pred_raw = _get_live_prediction()
         
-    curr_stage = pred_raw.get("current_stage", "No attack detected")
+    curr_stage = pred_raw.get("current_stage", "—")
     
     # Baseline default alerts fallback (REMOVED: Must use real data sources only per F5)
     default_alerts = []
@@ -64,7 +64,9 @@ def render_page():
             sport = flw.get("sport", flw.get("Src Port", "—"))
             
             score = flw.get("lr_score", flw.get("anomaly_score", risk_val))
-            if score >= 0.75:
+            if score == "—":
+                sev = "—"
+            elif score >= 0.75:
                 sev = "critical"
             elif score >= 0.50:
                 sev = "high"
@@ -86,15 +88,21 @@ def render_page():
                 mins_ago = "—"
             
             rate = "—"
-            bytes_val = flw.get("TotLen Fwd Pkts", flw.get("Fwd Pkt Len Mean", 0))
+            fwd = flw.get("TotLen Fwd Pkts")
+            bwd = flw.get("TotLen Bwd Pkts")
+            if fwd is not None and bwd is not None:
+                bytes_val = float(fwd) + float(bwd)
+            else:
+                bytes_val = "—"
+                
             dur = flw.get("Flow Duration", 0)
-            if dur > 0 and bytes_val > 0:
+            if bytes_val != "—" and dur > 0 and bytes_val > 0:
                 mbps = (bytes_val / 1024 / 1024) / (dur / 1e6)
                 rate = f"{mbps:.1f} MB/s"
                 
             flow_id = hashlib.md5(f"{src}{dst}{sport}{dport}{ts_str}".encode()).hexdigest()[:8].upper()
 
-            if curr_stage == "No attack detected":
+            if curr_stage == "—" or curr_stage == "No attack detected":
                 technique_str = "—"
             else:
                 technique_str = f"{tactic_id} • {curr_stage} ({proto})"
@@ -106,8 +114,9 @@ def render_page():
                 "sev": sev,
                 "technique": technique_str,
                 "host": f"node-{src}" if src != "—" else "—",
-                "title": f"Suspicious flow detected: {src}:{sport} → {dst}:{dport} ({proto}) with risk {score:.2f}.",
-                "description": f"Ingested telemetry record flagged by World Model inference. Model indicates {curr_stage} execution phase with cumulative risk score {score:.2f}.",
+                "title": f"Suspicious flow detected: {src}:{sport} → {dst}:{dport} ({proto})." if score == "—" else f"Suspicious flow detected: {src}:{sport} → {dst}:{dport} ({proto}) with risk {score:.2f}.",
+                "description": f"Ingested telemetry record flagged by World Model inference. Model indicates {curr_stage} execution phase." if score == "—" else f"Ingested telemetry record flagged by World Model inference. Model indicates {curr_stage} execution phase with cumulative risk score {score:.2f}.",
+
                 "source": f"{src}:{sport}",
                 "destination": f"{dst}:{dport}",
                 "rate": rate,
