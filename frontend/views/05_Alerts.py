@@ -26,39 +26,86 @@ def render_page():
 
     # Synthesize live alerts if live ML flagged flows are present
     if flows:
+        from datetime import datetime, timezone
+        from mitre_kb import get_mitre_kb
+        import hashlib
+        
         live_alerts = []
-        for i, flw in enumerate(flows[:10]):
-            src = flw.get("src", flw.get("Src IP", "10.0.14.88"))
-            dst = flw.get("dst", flw.get("Dst IP", "45.138.21.9"))
-            proto = flw.get("proto", flw.get("Protocol", "TCP"))
-            dport = flw.get("dport", flw.get("Dst Port", 443))
-            sport = flw.get("sport", flw.get("Src Port", 49210 + i))
+        
+        # Get latest window timestamp for mins_ago calculation
+        latest_ts = None
+        for f in flows:
+            ts_str = f.get("timestamp_utc", f.get("Timestamp", f.get("timestamp", "")))
+            if ts_str:
+                try:
+                    ts = datetime.fromisoformat(str(ts_str).replace(" UTC", "").replace("Z", "+00:00"))
+                    if ts.tzinfo is None:
+                        ts = ts.replace(tzinfo=timezone.utc)
+                    if latest_ts is None or ts > latest_ts:
+                        latest_ts = ts
+                except:
+                    pass
+        
+        kb = get_mitre_kb()
+        stage_info = kb.resolve_stage(curr_stage)
+        tactic_id = stage_info.get("technique_id") or stage_info.get("tactic_id") or "—"
+                
+        for i, flw in enumerate(flows[:50]):
+            src = flw.get("src", flw.get("Src IP", "—"))
+            dst = flw.get("dst", flw.get("Dst IP", "—"))
+            proto = flw.get("proto", flw.get("Protocol", "—"))
+            dport = flw.get("dport", flw.get("Dst Port", "—"))
+            sport = flw.get("sport", flw.get("Src Port", "—"))
             
-            if risk_val >= 0.75:
-                sev = "critical" if i < 3 else ("high" if i < 7 else "medium")
-            elif risk_val >= 0.50:
-                sev = "high" if i < 4 else ("medium" if i < 8 else "medium")
+            score = flw.get("lr_score", flw.get("anomaly_score", risk_val))
+            if score >= 0.75:
+                sev = "critical"
+            elif score >= 0.50:
+                sev = "high"
             else:
-                sev = "medium" if i < 3 else "medium"
+                sev = "medium"
+                
+            ts_str = flw.get("timestamp_utc", flw.get("Timestamp", flw.get("timestamp", "—")))
+            mins_ago = 0
+            if ts_str != "—" and latest_ts:
+                try:
+                    ts = datetime.fromisoformat(str(ts_str).replace(" UTC", "").replace("Z", "+00:00"))
+                    if ts.tzinfo is None:
+                        ts = ts.replace(tzinfo=timezone.utc)
+                    mins_ago = max(0, int((latest_ts - ts).total_seconds() / 60))
+                    ts_str = ts.strftime("%H:%M:%S UTC")
+                except:
+                    mins_ago = 0
+            else:
+                mins_ago = "—"
+            
+            rate = "—"
+            bytes_val = flw.get("Tot Fwd Pkts", flw.get("Fwd Pkt Len Mean", 0)) * 8
+            dur = flw.get("Flow Duration", 0)
+            if dur > 0 and bytes_val > 0:
+                mbps = (bytes_val / 1024 / 1024) / (dur / 1e6)
+                rate = f"{mbps:.1f} MB/s"
+                
+            flow_id = hashlib.md5(f"{src}{dst}{sport}{dport}{ts_str}".encode()).hexdigest()[:8].upper()
 
             live_alerts.append({
-                "id": f"ALT-{9950 - i*3}",
-                "time": f"02:{max(0, 48 - i*2):02d}:00 UTC",
-                "mins_ago": 2 + i * 4,
+                "id": f"ALT-{flow_id}",
+                "time": ts_str,
+                "mins_ago": mins_ago,
                 "sev": sev,
-                "technique": f"T1071.001 • {curr_stage} ({proto})",
-                "host": f"node-{src}",
-                "title": f"Suspicious flow detected: {src}:{sport} → {dst}:{dport} ({proto}) with risk {risk_val:.2f}.",
-                "description": f"Ingested telemetry record flagged by World Model inference. Model indicates {curr_stage} execution phase with cumulative risk score {risk_val:.2f}.",
+                "technique": f"{tactic_id} • {curr_stage} ({proto})",
+                "host": f"node-{src}" if src != "—" else "—",
+                "title": f"Suspicious flow detected: {src}:{sport} → {dst}:{dport} ({proto}) with risk {score:.2f}.",
+                "description": f"Ingested telemetry record flagged by World Model inference. Model indicates {curr_stage} execution phase with cumulative risk score {score:.2f}.",
                 "source": f"{src}:{sport}",
                 "destination": f"{dst}:{dport}",
-                "rate": f"{14.8 - i*1.1:.1f} MB/s",
+                "rate": rate,
                 "cadence": "Continuous Burst",
                 "remediation": [
-                    f"Deploy SDN egress null-route on perimeter gateway for foreign destination {dst}:{dport}.",
-                    f"Capture volatile RAM and packet capture on host {src} before terminating container.",
-                    f"Invalidate active authentication session tickets for principal associated with {src}.",
-                    f"Audit recent DNS queries originating from {src} for anomalous external connections."
+                    f"Deploy SDN egress null-route on perimeter gateway for foreign destination {dst}:{dport}." if dst != "—" else "Deploy SDN egress null-route on perimeter gateway.",
+                    f"Capture volatile RAM and packet capture on host {src} before terminating container." if src != "—" else "Capture volatile RAM and packet capture on host.",
+                    f"Invalidate active authentication session tickets for principal associated with {src}." if src != "—" else "Invalidate active authentication session tickets.",
+                    f"Audit recent DNS queries originating from {src} for anomalous external connections." if src != "—" else "Audit recent DNS queries for anomalous external connections."
                 ]
             })
         raw_alerts = live_alerts
@@ -148,11 +195,11 @@ def render_page():
             res = [a for a in res if a["sev"] == "medium"]
 
         if time_f == "Last 15m":
-            res = [a for a in res if a["mins_ago"] <= 15]
+            res = [a for a in res if isinstance(a["mins_ago"], int) and a["mins_ago"] <= 15]
         elif time_f == "Last 1h":
-            res = [a for a in res if a["mins_ago"] <= 60]
+            res = [a for a in res if isinstance(a["mins_ago"], int) and a["mins_ago"] <= 60]
         elif time_f == "Last 24h":
-            res = [a for a in res if a["mins_ago"] <= 1440]
+            res = [a for a in res if isinstance(a["mins_ago"], int) and a["mins_ago"] <= 1440]
 
         if search_q and search_q.strip():
             q = search_q.strip().lower()
@@ -188,12 +235,13 @@ def render_page():
             border_color = t['secondary'] if alert["sev"] == "critical" else (t['tertiary'] if alert["sev"] == "high" else t['border'])
             remediation_items_html = "".join([f"<li style='margin-bottom: 0.35rem; color: {t['text_high']};'>{item}</li>" for item in alert["remediation"]])
 
+            mins_ago_str = f" ({alert['mins_ago']}m ago)" if isinstance(alert['mins_ago'], int) else ""
             render_html(f"""
             <div class="soc-card" style="border-left: 4px solid {border_color}; margin-bottom: 1rem;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
                     <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
                         <span class="soc-badge {badge_cls}">{alert['sev'].upper()}</span>
-                        <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: {t['text_muted']};">{alert['time']} ({alert['mins_ago']}m ago)</span>
+                        <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: {t['text_muted']};">{alert['time']}{mins_ago_str}</span>
                         <span class="soc-badge badge-neutral" style="color:{border_color}">{alert['technique']}</span>
                         <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.8125rem; font-weight: 700; color: {t['primary']};">{alert['host']}</span>
                     </div>

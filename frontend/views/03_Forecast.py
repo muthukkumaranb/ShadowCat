@@ -540,7 +540,7 @@ def render_page():
                 </span>
             </div>
             <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_muted']};">
-                ACTION TARGET: svc-auth-master (10.0.14.88)
+                ACTION TARGET: svc-auth-master (—)
             </span>
         </div>
 
