@@ -9,10 +9,13 @@ This document serves as the authoritative, verified claims sheet for ShadowCat (
 | Claim | Value | Source File | Commit | Status |
 |---|---|---|---|---|
 | **Stacked Detection Performance (Matched 5% FPR)** | F1 = 0.9582, Precision = 0.9198, Recall = 1.0000, FPR = 0.0494, ROC-AUC = 1.0000 (Threshold = 0.4014). Note: Pooled ROC-AUC is 1.0; F1 0.958 is at the 5%-FPR operating point; F1 at 0.5 is 0.987. CIC-IDS2018 detection is a known-easy in-distribution task. | `evaluation/benchmark/stacked_benchmark_results.json` | `a0687cf` | **validated** |
-| **Linear Baseline Detection Performance (Matched 5% FPR)** | F1 = 0.8711, Precision = 0.9058, Recall = 0.8389, FPR = 0.0494, ROC-AUC = 0.9743 (Threshold = 0.0523) | `evaluation/benchmark/stacked_benchmark_results.json` | `a0687cf` | **validated** |
+| **Linear Baseline Detection Performance (Matched 5% FPR)** | F1 = 0.8711, Precision = 0.9058, Recall = 0.8389, FPR = 0.0494, ROC-AUC = 0.9743 (Threshold = 0.0523) | `evaluation/benchmark/stacked_benchmark_results.json` | `a0687cf` | **updated**: computed on an earlier feature version; re-run on the final dataset gives F1 0.9582 / ROC-AUC 1.0000 (see Final-Dataset LR Baseline row) |
 | **Stacked Onset Performance (Matched 5% FPR)** | F1 = 0.9362, Precision = 0.9277, Recall = 0.9448, FPR = 0.0482, ROC-AUC = 0.9621 (Threshold = 0.3749) | `evaluation/benchmark/stacked_benchmark_results.json` | `a0687cf` | **validated** |
-| **Linear Baseline Onset Performance (Matched 5% FPR)** | F1 = 0.8294, Precision = 0.9118, Recall = 0.7607, FPR = 0.0482, ROC-AUC = 0.9148 (Threshold = 0.0951) | `evaluation/benchmark/stacked_benchmark_results.json` | `a0687cf` | **validated** |
+| **Linear Baseline Onset Performance (Matched 5% FPR)** | F1 = 0.8294, Precision = 0.9118, Recall = 0.7607, FPR = 0.0482, ROC-AUC = 0.9148 (Threshold = 0.0951) | `evaluation/benchmark/stacked_benchmark_results.json` | `a0687cf` | **updated**: computed on an earlier feature version; re-run on the final dataset gives F1 0.9198 / ROC-AUC 0.9518 (see Final-Dataset LR Baseline row) |
 | **LSTM Temporal Ablation** | Permuting history or repeating the last state yields no measurable degradation in ROC-AUC or F1, proving the LSTM residual extracts no meaningful temporal signal. | `evaluation/ablation/ABLATION.md` | `212ed88` | **validated** |
+| **Final-Dataset LR Baseline (37-fold LOEO)** | Detection: F1 0.9582 at 5% FPR, ROC-AUC 1.0000 (stacked: same). Onset: F1 0.9198, ROC-AUC 0.9518 (stacked: 0.9362 / 0.9621, ahead). | `evaluation/leakage_checks/leakage_results.json` | `5bc481d` | **validated** |
+| **Threshold Chosen Without Test Labels (37-fold LOEO)** | Stacked, per-fold validation threshold: detection F1 0.9898 (test FPR 0.0%), onset F1 0.9067 (test FPR 0.4%). | `evaluation/leakage_checks/leakage_results.json` | `5bc481d` | **validated** |
+| **Unseen-Attack-Family Stress Test (leave-one-day-out, retrained)** | Supervised pooled ROC-AUC: detection 0.666 (LR 0.631), onset 0.633 (LR 0.618). World-model deviation on held-out families: 0.707. Ambiguous 'Benign'-type positives affect several days. | `evaluation/leakage_checks/leakage_results.json` | `5bc481d` | **open problem** |
 | **World-Model Next-State Deviation (Pooled LOEO)** | ROC-AUC = 0.8201, PR-AUC = 0.7721 (40 LOEO folds, 312 positives / 768 test windows) | `evaluation/deviation/deviation_results.json` | `20a8b7d` | **validated** |
 | **World-Model Next-State Deviation (Pooled Family-Out)** | ROC-AUC = 0.7070, PR-AUC = 0.4855 (Held-out attack days, 312 positives / 1,730 test windows) | `evaluation/deviation/deviation_results.json` | `20a8b7d` | **weak** |
 | **Precursor Lead Time & Recall (Matched 5% FPR)** | Recall = 40.0% (6/15 precursors detected), Mean Lead Time = 3.00 min (range 1–5 min), FPR = 0.0444 | `evaluation/precursor/precursor_results.json` | `5513678` | **weak** |
@@ -53,3 +56,7 @@ The following claims are strictly unsupported by empirical evidence or have fail
 7. **Do NOT claim validated future stage rollout**:
    - World-model rollout stage predictions achieve only $F_1 \approx 0.55$, far below persistence ($F_1 \approx 0.91\text{--}0.95$).
    - Current operational stage classification is restricted to the current-window family classifier (gated at 5% FPR detection threshold).
+8. **Do NOT quote the earlier LR baseline numbers (0.8711 / 0.8294)**:
+   - They were computed on an earlier feature version. Use the final-dataset baseline (detection 0.9582, onset 0.9198); the stacked model matches it on detection and is ahead on onset.
+9. **Do NOT claim the supervised detectors generalise to unseen attack families**:
+   - Leave-one-day-out pooled ROC-AUC is 0.666 / 0.633. For unseen attacks, cite the world-model deviation score (0.707 family-out).
