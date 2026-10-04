@@ -8,13 +8,13 @@ A **change window** is defined as any test window where $y(t+K) \neq y(t)$ (atta
 Because persistence always predicts the preceding state, persistence systematically fails on change windows.
 Evaluating models specifically on change windows tests whether forward simulation possesses true predictive skill.
 
-| Horizon K | Total Windows | Change Windows | Change Status | Rollout ROC-AUC | Rollout Recall @ 5% FPR | Persistence ROC-AUC | No-Change F1 (Rollout / Persist) | All Windows F1 (Rollout / Persist) |
+| Horizon K | Total | Change (Onset/End) | Change Status | Rollout AUC (Change) | Inv-Persist AUC (Change) | Rollout AUC (Onset vs Benign) | No-Change F1 (Rollout / Inv-Persist) | All Windows F1 (Rollout / Inv-Persist) |
 |---|---|---|---|---|---|---|---|---|
-| K=1 (+1m) | 410 | 3 | too few to evaluate (3 < 20) | too few | too few | too few | 0.0255 / 1.0000 | 0.0252 / 0.9899 |
-| K=2 (+2m) | 410 | 8 | too few to evaluate (8 < 20) | too few | too few | too few | 0.1371 / 1.0000 | 0.1339 / 0.9732 |
-| K=3 (+3m) | 410 | 13 | too few to evaluate (13 < 20) | too few | too few | too few | 0.1311 / 1.0000 | 0.1265 / 0.9565 |
-| K=4 (+4m) | 410 | 18 | too few to evaluate (18 < 20) | too few | too few | too few | 0.1167 / 1.0000 | 0.1111 / 0.9400 |
-| K=5 (+5m) | 410 | 24 | evaluated | 0.7926 | 0.5333 | 0.0000 | 0.1181 / 1.0000 | 0.1111 / 0.9200 |
+| K=1 (+1m) | 410 | 3 (3/0) | too few to evaluate (3 < 20) | too few | too few | too few | 0.0255 / 0.0000 | 0.0252 / 0.0145 |
+| K=2 (+2m) | 410 | 8 (6/2) | too few to evaluate (8 < 20) | too few | too few | too few | 0.1371 / 0.0000 | 0.1339 / 0.0290 |
+| K=3 (+3m) | 410 | 13 (9/4) | too few to evaluate (13 < 20) | too few | too few | too few | 0.1311 / 0.0000 | 0.1265 / 0.0434 |
+| K=4 (+4m) | 410 | 18 (12/6) | too few to evaluate (18 < 20) | too few | too few | too few | 0.1167 / 0.0000 | 0.1111 / 0.0577 |
+| K=5 (+5m) | 410 | 24 (15/9) | evaluated | 0.7926 | 1.0000 | 0.3806 | 0.1181 / 0.0000 | 0.1111 / 0.0721 |
 
 ## Key Takeaways
 

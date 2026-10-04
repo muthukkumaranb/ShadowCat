@@ -6,66 +6,84 @@
     "1": {
       "n_total": 410,
       "n_change": 3,
+      "n_change_onset": 3,
+      "n_change_end": 0,
       "n_no_change": 407,
       "change_evaluation_status": "too few to evaluate (3 < 20)",
       "change_windows": null,
       "no_change_windows": {
         "rollout_onset_f1_at_0.5": 0.0255,
-        "persistence_f1_at_0.5": 1.0
+        "persistence_f1_at_0.5": 1.0,
+        "inverse_persistence_f1_at_0.5": 0.0
       },
       "all_windows": {
         "rollout_onset_f1_at_0.5": 0.0252,
-        "persistence_f1_at_0.5": 0.9899
+        "persistence_f1_at_0.5": 0.9899,
+        "inverse_persistence_f1_at_0.5": 0.0145
       }
     },
     "2": {
       "n_total": 410,
       "n_change": 8,
+      "n_change_onset": 6,
+      "n_change_end": 2,
       "n_no_change": 402,
       "change_evaluation_status": "too few to evaluate (8 < 20)",
       "change_windows": null,
       "no_change_windows": {
         "rollout_onset_f1_at_0.5": 0.1371,
-        "persistence_f1_at_0.5": 1.0
+        "persistence_f1_at_0.5": 1.0,
+        "inverse_persistence_f1_at_0.5": 0.0
       },
       "all_windows": {
         "rollout_onset_f1_at_0.5": 0.1339,
-        "persistence_f1_at_0.5": 0.9732
+        "persistence_f1_at_0.5": 0.9732,
+        "inverse_persistence_f1_at_0.5": 0.029
       }
     },
     "3": {
       "n_total": 410,
       "n_change": 13,
+      "n_change_onset": 9,
+      "n_change_end": 4,
       "n_no_change": 397,
       "change_evaluation_status": "too few to evaluate (13 < 20)",
       "change_windows": null,
       "no_change_windows": {
         "rollout_onset_f1_at_0.5": 0.1311,
-        "persistence_f1_at_0.5": 1.0
+        "persistence_f1_at_0.5": 1.0,
+        "inverse_persistence_f1_at_0.5": 0.0
       },
       "all_windows": {
         "rollout_onset_f1_at_0.5": 0.1265,
-        "persistence_f1_at_0.5": 0.9565
+        "persistence_f1_at_0.5": 0.9565,
+        "inverse_persistence_f1_at_0.5": 0.0434
       }
     },
     "4": {
       "n_total": 410,
       "n_change": 18,
+      "n_change_onset": 12,
+      "n_change_end": 6,
       "n_no_change": 392,
       "change_evaluation_status": "too few to evaluate (18 < 20)",
       "change_windows": null,
       "no_change_windows": {
         "rollout_onset_f1_at_0.5": 0.1167,
-        "persistence_f1_at_0.5": 1.0
+        "persistence_f1_at_0.5": 1.0,
+        "inverse_persistence_f1_at_0.5": 0.0
       },
       "all_windows": {
         "rollout_onset_f1_at_0.5": 0.1111,
-        "persistence_f1_at_0.5": 0.94
+        "persistence_f1_at_0.5": 0.94,
+        "inverse_persistence_f1_at_0.5": 0.0577
       }
     },
     "5": {
       "n_total": 410,
       "n_change": 24,
+      "n_change_onset": 15,
+      "n_change_end": 9,
       "n_no_change": 386,
       "change_evaluation_status": "evaluated",
       "change_windows": {
@@ -84,15 +102,51 @@
           "precision_5pct_fpr": 0.0,
           "f1_5pct_fpr": 0.0,
           "fpr_actual": 1.0
+        },
+        "inverse_persistence": {
+          "roc_auc": 1.0,
+          "threshold_5pct_fpr": 1.0,
+          "recall_5pct_fpr": 1.0,
+          "precision_5pct_fpr": 1.0,
+          "f1_5pct_fpr": 1.0,
+          "fpr_actual": 0.0
+        }
+      },
+      "onset_vs_benign": {
+        "rollout_onset": {
+          "roc_auc": 0.3806,
+          "threshold_5pct_fpr": 0.9593,
+          "recall_5pct_fpr": 0.0,
+          "precision_5pct_fpr": 0.0,
+          "f1_5pct_fpr": 0.0,
+          "fpr_actual": 0.0484
+        },
+        "persistence": {
+          "roc_auc": 0.5,
+          "threshold_5pct_fpr": 0.0,
+          "recall_5pct_fpr": 1.0,
+          "precision_5pct_fpr": 0.057,
+          "f1_5pct_fpr": 0.1079,
+          "fpr_actual": 1.0
+        },
+        "inverse_persistence": {
+          "roc_auc": 0.5,
+          "threshold_5pct_fpr": 1.0,
+          "recall_5pct_fpr": 1.0,
+          "precision_5pct_fpr": 0.057,
+          "f1_5pct_fpr": 0.1079,
+          "fpr_actual": 1.0
         }
       },
       "no_change_windows": {
         "rollout_onset_f1_at_0.5": 0.1181,
-        "persistence_f1_at_0.5": 1.0
+        "persistence_f1_at_0.5": 1.0,
+        "inverse_persistence_f1_at_0.5": 0.0
       },
       "all_windows": {
         "rollout_onset_f1_at_0.5": 0.1111,
-        "persistence_f1_at_0.5": 0.92
+        "persistence_f1_at_0.5": 0.92,
+        "inverse_persistence_f1_at_0.5": 0.0721
       }
     }
   }

@@ -198,6 +198,582 @@
       }
     }
   },
+  "pooled_results_per_k_z": {
+    "1": {
+      "n_windows": 410,
+      "lstm_gaussian": {
+        "rmse": 145.7928,
+        "mae": 3.5068
+      },
+      "persistence": {
+        "rmse": 137.758,
+        "mae": 2.5428
+      },
+      "training_mean": {
+        "rmse": 145.6668,
+        "mae": 3.3745
+      },
+      "linear_ar1": {
+        "rmse": 343.4488,
+        "mae": 48.4673
+      },
+      "delta_model_minus_persistence": {
+        "rmse": {
+          "point_estimate": 8.0348,
+          "ci_95": [
+            -16.0625,
+            39.5313
+          ],
+          "beats_persistence": false
+        },
+        "mae": {
+          "point_estimate": 0.9639,
+          "ci_95": [
+            0.3602,
+            1.8131
+          ],
+          "beats_persistence": false
+        },
+        "beats_persistence_both": false
+      }
+    },
+    "2": {
+      "n_windows": 410,
+      "lstm_gaussian": {
+        "rmse": 221.151,
+        "mae": 5.3288
+      },
+      "persistence": {
+        "rmse": 101.309,
+        "mae": 1.2908
+      },
+      "training_mean": {
+        "rmse": 221.0342,
+        "mae": 5.1183
+      },
+      "linear_ar1": {
+        "rmse": 2856.2135,
+        "mae": 362.9496
+      },
+      "delta_model_minus_persistence": {
+        "rmse": {
+          "point_estimate": 119.842,
+          "ci_95": [
+            67.4751,
+            217.1078
+          ],
+          "beats_persistence": false
+        },
+        "mae": {
+          "point_estimate": 4.038,
+          "ci_95": [
+            2.3673,
+            6.5493
+          ],
+          "beats_persistence": false
+        },
+        "beats_persistence_both": false
+      }
+    },
+    "3": {
+      "n_windows": 410,
+      "lstm_gaussian": {
+        "rmse": 158.5904,
+        "mae": 4.0567
+      },
+      "persistence": {
+        "rmse": 153.153,
+        "mae": 3.0413
+      },
+      "training_mean": {
+        "rmse": 158.3232,
+        "mae": 3.7788
+      },
+      "linear_ar1": {
+        "rmse": 6231.0382,
+        "mae": 854.9507
+      },
+      "delta_model_minus_persistence": {
+        "rmse": {
+          "point_estimate": 5.4374,
+          "ci_95": [
+            -17.6153,
+            46.6582
+          ],
+          "beats_persistence": false
+        },
+        "mae": {
+          "point_estimate": 1.0154,
+          "ci_95": [
+            0.3639,
+            2.0254
+          ],
+          "beats_persistence": false
+        },
+        "beats_persistence_both": false
+      }
+    },
+    "4": {
+      "n_windows": 410,
+      "lstm_gaussian": {
+        "rmse": 222.8319,
+        "mae": 5.6425
+      },
+      "persistence": {
+        "rmse": 125.2478,
+        "mae": 2.0597
+      },
+      "training_mean": {
+        "rmse": 222.611,
+        "mae": 5.317
+      },
+      "linear_ar1": {
+        "rmse": 59308.9356,
+        "mae": 7180.5505
+      },
+      "delta_model_minus_persistence": {
+        "rmse": {
+          "point_estimate": 97.5841,
+          "ci_95": [
+            52.8525,
+            191.6596
+          ],
+          "beats_persistence": false
+        },
+        "mae": {
+          "point_estimate": 3.5828,
+          "ci_95": [
+            2.0508,
+            5.9114
+          ],
+          "beats_persistence": false
+        },
+        "beats_persistence_both": false
+      }
+    },
+    "5": {
+      "n_windows": 410,
+      "lstm_gaussian": {
+        "rmse": 170.7504,
+        "mae": 4.4327
+      },
+      "persistence": {
+        "rmse": 170.1298,
+        "mae": 3.604
+      },
+      "training_mean": {
+        "rmse": 170.4758,
+        "mae": 4.1066
+      },
+      "linear_ar1": {
+        "rmse": 126417.9306,
+        "mae": 16020.3225
+      },
+      "delta_model_minus_persistence": {
+        "rmse": {
+          "point_estimate": 0.6206,
+          "ci_95": [
+            -26.6005,
+            35.7995
+          ],
+          "beats_persistence": false
+        },
+        "mae": {
+          "point_estimate": 0.8288,
+          "ci_95": [
+            0.0292,
+            1.6976
+          ],
+          "beats_persistence": false
+        },
+        "beats_persistence_both": false
+      }
+    }
+  },
+  "pooled_results_per_k_change": {
+    "1": {
+      "n_windows": 3,
+      "lstm_gaussian": {
+        "rmse": 7392.7763,
+        "mae": 390.8152
+      },
+      "persistence": {
+        "rmse": 7392.778,
+        "mae": 390.6464
+      },
+      "training_mean": {
+        "rmse": 7393.3448,
+        "mae": 398.2853
+      },
+      "linear_ar1": {
+        "rmse": 7385.5907,
+        "mae": 392.9119
+      },
+      "delta_model_minus_persistence": {
+        "rmse": {
+          "point_estimate": -0.0017,
+          "ci_95": [
+            -0.7218,
+            0.3907
+          ],
+          "beats_persistence": false
+        },
+        "mae": {
+          "point_estimate": 0.1688,
+          "ci_95": [
+            -0.3314,
+            0.4527
+          ],
+          "beats_persistence": false
+        },
+        "beats_persistence_both": false
+      }
+    },
+    "2": {
+      "n_windows": 8,
+      "lstm_gaussian": {
+        "rmse": 5015.5001,
+        "mae": 220.7823
+      },
+      "persistence": {
+        "rmse": 5015.536,
+        "mae": 221.0473
+      },
+      "training_mean": {
+        "rmse": 5016.4873,
+        "mae": 228.9572
+      },
+      "linear_ar1": {
+        "rmse": 5154.6674,
+        "mae": 307.7114
+      },
+      "delta_model_minus_persistence": {
+        "rmse": {
+          "point_estimate": -0.0359,
+          "ci_95": [
+            -29.7217,
+            -0.0021
+          ],
+          "beats_persistence": true
+        },
+        "mae": {
+          "point_estimate": -0.2649,
+          "ci_95": [
+            -1.8146,
+            0.3934
+          ],
+          "beats_persistence": false
+        },
+        "beats_persistence_both": false
+      }
+    },
+    "3": {
+      "n_windows": 13,
+      "lstm_gaussian": {
+        "rmse": 4475.6776,
+        "mae": 189.906
+      },
+      "persistence": {
+        "rmse": 4475.6469,
+        "mae": 190.0981
+      },
+      "training_mean": {
+        "rmse": 4476.8185,
+        "mae": 198.1258
+      },
+      "linear_ar1": {
+        "rmse": 4863.3904,
+        "mae": 315.2427
+      },
+      "delta_model_minus_persistence": {
+        "rmse": {
+          "point_estimate": 0.0308,
+          "ci_95": [
+            -30.2827,
+            0.1345
+          ],
+          "beats_persistence": false
+        },
+        "mae": {
+          "point_estimate": -0.1922,
+          "ci_95": [
+            -1.7773,
+            0.6524
+          ],
+          "beats_persistence": false
+        },
+        "beats_persistence_both": false
+      }
+    },
+    "4": {
+      "n_windows": 18,
+      "lstm_gaussian": {
+        "rmse": 4011.7485,
+        "mae": 166.4194
+      },
+      "persistence": {
+        "rmse": 4011.8683,
+        "mae": 166.8398
+      },
+      "training_mean": {
+        "rmse": 4013.0411,
+        "mae": 174.6616
+      },
+      "linear_ar1": {
+        "rmse": 13980.469,
+        "mae": 1033.0677
+      },
+      "delta_model_minus_persistence": {
+        "rmse": {
+          "point_estimate": -0.1197,
+          "ci_95": [
+            -26.6256,
+            -0.0597
+          ],
+          "beats_persistence": true
+        },
+        "mae": {
+          "point_estimate": -0.4203,
+          "ci_95": [
+            -2.1763,
+            0.7604
+          ],
+          "beats_persistence": false
+        },
+        "beats_persistence_both": false
+      }
+    },
+    "5": {
+      "n_windows": 24,
+      "lstm_gaussian": {
+        "rmse": 3829.4614,
+        "mae": 155.2717
+      },
+      "persistence": {
+        "rmse": 4069.9916,
+        "mae": 181.6225
+      },
+      "training_mean": {
+        "rmse": 3830.7658,
+        "mae": 163.014
+      },
+      "linear_ar1": {
+        "rmse": 2319704.0284,
+        "mae": 87171.8341
+      },
+      "delta_model_minus_persistence": {
+        "rmse": {
+          "point_estimate": -240.5302,
+          "ci_95": [
+            -2900.3868,
+            -0.0207
+          ],
+          "beats_persistence": true
+        },
+        "mae": {
+          "point_estimate": -26.3509,
+          "ci_95": [
+            -116.7335,
+            0.7434
+          ],
+          "beats_persistence": false
+        },
+        "beats_persistence_both": false
+      }
+    }
+  },
+  "pooled_results_per_k_change_z": {
+    "1": {
+      "n_windows": 3,
+      "lstm_gaussian": {
+        "rmse": 995.4019,
+        "mae": 52.1443
+      },
+      "persistence": {
+        "rmse": 995.3784,
+        "mae": 51.6561
+      },
+      "training_mean": {
+        "rmse": 995.3629,
+        "mae": 51.8725
+      },
+      "linear_ar1": {
+        "rmse": 995.1571,
+        "mae": 52.3767
+      },
+      "delta_model_minus_persistence": {
+        "rmse": {
+          "point_estimate": 0.0234,
+          "ci_95": [
+            -0.0168,
+            11.8941
+          ],
+          "beats_persistence": false
+        },
+        "mae": {
+          "point_estimate": 0.4882,
+          "ci_95": [
+            -0.0546,
+            1.1289
+          ],
+          "beats_persistence": false
+        },
+        "beats_persistence_both": false
+      }
+    },
+    "2": {
+      "n_windows": 8,
+      "lstm_gaussian": {
+        "rmse": 671.915,
+        "mae": 29.7779
+      },
+      "persistence": {
+        "rmse": 671.8847,
+        "mae": 29.5458
+      },
+      "training_mean": {
+        "rmse": 671.8716,
+        "mae": 29.5348
+      },
+      "linear_ar1": {
+        "rmse": 671.8779,
+        "mae": 30.456
+      },
+      "delta_model_minus_persistence": {
+        "rmse": {
+          "point_estimate": 0.0303,
+          "ci_95": [
+            -0.011,
+            9.1159
+          ],
+          "beats_persistence": false
+        },
+        "mae": {
+          "point_estimate": 0.2322,
+          "ci_95": [
+            -0.0794,
+            0.4806
+          ],
+          "beats_persistence": false
+        },
+        "beats_persistence_both": false
+      }
+    },
+    "3": {
+      "n_windows": 13,
+      "lstm_gaussian": {
+        "rmse": 602.2585,
+        "mae": 25.9065
+      },
+      "persistence": {
+        "rmse": 602.2024,
+        "mae": 25.6266
+      },
+      "training_mean": {
+        "rmse": 602.2011,
+        "mae": 25.6595
+      },
+      "linear_ar1": {
+        "rmse": 602.1892,
+        "mae": 32.4476
+      },
+      "delta_model_minus_persistence": {
+        "rmse": {
+          "point_estimate": 0.0561,
+          "ci_95": [
+            0.0048,
+            10.91
+          ],
+          "beats_persistence": false
+        },
+        "mae": {
+          "point_estimate": 0.2799,
+          "ci_95": [
+            0.0016,
+            0.5679
+          ],
+          "beats_persistence": false
+        },
+        "beats_persistence_both": false
+      }
+    },
+    "4": {
+      "n_windows": 18,
+      "lstm_gaussian": {
+        "rmse": 538.5858,
+        "mae": 22.8853
+      },
+      "persistence": {
+        "rmse": 538.4824,
+        "mae": 22.5025
+      },
+      "training_mean": {
+        "rmse": 538.468,
+        "mae": 22.5241
+      },
+      "linear_ar1": {
+        "rmse": 728.7662,
+        "mae": 111.6429
+      },
+      "delta_model_minus_persistence": {
+        "rmse": {
+          "point_estimate": 0.1034,
+          "ci_95": [
+            -0.0156,
+            15.8678
+          ],
+          "beats_persistence": false
+        },
+        "mae": {
+          "point_estimate": 0.3828,
+          "ci_95": [
+            0.0073,
+            0.7807
+          ],
+          "beats_persistence": false
+        },
+        "beats_persistence_both": false
+      }
+    },
+    "5": {
+      "n_windows": 24,
+      "lstm_gaussian": {
+        "rmse": 515.0196,
+        "mae": 21.3738
+      },
+      "persistence": {
+        "rmse": 547.8007,
+        "mae": 24.7172
+      },
+      "training_mean": {
+        "rmse": 514.9007,
+        "mae": 21.0141
+      },
+      "linear_ar1": {
+        "rmse": 122020.9965,
+        "mae": 16247.0572
+      },
+      "delta_model_minus_persistence": {
+        "rmse": {
+          "point_estimate": -32.7812,
+          "ci_95": [
+            -381.111,
+            13.0051
+          ],
+          "beats_persistence": false
+        },
+        "mae": {
+          "point_estimate": -3.3434,
+          "ci_95": [
+            -15.8907,
+            0.5749
+          ],
+          "beats_persistence": false
+        },
+        "beats_persistence_both": false
+      }
+    }
+  },
   "per_fold_results": [
     {
       "fold_id": 0,

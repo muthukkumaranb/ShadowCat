@@ -179,6 +179,7 @@ def run_change_skill_eval(
 
         # Predictions arrays
         p_rollout_list = []
+        p_inv_persist_list = []
         p_persist_list = []
         p_stacked_k1_list = []
         actual_labels = []
@@ -211,9 +212,11 @@ def run_change_skill_eval(
 
             p_rollout = onset_model.predict_proba(seq_30x406)
             p_persist = float(y_current)
+            p_inv_persist = 1.0 - p_persist
 
             p_rollout_list.append(p_rollout)
             p_persist_list.append(p_persist)
+            p_inv_persist_list.append(p_inv_persist)
             actual_labels.append(y_future)
             current_labels.append(y_current)
             change_flags.append(y_future != y_current)
@@ -230,9 +233,15 @@ def run_change_skill_eval(
 
         p_rollout_arr = np.array(p_rollout_list, dtype=float)
         p_persist_arr = np.array(p_persist_list, dtype=float)
+        p_inv_persist_arr = np.array(p_inv_persist_list, dtype=float)
 
         n_total = len(y_true_arr)
+        is_onset_arr = (y_curr_arr == 0) & (y_true_arr == 1)
+        is_end_arr = (y_curr_arr == 1) & (y_true_arr == 0)
+        is_benign_no_change_arr = (y_curr_arr == 0) & (y_true_arr == 0)
         n_change = int(is_change_arr.sum())
+        n_change_onset = int(is_onset_arr.sum())
+        n_change_end = int(is_end_arr.sum())
         n_no_change = n_total - n_change
 
         print(f"Total windows: {n_total} | Change: {n_change} | No-change: {n_no_change}")
@@ -240,6 +249,8 @@ def run_change_skill_eval(
         k_result: Dict[str, Any] = {
             "n_total": n_total,
             "n_change": n_change,
+            "n_change_onset": n_change_onset,
+            "n_change_end": n_change_end,
             "n_no_change": n_no_change,
         }
 
@@ -252,10 +263,12 @@ def run_change_skill_eval(
             y_change = y_true_arr[is_change_arr]
             p_rollout_change = p_rollout_arr[is_change_arr]
             p_persist_change = p_persist_arr[is_change_arr]
+            p_inv_persist_change = p_inv_persist_arr[is_change_arr]
 
             change_metrics = {
                 "rollout_onset": compute_metrics_at_5pct_fpr(y_change, p_rollout_change),
                 "persistence": compute_metrics_at_5pct_fpr(y_change, p_persist_change),
+                "inverse_persistence": compute_metrics_at_5pct_fpr(y_change, p_inv_persist_change),
             }
 
             if k == 1:
@@ -265,21 +278,33 @@ def run_change_skill_eval(
                 )
 
             k_result["change_windows"] = change_metrics
+            onset_mask = is_onset_arr | is_benign_no_change_arr
+            if is_onset_arr.sum() > 0 and is_benign_no_change_arr.sum() > 0:
+                k_result["onset_vs_benign"] = {
+                    "rollout_onset": compute_metrics_at_5pct_fpr(y_true_arr[onset_mask], p_rollout_arr[onset_mask]),
+                    "persistence": compute_metrics_at_5pct_fpr(y_true_arr[onset_mask], p_persist_arr[onset_mask]),
+                    "inverse_persistence": compute_metrics_at_5pct_fpr(y_true_arr[onset_mask], p_inv_persist_arr[onset_mask]),
+                }
+            else:
+                k_result["onset_vs_benign"] = None
 
         # No-change windows evaluation (F1 at 0.5 threshold)
         y_no_change = y_true_arr[~is_change_arr]
         p_rollout_nc = p_rollout_arr[~is_change_arr]
         p_persist_nc = p_persist_arr[~is_change_arr]
+        p_inv_persist_nc = p_inv_persist_arr[~is_change_arr]
 
         k_result["no_change_windows"] = {
             "rollout_onset_f1_at_0.5": round(float(f1_score(y_no_change, (p_rollout_nc >= 0.5).astype(int), zero_division=0)), 4),
             "persistence_f1_at_0.5": round(float(f1_score(y_no_change, (p_persist_nc >= 0.5).astype(int), zero_division=0)), 4),
+            "inverse_persistence_f1_at_0.5": round(float(f1_score(y_no_change, (p_inv_persist_nc >= 0.5).astype(int), zero_division=0)), 4),
         }
 
         # All windows combined evaluation (F1 at 0.5 threshold)
         k_result["all_windows"] = {
             "rollout_onset_f1_at_0.5": round(float(f1_score(y_true_arr, (p_rollout_arr >= 0.5).astype(int), zero_division=0)), 4),
             "persistence_f1_at_0.5": round(float(f1_score(y_true_arr, (p_persist_arr >= 0.5).astype(int), zero_division=0)), 4),
+            "inverse_persistence_f1_at_0.5": round(float(f1_score(y_true_arr, (p_inv_persist_arr >= 0.5).astype(int), zero_division=0)), 4),
         }
 
         results_per_k[str(k)] = k_result
@@ -309,7 +334,7 @@ def run_change_skill_eval(
         "Because persistence always predicts the preceding state, persistence systematically fails on change windows.",
         "Evaluating models specifically on change windows tests whether forward simulation possesses true predictive skill.",
         "",
-        "| Horizon K | Total Windows | Change Windows | Change Status | Rollout ROC-AUC | Rollout Recall @ 5% FPR | Persistence ROC-AUC | No-Change F1 (Rollout / Persist) | All Windows F1 (Rollout / Persist) |",
+        "| Horizon K | Total | Change (Onset/End) | Change Status | Rollout AUC (Change) | Inv-Persist AUC (Change) | Rollout AUC (Onset vs Benign) | No-Change F1 (Rollout / Inv-Persist) | All Windows F1 (Rollout / Inv-Persist) |",
         "|---|---|---|---|---|---|---|---|---|",
     ]
 
@@ -317,25 +342,31 @@ def run_change_skill_eval(
         res = results_per_k[str(k)]
         n_tot = res["n_total"]
         n_ch = res["n_change"]
+        n_onset = res.get("n_change_onset", 0)
+        n_end = res.get("n_change_end", 0)
         st = res["change_evaluation_status"]
 
         if res["change_windows"] is not None:
             r_auc = res["change_windows"]["rollout_onset"]["roc_auc"]
-            r_rec = res["change_windows"]["rollout_onset"]["recall_5pct_fpr"]
-            p_auc = res["change_windows"]["persistence"]["roc_auc"]
+            ip_auc = res["change_windows"]["inverse_persistence"]["roc_auc"]
             r_auc_str = f"{r_auc:.4f}" if r_auc is not None else "N/A"
-            r_rec_str = f"{r_rec:.4f}" if r_rec is not None else "N/A"
-            p_auc_str = f"{p_auc:.4f}" if p_auc is not None else "N/A"
+            ip_auc_str = f"{ip_auc:.4f}" if ip_auc is not None else "N/A"
+            
+            if res.get("onset_vs_benign"):
+                ob_auc = res["onset_vs_benign"]["rollout_onset"]["roc_auc"]
+                ob_auc_str = f"{ob_auc:.4f}" if ob_auc is not None else "N/A"
+            else:
+                ob_auc_str = "N/A"
         else:
             r_auc_str = "too few"
-            r_rec_str = "too few"
-            p_auc_str = "too few"
+            ip_auc_str = "too few"
+            ob_auc_str = "too few"
 
-        nc_f1 = f"{res['no_change_windows']['rollout_onset_f1_at_0.5']:.4f} / {res['no_change_windows']['persistence_f1_at_0.5']:.4f}"
-        all_f1 = f"{res['all_windows']['rollout_onset_f1_at_0.5']:.4f} / {res['all_windows']['persistence_f1_at_0.5']:.4f}"
+        nc_f1 = f"{res['no_change_windows']['rollout_onset_f1_at_0.5']:.4f} / {res['no_change_windows'].get('inverse_persistence_f1_at_0.5', 0):.4f}"
+        all_f1 = f"{res['all_windows']['rollout_onset_f1_at_0.5']:.4f} / {res['all_windows'].get('inverse_persistence_f1_at_0.5', 0):.4f}"
 
         md_lines.append(
-            f"| K={k} (+{k}m) | {n_tot} | {n_ch} | {st} | {r_auc_str} | {r_rec_str} | {p_auc_str} | {nc_f1} | {all_f1} |"
+            f"| K={k} (+{k}m) | {n_tot} | {n_ch} ({n_onset}/{n_end}) | {st} | {r_auc_str} | {ip_auc_str} | {ob_auc_str} | {nc_f1} | {all_f1} |"
         )
 
     md_lines.extend([

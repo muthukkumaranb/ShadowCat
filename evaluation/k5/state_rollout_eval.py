@@ -192,6 +192,8 @@ def run_evaluation(
         # Baselines
         # 1. Training fold mean
         train_mean_vec = np.mean(y_train, axis=0)
+        train_std_vec = np.std(y_train, axis=0)
+        train_std_vec[train_std_vec == 0] = 1.0
 
         # 2. Linear AR(1)
         lr_ar1 = fit_linear_ar1(X_train, y_train)
@@ -262,6 +264,12 @@ def run_evaluation(
                 pred_persist = s_current
                 pred_mean = train_mean_vec
                 pred_ar1 = ar1_preds[step]
+                z_actual_k = (actual_k - train_mean_vec) / train_std_vec
+                z_pred_lstm = (pred_lstm - train_mean_vec) / train_std_vec
+                z_pred_persist = (pred_persist - train_mean_vec) / train_std_vec
+                z_pred_mean = (pred_mean - train_mean_vec) / train_std_vec
+                z_pred_ar1 = (pred_ar1 - train_mean_vec) / train_std_vec
+                is_change_window = (int(df.loc[t + k, "label_binary"]) != int(df.loc[t, "label_binary"]))
 
                 all_window_records.append({
                     "fold_id": fold_id,
@@ -272,6 +280,7 @@ def run_evaluation(
                     "target_window_index": int(t + k),
                     "actual_label_binary": int(df.loc[t + k, "label_binary"]),
                     "current_label_binary": int(df.loc[t, "label_binary"]),
+                    "is_change_window": is_change_window,
                     # Errors
                     "err_lstm": float(np.mean((pred_lstm - actual_k) ** 2)),
                     "err_persist": float(np.mean((pred_persist - actual_k) ** 2)),
@@ -281,6 +290,14 @@ def run_evaluation(
                     "mae_persist": float(np.mean(np.abs(pred_persist - actual_k))),
                     "mae_mean": float(np.mean(np.abs(pred_mean - actual_k))),
                     "mae_ar1": float(np.mean(np.abs(pred_ar1 - actual_k))),
+                    "err_lstm_z": float(np.mean((z_pred_lstm - z_actual_k) ** 2)),
+                    "err_persist_z": float(np.mean((z_pred_persist - z_actual_k) ** 2)),
+                    "err_mean_z": float(np.mean((z_pred_mean - z_actual_k) ** 2)),
+                    "err_ar1_z": float(np.mean((z_pred_ar1 - z_actual_k) ** 2)),
+                    "mae_lstm_z": float(np.mean(np.abs(z_pred_lstm - z_actual_k))),
+                    "mae_persist_z": float(np.mean(np.abs(z_pred_persist - z_actual_k))),
+                    "mae_mean_z": float(np.mean(np.abs(z_pred_mean - z_actual_k))),
+                    "mae_ar1_z": float(np.mean(np.abs(z_pred_ar1 - z_actual_k))),
                     # Store rolled state for C-t2 reuse
                     "pred_lstm_state": pred_lstm,
                 })
@@ -299,95 +316,72 @@ def run_evaluation(
 
     # Compute Pooled and Per-Fold Metrics
     print("\nComputing metrics and paired episode-level bootstrap 95% CI...")
-    pooled_metrics_per_k = {}
-    bootstrap_results_per_k = {}
+    def compute_metrics_table(records_df, suffix=""):
+        unique_episodes = sorted(records_df["episode_id"].unique())
+        n_episodes = len(unique_episodes)
+        n_bootstraps = 1000
+        rng = np.random.default_rng(42)
+        res_per_k = {}
+        for k in range(1, 6):
+            k_df = records_df[records_df["k"] == k]
+            if k_df.empty: continue
+            rmse_lstm = float(np.sqrt(np.mean(k_df[f"err_lstm{suffix}"])))
+            mae_lstm = float(np.mean(k_df[f"mae_lstm{suffix}"]))
+            rmse_persist = float(np.sqrt(np.mean(k_df[f"err_persist{suffix}"])))
+            mae_persist = float(np.mean(k_df[f"mae_persist{suffix}"]))
+            rmse_mean = float(np.sqrt(np.mean(k_df[f"err_mean{suffix}"])))
+            mae_mean = float(np.mean(k_df[f"mae_mean{suffix}"]))
+            rmse_ar1 = float(np.sqrt(np.mean(k_df[f"err_ar1{suffix}"])))
+            mae_ar1 = float(np.mean(k_df[f"mae_ar1{suffix}"]))
 
-    unique_episodes = sorted(records_df["episode_id"].unique())
-    n_episodes = len(unique_episodes)
-    print(f"Unique test episodes: {n_episodes}")
+            ep_groups = {ep: grp for ep, grp in k_df.groupby("episode_id")}
+            boot_delta_rmse = []
+            boot_delta_mae = []
+            for _ in range(n_bootstraps):
+                sampled_eps = rng.choice(unique_episodes, size=n_episodes, replace=True)
+                sampled_err_lstm = []
+                sampled_err_persist = []
+                sampled_mae_lstm = []
+                sampled_mae_persist = []
+                for ep in sampled_eps:
+                    grp = ep_groups.get(ep, None)
+                    if grp is None or grp.empty: continue
+                    sampled_err_lstm.extend(grp[f"err_lstm{suffix}"].values)
+                    sampled_err_persist.extend(grp[f"err_persist{suffix}"].values)
+                    sampled_mae_lstm.extend(grp[f"mae_lstm{suffix}"].values)
+                    sampled_mae_persist.extend(grp[f"mae_persist{suffix}"].values)
+                if not sampled_err_lstm: continue
+                boot_delta_rmse.append(np.sqrt(np.mean(sampled_err_lstm)) - np.sqrt(np.mean(sampled_err_persist)))
+                boot_delta_mae.append(np.mean(sampled_mae_lstm) - np.mean(sampled_mae_persist))
 
-    n_bootstraps = 1000
-    rng = np.random.default_rng(seed)
+            point_delta_rmse = rmse_lstm - rmse_persist
+            ci_rmse_low = float(np.percentile(boot_delta_rmse, 2.5)) if boot_delta_rmse else 0.0
+            ci_rmse_high = float(np.percentile(boot_delta_rmse, 97.5)) if boot_delta_rmse else 0.0
+            point_delta_mae = mae_lstm - mae_persist
+            ci_mae_low = float(np.percentile(boot_delta_mae, 2.5)) if boot_delta_mae else 0.0
+            ci_mae_high = float(np.percentile(boot_delta_mae, 97.5)) if boot_delta_mae else 0.0
+            beats_rmse = bool(ci_rmse_high < 0)
+            beats_mae = bool(ci_mae_high < 0)
+            beats_both = bool(beats_rmse and beats_mae)
 
-    for k in range(1, 6):
-        k_df = records_df[records_df["k"] == k]
-
-        # Pooled metrics
-        rmse_lstm = float(np.sqrt(np.mean(k_df["err_lstm"])))
-        mae_lstm = float(np.mean(k_df["mae_lstm"]))
-
-        rmse_persist = float(np.sqrt(np.mean(k_df["err_persist"])))
-        mae_persist = float(np.mean(k_df["mae_persist"]))
-
-        rmse_mean = float(np.sqrt(np.mean(k_df["err_mean"])))
-        mae_mean = float(np.mean(k_df["mae_mean"]))
-
-        rmse_ar1 = float(np.sqrt(np.mean(k_df["err_ar1"])))
-        mae_ar1 = float(np.mean(k_df["mae_ar1"]))
-
-        # Group data by episode for fast bootstrap sampling
-        ep_groups = {ep: grp for ep, grp in k_df.groupby("episode_id")}
-
-        boot_delta_rmse = []
-        boot_delta_mae = []
-
-        for _ in range(n_bootstraps):
-            sampled_eps = rng.choice(unique_episodes, size=n_episodes, replace=True)
-            sampled_err_lstm = []
-            sampled_err_persist = []
-            sampled_mae_lstm = []
-            sampled_mae_persist = []
-
-            for ep in sampled_eps:
-                grp = ep_groups[ep]
-                sampled_err_lstm.extend(grp["err_lstm"].values)
-                sampled_err_persist.extend(grp["err_persist"].values)
-                sampled_mae_lstm.extend(grp["mae_lstm"].values)
-                sampled_mae_persist.extend(grp["mae_persist"].values)
-
-            b_rmse_m = np.sqrt(np.mean(sampled_err_lstm))
-            b_rmse_p = np.sqrt(np.mean(sampled_err_persist))
-            b_mae_m = np.mean(sampled_mae_lstm)
-            b_mae_p = np.mean(sampled_mae_persist)
-
-            boot_delta_rmse.append(b_rmse_m - b_rmse_p)
-            boot_delta_mae.append(b_mae_m - b_mae_p)
-
-        point_delta_rmse = rmse_lstm - rmse_persist
-        ci_rmse_low = float(np.percentile(boot_delta_rmse, 2.5))
-        ci_rmse_high = float(np.percentile(boot_delta_rmse, 97.5))
-
-        point_delta_mae = mae_lstm - mae_persist
-        ci_mae_low = float(np.percentile(boot_delta_mae, 2.5))
-        ci_mae_high = float(np.percentile(boot_delta_mae, 97.5))
-
-        # Model beats persistence if CI upper bound < 0 (strictly negative on both)
-        beats_rmse = bool(ci_rmse_high < 0)
-        beats_mae = bool(ci_mae_high < 0)
-        beats_both = bool(beats_rmse and beats_mae)
-
-        pooled_metrics_per_k[str(k)] = {
-            "n_windows": int(len(k_df)),
-            "lstm_gaussian": {"rmse": round(rmse_lstm, 4), "mae": round(mae_lstm, 4)},
-            "persistence": {"rmse": round(rmse_persist, 4), "mae": round(mae_persist, 4)},
-            "training_mean": {"rmse": round(rmse_mean, 4), "mae": round(mae_mean, 4)},
-            "linear_ar1": {"rmse": round(rmse_ar1, 4), "mae": round(mae_ar1, 4)},
-            "delta_model_minus_persistence": {
-                "rmse": {
-                    "point_estimate": round(point_delta_rmse, 4),
-                    "ci_95": [round(ci_rmse_low, 4), round(ci_rmse_high, 4)],
-                    "beats_persistence": beats_rmse,
+            res_per_k[str(k)] = {
+                "n_windows": int(len(k_df)),
+                "lstm_gaussian": {"rmse": round(rmse_lstm, 4), "mae": round(mae_lstm, 4)},
+                "persistence": {"rmse": round(rmse_persist, 4), "mae": round(mae_persist, 4)},
+                "training_mean": {"rmse": round(rmse_mean, 4), "mae": round(mae_mean, 4)},
+                "linear_ar1": {"rmse": round(rmse_ar1, 4), "mae": round(mae_ar1, 4)},
+                "delta_model_minus_persistence": {
+                    "rmse": {"point_estimate": round(point_delta_rmse, 4), "ci_95": [round(ci_rmse_low, 4), round(ci_rmse_high, 4)], "beats_persistence": beats_rmse},
+                    "mae": {"point_estimate": round(point_delta_mae, 4), "ci_95": [round(ci_mae_low, 4), round(ci_mae_high, 4)], "beats_persistence": beats_mae},
+                    "beats_persistence_both": beats_both,
                 },
-                "mae": {
-                    "point_estimate": round(point_delta_mae, 4),
-                    "ci_95": [round(ci_mae_low, 4), round(ci_mae_high, 4)],
-                    "beats_persistence": beats_mae,
-                },
-                "beats_persistence_both": beats_both,
-            },
-        }
+            }
+        return res_per_k
 
-    # Determine H*_state
+    pooled_metrics_per_k = compute_metrics_table(records_df, "")
+    pooled_metrics_per_k_z = compute_metrics_table(records_df, "_z")
+    pooled_metrics_per_k_change = compute_metrics_table(records_df[records_df["is_change_window"]], "")
+    pooled_metrics_per_k_change_z = compute_metrics_table(records_df[records_df["is_change_window"]], "_z")
     h_star_state = 0
     for k in range(1, 6):
         if pooled_metrics_per_k[str(k)]["delta_model_minus_persistence"]["beats_persistence_both"]:
@@ -432,10 +426,13 @@ def run_evaluation(
         "dataset": data_path,
         "manifest": manifest_path,
         "n_folds": len(folds),
-        "n_episodes": n_episodes,
+        "n_episodes": len(records_df["episode_id"].unique()),
         "total_test_windows_evaluated": len(records_df[records_df["k"] == 1]),
         "h_star_state": h_star_state,
         "pooled_results_per_k": pooled_metrics_per_k,
+        "pooled_results_per_k_z": pooled_metrics_per_k_z,
+        "pooled_results_per_k_change": pooled_metrics_per_k_change,
+        "pooled_results_per_k_change_z": pooled_metrics_per_k_change_z,
         "per_fold_results": per_fold_summary,
     }
 
@@ -449,7 +446,7 @@ def run_evaluation(
         "# State-Space Rollout Evaluation (K = 1..5) under 37-fold LOEO",
         "",
         f"Generated by `evaluation/k5/state_rollout_eval.py` on dataset `{data_path}`.",
-        f"Manifest: `{manifest_path}` ({len(folds)} folds, {n_episodes} held-out attack episodes).",
+        f"Manifest: `{manifest_path}` ({len(folds)} folds, {len(records_df['episode_id'].unique())} held-out attack episodes).",
         "",
         "## Summary of Findings",
         "",
