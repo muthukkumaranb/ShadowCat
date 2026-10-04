@@ -1,141 +1,98 @@
 {
   "generated_by": "evaluation/k5/change_skill_eval.py",
+  "dataset": "data-engineering/data/ucs/ucs_windows_models_v1.parquet",
+  "manifest": "ml1/artifacts/loeo/corrected_37fold_manifest.json",
   "horizons": {
     "1": {
-      "n_total": 2786,
-      "n_change": 35,
-      "n_onset": 18,
-      "n_end": 17,
-      "n_benign": 1843,
-      "inverse_persistence_change_auc": 1.0,
-      "rollout_onset_vs_benign_auc": 0.4618677277385905,
-      "old_metrics": {
-        "n_total": 410,
-        "n_change": 3,
-        "n_no_change": 407,
-        "change_evaluation_status": "too few to evaluate (3 < 20)",
-        "change_windows": null,
-        "no_change_windows": {
-          "rollout_onset_f1_at_0.5": 0.0255,
-          "persistence_f1_at_0.5": 1.0
-        },
-        "all_windows": {
-          "rollout_onset_f1_at_0.5": 0.0252,
-          "persistence_f1_at_0.5": 0.9899
-        }
+      "n_total": 410,
+      "n_change": 3,
+      "n_no_change": 407,
+      "change_evaluation_status": "too few to evaluate (3 < 20)",
+      "change_windows": null,
+      "no_change_windows": {
+        "rollout_onset_f1_at_0.5": 0.0255,
+        "persistence_f1_at_0.5": 1.0
+      },
+      "all_windows": {
+        "rollout_onset_f1_at_0.5": 0.0252,
+        "persistence_f1_at_0.5": 0.9899
       }
     },
     "2": {
-      "n_total": 2771,
-      "n_change": 42,
-      "n_onset": 31,
-      "n_end": 11,
-      "n_benign": 1819,
-      "inverse_persistence_change_auc": 1.0,
-      "rollout_onset_vs_benign_auc": 0.4222100054975261,
-      "old_metrics": {
-        "n_total": 410,
-        "n_change": 8,
-        "n_no_change": 402,
-        "change_evaluation_status": "too few to evaluate (8 < 20)",
-        "change_windows": null,
-        "no_change_windows": {
-          "rollout_onset_f1_at_0.5": 0.1371,
-          "persistence_f1_at_0.5": 1.0
-        },
-        "all_windows": {
-          "rollout_onset_f1_at_0.5": 0.1339,
-          "persistence_f1_at_0.5": 0.9732
-        }
+      "n_total": 410,
+      "n_change": 8,
+      "n_no_change": 402,
+      "change_evaluation_status": "too few to evaluate (8 < 20)",
+      "change_windows": null,
+      "no_change_windows": {
+        "rollout_onset_f1_at_0.5": 0.1371,
+        "persistence_f1_at_0.5": 1.0
+      },
+      "all_windows": {
+        "rollout_onset_f1_at_0.5": 0.1339,
+        "persistence_f1_at_0.5": 0.9732
       }
     },
     "3": {
-      "n_total": 2756,
-      "n_change": 53,
-      "n_onset": 43,
-      "n_end": 10,
-      "n_benign": 1796,
-      "inverse_persistence_change_auc": 1.0,
-      "rollout_onset_vs_benign_auc": 0.48310198373646857,
-      "old_metrics": {
-        "n_total": 410,
-        "n_change": 13,
-        "n_no_change": 397,
-        "change_evaluation_status": "too few to evaluate (13 < 20)",
-        "change_windows": null,
-        "no_change_windows": {
-          "rollout_onset_f1_at_0.5": 0.1311,
-          "persistence_f1_at_0.5": 1.0
-        },
-        "all_windows": {
-          "rollout_onset_f1_at_0.5": 0.1265,
-          "persistence_f1_at_0.5": 0.9565
-        }
+      "n_total": 410,
+      "n_change": 13,
+      "n_no_change": 397,
+      "change_evaluation_status": "too few to evaluate (13 < 20)",
+      "change_windows": null,
+      "no_change_windows": {
+        "rollout_onset_f1_at_0.5": 0.1311,
+        "persistence_f1_at_0.5": 1.0
+      },
+      "all_windows": {
+        "rollout_onset_f1_at_0.5": 0.1265,
+        "persistence_f1_at_0.5": 0.9565
       }
     },
     "4": {
-      "n_total": 2741,
-      "n_change": 65,
-      "n_onset": 55,
-      "n_end": 10,
-      "n_benign": 1773,
-      "inverse_persistence_change_auc": 1.0,
-      "rollout_onset_vs_benign_auc": 0.49912321181356717,
-      "old_metrics": {
-        "n_total": 410,
-        "n_change": 18,
-        "n_no_change": 392,
-        "change_evaluation_status": "too few to evaluate (18 < 20)",
-        "change_windows": null,
-        "no_change_windows": {
-          "rollout_onset_f1_at_0.5": 0.1167,
-          "persistence_f1_at_0.5": 1.0
-        },
-        "all_windows": {
-          "rollout_onset_f1_at_0.5": 0.1111,
-          "persistence_f1_at_0.5": 0.94
-        }
+      "n_total": 410,
+      "n_change": 18,
+      "n_no_change": 392,
+      "change_evaluation_status": "too few to evaluate (18 < 20)",
+      "change_windows": null,
+      "no_change_windows": {
+        "rollout_onset_f1_at_0.5": 0.1167,
+        "persistence_f1_at_0.5": 1.0
+      },
+      "all_windows": {
+        "rollout_onset_f1_at_0.5": 0.1111,
+        "persistence_f1_at_0.5": 0.94
       }
     },
     "5": {
-      "n_total": 2726,
-      "n_change": 77,
-      "n_onset": 67,
-      "n_end": 10,
-      "n_benign": 1750,
-      "inverse_persistence_change_auc": 1.0,
-      "rollout_onset_vs_benign_auc": 0.45710874200426443,
-      "old_metrics": {
-        "n_total": 410,
-        "n_change": 24,
-        "n_no_change": 386,
-        "change_evaluation_status": "evaluated",
-        "change_windows": {
-          "rollout_onset": {
-            "roc_auc": 0.7926,
-            "threshold_5pct_fpr": 0.3835,
-            "recall_5pct_fpr": 0.5333,
-            "precision_5pct_fpr": 1.0,
-            "f1_5pct_fpr": 0.6957,
-            "fpr_actual": 0.0
-          },
-          "persistence": {
-            "roc_auc": 0.0,
-            "threshold_5pct_fpr": 1.0,
-            "recall_5pct_fpr": 0.0,
-            "precision_5pct_fpr": 0.0,
-            "f1_5pct_fpr": 0.0,
-            "fpr_actual": 1.0
-          }
+      "n_total": 410,
+      "n_change": 24,
+      "n_no_change": 386,
+      "change_evaluation_status": "evaluated",
+      "change_windows": {
+        "rollout_onset": {
+          "roc_auc": 0.7926,
+          "threshold_5pct_fpr": 0.3835,
+          "recall_5pct_fpr": 0.5333,
+          "precision_5pct_fpr": 1.0,
+          "f1_5pct_fpr": 0.6957,
+          "fpr_actual": 0.0
         },
-        "no_change_windows": {
-          "rollout_onset_f1_at_0.5": 0.1181,
-          "persistence_f1_at_0.5": 1.0
-        },
-        "all_windows": {
-          "rollout_onset_f1_at_0.5": 0.1111,
-          "persistence_f1_at_0.5": 0.92
+        "persistence": {
+          "roc_auc": 0.0,
+          "threshold_5pct_fpr": 1.0,
+          "recall_5pct_fpr": 0.0,
+          "precision_5pct_fpr": 0.0,
+          "f1_5pct_fpr": 0.0,
+          "fpr_actual": 1.0
         }
+      },
+      "no_change_windows": {
+        "rollout_onset_f1_at_0.5": 0.1181,
+        "persistence_f1_at_0.5": 1.0
+      },
+      "all_windows": {
+        "rollout_onset_f1_at_0.5": 0.1111,
+        "persistence_f1_at_0.5": 0.92
       }
     }
   }
