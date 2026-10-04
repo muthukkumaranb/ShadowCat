@@ -94,7 +94,11 @@
           "threshold_5pct_fpr": 0.2569,
           "recall_5pct_fpr": 0.0,
           "precision_5pct_fpr": 0.0,
-          "fpr_actual": 0.05
+          "fpr_actual": 0.05,
+          "episode_bootstrap_95ci": [
+            0.3111,
+            0.7377
+          ]
         },
         "persistence": {
           "roc_auc": 0.5,
@@ -204,7 +208,11 @@
           "threshold_5pct_fpr": 0.2267,
           "recall_5pct_fpr": 0.1667,
           "precision_5pct_fpr": 0.0769,
-          "fpr_actual": 0.0467
+          "fpr_actual": 0.0467,
+          "episode_bootstrap_95ci": [
+            0.4044,
+            0.9239
+          ]
         },
         "persistence": {
           "roc_auc": 0.5,
@@ -314,7 +322,11 @@
           "threshold_5pct_fpr": 0.2278,
           "recall_5pct_fpr": 0.2222,
           "precision_5pct_fpr": 0.1429,
-          "fpr_actual": 0.0472
+          "fpr_actual": 0.0472,
+          "episode_bootstrap_95ci": [
+            0.4525,
+            0.9202
+          ]
         },
         "persistence": {
           "roc_auc": 0.5,
@@ -424,7 +436,11 @@
           "threshold_5pct_fpr": 0.2505,
           "recall_5pct_fpr": 0.1667,
           "precision_5pct_fpr": 0.1429,
-          "fpr_actual": 0.0478
+          "fpr_actual": 0.0478,
+          "episode_bootstrap_95ci": [
+            0.439,
+            0.9031
+          ]
         },
         "persistence": {
           "roc_auc": 0.5,
@@ -534,7 +550,11 @@
           "threshold_5pct_fpr": 0.2879,
           "recall_5pct_fpr": 0.0,
           "precision_5pct_fpr": 0.0,
-          "fpr_actual": 0.0484
+          "fpr_actual": 0.0484,
+          "episode_bootstrap_95ci": [
+            0.3611,
+            0.704
+          ]
         },
         "persistence": {
           "roc_auc": 0.5,

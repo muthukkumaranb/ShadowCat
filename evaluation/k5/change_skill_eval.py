@@ -278,6 +278,7 @@ def run_change_skill_eval(
                 )
 
             k_result["change_windows"] = change_metrics
+            # Explanation: onset-vs-benign differs from direct_heads because here target = label at t+K (strict endpoint), whereas direct_heads target = any attack in (t,t+K].
             onset_mask = is_onset_arr | is_benign_no_change_arr
             if is_onset_arr.sum() > 0 and is_benign_no_change_arr.sum() > 0:
                 k_result["onset_vs_benign"] = {
