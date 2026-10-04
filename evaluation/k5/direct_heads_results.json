@@ -5,41 +5,41 @@
   "features": "ml1/artifacts/lr_set_a/set_a_features.json",
   "horizons": {
     "1": {
-      "n_test_windows": 412,
-      "positives": 151,
-      "negatives": 261,
-      "already_in_attack": 148,
+      "n_test_windows": 410,
+      "positives": 150,
+      "negatives": 260,
+      "already_in_attack": 147,
       "direct_lr_head": {
-        "roc_auc": 0.9851,
-        "pr_auc": 0.9772,
-        "threshold_5pct_fpr": 0.1372,
-        "recall_5pct_fpr": 0.9801,
-        "precision_5pct_fpr": 0.9193,
-        "fpr_actual": 0.0498
+        "roc_auc": 0.9882,
+        "pr_auc": 0.9905,
+        "threshold_5pct_fpr": 0.122,
+        "recall_5pct_fpr": 0.98,
+        "precision_5pct_fpr": 0.9187,
+        "fpr_actual": 0.05
       },
       "rollout_onset_probability": {
-        "roc_auc": 0.4142,
-        "pr_auc": 0.3003,
-        "threshold_5pct_fpr": 0.8683,
-        "recall_5pct_fpr": 0.0,
-        "precision_5pct_fpr": 0.0,
+        "roc_auc": 0.6756,
+        "pr_auc": 0.4819,
+        "threshold_5pct_fpr": 0.2569,
+        "recall_5pct_fpr": 0.0933,
+        "precision_5pct_fpr": 0.5185,
         "fpr_actual": 0.05
       },
       "persistence": {
-        "roc_auc": 0.9882,
-        "pr_auc": 0.9808,
+        "roc_auc": 0.99,
+        "pr_auc": 0.9873,
         "threshold_5pct_fpr": 1.0,
-        "recall_5pct_fpr": 0.9801,
-        "precision_5pct_fpr": 0.9933,
-        "fpr_actual": 0.0038
+        "recall_5pct_fpr": 0.98,
+        "precision_5pct_fpr": 1.0,
+        "fpr_actual": 0.0
       },
       "inverse_persistence": {
-        "roc_auc": 0.0118,
-        "pr_auc": 0.3594,
+        "roc_auc": 0.01,
+        "pr_auc": 0.3588,
         "threshold_5pct_fpr": 1.0,
-        "recall_5pct_fpr": 0.0199,
+        "recall_5pct_fpr": 0.02,
         "precision_5pct_fpr": 0.0114,
-        "fpr_actual": 0.9962
+        "fpr_actual": 1.0
       },
       "precursor_only": {
         "n_test_windows": 263,
@@ -53,9 +53,12 @@
           "fpr_actual": 0.05
         },
         "rollout_onset_probability": {
-          "roc_auc": null,
-          "pr_auc": null,
-          "recall_5pct_fpr": null
+          "roc_auc": 0.5641,
+          "pr_auc": 0.0171,
+          "threshold_5pct_fpr": 0.2569,
+          "recall_5pct_fpr": 0.0,
+          "precision_5pct_fpr": 0.0,
+          "fpr_actual": 0.05
         },
         "persistence": {
           "roc_auc": 0.5,
@@ -86,9 +89,12 @@
           "fpr_actual": 0.05
         },
         "rollout_onset_probability": {
-          "roc_auc": null,
-          "pr_auc": null,
-          "recall_5pct_fpr": null
+          "roc_auc": 0.5641,
+          "pr_auc": 0.0171,
+          "threshold_5pct_fpr": 0.2569,
+          "recall_5pct_fpr": 0.0,
+          "precision_5pct_fpr": 0.0,
+          "fpr_actual": 0.05
         },
         "persistence": {
           "roc_auc": 0.5,
@@ -109,39 +115,39 @@
       }
     },
     "2": {
-      "n_test_windows": 411,
-      "positives": 154,
+      "n_test_windows": 410,
+      "positives": 153,
       "negatives": 257,
-      "already_in_attack": 148,
+      "already_in_attack": 147,
       "direct_lr_head": {
-        "roc_auc": 0.9785,
-        "pr_auc": 0.9824,
+        "roc_auc": 0.9784,
+        "pr_auc": 0.9822,
         "threshold_5pct_fpr": 0.1503,
-        "recall_5pct_fpr": 0.961,
-        "precision_5pct_fpr": 0.925,
+        "recall_5pct_fpr": 0.9608,
+        "precision_5pct_fpr": 0.9245,
         "fpr_actual": 0.0467
       },
       "rollout_onset_probability": {
-        "roc_auc": 0.4561,
-        "pr_auc": 0.3291,
-        "threshold_5pct_fpr": 0.9731,
-        "recall_5pct_fpr": 0.0065,
-        "precision_5pct_fpr": 0.0769,
+        "roc_auc": 0.7527,
+        "pr_auc": 0.6039,
+        "threshold_5pct_fpr": 0.2102,
+        "recall_5pct_fpr": 0.281,
+        "precision_5pct_fpr": 0.7818,
         "fpr_actual": 0.0467
       },
       "persistence": {
-        "roc_auc": 0.9805,
-        "pr_auc": 0.9756,
+        "roc_auc": 0.9804,
+        "pr_auc": 0.9754,
         "threshold_5pct_fpr": 1.0,
-        "recall_5pct_fpr": 0.961,
+        "recall_5pct_fpr": 0.9608,
         "precision_5pct_fpr": 1.0,
         "fpr_actual": 0.0
       },
       "inverse_persistence": {
-        "roc_auc": 0.0195,
-        "pr_auc": 0.361,
+        "roc_auc": 0.0196,
+        "pr_auc": 0.3594,
         "threshold_5pct_fpr": 1.0,
-        "recall_5pct_fpr": 0.039,
+        "recall_5pct_fpr": 0.0392,
         "precision_5pct_fpr": 0.0228,
         "fpr_actual": 1.0
       },
@@ -157,9 +163,12 @@
           "fpr_actual": 0.0467
         },
         "rollout_onset_probability": {
-          "roc_auc": null,
-          "pr_auc": null,
-          "recall_5pct_fpr": null
+          "roc_auc": 0.6556,
+          "pr_auc": 0.0473,
+          "threshold_5pct_fpr": 0.2267,
+          "recall_5pct_fpr": 0.1667,
+          "precision_5pct_fpr": 0.0769,
+          "fpr_actual": 0.0467
         },
         "persistence": {
           "roc_auc": 0.5,
@@ -190,9 +199,12 @@
           "fpr_actual": 0.0467
         },
         "rollout_onset_probability": {
-          "roc_auc": null,
-          "pr_auc": null,
-          "recall_5pct_fpr": null
+          "roc_auc": 0.6556,
+          "pr_auc": 0.0473,
+          "threshold_5pct_fpr": 0.2267,
+          "recall_5pct_fpr": 0.1667,
+          "precision_5pct_fpr": 0.0769,
+          "fpr_actual": 0.0467
         },
         "persistence": {
           "roc_auc": 0.5,
@@ -213,39 +225,39 @@
       }
     },
     "3": {
-      "n_test_windows": 411,
-      "positives": 157,
+      "n_test_windows": 410,
+      "positives": 156,
       "negatives": 254,
-      "already_in_attack": 148,
+      "already_in_attack": 147,
       "direct_lr_head": {
-        "roc_auc": 0.9702,
-        "pr_auc": 0.9774,
+        "roc_auc": 0.97,
+        "pr_auc": 0.9772,
         "threshold_5pct_fpr": 0.1771,
-        "recall_5pct_fpr": 0.9427,
-        "precision_5pct_fpr": 0.925,
+        "recall_5pct_fpr": 0.9423,
+        "precision_5pct_fpr": 0.9245,
         "fpr_actual": 0.0472
       },
       "rollout_onset_probability": {
-        "roc_auc": 0.4307,
-        "pr_auc": 0.3277,
-        "threshold_5pct_fpr": 0.9344,
-        "recall_5pct_fpr": 0.0064,
-        "precision_5pct_fpr": 0.0769,
+        "roc_auc": 0.7527,
+        "pr_auc": 0.6612,
+        "threshold_5pct_fpr": 0.2278,
+        "recall_5pct_fpr": 0.3077,
+        "precision_5pct_fpr": 0.8,
         "fpr_actual": 0.0472
       },
       "persistence": {
-        "roc_auc": 0.9713,
-        "pr_auc": 0.9646,
+        "roc_auc": 0.9712,
+        "pr_auc": 0.9643,
         "threshold_5pct_fpr": 1.0,
-        "recall_5pct_fpr": 0.9427,
+        "recall_5pct_fpr": 0.9423,
         "precision_5pct_fpr": 1.0,
         "fpr_actual": 0.0
       },
       "inverse_persistence": {
-        "roc_auc": 0.0287,
-        "pr_auc": 0.3621,
+        "roc_auc": 0.0288,
+        "pr_auc": 0.3605,
         "threshold_5pct_fpr": 1.0,
-        "recall_5pct_fpr": 0.0573,
+        "recall_5pct_fpr": 0.0577,
         "precision_5pct_fpr": 0.0342,
         "fpr_actual": 1.0
       },
@@ -261,9 +273,12 @@
           "fpr_actual": 0.0472
         },
         "rollout_onset_probability": {
-          "roc_auc": null,
-          "pr_auc": null,
-          "recall_5pct_fpr": null
+          "roc_auc": 0.6829,
+          "pr_auc": 0.1714,
+          "threshold_5pct_fpr": 0.2278,
+          "recall_5pct_fpr": 0.2222,
+          "precision_5pct_fpr": 0.1429,
+          "fpr_actual": 0.0472
         },
         "persistence": {
           "roc_auc": 0.5,
@@ -294,9 +309,12 @@
           "fpr_actual": 0.0472
         },
         "rollout_onset_probability": {
-          "roc_auc": null,
-          "pr_auc": null,
-          "recall_5pct_fpr": null
+          "roc_auc": 0.6829,
+          "pr_auc": 0.1714,
+          "threshold_5pct_fpr": 0.2278,
+          "recall_5pct_fpr": 0.2222,
+          "precision_5pct_fpr": 0.1429,
+          "fpr_actual": 0.0472
         },
         "persistence": {
           "roc_auc": 0.5,
@@ -330,11 +348,11 @@
         "fpr_actual": 0.0478
       },
       "rollout_onset_probability": {
-        "roc_auc": 0.4143,
-        "pr_auc": 0.3222,
-        "threshold_5pct_fpr": 0.9517,
-        "recall_5pct_fpr": 0.0,
-        "precision_5pct_fpr": 0.0,
+        "roc_auc": 0.738,
+        "pr_auc": 0.6622,
+        "threshold_5pct_fpr": 0.2505,
+        "recall_5pct_fpr": 0.3082,
+        "precision_5pct_fpr": 0.8033,
         "fpr_actual": 0.0478
       },
       "persistence": {
@@ -365,9 +383,12 @@
           "fpr_actual": 0.0478
         },
         "rollout_onset_probability": {
-          "roc_auc": null,
-          "pr_auc": null,
-          "recall_5pct_fpr": null
+          "roc_auc": 0.6667,
+          "pr_auc": 0.1183,
+          "threshold_5pct_fpr": 0.2505,
+          "recall_5pct_fpr": 0.1667,
+          "precision_5pct_fpr": 0.1429,
+          "fpr_actual": 0.0478
         },
         "persistence": {
           "roc_auc": 0.5,
@@ -398,9 +419,12 @@
           "fpr_actual": 0.0478
         },
         "rollout_onset_probability": {
-          "roc_auc": null,
-          "pr_auc": null,
-          "recall_5pct_fpr": null
+          "roc_auc": 0.6667,
+          "pr_auc": 0.1183,
+          "threshold_5pct_fpr": 0.2505,
+          "recall_5pct_fpr": 0.1667,
+          "precision_5pct_fpr": 0.1429,
+          "fpr_actual": 0.0478
         },
         "persistence": {
           "roc_auc": 0.5,
@@ -434,11 +458,11 @@
         "fpr_actual": 0.0484
       },
       "rollout_onset_probability": {
-        "roc_auc": 0.3967,
-        "pr_auc": 0.3202,
-        "threshold_5pct_fpr": 0.9593,
-        "recall_5pct_fpr": 0.0,
-        "precision_5pct_fpr": 0.0,
+        "roc_auc": 0.7013,
+        "pr_auc": 0.6399,
+        "threshold_5pct_fpr": 0.2879,
+        "recall_5pct_fpr": 0.2963,
+        "precision_5pct_fpr": 0.8,
         "fpr_actual": 0.0484
       },
       "persistence": {
@@ -469,9 +493,12 @@
           "fpr_actual": 0.0484
         },
         "rollout_onset_probability": {
-          "roc_auc": null,
-          "pr_auc": null,
-          "recall_5pct_fpr": null
+          "roc_auc": 0.5258,
+          "pr_auc": 0.0594,
+          "threshold_5pct_fpr": 0.2879,
+          "recall_5pct_fpr": 0.0,
+          "precision_5pct_fpr": 0.0,
+          "fpr_actual": 0.0484
         },
         "persistence": {
           "roc_auc": 0.5,
@@ -502,9 +529,12 @@
           "fpr_actual": 0.0484
         },
         "rollout_onset_probability": {
-          "roc_auc": null,
-          "pr_auc": null,
-          "recall_5pct_fpr": null
+          "roc_auc": 0.5258,
+          "pr_auc": 0.0594,
+          "threshold_5pct_fpr": 0.2879,
+          "recall_5pct_fpr": 0.0,
+          "precision_5pct_fpr": 0.0,
+          "fpr_actual": 0.0484
         },
         "persistence": {
           "roc_auc": 0.5,
