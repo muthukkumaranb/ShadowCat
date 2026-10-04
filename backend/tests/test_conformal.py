@@ -12,7 +12,7 @@ def test_conformal_joint_intervals_width():
     predictor = SplitConformalPredictor(coverage=0.90, aci_mode=False)
     
     # Mock calibration
-    val_preds = np.random.rand(100)
+    val_preds = np.random.uniform(0, 1, 100)
     val_targets = np.random.randint(0, 2, 100)
     predictor.calibrate(val_preds, val_targets)
     
