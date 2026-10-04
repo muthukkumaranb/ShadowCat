@@ -87,24 +87,26 @@ def main():
                 if 0 <= dist < k:
                     ends_within_K[k] += 1
                     
-    ends_within_5 = ends_within_K[5]
+    in_attack_windows_ending_within_5 = ends_within_K[5]
+    n_run_endings = num_runs
     
     results = {
         'num_runs': num_runs,
         'len_ge_6': len_ge_6,
-        'ends_within_5': ends_within_5
+        'in_attack_windows_ending_within_5': in_attack_windows_ending_within_5,
+        'n_run_endings': n_run_endings
     }
     
     with open('evaluation/intra_attack/runs.json', 'w') as f:
         json.dump(results, f)
         
     with open('evaluation/intra_attack/RUNS.md', 'w') as f:
-        if len_ge_6 < 20 or ends_within_5 < 20:
+        if len_ge_6 < 20 or in_attack_windows_ending_within_5 < 20:
             f.write(f"intra-attack forecasting not evaluable on this dataset\n")
-            f.write(f"Counts: len>=6: {len_ge_6}, ends_within_5: {ends_within_5}\n")
+            f.write(f"Counts: len>=6: {len_ge_6}, in_attack_windows_ending_within_5: {in_attack_windows_ending_within_5}, n_run_endings: {n_run_endings}\n")
             print("STOP")
         else:
-            f.write(f"# Runs\nNum runs: {num_runs}\nLen >= 6: {len_ge_6}\nEnds within 5: {ends_within_5}\n")
+            f.write(f"# Runs\nNum runs: {num_runs}\nLen >= 6: {len_ge_6}\nin_attack_windows_ending_within_5: {in_attack_windows_ending_within_5}\nn_run_endings: {n_run_endings}\n")
             print("PROCEED")
 
 if __name__ == '__main__':
