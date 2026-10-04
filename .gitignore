@@ -64,4 +64,5 @@ fabric-experiment/
 stitich frontend/
 
 
-
+# AIT-LDS v2.0 raw data (pcap, logs, zips — 7-39 GB per scenario)
+data-engineering/data/ait/raw/
