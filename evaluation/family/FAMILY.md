@@ -52,7 +52,7 @@ Impact                   |                    0 |                    7 |        
 
 ## 3. Single-Episode Families Evaluation
 > [!NOTE]
-> Families with only 1 episode (`DDOS-HOIC`, `Infiltration-Compromise`, `Infiltration-Portscan`) cannot be evaluated under LOEO because holding out the episode removes 100% of its training examples.
+> Families with only 1 episode (`DDOS-HOIC`, `Infiltration-Compromise`, `Infiltration-Portscan`) cannot be evaluated under LOEO because holding out the episode removes 100% of its training examples. Consequently, the LOEO metrics in Section 2 measure generalizability using ONLY the multi-episode families (`Botnet`, `DDOS-LOIC-UDP`, `SSH-Bruteforce`).
 
 ### Seen-Family Evaluation (Within-Episode Chronological Split 70% / 30% with 30-Window Purge)
 | Family | Status | Windows (Total / Train / Purge / Test) | Precision | Recall | F1-Score | Mean Conf |
