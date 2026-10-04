@@ -481,7 +481,7 @@ class ShadowcatPipeline:
                     logging.warning(f"Failed to load family classifier from {f}: {e}")
 
         # Load 5% FPR detection threshold from stacked_benchmark_results.json
-        self.detection_threshold_5pct_fpr = 0.4014016389846802
+        self.detection_threshold_5pct_fpr = None
         bench_path = REPO_ROOT / "evaluation" / "benchmark" / "stacked_benchmark_results.json"
         if bench_path.exists():
             try:
@@ -495,7 +495,7 @@ class ShadowcatPipeline:
                 logging.warning(f"Failed to load detection 5% FPR threshold from {bench_path}: {e}")
 
         # Load family tactic macro F1 from family_results.json
-        self.family_loeo_macro_f1 = 0.6402
+        self.family_loeo_macro_f1 = None
         fam_res_path = REPO_ROOT / "evaluation" / "family" / "family_results.json"
         if fam_res_path.exists():
             try:
@@ -620,6 +620,17 @@ class ShadowcatPipeline:
         Current-window ATT&CK stage prediction (Phase B).
         Gated by stacked detection probability >= 5% FPR threshold from stacked_benchmark_results.json.
         """
+        if self.detection_threshold_5pct_fpr is None or self.family_loeo_macro_f1 is None:
+            return {
+                "current_stage": "not available",
+                "current_stage_confidence": None,
+                "current_stage_source": "Evaluation JSONs missing",
+                "current_stage_family": None,
+                "current_stage_tactic_id": None,
+                "current_stage_url": None,
+                "is_attack_detected": False,
+            }
+
         det_p = float(detection_prob) if detection_prob is not None else 0.0
         source_str = f"family classifier (current window, LOEO macro-F1 = {self.family_loeo_macro_f1:.4f})"
 

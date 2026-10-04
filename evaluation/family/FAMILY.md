@@ -6,6 +6,8 @@
 - **Dataset**: `data-engineering/data/ucs/ucs_windows_models_v1.parquet` (2,787 windows, 6 days).
 - **Cross-Validation**: 37-fold Leave-One-Episode-Out (LOEO) from `corrected_37fold_manifest.json`.
 - **Training Invariant**: Scaler fitted on each training fold independently; trained ONLY on `label_binary == 1` and non-Benign windows.
+- **Production Inference (`predict()`)**: Averages probabilities from all 37 fold models. Therefore, on dataset windows, the confidence is partly in-sample. The true out-of-sample skill is the LOEO macro-F1 only.
+- **Scope**: LOEO covers 3 of 6 families (`Botnet`, `DDOS-LOIC-UDP`, `SSH-Bruteforce`). Note that `DDOS-LOIC-UDP` family F1 = 0.
 
 ---
 
