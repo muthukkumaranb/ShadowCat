@@ -18,9 +18,15 @@ def render_page():
     credibility = get_conformal_credibility()
     ml_risks = fc.get("risk", [])
     risk_val = ml_risks[0] if ml_risks else 0.05
-    ml_stages = fc.get("stage", [])
-    curr_stage = ml_stages[0] if ml_stages else "Credential Access"
-
+    # Map curr_stage from the backend root payload (not the rollout list)
+    pred_raw = _get_live_prediction() if '_get_live_prediction' in globals() else {}
+    if not pred_raw:
+        # Fallback to local import if needed
+        from data_provider import _get_live_prediction
+        pred_raw = _get_live_prediction()
+        
+    curr_stage = pred_raw.get("current_stage", "No attack detected")
+    
     # Baseline default alerts fallback (REMOVED: Must use real data sources only per F5)
     default_alerts = []
 
@@ -80,7 +86,7 @@ def render_page():
                 mins_ago = "—"
             
             rate = "—"
-            bytes_val = flw.get("Tot Fwd Pkts", flw.get("Fwd Pkt Len Mean", 0)) * 8
+            bytes_val = flw.get("TotLen Fwd Pkts", flw.get("Fwd Pkt Len Mean", 0))
             dur = flw.get("Flow Duration", 0)
             if dur > 0 and bytes_val > 0:
                 mbps = (bytes_val / 1024 / 1024) / (dur / 1e6)
@@ -88,12 +94,17 @@ def render_page():
                 
             flow_id = hashlib.md5(f"{src}{dst}{sport}{dport}{ts_str}".encode()).hexdigest()[:8].upper()
 
+            if curr_stage == "No attack detected":
+                technique_str = "—"
+            else:
+                technique_str = f"{tactic_id} • {curr_stage} ({proto})"
+
             live_alerts.append({
                 "id": f"ALT-{flow_id}",
                 "time": ts_str,
                 "mins_ago": mins_ago,
                 "sev": sev,
-                "technique": f"{tactic_id} • {curr_stage} ({proto})",
+                "technique": technique_str,
                 "host": f"node-{src}" if src != "—" else "—",
                 "title": f"Suspicious flow detected: {src}:{sport} → {dst}:{dport} ({proto}) with risk {score:.2f}.",
                 "description": f"Ingested telemetry record flagged by World Model inference. Model indicates {curr_stage} execution phase with cumulative risk score {score:.2f}.",
