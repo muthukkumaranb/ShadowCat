@@ -1,0 +1,1609 @@
+{
+  "generated_by": "evaluation/k5/state_rollout_eval.py",
+  "dataset": "data-engineering/data/ucs/ucs_windows_models_v1.parquet",
+  "manifest": "ml1/artifacts/loeo/corrected_37fold_manifest.json",
+  "n_folds": 37,
+  "n_episodes": 37,
+  "total_test_windows_evaluated": 410,
+  "h_star_state": 0,
+  "pooled_results_per_k": {
+    "1": {
+      "n_windows": 410,
+      "lstm_gaussian": {
+        "rmse": 1136.5066,
+        "mae": 22.9626
+      },
+      "persistence": {
+        "rmse": 986.1863,
+        "mae": 14.6483
+      },
+      "training_mean": {
+        "rmse": 1140.9507,
+        "mae": 31.0661
+      },
+      "linear_ar1": {
+        "rmse": 4747.7077,
+        "mae": 258.7436
+      },
+      "delta_model_minus_persistence": {
+        "rmse": {
+          "point_estimate": 150.3203,
+          "ci_95": [
+            -11.6023,
+            394.8618
+          ],
+          "beats_persistence": false
+        },
+        "mae": {
+          "point_estimate": 8.3143,
+          "ci_95": [
+            3.8756,
+            15.1609
+          ],
+          "beats_persistence": false
+        },
+        "beats_persistence_both": false
+      }
+    },
+    "2": {
+      "n_windows": 410,
+      "lstm_gaussian": {
+        "rmse": 1625.2552,
+        "mae": 33.8526
+      },
+      "persistence": {
+        "rmse": 756.7327,
+        "mae": 7.8293
+      },
+      "training_mean": {
+        "rmse": 1628.359,
+        "mae": 41.7164
+      },
+      "linear_ar1": {
+        "rmse": 71490.5736,
+        "mae": 3347.0837
+      },
+      "delta_model_minus_persistence": {
+        "rmse": {
+          "point_estimate": 868.5225,
+          "ci_95": [
+            483.2188,
+            1599.1089
+          ],
+          "beats_persistence": false
+        },
+        "mae": {
+          "point_estimate": 26.0233,
+          "ci_95": [
+            14.1331,
+            43.7713
+          ],
+          "beats_persistence": false
+        },
+        "beats_persistence_both": false
+      }
+    },
+    "3": {
+      "n_windows": 410,
+      "lstm_gaussian": {
+        "rmse": 1233.4641,
+        "mae": 26.6346
+      },
+      "persistence": {
+        "rmse": 1107.7304,
+        "mae": 18.1846
+      },
+      "training_mean": {
+        "rmse": 1237.556,
+        "mae": 34.3452
+      },
+      "linear_ar1": {
+        "rmse": 137552.3045,
+        "mae": 5065.2561
+      },
+      "delta_model_minus_persistence": {
+        "rmse": {
+          "point_estimate": 125.7336,
+          "ci_95": [
+            -42.4727,
+            454.4348
+          ],
+          "beats_persistence": false
+        },
+        "mae": {
+          "point_estimate": 8.45,
+          "ci_95": [
+            3.2336,
+            17.1582
+          ],
+          "beats_persistence": false
+        },
+        "beats_persistence_both": false
+      }
+    },
+    "4": {
+      "n_windows": 410,
+      "lstm_gaussian": {
+        "rmse": 1640.5731,
+        "mae": 35.5764
+      },
+      "persistence": {
+        "rmse": 929.4387,
+        "mae": 12.8608
+      },
+      "training_mean": {
+        "rmse": 1643.6514,
+        "mae": 43.1834
+      },
+      "linear_ar1": {
+        "rmse": 1461290.0414,
+        "mae": 53366.1388
+      },
+      "delta_model_minus_persistence": {
+        "rmse": {
+          "point_estimate": 711.1344,
+          "ci_95": [
+            382.3719,
+            1416.1142
+          ],
+          "beats_persistence": false
+        },
+        "mae": {
+          "point_estimate": 22.7156,
+          "ci_95": [
+            11.6359,
+            39.1323
+          ],
+          "beats_persistence": false
+        },
+        "beats_persistence_both": false
+      }
+    },
+    "5": {
+      "n_windows": 410,
+      "lstm_gaussian": {
+        "rmse": 1314.8689,
+        "mae": 28.8971
+      },
+      "persistence": {
+        "rmse": 1238.568,
+        "mae": 22.3887
+      },
+      "training_mean": {
+        "rmse": 1318.7112,
+        "mae": 36.4457
+      },
+      "linear_ar1": {
+        "rmse": 2377968.583,
+        "mae": 91050.3995
+      },
+      "delta_model_minus_persistence": {
+        "rmse": {
+          "point_estimate": 76.3009,
+          "ci_95": [
+            -113.3311,
+            382.5498
+          ],
+          "beats_persistence": false
+        },
+        "mae": {
+          "point_estimate": 6.5084,
+          "ci_95": [
+            0.8022,
+            13.8772
+          ],
+          "beats_persistence": false
+        },
+        "beats_persistence_both": false
+      }
+    }
+  },
+  "per_fold_results": [
+    {
+      "fold_id": 0,
+      "episode_id": "02-03-2018_Botnet_0",
+      "attack_type": "Botnet",
+      "n_test_windows": 20,
+      "horizons": {
+        "1": {
+          "rmse_lstm": 1.4937,
+          "mae_lstm": 0.6261,
+          "rmse_persist": 0.9914,
+          "mae_persist": 0.326
+        },
+        "2": {
+          "rmse_lstm": 2.3748,
+          "mae_lstm": 0.8693,
+          "rmse_persist": 0.986,
+          "mae_persist": 0.3543
+        },
+        "3": {
+          "rmse_lstm": 3.4803,
+          "mae_lstm": 1.1458,
+          "rmse_persist": 1.1128,
+          "mae_persist": 0.3713
+        },
+        "4": {
+          "rmse_lstm": 4.5106,
+          "mae_lstm": 1.4186,
+          "rmse_persist": 1.0845,
+          "mae_persist": 0.3229
+        },
+        "5": {
+          "rmse_lstm": 5.4414,
+          "mae_lstm": 1.7058,
+          "rmse_persist": 1.109,
+          "mae_persist": 0.3069
+        }
+      }
+    },
+    {
+      "fold_id": 1,
+      "episode_id": "02-03-2018_Botnet_1",
+      "attack_type": "Botnet",
+      "n_test_windows": 24,
+      "horizons": {
+        "1": {
+          "rmse_lstm": 1.6364,
+          "mae_lstm": 0.6594,
+          "rmse_persist": 0.907,
+          "mae_persist": 0.3104
+        },
+        "2": {
+          "rmse_lstm": 3.3003,
+          "mae_lstm": 1.0363,
+          "rmse_persist": 0.9591,
+          "mae_persist": 0.3616
+        },
+        "3": {
+          "rmse_lstm": 4.4755,
+          "mae_lstm": 1.3966,
+          "rmse_persist": 1.087,
+          "mae_persist": 0.3827
+        },
+        "4": {
+          "rmse_lstm": 5.0811,
+          "mae_lstm": 1.6121,
+          "rmse_persist": 1.0812,
+          "mae_persist": 0.361
+        },
+        "5": {
+          "rmse_lstm": 4.935,
+          "mae_lstm": 1.5829,
+          "rmse_persist": 1.1678,
+          "mae_persist": 0.3871
+        }
+      }
+    },
+    {
+      "fold_id": 2,
+      "episode_id": "02-03-2018_Botnet_2",
+      "attack_type": "Botnet",
+      "n_test_windows": 12,
+      "horizons": {
+        "1": {
+          "rmse_lstm": 2.8722,
+          "mae_lstm": 0.8586,
+          "rmse_persist": 1.6429,
+          "mae_persist": 0.5294
+        },
+        "2": {
+          "rmse_lstm": 6.0932,
+          "mae_lstm": 1.5412,
+          "rmse_persist": 2.5735,
+          "mae_persist": 0.6409
+        },
+        "3": {
+          "rmse_lstm": 7.2758,
+          "mae_lstm": 1.8609,
+          "rmse_persist": 2.5981,
+          "mae_persist": 0.7004
+        },
+        "4": {
+          "rmse_lstm": 7.8438,
+          "mae_lstm": 2.0235,
+          "rmse_persist": 2.0283,
+          "mae_persist": 0.6101
+        },
+        "5": {
+          "rmse_lstm": 8.5837,
+          "mae_lstm": 2.2723,
+          "rmse_persist": 2.6352,
+          "mae_persist": 0.6241
+        }
+      }
+    },
+    {
+      "fold_id": 3,
+      "episode_id": "02-03-2018_Botnet_3",
+      "attack_type": "Botnet",
+      "n_test_windows": 6,
+      "horizons": {
+        "1": {
+          "rmse_lstm": 1.6974,
+          "mae_lstm": 0.7554,
+          "rmse_persist": 1.4185,
+          "mae_persist": 0.539
+        },
+        "2": {
+          "rmse_lstm": 5.6214,
+          "mae_lstm": 1.2638,
+          "rmse_persist": 5.2001,
+          "mae_persist": 0.9687
+        },
+        "3": {
+          "rmse_lstm": 2.3891,
+          "mae_lstm": 0.8933,
+          "rmse_persist": 1.4711,
+          "mae_persist": 0.6734
+        },
+        "4": {
+          "rmse_lstm": 1.9841,
+          "mae_lstm": 0.8141,
+          "rmse_persist": 1.3464,
+          "mae_persist": 0.5803
+        },
+        "5": {
+          "rmse_lstm": 1.7931,
+          "mae_lstm": 0.7736,
+          "rmse_persist": 1.3151,
+          "mae_persist": 0.5504
+        }
+      }
+    },
+    {
+      "fold_id": 4,
+      "episode_id": "02-03-2018_Botnet_4",
+      "attack_type": "Botnet",
+      "n_test_windows": 6,
+      "horizons": {
+        "1": {
+          "rmse_lstm": 5.5601,
+          "mae_lstm": 1.5621,
+          "rmse_persist": 1.1674,
+          "mae_persist": 0.4869
+        },
+        "2": {
+          "rmse_lstm": 6.1157,
+          "mae_lstm": 1.7513,
+          "rmse_persist": 1.2608,
+          "mae_persist": 0.5995
+        },
+        "3": {
+          "rmse_lstm": 6.076,
+          "mae_lstm": 1.7456,
+          "rmse_persist": 1.3575,
+          "mae_persist": 0.6213
+        },
+        "4": {
+          "rmse_lstm": 6.246,
+          "mae_lstm": 1.8145,
+          "rmse_persist": 1.1687,
+          "mae_persist": 0.5349
+        },
+        "5": {
+          "rmse_lstm": 6.2905,
+          "mae_lstm": 1.8159,
+          "rmse_persist": 1.1612,
+          "mae_persist": 0.4854
+        }
+      }
+    },
+    {
+      "fold_id": 5,
+      "episode_id": "02-03-2018_Botnet_5",
+      "attack_type": "Botnet",
+      "n_test_windows": 9,
+      "horizons": {
+        "1": {
+          "rmse_lstm": 1.6097,
+          "mae_lstm": 0.7507,
+          "rmse_persist": 0.9463,
+          "mae_persist": 0.4087
+        },
+        "2": {
+          "rmse_lstm": 3.3556,
+          "mae_lstm": 1.2183,
+          "rmse_persist": 1.0309,
+          "mae_persist": 0.4875
+        },
+        "3": {
+          "rmse_lstm": 4.1487,
+          "mae_lstm": 1.4719,
+          "rmse_persist": 1.108,
+          "mae_persist": 0.4871
+        },
+        "4": {
+          "rmse_lstm": 4.705,
+          "mae_lstm": 1.6314,
+          "rmse_persist": 0.9738,
+          "mae_persist": 0.4388
+        },
+        "5": {
+          "rmse_lstm": 5.0226,
+          "mae_lstm": 1.7302,
+          "rmse_persist": 0.9724,
+          "mae_persist": 0.3833
+        }
+      }
+    },
+    {
+      "fold_id": 6,
+      "episode_id": "02-03-2018_Botnet_6",
+      "attack_type": "Botnet",
+      "n_test_windows": 9,
+      "horizons": {
+        "1": {
+          "rmse_lstm": 1.7299,
+          "mae_lstm": 0.7211,
+          "rmse_persist": 1.1537,
+          "mae_persist": 0.488
+        },
+        "2": {
+          "rmse_lstm": 4.949,
+          "mae_lstm": 1.389,
+          "rmse_persist": 1.1179,
+          "mae_persist": 0.5093
+        },
+        "3": {
+          "rmse_lstm": 7.1618,
+          "mae_lstm": 2.0317,
+          "rmse_persist": 1.2857,
+          "mae_persist": 0.597
+        },
+        "4": {
+          "rmse_lstm": 7.8167,
+          "mae_lstm": 2.2661,
+          "rmse_persist": 1.0842,
+          "mae_persist": 0.4796
+        },
+        "5": {
+          "rmse_lstm": 8.1244,
+          "mae_lstm": 2.3366,
+          "rmse_persist": 1.0755,
+          "mae_persist": 0.4699
+        }
+      }
+    },
+    {
+      "fold_id": 7,
+      "episode_id": "02-03-2018_Botnet_7",
+      "attack_type": "Botnet",
+      "n_test_windows": 8,
+      "horizons": {
+        "1": {
+          "rmse_lstm": 2.5177,
+          "mae_lstm": 0.9375,
+          "rmse_persist": 1.0483,
+          "mae_persist": 0.4442
+        },
+        "2": {
+          "rmse_lstm": 3.4378,
+          "mae_lstm": 1.2111,
+          "rmse_persist": 1.1081,
+          "mae_persist": 0.5513
+        },
+        "3": {
+          "rmse_lstm": 3.9306,
+          "mae_lstm": 1.385,
+          "rmse_persist": 1.2271,
+          "mae_persist": 0.5855
+        },
+        "4": {
+          "rmse_lstm": 4.3671,
+          "mae_lstm": 1.4967,
+          "rmse_persist": 0.9888,
+          "mae_persist": 0.4346
+        },
+        "5": {
+          "rmse_lstm": 4.5318,
+          "mae_lstm": 1.5435,
+          "rmse_persist": 1.0914,
+          "mae_persist": 0.4396
+        }
+      }
+    },
+    {
+      "fold_id": 8,
+      "episode_id": "02-03-2018_Botnet_8",
+      "attack_type": "Botnet",
+      "n_test_windows": 14,
+      "horizons": {
+        "1": {
+          "rmse_lstm": 2.2759,
+          "mae_lstm": 0.8633,
+          "rmse_persist": 1.2103,
+          "mae_persist": 0.4395
+        },
+        "2": {
+          "rmse_lstm": 3.3513,
+          "mae_lstm": 1.17,
+          "rmse_persist": 1.1986,
+          "mae_persist": 0.4764
+        },
+        "3": {
+          "rmse_lstm": 4.5238,
+          "mae_lstm": 1.472,
+          "rmse_persist": 1.3464,
+          "mae_persist": 0.5225
+        },
+        "4": {
+          "rmse_lstm": 5.4152,
+          "mae_lstm": 1.728,
+          "rmse_persist": 1.2174,
+          "mae_persist": 0.497
+        },
+        "5": {
+          "rmse_lstm": 6.0929,
+          "mae_lstm": 1.9179,
+          "rmse_persist": 1.3314,
+          "mae_persist": 0.5123
+        }
+      }
+    },
+    {
+      "fold_id": 9,
+      "episode_id": "02-03-2018_Botnet_9",
+      "attack_type": "Botnet",
+      "n_test_windows": 10,
+      "horizons": {
+        "1": {
+          "rmse_lstm": 4.6855,
+          "mae_lstm": 1.2503,
+          "rmse_persist": 0.9655,
+          "mae_persist": 0.3921
+        },
+        "2": {
+          "rmse_lstm": 6.4615,
+          "mae_lstm": 1.6112,
+          "rmse_persist": 1.0378,
+          "mae_persist": 0.4736
+        },
+        "3": {
+          "rmse_lstm": 6.6908,
+          "mae_lstm": 1.7128,
+          "rmse_persist": 1.1634,
+          "mae_persist": 0.5385
+        },
+        "4": {
+          "rmse_lstm": 7.1472,
+          "mae_lstm": 1.8853,
+          "rmse_persist": 1.0535,
+          "mae_persist": 0.4931
+        },
+        "5": {
+          "rmse_lstm": 7.5542,
+          "mae_lstm": 2.0833,
+          "rmse_persist": 1.1106,
+          "mae_persist": 0.5078
+        }
+      }
+    },
+    {
+      "fold_id": 10,
+      "episode_id": "14-02-2018_SSH-Bruteforce_0",
+      "attack_type": "SSH-Bruteforce",
+      "n_test_windows": 12,
+      "horizons": {
+        "1": {
+          "rmse_lstm": 14.0223,
+          "mae_lstm": 1.2188,
+          "rmse_persist": 4.0323,
+          "mae_persist": 0.6225
+        },
+        "2": {
+          "rmse_lstm": 19.5375,
+          "mae_lstm": 1.821,
+          "rmse_persist": 14.5114,
+          "mae_persist": 0.7281
+        },
+        "3": {
+          "rmse_lstm": 23.9237,
+          "mae_lstm": 2.2789,
+          "rmse_persist": 20.3937,
+          "mae_persist": 1.1785
+        },
+        "4": {
+          "rmse_lstm": 27.3842,
+          "mae_lstm": 2.5672,
+          "rmse_persist": 24.5194,
+          "mae_persist": 1.3924
+        },
+        "5": {
+          "rmse_lstm": 30.5045,
+          "mae_lstm": 2.8348,
+          "rmse_persist": 28.4082,
+          "mae_persist": 1.7249
+        }
+      }
+    },
+    {
+      "fold_id": 11,
+      "episode_id": "14-02-2018_SSH-Bruteforce_1",
+      "attack_type": "SSH-Bruteforce",
+      "n_test_windows": 9,
+      "horizons": {
+        "1": {
+          "rmse_lstm": 31.0016,
+          "mae_lstm": 2.2341,
+          "rmse_persist": 2.3057,
+          "mae_persist": 0.4881
+        },
+        "2": {
+          "rmse_lstm": 31.2446,
+          "mae_lstm": 2.5481,
+          "rmse_persist": 1.7589,
+          "mae_persist": 0.3476
+        },
+        "3": {
+          "rmse_lstm": 31.1798,
+          "mae_lstm": 2.7032,
+          "rmse_persist": 2.22,
+          "mae_persist": 0.4838
+        },
+        "4": {
+          "rmse_lstm": 31.2849,
+          "mae_lstm": 2.8176,
+          "rmse_persist": 1.9191,
+          "mae_persist": 0.4371
+        },
+        "5": {
+          "rmse_lstm": 31.1851,
+          "mae_lstm": 2.8632,
+          "rmse_persist": 2.1754,
+          "mae_persist": 0.4094
+        }
+      }
+    },
+    {
+      "fold_id": 12,
+      "episode_id": "14-02-2018_SSH-Bruteforce_2",
+      "attack_type": "SSH-Bruteforce",
+      "n_test_windows": 20,
+      "horizons": {
+        "1": {
+          "rmse_lstm": 33.9414,
+          "mae_lstm": 2.2008,
+          "rmse_persist": 3.333,
+          "mae_persist": 0.5014
+        },
+        "2": {
+          "rmse_lstm": 34.3891,
+          "mae_lstm": 2.5678,
+          "rmse_persist": 3.3056,
+          "mae_persist": 0.4181
+        },
+        "3": {
+          "rmse_lstm": 34.5632,
+          "mae_lstm": 2.9258,
+          "rmse_persist": 3.6453,
+          "mae_persist": 0.5074
+        },
+        "4": {
+          "rmse_lstm": 34.6079,
+          "mae_lstm": 2.9866,
+          "rmse_persist": 3.309,
+          "mae_persist": 0.435
+        },
+        "5": {
+          "rmse_lstm": 34.5738,
+          "mae_lstm": 2.9602,
+          "rmse_persist": 3.168,
+          "mae_persist": 0.4684
+        }
+      }
+    },
+    {
+      "fold_id": 13,
+      "episode_id": "14-02-2018_SSH-Bruteforce_3",
+      "attack_type": "SSH-Bruteforce",
+      "n_test_windows": 6,
+      "horizons": {
+        "1": {
+          "rmse_lstm": 19.5365,
+          "mae_lstm": 1.5544,
+          "rmse_persist": 2.7885,
+          "mae_persist": 0.641
+        },
+        "2": {
+          "rmse_lstm": 19.5587,
+          "mae_lstm": 2.0387,
+          "rmse_persist": 1.9841,
+          "mae_persist": 0.3726
+        },
+        "3": {
+          "rmse_lstm": 19.9036,
+          "mae_lstm": 2.2934,
+          "rmse_persist": 2.4261,
+          "mae_persist": 0.5129
+        },
+        "4": {
+          "rmse_lstm": 19.8492,
+          "mae_lstm": 2.3478,
+          "rmse_persist": 2.0184,
+          "mae_persist": 0.4554
+        },
+        "5": {
+          "rmse_lstm": 19.9045,
+          "mae_lstm": 2.34,
+          "rmse_persist": 2.4018,
+          "mae_persist": 0.4426
+        }
+      }
+    },
+    {
+      "fold_id": 14,
+      "episode_id": "14-02-2018_SSH-Bruteforce_4",
+      "attack_type": "SSH-Bruteforce",
+      "n_test_windows": 16,
+      "horizons": {
+        "1": {
+          "rmse_lstm": 33.6932,
+          "mae_lstm": 2.7367,
+          "rmse_persist": 3.471,
+          "mae_persist": 0.5061
+        },
+        "2": {
+          "rmse_lstm": 34.2998,
+          "mae_lstm": 3.4293,
+          "rmse_persist": 3.4186,
+          "mae_persist": 0.3682
+        },
+        "3": {
+          "rmse_lstm": 34.5684,
+          "mae_lstm": 3.8199,
+          "rmse_persist": 3.3273,
+          "mae_persist": 0.4884
+        },
+        "4": {
+          "rmse_lstm": 34.7803,
+          "mae_lstm": 3.9333,
+          "rmse_persist": 2.6563,
+          "mae_persist": 0.3993
+        },
+        "5": {
+          "rmse_lstm": 34.8092,
+          "mae_lstm": 3.9639,
+          "rmse_persist": 3.3248,
+          "mae_persist": 0.4308
+        }
+      }
+    },
+    {
+      "fold_id": 15,
+      "episode_id": "14-02-2018_SSH-Bruteforce_5",
+      "attack_type": "SSH-Bruteforce",
+      "n_test_windows": 24,
+      "horizons": {
+        "1": {
+          "rmse_lstm": 34.219,
+          "mae_lstm": 2.6144,
+          "rmse_persist": 2.9893,
+          "mae_persist": 0.5025
+        },
+        "2": {
+          "rmse_lstm": 34.7607,
+          "mae_lstm": 2.7591,
+          "rmse_persist": 2.878,
+          "mae_persist": 0.3811
+        },
+        "3": {
+          "rmse_lstm": 34.6691,
+          "mae_lstm": 2.7184,
+          "rmse_persist": 3.3119,
+          "mae_persist": 0.4796
+        },
+        "4": {
+          "rmse_lstm": 34.6518,
+          "mae_lstm": 2.6215,
+          "rmse_persist": 2.977,
+          "mae_persist": 0.4255
+        },
+        "5": {
+          "rmse_lstm": 34.6477,
+          "mae_lstm": 2.5523,
+          "rmse_persist": 3.3016,
+          "mae_persist": 0.4648
+        }
+      }
+    },
+    {
+      "fold_id": 16,
+      "episode_id": "14-02-2018_SSH-Bruteforce_6",
+      "attack_type": "SSH-Bruteforce",
+      "n_test_windows": 66,
+      "horizons": {
+        "1": {
+          "rmse_lstm": 34.9515,
+          "mae_lstm": 2.9122,
+          "rmse_persist": 3.4435,
+          "mae_persist": 0.4639
+        },
+        "2": {
+          "rmse_lstm": 35.0529,
+          "mae_lstm": 3.0979,
+          "rmse_persist": 2.6871,
+          "mae_persist": 0.4077
+        },
+        "3": {
+          "rmse_lstm": 35.1351,
+          "mae_lstm": 3.2675,
+          "rmse_persist": 3.5902,
+          "mae_persist": 0.4809
+        },
+        "4": {
+          "rmse_lstm": 35.2356,
+          "mae_lstm": 3.5237,
+          "rmse_persist": 3.0205,
+          "mae_persist": 0.4379
+        },
+        "5": {
+          "rmse_lstm": 35.3141,
+          "mae_lstm": 3.6529,
+          "rmse_persist": 3.4332,
+          "mae_persist": 0.4655
+        }
+      }
+    },
+    {
+      "fold_id": 17,
+      "episode_id": "14-02-2018_SSH-Bruteforce_7",
+      "attack_type": "SSH-Bruteforce",
+      "n_test_windows": 12,
+      "horizons": {
+        "1": {
+          "rmse_lstm": 33.5759,
+          "mae_lstm": 2.4431,
+          "rmse_persist": 1.8801,
+          "mae_persist": 0.4387
+        },
+        "2": {
+          "rmse_lstm": 34.0057,
+          "mae_lstm": 2.6138,
+          "rmse_persist": 1.8022,
+          "mae_persist": 0.3884
+        },
+        "3": {
+          "rmse_lstm": 34.1406,
+          "mae_lstm": 2.6259,
+          "rmse_persist": 1.7844,
+          "mae_persist": 0.4819
+        },
+        "4": {
+          "rmse_lstm": 34.2018,
+          "mae_lstm": 2.6314,
+          "rmse_persist": 1.3197,
+          "mae_persist": 0.3723
+        },
+        "5": {
+          "rmse_lstm": 34.2569,
+          "mae_lstm": 2.6833,
+          "rmse_persist": 3.2341,
+          "mae_persist": 0.5163
+        }
+      }
+    },
+    {
+      "fold_id": 18,
+      "episode_id": "14-02-2018_SSH-Bruteforce_8",
+      "attack_type": "SSH-Bruteforce",
+      "n_test_windows": 14,
+      "horizons": {
+        "1": {
+          "rmse_lstm": 32.4957,
+          "mae_lstm": 2.1993,
+          "rmse_persist": 6.9133,
+          "mae_persist": 0.5508
+        },
+        "2": {
+          "rmse_lstm": 30.1392,
+          "mae_lstm": 1.9793,
+          "rmse_persist": 14.9754,
+          "mae_persist": 0.7799
+        },
+        "3": {
+          "rmse_lstm": 27.1875,
+          "mae_lstm": 1.7327,
+          "rmse_persist": 19.9232,
+          "mae_persist": 1.1656
+        },
+        "4": {
+          "rmse_lstm": 23.983,
+          "mae_lstm": 1.5648,
+          "rmse_persist": 23.9206,
+          "mae_persist": 1.3562
+        },
+        "5": {
+          "rmse_lstm": 20.0994,
+          "mae_lstm": 1.3218,
+          "rmse_persist": 27.3343,
+          "mae_persist": 1.7482
+        }
+      }
+    },
+    {
+      "fold_id": 19,
+      "episode_id": "21-02-2018_DDOS-LOIC-UDP_0",
+      "attack_type": "DDOS-LOIC-UDP",
+      "n_test_windows": 12,
+      "horizons": {
+        "1": {
+          "rmse_lstm": 4095.1618,
+          "mae_lstm": 148.9583,
+          "rmse_persist": 4178.0174,
+          "mae_persist": 149.5571
+        },
+        "2": {
+          "rmse_lstm": 4658.4266,
+          "mae_lstm": 206.599,
+          "rmse_persist": 4354.5896,
+          "mae_persist": 187.8595
+        },
+        "3": {
+          "rmse_lstm": 4913.3459,
+          "mae_lstm": 249.5693,
+          "rmse_persist": 5128.0877,
+          "mae_persist": 261.3995
+        },
+        "4": {
+          "rmse_lstm": 5415.6307,
+          "mae_lstm": 309.1702,
+          "rmse_persist": 5114.4114,
+          "mae_persist": 286.5268
+        },
+        "5": {
+          "rmse_lstm": 5643.7173,
+          "mae_lstm": 352.6075,
+          "rmse_persist": 5813.8022,
+          "mae_persist": 363.6217
+        }
+      }
+    },
+    {
+      "fold_id": 20,
+      "episode_id": "21-02-2018_DDOS-LOIC-UDP_1",
+      "attack_type": "DDOS-LOIC-UDP",
+      "n_test_windows": 6,
+      "horizons": {
+        "1": {
+          "rmse_lstm": 2209.123,
+          "mae_lstm": 88.5465,
+          "rmse_persist": 986.4214,
+          "mae_persist": 32.6159
+        },
+        "2": {
+          "rmse_lstm": 3221.3373,
+          "mae_lstm": 122.518,
+          "rmse_persist": 110.05,
+          "mae_persist": 5.6918
+        },
+        "3": {
+          "rmse_lstm": 2246.2412,
+          "mae_lstm": 90.3666,
+          "rmse_persist": 937.46,
+          "mae_persist": 32.4863
+        },
+        "4": {
+          "rmse_lstm": 2571.0421,
+          "mae_lstm": 100.545,
+          "rmse_persist": 618.0506,
+          "mae_persist": 21.2087
+        },
+        "5": {
+          "rmse_lstm": 2229.4114,
+          "mae_lstm": 89.382,
+          "rmse_persist": 947.7933,
+          "mae_persist": 33.3376
+        }
+      }
+    },
+    {
+      "fold_id": 21,
+      "episode_id": "21-02-2018_DDOS-LOIC-UDP_10",
+      "attack_type": "DDOS-LOIC-UDP",
+      "n_test_windows": 6,
+      "horizons": {
+        "1": {
+          "rmse_lstm": 1431.0314,
+          "mae_lstm": 59.5659,
+          "rmse_persist": 1935.5687,
+          "mae_persist": 61.0785
+        },
+        "2": {
+          "rmse_lstm": 3197.9818,
+          "mae_lstm": 120.701,
+          "rmse_persist": 35.462,
+          "mae_persist": 2.546
+        },
+        "3": {
+          "rmse_lstm": 1413.8836,
+          "mae_lstm": 59.6608,
+          "rmse_persist": 1939.8105,
+          "mae_persist": 62.0054
+        },
+        "4": {
+          "rmse_lstm": 3068.2231,
+          "mae_lstm": 116.9351,
+          "rmse_persist": 136.7984,
+          "mae_persist": 6.551
+        },
+        "5": {
+          "rmse_lstm": 1529.6401,
+          "mae_lstm": 63.9252,
+          "rmse_persist": 1824.1558,
+          "mae_persist": 59.2316
+        }
+      }
+    },
+    {
+      "fold_id": 22,
+      "episode_id": "21-02-2018_DDOS-LOIC-UDP_11",
+      "attack_type": "DDOS-LOIC-UDP",
+      "n_test_windows": 6,
+      "horizons": {
+        "1": {
+          "rmse_lstm": 1413.6949,
+          "mae_lstm": 58.8275,
+          "rmse_persist": 1946.8766,
+          "mae_persist": 61.8911
+        },
+        "2": {
+          "rmse_lstm": 3068.2346,
+          "mae_lstm": 116.8272,
+          "rmse_persist": 139.4833,
+          "mae_persist": 5.9977
+        },
+        "3": {
+          "rmse_lstm": 1529.6563,
+          "mae_lstm": 63.949,
+          "rmse_persist": 1830.8202,
+          "mae_persist": 58.7613
+        },
+        "4": {
+          "rmse_lstm": 2965.0987,
+          "mae_lstm": 113.616,
+          "rmse_persist": 248.059,
+          "mae_persist": 9.6911
+        },
+        "5": {
+          "rmse_lstm": 1640.3528,
+          "mae_lstm": 68.3065,
+          "rmse_persist": 1723.1594,
+          "mae_persist": 56.5119
+        }
+      }
+    },
+    {
+      "fold_id": 23,
+      "episode_id": "21-02-2018_DDOS-LOIC-UDP_12",
+      "attack_type": "DDOS-LOIC-UDP",
+      "n_test_windows": 6,
+      "horizons": {
+        "1": {
+          "rmse_lstm": 1529.4805,
+          "mae_lstm": 63.1155,
+          "rmse_persist": 1693.3017,
+          "mae_persist": 53.5787
+        },
+        "2": {
+          "rmse_lstm": 2965.1113,
+          "mae_lstm": 113.5124,
+          "rmse_persist": 111.6223,
+          "mae_persist": 5.0108
+        },
+        "3": {
+          "rmse_lstm": 1640.3726,
+          "mae_lstm": 68.3364,
+          "rmse_persist": 1585.6701,
+          "mae_persist": 52.0898
+        },
+        "4": {
+          "rmse_lstm": 2799.7564,
+          "mae_lstm": 108.8983,
+          "rmse_persist": 298.6103,
+          "mae_persist": 11.7812
+        },
+        "5": {
+          "rmse_lstm": 1881.336,
+          "mae_lstm": 77.3513,
+          "rmse_persist": 1340.4238,
+          "mae_persist": 45.9688
+        }
+      }
+    },
+    {
+      "fold_id": 24,
+      "episode_id": "21-02-2018_DDOS-LOIC-UDP_13",
+      "attack_type": "DDOS-LOIC-UDP",
+      "n_test_windows": 6,
+      "horizons": {
+        "1": {
+          "rmse_lstm": 1640.2051,
+          "mae_lstm": 67.4981,
+          "rmse_persist": 1476.3087,
+          "mae_persist": 47.6833
+        },
+        "2": {
+          "rmse_lstm": 2799.764,
+          "mae_lstm": 108.7904,
+          "rmse_persist": 190.5143,
+          "mae_persist": 8.1651
+        },
+        "3": {
+          "rmse_lstm": 1881.3497,
+          "mae_lstm": 77.3788,
+          "rmse_persist": 1231.3324,
+          "mae_persist": 42.631
+        },
+        "4": {
+          "rmse_lstm": 2756.5496,
+          "mae_lstm": 107.5995,
+          "rmse_persist": 237.3304,
+          "mae_persist": 9.796
+        },
+        "5": {
+          "rmse_lstm": 1747.2015,
+          "mae_lstm": 72.1002,
+          "rmse_persist": 1347.6508,
+          "mae_persist": 44.966
+        }
+      }
+    },
+    {
+      "fold_id": 25,
+      "episode_id": "21-02-2018_DDOS-LOIC-UDP_14",
+      "attack_type": "DDOS-LOIC-UDP",
+      "n_test_windows": 6,
+      "horizons": {
+        "1": {
+          "rmse_lstm": 1881.2041,
+          "mae_lstm": 76.5435,
+          "rmse_persist": 1043.5153,
+          "mae_persist": 35.163
+        },
+        "2": {
+          "rmse_lstm": 2756.5606,
+          "mae_lstm": 107.494,
+          "rmse_persist": 52.4782,
+          "mae_persist": 3.1638
+        },
+        "3": {
+          "rmse_lstm": 1747.2187,
+          "mae_lstm": 72.1345,
+          "rmse_persist": 1161.5161,
+          "mae_persist": 38.434
+        },
+        "4": {
+          "rmse_lstm": 2219.2677,
+          "mae_lstm": 88.6603,
+          "rmse_persist": 588.5105,
+          "mae_persist": 22.672
+        },
+        "5": {
+          "rmse_lstm": 2471.909,
+          "mae_lstm": 101.312,
+          "rmse_persist": 920.7056,
+          "mae_persist": 39.5841
+        }
+      }
+    },
+    {
+      "fold_id": 26,
+      "episode_id": "21-02-2018_DDOS-LOIC-UDP_15",
+      "attack_type": "DDOS-LOIC-UDP",
+      "n_test_windows": 6,
+      "horizons": {
+        "1": {
+          "rmse_lstm": 1747.0616,
+          "mae_lstm": 71.2915,
+          "rmse_persist": 1114.2699,
+          "mae_persist": 36.2171
+        },
+        "2": {
+          "rmse_lstm": 2219.2752,
+          "mae_lstm": 88.5463,
+          "rmse_persist": 543.3276,
+          "mae_persist": 21.0735
+        },
+        "3": {
+          "rmse_lstm": 2471.9188,
+          "mae_lstm": 101.3364,
+          "rmse_persist": 883.2523,
+          "mae_persist": 38.0068
+        },
+        "4": {
+          "rmse_lstm": 712.6354,
+          "mae_lstm": 31.0924,
+          "rmse_persist": 2050.4745,
+          "mae_persist": 79.0305
+        },
+        "5": {
+          "rmse_lstm": 24.9159,
+          "mae_lstm": 3.0105,
+          "rmse_persist": 2756.5478,
+          "mae_persist": 106.2154
+        }
+      }
+    },
+    {
+      "fold_id": 27,
+      "episode_id": "21-02-2018_DDOS-LOIC-UDP_16",
+      "attack_type": "DDOS-LOIC-UDP",
+      "n_test_windows": 5,
+      "horizons": {
+        "1": {
+          "rmse_lstm": 8.588,
+          "mae_lstm": 2.5786,
+          "rmse_persist": 4.4505,
+          "mae_persist": 0.6757
+        },
+        "2": {
+          "rmse_lstm": 27.3147,
+          "mae_lstm": 3.5012,
+          "rmse_persist": 24.8478,
+          "mae_persist": 1.7902
+        },
+        "3": {
+          "rmse_lstm": 27.4198,
+          "mae_lstm": 3.5816,
+          "rmse_persist": 24.8043,
+          "mae_persist": 1.8938
+        },
+        "4": {
+          "rmse_lstm": 27.3815,
+          "mae_lstm": 3.6315,
+          "rmse_persist": 26.326,
+          "mae_persist": 2.0883
+        },
+        "5": {
+          "rmse_lstm": 27.2927,
+          "mae_lstm": 3.5509,
+          "rmse_persist": 24.913,
+          "mae_persist": 1.9531
+        }
+      }
+    },
+    {
+      "fold_id": 28,
+      "episode_id": "21-02-2018_DDOS-LOIC-UDP_17",
+      "attack_type": "DDOS-LOIC-UDP",
+      "n_test_windows": 5,
+      "horizons": {
+        "1": {
+          "rmse_lstm": 8.588,
+          "mae_lstm": 2.5786,
+          "rmse_persist": 4.4505,
+          "mae_persist": 0.6757
+        },
+        "2": {
+          "rmse_lstm": 27.3147,
+          "mae_lstm": 3.5012,
+          "rmse_persist": 24.8478,
+          "mae_persist": 1.7902
+        },
+        "3": {
+          "rmse_lstm": 27.4198,
+          "mae_lstm": 3.5816,
+          "rmse_persist": 24.8043,
+          "mae_persist": 1.8938
+        },
+        "4": {
+          "rmse_lstm": 27.3815,
+          "mae_lstm": 3.6315,
+          "rmse_persist": 26.326,
+          "mae_persist": 2.0883
+        },
+        "5": {
+          "rmse_lstm": 27.2927,
+          "mae_lstm": 3.5509,
+          "rmse_persist": 24.913,
+          "mae_persist": 1.9531
+        }
+      }
+    },
+    {
+      "fold_id": 29,
+      "episode_id": "21-02-2018_DDOS-LOIC-UDP_2",
+      "attack_type": "DDOS-LOIC-UDP",
+      "n_test_windows": 6,
+      "horizons": {
+        "1": {
+          "rmse_lstm": 2246.1383,
+          "mae_lstm": 89.5321,
+          "rmse_persist": 1000.9199,
+          "mae_persist": 35.528
+        },
+        "2": {
+          "rmse_lstm": 2571.0704,
+          "mae_lstm": 100.4314,
+          "rmse_persist": 674.6662,
+          "mae_persist": 23.6537
+        },
+        "3": {
+          "rmse_lstm": 2229.4338,
+          "mae_lstm": 89.4028,
+          "rmse_persist": 1013.2982,
+          "mae_persist": 37.2594
+        },
+        "4": {
+          "rmse_lstm": 2624.1876,
+          "mae_lstm": 103.5294,
+          "rmse_persist": 654.8937,
+          "mae_persist": 22.4092
+        },
+        "5": {
+          "rmse_lstm": 2570.5199,
+          "mae_lstm": 101.7078,
+          "rmse_persist": 667.6996,
+          "mae_persist": 25.3592
+        }
+      }
+    },
+    {
+      "fold_id": 30,
+      "episode_id": "21-02-2018_DDOS-LOIC-UDP_3",
+      "attack_type": "DDOS-LOIC-UDP",
+      "n_test_windows": 7,
+      "horizons": {
+        "1": {
+          "rmse_lstm": 3187.8096,
+          "mae_lstm": 162.069,
+          "rmse_persist": 489.8677,
+          "mae_persist": 26.4108
+        },
+        "2": {
+          "rmse_lstm": 3400.8826,
+          "mae_lstm": 173.289,
+          "rmse_persist": 333.7056,
+          "mae_persist": 14.5069
+        },
+        "3": {
+          "rmse_lstm": 3104.8527,
+          "mae_lstm": 159.3187,
+          "rmse_persist": 213.2215,
+          "mae_persist": 12.2174
+        },
+        "4": {
+          "rmse_lstm": 3348.1768,
+          "mae_lstm": 168.7265,
+          "rmse_persist": 788.6032,
+          "mae_persist": 34.9898
+        },
+        "5": {
+          "rmse_lstm": 3160.9742,
+          "mae_lstm": 157.6568,
+          "rmse_persist": 622.3925,
+          "mae_persist": 30.6921
+        }
+      }
+    },
+    {
+      "fold_id": 31,
+      "episode_id": "21-02-2018_DDOS-LOIC-UDP_4",
+      "attack_type": "DDOS-LOIC-UDP",
+      "n_test_windows": 6,
+      "horizons": {
+        "1": {
+          "rmse_lstm": 2153.8805,
+          "mae_lstm": 86.2945,
+          "rmse_persist": 504.2419,
+          "mae_persist": 18.9635
+        },
+        "2": {
+          "rmse_lstm": 2905.1265,
+          "mae_lstm": 112.5974,
+          "rmse_persist": 357.3197,
+          "mae_persist": 12.4373
+        },
+        "3": {
+          "rmse_lstm": 1793.9283,
+          "mae_lstm": 74.2687,
+          "rmse_persist": 888.5164,
+          "mae_persist": 30.5438
+        },
+        "4": {
+          "rmse_lstm": 3059.0738,
+          "mae_lstm": 117.1109,
+          "rmse_persist": 529.5394,
+          "mae_persist": 18.4026
+        },
+        "5": {
+          "rmse_lstm": 1622.9899,
+          "mae_lstm": 67.6082,
+          "rmse_persist": 1048.4584,
+          "mae_persist": 35.9001
+        }
+      }
+    },
+    {
+      "fold_id": 32,
+      "episode_id": "21-02-2018_DDOS-LOIC-UDP_5",
+      "attack_type": "DDOS-LOIC-UDP",
+      "n_test_windows": 6,
+      "horizons": {
+        "1": {
+          "rmse_lstm": 1793.7835,
+          "mae_lstm": 73.4331,
+          "rmse_persist": 1244.3146,
+          "mae_persist": 40.3019
+        },
+        "2": {
+          "rmse_lstm": 3059.0862,
+          "mae_lstm": 116.9979,
+          "rmse_persist": 175.5086,
+          "mae_persist": 7.468
+        },
+        "3": {
+          "rmse_lstm": 1623.0099,
+          "mae_lstm": 67.6249,
+          "rmse_persist": 1404.6068,
+          "mae_persist": 46.7088
+        },
+        "4": {
+          "rmse_lstm": 3042.982,
+          "mae_lstm": 116.3312,
+          "rmse_persist": 165.9173,
+          "mae_persist": 7.7377
+        },
+        "5": {
+          "rmse_lstm": 1694.2954,
+          "mae_lstm": 70.5137,
+          "rmse_persist": 1346.3338,
+          "mae_persist": 43.8483
+        }
+      }
+    },
+    {
+      "fold_id": 33,
+      "episode_id": "21-02-2018_DDOS-LOIC-UDP_6",
+      "attack_type": "DDOS-LOIC-UDP",
+      "n_test_windows": 6,
+      "horizons": {
+        "1": {
+          "rmse_lstm": 1622.8523,
+          "mae_lstm": 66.7963,
+          "rmse_persist": 1575.5248,
+          "mae_persist": 50.1087
+        },
+        "2": {
+          "rmse_lstm": 3042.9914,
+          "mae_lstm": 116.2244,
+          "rmse_persist": 29.1264,
+          "mae_persist": 2.3531
+        },
+        "3": {
+          "rmse_lstm": 1694.3108,
+          "mae_lstm": 70.5358,
+          "rmse_persist": 1518.224,
+          "mae_persist": 49.544
+        },
+        "4": {
+          "rmse_lstm": 3269.036,
+          "mae_lstm": 123.0018,
+          "rmse_persist": 239.3039,
+          "mae_persist": 10.0071
+        },
+        "5": {
+          "rmse_lstm": 1378.3486,
+          "mae_lstm": 58.2518,
+          "rmse_persist": 1824.1819,
+          "mae_persist": 60.5114
+        }
+      }
+    },
+    {
+      "fold_id": 34,
+      "episode_id": "21-02-2018_DDOS-LOIC-UDP_7",
+      "attack_type": "DDOS-LOIC-UDP",
+      "n_test_windows": 6,
+      "horizons": {
+        "1": {
+          "rmse_lstm": 1694.1555,
+          "mae_lstm": 69.7041,
+          "rmse_persist": 1505.6095,
+          "mae_persist": 48.5556
+        },
+        "2": {
+          "rmse_lstm": 3269.0458,
+          "mae_lstm": 122.8927,
+          "rmse_persist": 249.5677,
+          "mae_persist": 9.8129
+        },
+        "3": {
+          "rmse_lstm": 1378.3617,
+          "mae_lstm": 58.2749,
+          "rmse_persist": 1810.8372,
+          "mae_persist": 59.7836
+        },
+        "4": {
+          "rmse_lstm": 3147.0051,
+          "mae_lstm": 118.4893,
+          "rmse_persist": 148.6763,
+          "mae_persist": 7.4989
+        },
+        "5": {
+          "rmse_lstm": 1407.78,
+          "mae_lstm": 59.2431,
+          "rmse_persist": 1770.2962,
+          "mae_persist": 58.8358
+        }
+      }
+    },
+    {
+      "fold_id": 35,
+      "episode_id": "21-02-2018_DDOS-LOIC-UDP_8",
+      "attack_type": "DDOS-LOIC-UDP",
+      "n_test_windows": 6,
+      "horizons": {
+        "1": {
+          "rmse_lstm": 1378.1689,
+          "mae_lstm": 57.4395,
+          "rmse_persist": 2055.5747,
+          "mae_persist": 65.3997
+        },
+        "2": {
+          "rmse_lstm": 3147.0154,
+          "mae_lstm": 118.38,
+          "rmse_persist": 124.1798,
+          "mae_persist": 6.0295
+        },
+        "3": {
+          "rmse_lstm": 1407.7943,
+          "mae_lstm": 59.267,
+          "rmse_persist": 2015.0008,
+          "mae_persist": 65.4174
+        },
+        "4": {
+          "rmse_lstm": 3184.1549,
+          "mae_lstm": 120.0109,
+          "rmse_persist": 88.2508,
+          "mae_persist": 4.8565
+        },
+        "5": {
+          "rmse_lstm": 1431.2037,
+          "mae_lstm": 60.3802,
+          "rmse_persist": 2017.1582,
+          "mae_persist": 64.2736
+        }
+      }
+    },
+    {
+      "fold_id": 36,
+      "episode_id": "21-02-2018_DDOS-LOIC-UDP_9",
+      "attack_type": "DDOS-LOIC-UDP",
+      "n_test_windows": 6,
+      "horizons": {
+        "1": {
+          "rmse_lstm": 1407.6052,
+          "mae_lstm": 58.4278,
+          "rmse_persist": 1897.4731,
+          "mae_persist": 59.8885
+        },
+        "2": {
+          "rmse_lstm": 3184.163,
+          "mae_lstm": 119.9,
+          "rmse_persist": 43.6485,
+          "mae_persist": 3.0323
+        },
+        "3": {
+          "rmse_lstm": 1431.2159,
+          "mae_lstm": 60.4025,
+          "rmse_persist": 1900.5121,
+          "mae_persist": 61.2645
+        },
+        "4": {
+          "rmse_lstm": 3197.973,
+          "mae_lstm": 120.8109,
+          "rmse_persist": 61.6037,
+          "mae_persist": 4.1899
+        },
+        "5": {
+          "rmse_lstm": 1413.8718,
+          "mae_lstm": 59.6389,
+          "rmse_persist": 1904.4877,
+          "mae_persist": 60.9776
+        }
+      }
+    }
+  ]
+}
