@@ -560,41 +560,58 @@ def get_conformal_forecast() -> dict:
     if isinstance(cf, dict) and "intervals" in cf:
         return cf
 
-    fc = pred.get("forecast_trajectory", {})
-    risks = fc.get("risk", [0.05, 0.05, 0.05, 0.05, 0.05])
-    q = 0.12
-    intervals = [[round(max(0.0, float(r) - q), 3), round(min(1.0, float(r) + q), 3)] for r in risks]
-
     return {
-        "coverage": 0.90,
-        "alpha": 0.10,
-        "calibrated_quantile": q,
-        "intervals": intervals,
-        "sample_size": 37,
-        "guarantee": "Distribution-free finite-sample coverage >= 90%",
+        "coverage": "not available",
+        "alpha": "not available",
+        "calibrated_quantile": "not available",
+        "intervals": [],
+        "sample_size": "not available",
+        "guarantee": "not available",
+        "status": "not available",
         "is_mock": False,
     }
 
 
 def get_conformal_credibility(window_id: Optional[str] = None) -> Dict[str, Any]:
-    """Returns conformal credibility diagnostic status."""
+    """Returns conformal credibility diagnostic status computed from real interval width and calibrated coverage."""
     pred = _get_live_prediction() or {}
     if isinstance(pred.get("conformal_credibility"), dict):
         cred = dict(pred["conformal_credibility"])
         cred["is_stub"] = False
         return cred
+
+    cf = pred.get("conformal_forecast")
+    if isinstance(cf, dict) and "intervals" in cf and cf["intervals"]:
+        iv = cf["intervals"][0]
+        if isinstance(iv, (list, tuple)) and len(iv) >= 2:
+            width = float(iv[1]) - float(iv[0])
+            cov = float(cf.get("coverage", 0.90))
+            is_ind = width <= 0.60
+            badge = "MODEL CONFIDENCE: CALIBRATED" if is_ind else "MODEL CONFIDENCE: UNCERTAIN (WIDE)"
+            return {
+                "status": "in_distribution" if is_ind else "uncertain",
+                "is_in_distribution": is_ind,
+                "credibility_score": round(1.0 - min(1.0, max(0.0, width)), 3),
+                "confidence_level": cov,
+                "interval_width": round(width, 3),
+                "badge_label": badge,
+                "badge_color": "#30D158" if is_ind else "#FF453A",
+                "advisory": f"Calibrated 90% conformal interval width: {width:.3f} (coverage: {cov:.0%})",
+                "is_stub": False,
+                "source": "Split Conformal Predictor (37-Fold LOEO Validation)",
+            }
+
     return {
-        "status": "in_distribution",
+        "status": "not available",
         "is_in_distribution": True,
-        "credibility_score": 0.90,
-        "confidence_level": 0.90,
-        "drift_score": 0.12,
-        "drift_threshold": 0.45,
-        "badge_label": "MODEL CONFIDENCE: NOMINAL",
-        "badge_color": "#30D158",
-        "advisory": "Model operating within validated training distribution manifold.",
-        "is_stub": True,
-        "source": "LOEO 37-fold validation baseline",
+        "credibility_score": "not available",
+        "confidence_level": "not available",
+        "interval_width": "not available",
+        "badge_label": "MODEL CONFIDENCE: NOT AVAILABLE",
+        "badge_color": "#8A8A8A",
+        "advisory": "Conformal prediction intervals not available for this window.",
+        "is_stub": False,
+        "source": "not available",
     }
 
 
