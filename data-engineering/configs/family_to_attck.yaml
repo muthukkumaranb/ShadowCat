@@ -1,0 +1,45 @@
+# Mapping of CSE-CIC-IDS2018 attack families to MITRE ATT&CK tactics
+# Used by the current-window ATT&CK stage classifier (Phase B)
+
+families:
+  SSH-Bruteforce:
+    tactic_id: "TA0006"
+    tactic_name: "Credential Access"
+    justification: "Adversary attempts repeated authentication guessing against SSH services to acquire valid user credentials."
+    url: "https://www.unb.ca/cic/datasets/ids-2018.html"
+
+  Infiltration-Portscan:
+    tactic_id: "TA0007"
+    tactic_name: "Discovery"
+    justification: "Adversary conducts internal network service scanning (Nmap) to discover accessible endpoints and open ports."
+    url: "https://www.unb.ca/cic/datasets/ids-2018.html"
+
+  Infiltration-Compromise:
+    tactic_id: "TA0002"
+    tactic_name: "Execution"
+    justification: "Adversary executes malicious software payload delivered via compromised user download to run unauthorized code on target host."
+    url: "https://www.unb.ca/cic/datasets/ids-2018.html"
+
+  Botnet:
+    tactic_id: "TA0011"
+    tactic_name: "Command and Control"
+    justification: "Compromised bots maintain persistent outbound communication sessions with an external command-and-control server (ARES botnet)."
+    url: "https://www.unb.ca/cic/datasets/ids-2018.html"
+
+  DDOS-LOIC-UDP:
+    tactic_id: "TA0040"
+    tactic_name: "Impact"
+    justification: "Adversary generates high-volume UDP flood traffic using LOIC to exhaust network bandwidth and disrupt service availability."
+    url: "https://www.unb.ca/cic/datasets/ids-2018.html"
+
+  DDOS-HOIC:
+    tactic_id: "TA0040"
+    tactic_name: "Impact"
+    justification: "Adversary launches multi-threaded HTTP request floods using HOIC to overwhelm web server capacity and deny service."
+    url: "https://www.unb.ca/cic/datasets/ids-2018.html"
+
+  Benign:
+    tactic_id: null
+    tactic_name: null
+    justification: "Routine operational baseline enterprise network traffic with zero malicious adversary activity."
+    url: "https://www.unb.ca/cic/datasets/ids-2018.html"
