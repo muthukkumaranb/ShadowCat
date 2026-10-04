@@ -1,0 +1,715 @@
+{
+  "dataset": "data-engineering/data/ucs/ucs_windows_models_v1.parquet",
+  "feature_set": "ml1/artifacts/lr_set_a/set_a_features.json",
+  "manifest": "ml1/artifacts/loeo/corrected_37fold_manifest.json",
+  "classifier": "LogisticRegression(solver='lbfgs', max_iter=2000, random_state=42)",
+  "loeo_evaluation": {
+    "total_loeo_test_attack_windows": 149,
+    "macro_f1_family": 0.4607586916924052,
+    "macro_f1_tactic": 0.6402458711795846,
+    "evaluable_families": [
+      "Botnet",
+      "DDOS-LOIC-UDP",
+      "SSH-Bruteforce"
+    ],
+    "per_family": {
+      "Botnet": {
+        "tactic": "Command and Control",
+        "support": 48,
+        "precision": 0.5540540540540541,
+        "recall": 0.8541666666666666,
+        "f1": 0.6721311475409836
+      },
+      "DDOS-LOIC-UDP": {
+        "tactic": "Impact",
+        "support": 19,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "SSH-Bruteforce": {
+        "tactic": "Credential Access",
+        "support": 82,
+        "precision": 0.875,
+        "recall": 0.5975609756097561,
+        "f1": 0.7101449275362319
+      }
+    },
+    "confusion_matrix_family": {
+      "row_labels_true": [
+        "Botnet",
+        "DDOS-LOIC-UDP",
+        "SSH-Bruteforce"
+      ],
+      "col_labels_pred": [
+        "Botnet",
+        "DDOS-HOIC",
+        "DDOS-LOIC-UDP",
+        "Infiltration-Compromise",
+        "Infiltration-Portscan",
+        "SSH-Bruteforce"
+      ],
+      "matrix": [
+        [
+          41,
+          0,
+          0,
+          7,
+          0,
+          0
+        ],
+        [
+          0,
+          7,
+          0,
+          0,
+          5,
+          7
+        ],
+        [
+          33,
+          0,
+          0,
+          0,
+          0,
+          49
+        ]
+      ]
+    },
+    "evaluable_tactics": [
+      "Command and Control",
+      "Credential Access",
+      "Impact"
+    ],
+    "per_tactic": {
+      "Command and Control": {
+        "support": 48,
+        "precision": 0.5540540540540541,
+        "recall": 0.8541666666666666,
+        "f1": 0.6721311475409836
+      },
+      "Credential Access": {
+        "support": 82,
+        "precision": 0.875,
+        "recall": 0.5975609756097561,
+        "f1": 0.7101449275362319
+      },
+      "Impact": {
+        "support": 19,
+        "precision": 1.0,
+        "recall": 0.3684210526315789,
+        "f1": 0.5384615384615384
+      }
+    },
+    "confusion_matrix_tactic": {
+      "row_labels_true": [
+        "Command and Control",
+        "Credential Access",
+        "Impact"
+      ],
+      "col_labels_pred": [
+        "Command and Control",
+        "Credential Access",
+        "Discovery",
+        "Execution",
+        "Impact"
+      ],
+      "matrix": [
+        [
+          41,
+          0,
+          0,
+          7,
+          0
+        ],
+        [
+          33,
+          49,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          7,
+          5,
+          0,
+          7
+        ]
+      ]
+    }
+  },
+  "single_episode_loeo_status": {
+    "DDOS-HOIC": "not evaluable under LOEO: 1 episode",
+    "Infiltration-Compromise": "not evaluable under LOEO: 1 episode",
+    "Infiltration-Portscan": "not evaluable under LOEO: 1 episode"
+  },
+  "seen_family_evaluation": {
+    "DDOS-HOIC": {
+      "evaluable": false,
+      "reason": "not evaluable: too few windows (8) for 30-window purge (train_end_purged=-25 <= 0)",
+      "total_windows": 8,
+      "train_windows": 0,
+      "purged_windows": 5,
+      "test_windows": 3
+    },
+    "Infiltration-Compromise": {
+      "evaluable": true,
+      "total_windows": 97,
+      "train_windows": 37,
+      "purged_windows": 30,
+      "test_windows": 30,
+      "accuracy": 0.5666666666666667,
+      "precision": 1.0,
+      "recall": 0.5666666666666667,
+      "f1": 0.723404255319149,
+      "mean_confidence": 0.8995894927983307,
+      "predicted_distribution": {
+        "Infiltration-Compromise": 17,
+        "Infiltration-Portscan": 13
+      },
+      "tactic": "Execution",
+      "note": "within-episode chronological split, first 70% / last 30%, 30-window purge"
+    },
+    "Infiltration-Portscan": {
+      "evaluable": true,
+      "total_windows": 58,
+      "train_windows": 10,
+      "purged_windows": 30,
+      "test_windows": 18,
+      "accuracy": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "mean_confidence": 0.9988630463125978,
+      "predicted_distribution": {
+        "Infiltration-Compromise": 18
+      },
+      "tactic": "Discovery",
+      "note": "within-episode chronological split, first 70% / last 30%, 30-window purge"
+    }
+  },
+  "benign_positives_614": {
+    "window_count": 614,
+    "note": "614 windows with label_binary=1 and label_attack_type=Benign (isolated from training)",
+    "mean_confidence": 0.8855932994973813,
+    "min_confidence": 0.3685211617846223,
+    "max_confidence": 0.9999998426463452,
+    "predicted_family_distribution": {
+      "Botnet": 339,
+      "Infiltration-Compromise": 167,
+      "Infiltration-Portscan": 66,
+      "DDOS-LOIC-UDP": 18,
+      "DDOS-HOIC": 14,
+      "SSH-Bruteforce": 10
+    },
+    "predicted_tactic_distribution": {
+      "Command and Control": 339,
+      "Execution": 167,
+      "Discovery": 66,
+      "Impact": 32,
+      "Credential Access": 10
+    }
+  },
+  "folds": [
+    {
+      "fold_id": 0,
+      "held_out_episode_id": "02-03-2018_Botnet_0",
+      "train_attack_samples": 290,
+      "test_attack_samples": 10,
+      "classes_in_train": [
+        "Botnet",
+        "DDOS-HOIC",
+        "DDOS-LOIC-UDP",
+        "Infiltration-Compromise",
+        "Infiltration-Portscan",
+        "SSH-Bruteforce"
+      ]
+    },
+    {
+      "fold_id": 1,
+      "held_out_episode_id": "02-03-2018_Botnet_1",
+      "train_attack_samples": 290,
+      "test_attack_samples": 12,
+      "classes_in_train": [
+        "Botnet",
+        "DDOS-HOIC",
+        "DDOS-LOIC-UDP",
+        "Infiltration-Compromise",
+        "Infiltration-Portscan",
+        "SSH-Bruteforce"
+      ]
+    },
+    {
+      "fold_id": 2,
+      "held_out_episode_id": "02-03-2018_Botnet_2",
+      "train_attack_samples": 298,
+      "test_attack_samples": 1,
+      "classes_in_train": [
+        "Botnet",
+        "DDOS-HOIC",
+        "DDOS-LOIC-UDP",
+        "Infiltration-Compromise",
+        "Infiltration-Portscan",
+        "SSH-Bruteforce"
+      ]
+    },
+    {
+      "fold_id": 3,
+      "held_out_episode_id": "02-03-2018_Botnet_3",
+      "train_attack_samples": 296,
+      "test_attack_samples": 1,
+      "classes_in_train": [
+        "Botnet",
+        "DDOS-HOIC",
+        "DDOS-LOIC-UDP",
+        "Infiltration-Compromise",
+        "Infiltration-Portscan",
+        "SSH-Bruteforce"
+      ]
+    },
+    {
+      "fold_id": 4,
+      "held_out_episode_id": "02-03-2018_Botnet_4",
+      "train_attack_samples": 292,
+      "test_attack_samples": 1,
+      "classes_in_train": [
+        "Botnet",
+        "DDOS-HOIC",
+        "DDOS-LOIC-UDP",
+        "Infiltration-Compromise",
+        "Infiltration-Portscan",
+        "SSH-Bruteforce"
+      ]
+    },
+    {
+      "fold_id": 5,
+      "held_out_episode_id": "02-03-2018_Botnet_5",
+      "train_attack_samples": 286,
+      "test_attack_samples": 4,
+      "classes_in_train": [
+        "Botnet",
+        "DDOS-HOIC",
+        "DDOS-LOIC-UDP",
+        "Infiltration-Compromise",
+        "Infiltration-Portscan",
+        "SSH-Bruteforce"
+      ]
+    },
+    {
+      "fold_id": 6,
+      "held_out_episode_id": "02-03-2018_Botnet_6",
+      "train_attack_samples": 286,
+      "test_attack_samples": 4,
+      "classes_in_train": [
+        "Botnet",
+        "DDOS-HOIC",
+        "DDOS-LOIC-UDP",
+        "Infiltration-Compromise",
+        "Infiltration-Portscan",
+        "SSH-Bruteforce"
+      ]
+    },
+    {
+      "fold_id": 7,
+      "held_out_episode_id": "02-03-2018_Botnet_7",
+      "train_attack_samples": 286,
+      "test_attack_samples": 3,
+      "classes_in_train": [
+        "Botnet",
+        "DDOS-HOIC",
+        "DDOS-LOIC-UDP",
+        "Infiltration-Compromise",
+        "Infiltration-Portscan",
+        "SSH-Bruteforce"
+      ]
+    },
+    {
+      "fold_id": 8,
+      "held_out_episode_id": "02-03-2018_Botnet_8",
+      "train_attack_samples": 287,
+      "test_attack_samples": 7,
+      "classes_in_train": [
+        "Botnet",
+        "DDOS-HOIC",
+        "DDOS-LOIC-UDP",
+        "Infiltration-Compromise",
+        "Infiltration-Portscan",
+        "SSH-Bruteforce"
+      ]
+    },
+    {
+      "fold_id": 9,
+      "held_out_episode_id": "02-03-2018_Botnet_9",
+      "train_attack_samples": 289,
+      "test_attack_samples": 5,
+      "classes_in_train": [
+        "Botnet",
+        "DDOS-HOIC",
+        "DDOS-LOIC-UDP",
+        "Infiltration-Compromise",
+        "Infiltration-Portscan",
+        "SSH-Bruteforce"
+      ]
+    },
+    {
+      "fold_id": 10,
+      "held_out_episode_id": "14-02-2018_SSH-Bruteforce_0",
+      "train_attack_samples": 281,
+      "test_attack_samples": 1,
+      "classes_in_train": [
+        "Botnet",
+        "DDOS-HOIC",
+        "DDOS-LOIC-UDP",
+        "Infiltration-Compromise",
+        "Infiltration-Portscan",
+        "SSH-Bruteforce"
+      ]
+    },
+    {
+      "fold_id": 11,
+      "held_out_episode_id": "14-02-2018_SSH-Bruteforce_1",
+      "train_attack_samples": 276,
+      "test_attack_samples": 4,
+      "classes_in_train": [
+        "Botnet",
+        "DDOS-HOIC",
+        "DDOS-LOIC-UDP",
+        "Infiltration-Compromise",
+        "Infiltration-Portscan",
+        "SSH-Bruteforce"
+      ]
+    },
+    {
+      "fold_id": 12,
+      "held_out_episode_id": "14-02-2018_SSH-Bruteforce_2",
+      "train_attack_samples": 266,
+      "test_attack_samples": 10,
+      "classes_in_train": [
+        "Botnet",
+        "DDOS-HOIC",
+        "DDOS-LOIC-UDP",
+        "Infiltration-Compromise",
+        "Infiltration-Portscan",
+        "SSH-Bruteforce"
+      ]
+    },
+    {
+      "fold_id": 13,
+      "held_out_episode_id": "14-02-2018_SSH-Bruteforce_3",
+      "train_attack_samples": 264,
+      "test_attack_samples": 1,
+      "classes_in_train": [
+        "Botnet",
+        "DDOS-HOIC",
+        "DDOS-LOIC-UDP",
+        "Infiltration-Compromise",
+        "Infiltration-Portscan",
+        "SSH-Bruteforce"
+      ]
+    },
+    {
+      "fold_id": 14,
+      "held_out_episode_id": "14-02-2018_SSH-Bruteforce_4",
+      "train_attack_samples": 255,
+      "test_attack_samples": 8,
+      "classes_in_train": [
+        "Botnet",
+        "DDOS-HOIC",
+        "DDOS-LOIC-UDP",
+        "Infiltration-Compromise",
+        "Infiltration-Portscan",
+        "SSH-Bruteforce"
+      ]
+    },
+    {
+      "fold_id": 15,
+      "held_out_episode_id": "14-02-2018_SSH-Bruteforce_5",
+      "train_attack_samples": 243,
+      "test_attack_samples": 12,
+      "classes_in_train": [
+        "Botnet",
+        "DDOS-HOIC",
+        "DDOS-LOIC-UDP",
+        "Infiltration-Compromise",
+        "Infiltration-Portscan",
+        "SSH-Bruteforce"
+      ]
+    },
+    {
+      "fold_id": 16,
+      "held_out_episode_id": "14-02-2018_SSH-Bruteforce_6",
+      "train_attack_samples": 230,
+      "test_attack_samples": 33,
+      "classes_in_train": [
+        "Botnet",
+        "DDOS-HOIC",
+        "DDOS-LOIC-UDP",
+        "Infiltration-Compromise",
+        "Infiltration-Portscan"
+      ]
+    },
+    {
+      "fold_id": 17,
+      "held_out_episode_id": "14-02-2018_SSH-Bruteforce_7",
+      "train_attack_samples": 266,
+      "test_attack_samples": 6,
+      "classes_in_train": [
+        "Botnet",
+        "DDOS-HOIC",
+        "DDOS-LOIC-UDP",
+        "Infiltration-Compromise",
+        "Infiltration-Portscan",
+        "SSH-Bruteforce"
+      ]
+    },
+    {
+      "fold_id": 18,
+      "held_out_episode_id": "14-02-2018_SSH-Bruteforce_8",
+      "train_attack_samples": 272,
+      "test_attack_samples": 7,
+      "classes_in_train": [
+        "Botnet",
+        "DDOS-HOIC",
+        "DDOS-LOIC-UDP",
+        "Infiltration-Compromise",
+        "Infiltration-Portscan",
+        "SSH-Bruteforce"
+      ]
+    },
+    {
+      "fold_id": 19,
+      "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_0",
+      "train_attack_samples": 293,
+      "test_attack_samples": 1,
+      "classes_in_train": [
+        "Botnet",
+        "DDOS-HOIC",
+        "Infiltration-Compromise",
+        "Infiltration-Portscan",
+        "SSH-Bruteforce"
+      ]
+    },
+    {
+      "fold_id": 20,
+      "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_1",
+      "train_attack_samples": 293,
+      "test_attack_samples": 1,
+      "classes_in_train": [
+        "Botnet",
+        "DDOS-HOIC",
+        "Infiltration-Compromise",
+        "Infiltration-Portscan",
+        "SSH-Bruteforce"
+      ]
+    },
+    {
+      "fold_id": 21,
+      "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_10",
+      "train_attack_samples": 293,
+      "test_attack_samples": 1,
+      "classes_in_train": [
+        "Botnet",
+        "DDOS-HOIC",
+        "Infiltration-Compromise",
+        "Infiltration-Portscan",
+        "SSH-Bruteforce"
+      ]
+    },
+    {
+      "fold_id": 22,
+      "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_11",
+      "train_attack_samples": 293,
+      "test_attack_samples": 1,
+      "classes_in_train": [
+        "Botnet",
+        "DDOS-HOIC",
+        "Infiltration-Compromise",
+        "Infiltration-Portscan",
+        "SSH-Bruteforce"
+      ]
+    },
+    {
+      "fold_id": 23,
+      "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_12",
+      "train_attack_samples": 293,
+      "test_attack_samples": 1,
+      "classes_in_train": [
+        "Botnet",
+        "DDOS-HOIC",
+        "Infiltration-Compromise",
+        "Infiltration-Portscan",
+        "SSH-Bruteforce"
+      ]
+    },
+    {
+      "fold_id": 24,
+      "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_13",
+      "train_attack_samples": 293,
+      "test_attack_samples": 1,
+      "classes_in_train": [
+        "Botnet",
+        "DDOS-HOIC",
+        "Infiltration-Compromise",
+        "Infiltration-Portscan",
+        "SSH-Bruteforce"
+      ]
+    },
+    {
+      "fold_id": 25,
+      "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_14",
+      "train_attack_samples": 293,
+      "test_attack_samples": 1,
+      "classes_in_train": [
+        "Botnet",
+        "DDOS-HOIC",
+        "Infiltration-Compromise",
+        "Infiltration-Portscan",
+        "SSH-Bruteforce"
+      ]
+    },
+    {
+      "fold_id": 26,
+      "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_15",
+      "train_attack_samples": 293,
+      "test_attack_samples": 1,
+      "classes_in_train": [
+        "Botnet",
+        "DDOS-HOIC",
+        "Infiltration-Compromise",
+        "Infiltration-Portscan",
+        "SSH-Bruteforce"
+      ]
+    },
+    {
+      "fold_id": 27,
+      "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_16",
+      "train_attack_samples": 293,
+      "test_attack_samples": 1,
+      "classes_in_train": [
+        "Botnet",
+        "DDOS-HOIC",
+        "Infiltration-Compromise",
+        "Infiltration-Portscan",
+        "SSH-Bruteforce"
+      ]
+    },
+    {
+      "fold_id": 28,
+      "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_17",
+      "train_attack_samples": 293,
+      "test_attack_samples": 1,
+      "classes_in_train": [
+        "Botnet",
+        "DDOS-HOIC",
+        "Infiltration-Compromise",
+        "Infiltration-Portscan",
+        "SSH-Bruteforce"
+      ]
+    },
+    {
+      "fold_id": 29,
+      "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_2",
+      "train_attack_samples": 293,
+      "test_attack_samples": 1,
+      "classes_in_train": [
+        "Botnet",
+        "DDOS-HOIC",
+        "Infiltration-Compromise",
+        "Infiltration-Portscan",
+        "SSH-Bruteforce"
+      ]
+    },
+    {
+      "fold_id": 30,
+      "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_3",
+      "train_attack_samples": 293,
+      "test_attack_samples": 2,
+      "classes_in_train": [
+        "Botnet",
+        "DDOS-HOIC",
+        "Infiltration-Compromise",
+        "Infiltration-Portscan",
+        "SSH-Bruteforce"
+      ]
+    },
+    {
+      "fold_id": 31,
+      "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_4",
+      "train_attack_samples": 293,
+      "test_attack_samples": 1,
+      "classes_in_train": [
+        "Botnet",
+        "DDOS-HOIC",
+        "Infiltration-Compromise",
+        "Infiltration-Portscan",
+        "SSH-Bruteforce"
+      ]
+    },
+    {
+      "fold_id": 32,
+      "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_5",
+      "train_attack_samples": 293,
+      "test_attack_samples": 1,
+      "classes_in_train": [
+        "Botnet",
+        "DDOS-HOIC",
+        "Infiltration-Compromise",
+        "Infiltration-Portscan",
+        "SSH-Bruteforce"
+      ]
+    },
+    {
+      "fold_id": 33,
+      "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_6",
+      "train_attack_samples": 293,
+      "test_attack_samples": 1,
+      "classes_in_train": [
+        "Botnet",
+        "DDOS-HOIC",
+        "Infiltration-Compromise",
+        "Infiltration-Portscan",
+        "SSH-Bruteforce"
+      ]
+    },
+    {
+      "fold_id": 34,
+      "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_7",
+      "train_attack_samples": 293,
+      "test_attack_samples": 1,
+      "classes_in_train": [
+        "Botnet",
+        "DDOS-HOIC",
+        "Infiltration-Compromise",
+        "Infiltration-Portscan",
+        "SSH-Bruteforce"
+      ]
+    },
+    {
+      "fold_id": 35,
+      "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_8",
+      "train_attack_samples": 293,
+      "test_attack_samples": 1,
+      "classes_in_train": [
+        "Botnet",
+        "DDOS-HOIC",
+        "Infiltration-Compromise",
+        "Infiltration-Portscan",
+        "SSH-Bruteforce"
+      ]
+    },
+    {
+      "fold_id": 36,
+      "held_out_episode_id": "21-02-2018_DDOS-LOIC-UDP_9",
+      "train_attack_samples": 293,
+      "test_attack_samples": 1,
+      "classes_in_train": [
+        "Botnet",
+        "DDOS-HOIC",
+        "Infiltration-Compromise",
+        "Infiltration-Portscan",
+        "SSH-Bruteforce"
+      ]
+    }
+  ]
+}
