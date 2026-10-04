@@ -77,17 +77,29 @@ def render_page():
         </div>
         """)
     with c_tab3:
-        if st.button("Load Demo Benchmark", width='stretch'):
-            benchmark_df = get_canonical_benchmark_df()
-            st.session_state.ingested_df = benchmark_df
-            st.session_state.ingested_source_name = "CSE-CIC-IDS2018-ssh-14-02-2018_windows.parquet"
-            st.session_state["benchmark_loaded"] = True
-            # Auto-run Core ML inference immediately
-            pred = run_core_ml_inference(benchmark_df, source_type="windows")
-            st.session_state["ml_prediction_result"] = pred
-            st.session_state["ml_prediction_timestamp"] = time.strftime("%H:%M:%S UTC")
-            st.success("Loaded CSE-CIC-IDS2018 benchmark & executed Core ML Inference across all views.")
-            st.rerun()
+        b_col1, b_col2 = st.columns(2)
+        with b_col1:
+            if st.button("Benign Slice", width='stretch', help="Load CSE-CIC-IDS2018 Benign slice"):
+                benign_df = load_demo_slice("benign")
+                st.session_state.ingested_df = benign_df
+                st.session_state.ingested_source_name = "CSE-CIC-IDS2018-benign-02-03-2018_windows.parquet"
+                st.session_state["active_source"] = "Demo slice 'benign' (2018-03-02 04:55:00 to 05:26:00 UTC)"
+                pred = run_core_ml_inference(benign_df, source_type="windows")
+                st.session_state["ml_prediction_result"] = pred
+                st.session_state["ml_prediction_timestamp"] = time.strftime("%H:%M:%S UTC")
+                st.success("Loaded Benign slice & executed Core ML Inference.")
+                st.rerun()
+        with b_col2:
+            if st.button("SSH Slice", width='stretch', help="Load CSE-CIC-IDS2018 SSH-Bruteforce slice"):
+                ssh_df = load_demo_slice("ssh")
+                st.session_state.ingested_df = ssh_df
+                st.session_state.ingested_source_name = "CSE-CIC-IDS2018-ssh-14-02-2018_windows.parquet"
+                st.session_state["active_source"] = "Demo slice 'ssh' (2018-02-14 01:44:00 to 02:48:00 UTC)"
+                pred = run_core_ml_inference(ssh_df, source_type="windows")
+                st.session_state["ml_prediction_result"] = pred
+                st.session_state["ml_prediction_timestamp"] = time.strftime("%H:%M:%S UTC")
+                st.success("Loaded SSH-Bruteforce slice & executed Core ML Inference.")
+                st.rerun()
 
     # Active File Upload / Drop Area
     uploaded_file = st.file_uploader(
