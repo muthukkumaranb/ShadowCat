@@ -32,13 +32,13 @@ def process_fold(df, features, train_indices, test_indices):
     scaler.fit(train_df[valid_features])
     
     z_train = scaler.transform(train_df[valid_features])
-    z_test = scaler.transform(test_df[valid_features])
+    z_test = scaler.transform(test_df[valid_features]) if len(test_df) else np.empty((0, len(valid_features)))
     
     pca = PCA(n_components=32)
     pca.fit(z_train)
     
     pca_train = pca.transform(z_train)
-    pca_test = pca.transform(z_test)
+    pca_test = pca.transform(z_test) if len(z_test) else np.empty((0, pca.n_components_))
     
     train_out = {
         'z_space': z_train,
