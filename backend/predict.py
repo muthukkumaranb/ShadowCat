@@ -646,7 +646,15 @@ class ShadowcatPipeline:
             }
 
         if not self.family_classifier_models:
-            raise RuntimeError("CRITICAL: Family classifier models failed to load! Silent fallback has been removed.")
+            return {
+                "current_stage": "not available",
+                "current_stage_confidence": None,
+                "current_stage_source": source_str,
+                "current_stage_family": None,
+                "current_stage_tactic_id": None,
+                "current_stage_url": None,
+                "is_attack_detected": True,
+            }
 
         # Average probabilities across loaded fold models
         all_classes = set()
