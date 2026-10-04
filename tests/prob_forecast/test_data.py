@@ -6,13 +6,10 @@ from ml1.prob_forecast.data import load_data, process_fold, get_valid_windows
 class TestData(unittest.TestCase):
     def test_leakage(self):
         # tests/prob_forecast/test_data.py checks that no statistic is computed with test indices.
-        df = pd.DataFrame({
-            'f1': np.random.rand(100),
-            'f2': np.random.rand(100),
-            'episode_id': np.random.randint(0, 5, 100),
-            'window_start_utc': pd.date_range('2023-01-01', periods=100, freq='T')
-        })
-        features = ['f1', 'f2']
+        df = pd.DataFrame(np.random.rand(100, 35), columns=[f'f{i}' for i in range(35)])
+        df['episode_id'] = np.random.randint(0, 5, 100)
+        df['window_start_utc'] = pd.date_range('2023-01-01', periods=100, freq='min')
+        features = [f'f{i}' for i in range(35)]
         
         train_indices = list(range(50))
         test_indices = list(range(50, 100))
