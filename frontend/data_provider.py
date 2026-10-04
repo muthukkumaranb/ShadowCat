@@ -457,59 +457,77 @@ def get_host_risk_graph(episode_id: str = None, k_step: int = 2) -> dict:
                     node_roles[val] = f"Endpoint ({val})"
 
     if not active_node_ids:
-        active_node_ids = ["172.31.69.21", "172.31.69.1"]
-        for nid in active_node_ids:
-            node_roles[nid] = f"Endpoint ({nid})"
+        active_node_ids = ["network-level"]
+        node_roles["network-level"] = "Network-Level (network-level)"
 
     for nid in active_node_ids:
-        parts = nid.rsplit(".", 1)
-        subnet = f"{parts[0]}.0/24" if len(parts) == 2 else "Subnet N/A"
-        flow_score = flagged_host_scores.get(nid, 0.0)
-        is_flagged = (flow_score > 0.0)
-        crit_tier = "Tier 2 (Gateway/Server)" if (nid.endswith(".1") or nid.endswith(".21")) else "Tier 3 (User Endpoint)"
+        if nid == "network-level":
+            host_telemetry[nid] = {
+                "role": "Network-Level Aggregation",
+                "criticality_tier": "Network Scope",
+                "criticality_level": 1,
+                "subnet": "Network-Wide",
+                "active_ports": "All observed flows",
+                "driving_indicators": f"Network-level onset probability P={p_onset:.2f}",
+                "containment_stance": "Standard monitoring" if p_onset < 0.5 else "Network isolation review",
+            }
+        else:
+            parts = nid.rsplit(".", 1)
+            subnet = f"{parts[0]}.0/24" if len(parts) == 2 else "Subnet N/A"
+            flow_score = flagged_host_scores.get(nid, 0.0)
+            is_flagged = (flow_score > 0.0)
+            crit_tier = "Tier 2 (Gateway/Server)" if (nid.endswith(".1") or nid.endswith(".21")) else "Tier 3 (User Endpoint)"
 
-        host_telemetry[nid] = {
-            "role": node_roles.get(nid, "Endpoint"),
-            "criticality_tier": crit_tier,
-            "criticality_level": 2 if "Tier 2" in crit_tier else 3,
-            "subnet": subnet,
-            "active_ports": "TCP/22, TCP/80, TCP/443" if is_flagged else "Standard traffic",
-            "driving_indicators": (
-                f"Flagged flow score {flow_score:.2f} correlated with onset probability P={p_onset:.2f}"
-                if is_flagged else "Nominal baseline network flow observations."
-            ),
-            "containment_stance": (
-                f"Apply network traffic filtering and adapter inspection on {nid}"
-                if is_flagged and p_onset >= 0.5 else f"Standard telemetry monitoring on {nid}."
-            ),
-        }
+            host_telemetry[nid] = {
+                "role": node_roles.get(nid, f"Endpoint ({nid})"),
+                "criticality_tier": crit_tier,
+                "criticality_level": 2 if "Tier 2" in crit_tier else 3,
+                "subnet": subnet,
+                "active_ports": "TCP/22, TCP/80, TCP/443" if is_flagged else "Standard traffic",
+                "driving_indicators": (
+                    f"Flagged flow score {flow_score:.2f} correlated with onset probability P={p_onset:.2f}"
+                    if is_flagged else "Baseline network flow observations."
+                ),
+                "containment_stance": (
+                    f"Apply network traffic filtering and adapter inspection on {nid}"
+                    if is_flagged and p_onset >= 0.5 else f"Standard telemetry monitoring on {nid}."
+                ),
+            }
+
+    cf = pred.get("conformal_forecast") or {}
+    intervals = cf.get("intervals", [])
+    if intervals and len(intervals) > 0 and len(intervals[0]) >= 2:
+        conf_iv_str = f"90% CI: [{intervals[0][0]:.3f}, {intervals[0][1]:.3f}]"
+    else:
+        conf_iv_str = "not available"
 
     rollout_steps = {}
     for k in range(6):
         step_risks = {}
         for nid in active_node_ids:
-            base_risk = flagged_host_scores.get(nid, 0.05)
-            if base_risk > 0.1:
-                h_risk = round(min(0.99, max(0.05, float(p_onset) * 0.9 + base_risk * 0.1)), 3)
+            if nid == "network-level":
+                h_risk = round(float(p_onset), 3)
+                label_val = "network-level"
             else:
-                h_risk = round(max(0.02, min(0.35, float(p_onset) * 0.2)), 3)
+                h_risk = round(float(flagged_host_scores.get(nid, p_onset)), 3)
+                label_val = "observed-host"
             step_risks[nid] = {
                 "risk": h_risk,
-                "uncertainty": round(0.02 * (k + 1), 3),
+                "label": label_val,
             }
 
         act_edges = []
         for e in edges[:10]:
             act_edges.append((str(e.get("source")), str(e.get("target")), str(e.get("label", "Flow Edge"))))
-        if not act_edges and len(active_node_ids) >= 2:
+        if not act_edges and len(active_node_ids) >= 2 and "network-level" not in active_node_ids:
             act_edges = [(active_node_ids[0], active_node_ids[1], "Active Communication")]
 
         rollout_steps[k] = {
-            "label": "Window t (Current Observed)" if k == 0 else f"Horizon t+{k} (+{k} min Rollout)",
+            "label": "Window t (Current Observed)" if k == 0 else f"Horizon t+{k} (+{k}m Rollout)",
             "horizon_code": "t" if k == 0 else f"t+{k}",
-            "uncertainty_sigma": round(0.05 * (k + 1), 2),
-            "uncertainty_label": f"±{int(5 * (k + 1))}% (Conformal Bound)",
-            "uncertainty_tier": "Nominal Telemetry" if k == 0 else "Epistemic Bound",
+            "uncertainty_sigma": round(float(p_onset), 3),
+            "uncertainty_label": conf_iv_str,
+            "uncertainty_tier": "Baseline Telemetry" if k == 0 else "Calibrated Bound",
             "uncertainty_color": "#2FB872" if k == 0 else ("#8A8A8A" if k <= 2 else "#E0982B"),
             "summary": f"Attack propagation across observed network topology (Onset P={p_onset:.2f})",
             "active_edges": act_edges,
