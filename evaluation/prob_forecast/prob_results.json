@@ -1,0 +1,3085 @@
+{
+  "generated_by": "evaluation/prob_forecast/run_prob_forecast.py",
+  "space": "per-fold PCA-32 of train-fold z-scores",
+  "dataset": "data-engineering/data/ucs/ucs_windows_models_v1.parquet",
+  "n_folds": 37,
+  "n_samples_mc": 64,
+  "bootstrap": "paired, over the 37 held-out folds (episodes), 2000 resamples",
+  "detection_threshold_5pct_fpr": 0.4014016389846802,
+  "folds": [
+    {
+      "fold_id": 0,
+      "episode": "02-03-2018_Botnet_0",
+      "n_test_origins": 20,
+      "n_train_seq": 1789,
+      "n_val_seq": 418,
+      "best_epoch": 3,
+      "dropped_zero_std_features": 53,
+      "inflation_factors": {
+        "1": 1.2968395546510094,
+        "2": 1.2968395546510094,
+        "3": 1.2968395546510094,
+        "4": 1.2968395546510094,
+        "5": 1.1892071150027208
+      }
+    },
+    {
+      "fold_id": 1,
+      "episode": "02-03-2018_Botnet_1",
+      "n_test_origins": 24,
+      "n_train_seq": 1793,
+      "n_val_seq": 412,
+      "best_epoch": 3,
+      "dropped_zero_std_features": 53,
+      "inflation_factors": {
+        "1": 1.4142135623730947,
+        "2": 1.2968395546510094,
+        "3": 1.2968395546510094,
+        "4": 1.2968395546510094,
+        "5": 1.2968395546510094
+      }
+    },
+    {
+      "fold_id": 2,
+      "episode": "02-03-2018_Botnet_2",
+      "n_test_origins": 12,
+      "n_train_seq": 1778,
+      "n_val_seq": 385,
+      "best_epoch": 3,
+      "dropped_zero_std_features": 53,
+      "inflation_factors": {
+        "1": 1.4142135623730947,
+        "2": 1.2968395546510094,
+        "3": 1.2968395546510094,
+        "4": 1.2968395546510094,
+        "5": 1.2968395546510094
+      }
+    },
+    {
+      "fold_id": 3,
+      "episode": "02-03-2018_Botnet_3",
+      "n_test_origins": 6,
+      "n_train_seq": 1777,
+      "n_val_seq": 385,
+      "best_epoch": 3,
+      "dropped_zero_std_features": 53,
+      "inflation_factors": {
+        "1": 1.2968395546510094,
+        "2": 1.2968395546510094,
+        "3": 1.1892071150027208,
+        "4": 1.1892071150027208,
+        "5": 1.1892071150027208
+      }
+    },
+    {
+      "fold_id": 4,
+      "episode": "02-03-2018_Botnet_4",
+      "n_test_origins": 6,
+      "n_train_seq": 1774,
+      "n_val_seq": 384,
+      "best_epoch": 3,
+      "dropped_zero_std_features": 53,
+      "inflation_factors": {
+        "1": 1.2968395546510094,
+        "2": 1.2968395546510094,
+        "3": 1.1892071150027208,
+        "4": 1.1892071150027208,
+        "5": 1.1892071150027208
+      }
+    },
+    {
+      "fold_id": 5,
+      "episode": "02-03-2018_Botnet_5",
+      "n_test_origins": 9,
+      "n_train_seq": 1760,
+      "n_val_seq": 380,
+      "best_epoch": 3,
+      "dropped_zero_std_features": 53,
+      "inflation_factors": {
+        "1": 1.0905077326652575,
+        "2": 1.0905077326652575,
+        "3": 0.9999999999999998,
+        "4": 0.9999999999999998,
+        "5": 0.9999999999999998
+      }
+    },
+    {
+      "fold_id": 6,
+      "episode": "02-03-2018_Botnet_6",
+      "n_test_origins": 9,
+      "n_train_seq": 1756,
+      "n_val_seq": 379,
+      "best_epoch": 3,
+      "dropped_zero_std_features": 53,
+      "inflation_factors": {
+        "1": 1.1892071150027208,
+        "2": 1.1892071150027208,
+        "3": 1.0905077326652575,
+        "4": 1.0905077326652575,
+        "5": 1.0905077326652575
+      }
+    },
+    {
+      "fold_id": 7,
+      "episode": "02-03-2018_Botnet_7",
+      "n_test_origins": 8,
+      "n_train_seq": 1752,
+      "n_val_seq": 379,
+      "best_epoch": 3,
+      "dropped_zero_std_features": 53,
+      "inflation_factors": {
+        "1": 1.1892071150027208,
+        "2": 1.0905077326652575,
+        "3": 1.0905077326652575,
+        "4": 1.0905077326652575,
+        "5": 1.0905077326652575
+      }
+    },
+    {
+      "fold_id": 8,
+      "episode": "02-03-2018_Botnet_8",
+      "n_test_origins": 14,
+      "n_train_seq": 1746,
+      "n_val_seq": 374,
+      "best_epoch": 4,
+      "dropped_zero_std_features": 53,
+      "inflation_factors": {
+        "1": 1.1892071150027208,
+        "2": 1.1892071150027208,
+        "3": 1.1892071150027208,
+        "4": 1.1892071150027208,
+        "5": 1.0905077326652575
+      }
+    },
+    {
+      "fold_id": 9,
+      "episode": "02-03-2018_Botnet_9",
+      "n_test_origins": 10,
+      "n_train_seq": 1749,
+      "n_val_seq": 366,
+      "best_epoch": 3,
+      "dropped_zero_std_features": 53,
+      "inflation_factors": {
+        "1": 1.1892071150027208,
+        "2": 1.1892071150027208,
+        "3": 1.0905077326652575,
+        "4": 1.0905077326652575,
+        "5": 1.0905077326652575
+      }
+    },
+    {
+      "fold_id": 10,
+      "episode": "14-02-2018_SSH-Bruteforce_0",
+      "n_test_origins": 12,
+      "n_train_seq": 1788,
+      "n_val_seq": 421,
+      "best_epoch": 18,
+      "dropped_zero_std_features": 53,
+      "inflation_factors": {
+        "1": 1.4142135623730947,
+        "2": 1.4142135623730947,
+        "3": 1.2968395546510094,
+        "4": 1.2968395546510094,
+        "5": 1.2968395546510094
+      }
+    },
+    {
+      "fold_id": 11,
+      "episode": "14-02-2018_SSH-Bruteforce_1",
+      "n_test_origins": 9,
+      "n_train_seq": 1784,
+      "n_val_seq": 420,
+      "best_epoch": 23,
+      "dropped_zero_std_features": 53,
+      "inflation_factors": {
+        "1": 1.4142135623730947,
+        "2": 1.2968395546510094,
+        "3": 1.2968395546510094,
+        "4": 1.2968395546510094,
+        "5": 1.2968395546510094
+      }
+    },
+    {
+      "fold_id": 12,
+      "episode": "14-02-2018_SSH-Bruteforce_2",
+      "n_test_origins": 20,
+      "n_train_seq": 1776,
+      "n_val_seq": 417,
+      "best_epoch": 4,
+      "dropped_zero_std_features": 53,
+      "inflation_factors": {
+        "1": 1.4142135623730947,
+        "2": 1.2968395546510094,
+        "3": 1.2968395546510094,
+        "4": 1.2968395546510094,
+        "5": 1.2968395546510094
+      }
+    },
+    {
+      "fold_id": 13,
+      "episode": "14-02-2018_SSH-Bruteforce_3",
+      "n_test_origins": 6,
+      "n_train_seq": 1773,
+      "n_val_seq": 418,
+      "best_epoch": 4,
+      "dropped_zero_std_features": 53,
+      "inflation_factors": {
+        "1": 1.4142135623730947,
+        "2": 1.4142135623730947,
+        "3": 1.2968395546510094,
+        "4": 1.2968395546510094,
+        "5": 1.2968395546510094
+      }
+    },
+    {
+      "fold_id": 14,
+      "episode": "14-02-2018_SSH-Bruteforce_4",
+      "n_test_origins": 16,
+      "n_train_seq": 1767,
+      "n_val_seq": 415,
+      "best_epoch": 23,
+      "dropped_zero_std_features": 53,
+      "inflation_factors": {
+        "1": 1.1892071150027208,
+        "2": 1.1892071150027208,
+        "3": 1.1892071150027208,
+        "4": 1.1892071150027208,
+        "5": 1.0905077326652575
+      }
+    },
+    {
+      "fold_id": 15,
+      "episode": "14-02-2018_SSH-Bruteforce_5",
+      "n_test_origins": 24,
+      "n_train_seq": 1757,
+      "n_val_seq": 412,
+      "best_epoch": 20,
+      "dropped_zero_std_features": 53,
+      "inflation_factors": {
+        "1": 1.54221082540794,
+        "2": 1.54221082540794,
+        "3": 1.4142135623730947,
+        "4": 1.4142135623730947,
+        "5": 1.4142135623730947
+      }
+    },
+    {
+      "fold_id": 16,
+      "episode": "14-02-2018_SSH-Bruteforce_6",
+      "n_test_origins": 66,
+      "n_train_seq": 1689,
+      "n_val_seq": 398,
+      "best_epoch": 7,
+      "dropped_zero_std_features": 53,
+      "inflation_factors": {
+        "1": 1.1892071150027208,
+        "2": 1.1892071150027208,
+        "3": 1.1892071150027208,
+        "4": 1.1892071150027208,
+        "5": 1.1892071150027208
+      }
+    },
+    {
+      "fold_id": 17,
+      "episode": "14-02-2018_SSH-Bruteforce_7",
+      "n_test_origins": 12,
+      "n_train_seq": 1766,
+      "n_val_seq": 420,
+      "best_epoch": 4,
+      "dropped_zero_std_features": 53,
+      "inflation_factors": {
+        "1": 1.4142135623730947,
+        "2": 1.4142135623730947,
+        "3": 1.4142135623730947,
+        "4": 1.2968395546510094,
+        "5": 1.2968395546510094
+      }
+    },
+    {
+      "fold_id": 18,
+      "episode": "14-02-2018_SSH-Bruteforce_8",
+      "n_test_origins": 14,
+      "n_train_seq": 1771,
+      "n_val_seq": 421,
+      "best_epoch": 4,
+      "dropped_zero_std_features": 53,
+      "inflation_factors": {
+        "1": 1.4142135623730947,
+        "2": 1.4142135623730947,
+        "3": 1.2968395546510094,
+        "4": 1.2968395546510094,
+        "5": 1.1892071150027208
+      }
+    },
+    {
+      "fold_id": 19,
+      "episode": "21-02-2018_DDOS-LOIC-UDP_0",
+      "n_test_origins": 12,
+      "n_train_seq": 1833,
+      "n_val_seq": 421,
+      "best_epoch": 16,
+      "dropped_zero_std_features": 53,
+      "inflation_factors": {
+        "1": 1.2968395546510094,
+        "2": 1.2968395546510094,
+        "3": 1.2968395546510094,
+        "4": 1.2968395546510094,
+        "5": 1.2968395546510094
+      }
+    },
+    {
+      "fold_id": 20,
+      "episode": "21-02-2018_DDOS-LOIC-UDP_1",
+      "n_test_origins": 6,
+      "n_train_seq": 1832,
+      "n_val_seq": 422,
+      "best_epoch": 30,
+      "dropped_zero_std_features": 53,
+      "inflation_factors": {
+        "1": 1.4142135623730947,
+        "2": 1.2968395546510094,
+        "3": 1.2968395546510094,
+        "4": 1.2968395546510094,
+        "5": 1.2968395546510094
+      }
+    },
+    {
+      "fold_id": 21,
+      "episode": "21-02-2018_DDOS-LOIC-UDP_10",
+      "n_test_origins": 6,
+      "n_train_seq": 1832,
+      "n_val_seq": 422,
+      "best_epoch": 3,
+      "dropped_zero_std_features": 53,
+      "inflation_factors": {
+        "1": 1.6817928305074283,
+        "2": 1.6817928305074283,
+        "3": 1.54221082540794,
+        "4": 1.4142135623730947,
+        "5": 1.4142135623730947
+      }
+    },
+    {
+      "fold_id": 22,
+      "episode": "21-02-2018_DDOS-LOIC-UDP_11",
+      "n_test_origins": 6,
+      "n_train_seq": 1832,
+      "n_val_seq": 422,
+      "best_epoch": 21,
+      "dropped_zero_std_features": 53,
+      "inflation_factors": {
+        "1": 1.1892071150027208,
+        "2": 1.1892071150027208,
+        "3": 1.1892071150027208,
+        "4": 1.1892071150027208,
+        "5": 1.1892071150027208
+      }
+    },
+    {
+      "fold_id": 23,
+      "episode": "21-02-2018_DDOS-LOIC-UDP_12",
+      "n_test_origins": 6,
+      "n_train_seq": 1832,
+      "n_val_seq": 422,
+      "best_epoch": 26,
+      "dropped_zero_std_features": 53,
+      "inflation_factors": {
+        "1": 1.0905077326652575,
+        "2": 1.0905077326652575,
+        "3": 1.0905077326652575,
+        "4": 1.0905077326652575,
+        "5": 1.0905077326652575
+      }
+    },
+    {
+      "fold_id": 24,
+      "episode": "21-02-2018_DDOS-LOIC-UDP_13",
+      "n_test_origins": 6,
+      "n_train_seq": 1832,
+      "n_val_seq": 422,
+      "best_epoch": 3,
+      "dropped_zero_std_features": 53,
+      "inflation_factors": {
+        "1": 1.6817928305074283,
+        "2": 1.6817928305074283,
+        "3": 1.54221082540794,
+        "4": 1.4142135623730947,
+        "5": 1.4142135623730947
+      }
+    },
+    {
+      "fold_id": 25,
+      "episode": "21-02-2018_DDOS-LOIC-UDP_14",
+      "n_test_origins": 6,
+      "n_train_seq": 1832,
+      "n_val_seq": 422,
+      "best_epoch": 21,
+      "dropped_zero_std_features": 53,
+      "inflation_factors": {
+        "1": 1.1892071150027208,
+        "2": 1.1892071150027208,
+        "3": 1.1892071150027208,
+        "4": 1.1892071150027208,
+        "5": 1.1892071150027208
+      }
+    },
+    {
+      "fold_id": 26,
+      "episode": "21-02-2018_DDOS-LOIC-UDP_15",
+      "n_test_origins": 6,
+      "n_train_seq": 1832,
+      "n_val_seq": 422,
+      "best_epoch": 21,
+      "dropped_zero_std_features": 53,
+      "inflation_factors": {
+        "1": 1.1892071150027208,
+        "2": 1.1892071150027208,
+        "3": 1.1892071150027208,
+        "4": 1.1892071150027208,
+        "5": 1.1892071150027208
+      }
+    },
+    {
+      "fold_id": 27,
+      "episode": "21-02-2018_DDOS-LOIC-UDP_16",
+      "n_test_origins": 6,
+      "n_train_seq": 1832,
+      "n_val_seq": 422,
+      "best_epoch": 30,
+      "dropped_zero_std_features": 53,
+      "inflation_factors": {
+        "1": 1.1892071150027208,
+        "2": 1.1892071150027208,
+        "3": 1.1892071150027208,
+        "4": 1.1892071150027208,
+        "5": 1.1892071150027208
+      }
+    },
+    {
+      "fold_id": 28,
+      "episode": "21-02-2018_DDOS-LOIC-UDP_17",
+      "n_test_origins": 6,
+      "n_train_seq": 1832,
+      "n_val_seq": 422,
+      "best_epoch": 3,
+      "dropped_zero_std_features": 53,
+      "inflation_factors": {
+        "1": 1.6817928305074283,
+        "2": 1.54221082540794,
+        "3": 1.54221082540794,
+        "4": 1.4142135623730947,
+        "5": 1.4142135623730947
+      }
+    },
+    {
+      "fold_id": 29,
+      "episode": "21-02-2018_DDOS-LOIC-UDP_2",
+      "n_test_origins": 6,
+      "n_train_seq": 1832,
+      "n_val_seq": 422,
+      "best_epoch": 21,
+      "dropped_zero_std_features": 53,
+      "inflation_factors": {
+        "1": 1.1892071150027208,
+        "2": 1.1892071150027208,
+        "3": 1.1892071150027208,
+        "4": 1.1892071150027208,
+        "5": 1.1892071150027208
+      }
+    },
+    {
+      "fold_id": 30,
+      "episode": "21-02-2018_DDOS-LOIC-UDP_3",
+      "n_test_origins": 7,
+      "n_train_seq": 1832,
+      "n_val_seq": 422,
+      "best_epoch": 30,
+      "dropped_zero_std_features": 53,
+      "inflation_factors": {
+        "1": 1.0905077326652575,
+        "2": 1.0905077326652575,
+        "3": 1.0905077326652575,
+        "4": 1.0905077326652575,
+        "5": 1.0905077326652575
+      }
+    },
+    {
+      "fold_id": 31,
+      "episode": "21-02-2018_DDOS-LOIC-UDP_4",
+      "n_test_origins": 6,
+      "n_train_seq": 1832,
+      "n_val_seq": 422,
+      "best_epoch": 3,
+      "dropped_zero_std_features": 53,
+      "inflation_factors": {
+        "1": 1.6817928305074283,
+        "2": 1.6817928305074283,
+        "3": 1.54221082540794,
+        "4": 1.54221082540794,
+        "5": 1.4142135623730947
+      }
+    },
+    {
+      "fold_id": 32,
+      "episode": "21-02-2018_DDOS-LOIC-UDP_5",
+      "n_test_origins": 6,
+      "n_train_seq": 1832,
+      "n_val_seq": 422,
+      "best_epoch": 21,
+      "dropped_zero_std_features": 53,
+      "inflation_factors": {
+        "1": 1.1892071150027208,
+        "2": 1.1892071150027208,
+        "3": 1.1892071150027208,
+        "4": 1.1892071150027208,
+        "5": 1.1892071150027208
+      }
+    },
+    {
+      "fold_id": 33,
+      "episode": "21-02-2018_DDOS-LOIC-UDP_6",
+      "n_test_origins": 6,
+      "n_train_seq": 1832,
+      "n_val_seq": 422,
+      "best_epoch": 23,
+      "dropped_zero_std_features": 53,
+      "inflation_factors": {
+        "1": 1.1892071150027208,
+        "2": 1.1892071150027208,
+        "3": 1.1892071150027208,
+        "4": 1.1892071150027208,
+        "5": 1.1892071150027208
+      }
+    },
+    {
+      "fold_id": 34,
+      "episode": "21-02-2018_DDOS-LOIC-UDP_7",
+      "n_test_origins": 6,
+      "n_train_seq": 1832,
+      "n_val_seq": 422,
+      "best_epoch": 30,
+      "dropped_zero_std_features": 53,
+      "inflation_factors": {
+        "1": 1.2968395546510094,
+        "2": 1.2968395546510094,
+        "3": 1.2968395546510094,
+        "4": 1.1892071150027208,
+        "5": 1.1892071150027208
+      }
+    },
+    {
+      "fold_id": 35,
+      "episode": "21-02-2018_DDOS-LOIC-UDP_8",
+      "n_test_origins": 6,
+      "n_train_seq": 1832,
+      "n_val_seq": 422,
+      "best_epoch": 3,
+      "dropped_zero_std_features": 53,
+      "inflation_factors": {
+        "1": 1.6817928305074283,
+        "2": 1.54221082540794,
+        "3": 1.54221082540794,
+        "4": 1.4142135623730947,
+        "5": 1.4142135623730947
+      }
+    },
+    {
+      "fold_id": 36,
+      "episode": "21-02-2018_DDOS-LOIC-UDP_9",
+      "n_test_origins": 6,
+      "n_train_seq": 1832,
+      "n_val_seq": 422,
+      "best_epoch": 21,
+      "dropped_zero_std_features": 53,
+      "inflation_factors": {
+        "1": 1.1892071150027208,
+        "2": 1.1892071150027208,
+        "3": 1.1892071150027208,
+        "4": 1.1892071150027208,
+        "5": 1.1892071150027208
+      }
+    }
+  ],
+  "horizons": {
+    "1": {
+      "all": {
+        "n_windows": 411,
+        "forecasters": {
+          "F0_climatology": {
+            "crps": 38.22577,
+            "es": 319.53944,
+            "nll": 4790.09987,
+            "cov50": 0.54258,
+            "cov90": 0.8017,
+            "width90": 8.973,
+            "pit_hist_10": [
+              1598,
+              1104,
+              1038,
+              1466,
+              1605,
+              1504,
+              1398,
+              1049,
+              701,
+              1689
+            ]
+          },
+          "F1_noised_persistence": {
+            "crps": 29.99002,
+            "es": 246.99605,
+            "nll": 3175.62392,
+            "cov50": 0.71328,
+            "cov90": 0.93476,
+            "width90": 8.95394,
+            "pit_hist_10": [
+              671,
+              650,
+              1042,
+              1737,
+              2470,
+              2515,
+              1521,
+              1186,
+              699,
+              661
+            ]
+          },
+          "F2_noised_persistence_hetero": {
+            "crps": 29.99477,
+            "es": 247.05829,
+            "nll": 5222.61092,
+            "cov50": 0.69609,
+            "cov90": 0.93104,
+            "width90": 8.53484,
+            "pit_hist_10": [
+              649,
+              745,
+              1162,
+              1675,
+              2339,
+              2302,
+              1621,
+              1256,
+              688,
+              715
+            ]
+          },
+          "F3_ar1": {
+            "crps": 20.70962,
+            "es": 169.50255,
+            "nll": 3161.85999,
+            "cov50": 0.546,
+            "cov90": 0.84124,
+            "width90": 7.27692,
+            "pit_hist_10": [
+              1405,
+              941,
+              1258,
+              1479,
+              1713,
+              1627,
+              1294,
+              1097,
+              839,
+              1499
+            ]
+          },
+          "F4_world_model_mc": {
+            "crps": 38.16524,
+            "es": 318.29654,
+            "nll": 20766.95971,
+            "cov50": 0.42876,
+            "cov90": 0.69769,
+            "width90": 6.80653,
+            "pit_hist_10": [
+              2445,
+              848,
+              1126,
+              1077,
+              1241,
+              1361,
+              1014,
+              857,
+              784,
+              2399
+            ]
+          },
+          "F5_world_model_recalibrated": {
+            "crps": 38.15276,
+            "es": 317.93739,
+            "nll": 13441.22665,
+            "cov50": 0.51543,
+            "cov90": 0.76969,
+            "width90": 8.72292,
+            "pit_hist_10": [
+              1899,
+              748,
+              1200,
+              1269,
+              1581,
+              1715,
+              1140,
+              1014,
+              702,
+              1884
+            ]
+          }
+        },
+        "best_baseline_by_crps": "F3_ar1",
+        "comparisons": {
+          "F4_world_model_mc - F1_noised_persistence [crps]": {
+            "point": 8.17522,
+            "ci95": [
+              -1.33813,
+              21.42115
+            ],
+            "model_better": false
+          },
+          "F4_world_model_mc - F1_noised_persistence [es]": {
+            "point": 71.30049,
+            "ci95": [
+              -7.21501,
+              181.27511
+            ],
+            "model_better": false
+          },
+          "F5_world_model_recalibrated - F1_noised_persistence [crps]": {
+            "point": 8.16274,
+            "ci95": [
+              -1.3539,
+              21.39918
+            ],
+            "model_better": false
+          },
+          "F5_world_model_recalibrated - F1_noised_persistence [es]": {
+            "point": 70.94135,
+            "ci95": [
+              -7.55683,
+              180.9217
+            ],
+            "model_better": false
+          },
+          "F4_world_model_mc - F3_ar1 [crps]": {
+            "point": 17.45562,
+            "ci95": [
+              9.46834,
+              29.46646
+            ],
+            "model_better": false
+          },
+          "F4_world_model_mc - F3_ar1 [es]": {
+            "point": 148.79399,
+            "ci95": [
+              80.60939,
+              251.75737
+            ],
+            "model_better": false
+          },
+          "F5_world_model_recalibrated - F3_ar1 [crps]": {
+            "point": 17.44314,
+            "ci95": [
+              9.44652,
+              29.45928
+            ],
+            "model_better": false
+          },
+          "F5_world_model_recalibrated - F3_ar1 [es]": {
+            "point": 148.43484,
+            "ci95": [
+              80.26661,
+              251.28567
+            ],
+            "model_better": false
+          }
+        }
+      },
+      "benign_t": {
+        "n_windows": 263,
+        "forecasters": {
+          "F0_climatology": {
+            "crps": 9.64696,
+            "es": 83.50915,
+            "nll": 2286.65823,
+            "cov50": 0.62654,
+            "cov90": 0.89995,
+            "width90": 8.98056,
+            "pit_hist_10": [
+              640,
+              765,
+              778,
+              1142,
+              1201,
+              1111,
+              948,
+              771,
+              506,
+              554
+            ]
+          },
+          "F1_noised_persistence": {
+            "crps": 8.94363,
+            "es": 73.95115,
+            "nll": 1909.65393,
+            "cov50": 0.69499,
+            "cov90": 0.97006,
+            "width90": 8.98611,
+            "pit_hist_10": [
+              315,
+              528,
+              733,
+              1111,
+              1508,
+              1529,
+              938,
+              858,
+              543,
+              353
+            ]
+          },
+          "F2_noised_persistence_hetero": {
+            "crps": 8.97422,
+            "es": 74.2509,
+            "nll": 1571.4613,
+            "cov50": 0.72243,
+            "cov90": 0.97208,
+            "width90": 9.7432,
+            "pit_hist_10": [
+              238,
+              511,
+              762,
+              1085,
+              1599,
+              1564,
+              1047,
+              844,
+              454,
+              312
+            ]
+          },
+          "F3_ar1": {
+            "crps": 8.99105,
+            "es": 75.10789,
+            "nll": 2960.74894,
+            "cov50": 0.61003,
+            "cov90": 0.92514,
+            "width90": 7.30455,
+            "pit_hist_10": [
+              596,
+              666,
+              924,
+              1078,
+              1209,
+              1143,
+              934,
+              796,
+              554,
+              516
+            ]
+          },
+          "F4_world_model_mc": {
+            "crps": 9.56273,
+            "es": 81.07754,
+            "nll": 894.36905,
+            "cov50": 0.54884,
+            "cov90": 0.83817,
+            "width90": 8.37382,
+            "pit_hist_10": [
+              1026,
+              574,
+              859,
+              886,
+              1038,
+              1148,
+              829,
+              627,
+              538,
+              891
+            ]
+          },
+          "F5_world_model_recalibrated": {
+            "crps": 9.58532,
+            "es": 80.84437,
+            "nll": 532.58076,
+            "cov50": 0.64876,
+            "cov90": 0.90577,
+            "width90": 10.66645,
+            "pit_hist_10": [
+              696,
+              462,
+              859,
+              1000,
+              1328,
+              1445,
+              910,
+              704,
+              449,
+              563
+            ]
+          }
+        },
+        "best_baseline_by_crps": "F1_noised_persistence",
+        "comparisons": {
+          "F4_world_model_mc - F1_noised_persistence [crps]": {
+            "point": 0.6191,
+            "ci95": [
+              0.30001,
+              1.03559
+            ],
+            "model_better": false
+          },
+          "F4_world_model_mc - F1_noised_persistence [es]": {
+            "point": 7.12639,
+            "ci95": [
+              3.7335,
+              11.63993
+            ],
+            "model_better": false
+          },
+          "F5_world_model_recalibrated - F1_noised_persistence [crps]": {
+            "point": 0.64169,
+            "ci95": [
+              0.33016,
+              1.06269
+            ],
+            "model_better": false
+          },
+          "F5_world_model_recalibrated - F1_noised_persistence [es]": {
+            "point": 6.89322,
+            "ci95": [
+              3.69953,
+              11.17417
+            ],
+            "model_better": false
+          }
+        }
+      },
+      "change": {
+        "n_windows": 3,
+        "forecasters": {
+          "F0_climatology": {
+            "crps": 686.44995,
+            "es": 5750.91696,
+            "nll": 200252.70727,
+            "cov50": 0.46875,
+            "cov90": 0.65625,
+            "width90": 8.98412,
+            "pit_hist_10": [
+              13,
+              7,
+              4,
+              8,
+              14,
+              8,
+              7,
+              7,
+              8,
+              20
+            ]
+          },
+          "F1_noised_persistence": {
+            "crps": 687.19703,
+            "es": 5750.21969,
+            "nll": 167223.56184,
+            "cov50": 0.57292,
+            "cov90": 0.66667,
+            "width90": 8.9595,
+            "pit_hist_10": [
+              13,
+              0,
+              5,
+              11,
+              16,
+              10,
+              10,
+              7,
+              3,
+              21
+            ]
+          },
+          "F2_noised_persistence_hetero": {
+            "crps": 687.17426,
+            "es": 5750.03553,
+            "nll": 137573.38372,
+            "cov50": 0.57292,
+            "cov90": 0.66667,
+            "width90": 9.85769,
+            "pit_hist_10": [
+              13,
+              0,
+              4,
+              11,
+              17,
+              11,
+              9,
+              7,
+              3,
+              21
+            ]
+          },
+          "F3_ar1": {
+            "crps": 686.8633,
+            "es": 5750.80249,
+            "nll": 259378.76659,
+            "cov50": 0.46875,
+            "cov90": 0.66667,
+            "width90": 7.2779,
+            "pit_hist_10": [
+              13,
+              4,
+              6,
+              11,
+              12,
+              7,
+              9,
+              6,
+              7,
+              21
+            ]
+          },
+          "F4_world_model_mc": {
+            "crps": 686.04029,
+            "es": 5747.32372,
+            "nll": 78162.07419,
+            "cov50": 0.34375,
+            "cov90": 0.5,
+            "width90": 7.52516,
+            "pit_hist_10": [
+              19,
+              4,
+              6,
+              10,
+              5,
+              6,
+              6,
+              6,
+              2,
+              32
+            ]
+          },
+          "F5_world_model_recalibrated": {
+            "crps": 685.79716,
+            "es": 5745.50722,
+            "nll": 46476.2967,
+            "cov50": 0.40625,
+            "cov90": 0.5625,
+            "width90": 10.07015,
+            "pit_hist_10": [
+              18,
+              2,
+              5,
+              11,
+              8,
+              9,
+              8,
+              3,
+              4,
+              28
+            ]
+          }
+        },
+        "best_baseline_by_crps": "F0_climatology",
+        "comparisons": {
+          "note": "too few windows (3 < 20) for a bootstrap CI"
+        }
+      }
+    },
+    "2": {
+      "all": {
+        "n_windows": 411,
+        "forecasters": {
+          "F0_climatology": {
+            "crps": 60.05692,
+            "es": 498.8562,
+            "nll": 10344.11114,
+            "cov50": 0.52965,
+            "cov90": 0.77965,
+            "width90": 8.973,
+            "pit_hist_10": [
+              1701,
+              1063,
+              1032,
+              1374,
+              1508,
+              1585,
+              1378,
+              1023,
+              671,
+              1817
+            ]
+          },
+          "F1_noised_persistence": {
+            "crps": 15.2019,
+            "es": 125.7774,
+            "nll": 1831.2978,
+            "cov50": 0.70217,
+            "cov90": 0.90595,
+            "width90": 8.84139,
+            "pit_hist_10": [
+              742,
+              719,
+              999,
+              1721,
+              2402,
+              2393,
+              1557,
+              1094,
+              708,
+              817
+            ]
+          },
+          "F2_noised_persistence_hetero": {
+            "crps": 15.19969,
+            "es": 125.76791,
+            "nll": 2002.95799,
+            "cov50": 0.68446,
+            "cov90": 0.9023,
+            "width90": 8.41675,
+            "pit_hist_10": [
+              817,
+              723,
+              1077,
+              1722,
+              2244,
+              2207,
+              1646,
+              1134,
+              683,
+              899
+            ]
+          },
+          "F3_ar1": {
+            "crps": 51.53968,
+            "es": 425.19525,
+            "nll": 9708.31499,
+            "cov50": 0.53049,
+            "cov90": 0.79745,
+            "width90": 7.95743,
+            "pit_hist_10": [
+              1633,
+              1000,
+              1067,
+              1422,
+              1689,
+              1543,
+              1226,
+              998,
+              781,
+              1793
+            ]
+          },
+          "F4_world_model_mc": {
+            "crps": 59.98138,
+            "es": 497.96223,
+            "nll": 46120.75521,
+            "cov50": 0.40207,
+            "cov90": 0.67952,
+            "width90": 6.10498,
+            "pit_hist_10": [
+              2550,
+              871,
+              1171,
+              1022,
+              1071,
+              1283,
+              877,
+              1005,
+              820,
+              2482
+            ]
+          },
+          "F5_world_model_recalibrated": {
+            "crps": 59.94922,
+            "es": 497.50155,
+            "nll": 26522.42349,
+            "cov50": 0.48274,
+            "cov90": 0.7497,
+            "width90": 7.73369,
+            "pit_hist_10": [
+              2022,
+              828,
+              1219,
+              1257,
+              1327,
+              1572,
+              1084,
+              1034,
+              815,
+              1994
+            ]
+          }
+        },
+        "best_baseline_by_crps": "F2_noised_persistence_hetero",
+        "comparisons": {
+          "F4_world_model_mc - F1_noised_persistence [crps]": {
+            "point": 44.77948,
+            "ci95": [
+              23.05199,
+              77.05599
+            ],
+            "model_better": false
+          },
+          "F4_world_model_mc - F1_noised_persistence [es]": {
+            "point": 372.18484,
+            "ci95": [
+              191.53382,
+              640.75864
+            ],
+            "model_better": false
+          },
+          "F5_world_model_recalibrated - F1_noised_persistence [crps]": {
+            "point": 44.74732,
+            "ci95": [
+              23.02401,
+              77.00979
+            ],
+            "model_better": false
+          },
+          "F5_world_model_recalibrated - F1_noised_persistence [es]": {
+            "point": 371.72415,
+            "ci95": [
+              191.22939,
+              640.04787
+            ],
+            "model_better": false
+          },
+          "F4_world_model_mc - F2_noised_persistence_hetero [crps]": {
+            "point": 44.78169,
+            "ci95": [
+              23.07325,
+              77.03874
+            ],
+            "model_better": false
+          },
+          "F4_world_model_mc - F2_noised_persistence_hetero [es]": {
+            "point": 372.19432,
+            "ci95": [
+              191.60961,
+              640.62241
+            ],
+            "model_better": false
+          },
+          "F5_world_model_recalibrated - F2_noised_persistence_hetero [crps]": {
+            "point": 44.74953,
+            "ci95": [
+              23.04328,
+              76.99253
+            ],
+            "model_better": false
+          },
+          "F5_world_model_recalibrated - F2_noised_persistence_hetero [es]": {
+            "point": 371.73364,
+            "ci95": [
+              191.30519,
+              639.91164
+            ],
+            "model_better": false
+          }
+        }
+      },
+      "benign_t": {
+        "n_windows": 263,
+        "forecasters": {
+          "F0_climatology": {
+            "crps": 13.65013,
+            "es": 116.33127,
+            "nll": 2833.56597,
+            "cov50": 0.6048,
+            "cov90": 0.86466,
+            "width90": 8.98056,
+            "pit_hist_10": [
+              731,
+              732,
+              764,
+              1050,
+              1110,
+              1177,
+              940,
+              730,
+              471,
+              711
+            ]
+          },
+          "F1_noised_persistence": {
+            "crps": 13.0797,
+            "es": 108.30216,
+            "nll": 2308.88422,
+            "cov50": 0.67003,
+            "cov90": 0.91885,
+            "width90": 8.87501,
+            "pit_hist_10": [
+              420,
+              582,
+              694,
+              1118,
+              1399,
+              1396,
+              970,
+              774,
+              559,
+              504
+            ]
+          },
+          "F2_noised_persistence_hetero": {
+            "crps": 13.10236,
+            "es": 108.51437,
+            "nll": 1909.80317,
+            "cov50": 0.69903,
+            "cov90": 0.92704,
+            "width90": 9.64989,
+            "pit_hist_10": [
+              406,
+              520,
+              675,
+              1111,
+              1501,
+              1445,
+              1078,
+              746,
+              453,
+              481
+            ]
+          },
+          "F3_ar1": {
+            "crps": 13.26282,
+            "es": 110.90883,
+            "nll": 3264.39248,
+            "cov50": 0.60017,
+            "cov90": 0.88356,
+            "width90": 7.98408,
+            "pit_hist_10": [
+              727,
+              726,
+              754,
+              1060,
+              1210,
+              1097,
+              882,
+              739,
+              504,
+              717
+            ]
+          },
+          "F4_world_model_mc": {
+            "crps": 13.54951,
+            "es": 114.49235,
+            "nll": 2222.72584,
+            "cov50": 0.50463,
+            "cov90": 0.80513,
+            "width90": 7.16671,
+            "pit_hist_10": [
+              1138,
+              595,
+              915,
+              806,
+              887,
+              1065,
+              686,
+              756,
+              562,
+              1006
+            ]
+          },
+          "F5_world_model_recalibrated": {
+            "crps": 13.54203,
+            "es": 114.11043,
+            "nll": 1322.30167,
+            "cov50": 0.59898,
+            "cov90": 0.87072,
+            "width90": 9.04969,
+            "pit_hist_10": [
+              798,
+              551,
+              888,
+              982,
+              1101,
+              1272,
+              855,
+              736,
+              524,
+              709
+            ]
+          }
+        },
+        "best_baseline_by_crps": "F1_noised_persistence",
+        "comparisons": {
+          "F4_world_model_mc - F1_noised_persistence [crps]": {
+            "point": 0.4698,
+            "ci95": [
+              0.22438,
+              0.80097
+            ],
+            "model_better": false
+          },
+          "F4_world_model_mc - F1_noised_persistence [es]": {
+            "point": 6.19019,
+            "ci95": [
+              3.21393,
+              10.22931
+            ],
+            "model_better": false
+          },
+          "F5_world_model_recalibrated - F1_noised_persistence [crps]": {
+            "point": 0.46233,
+            "ci95": [
+              0.22897,
+              0.77294
+            ],
+            "model_better": false
+          },
+          "F5_world_model_recalibrated - F1_noised_persistence [es]": {
+            "point": 5.80827,
+            "ci95": [
+              3.08062,
+              9.5261
+            ],
+            "model_better": false
+          }
+        }
+      },
+      "change": {
+        "n_windows": 8,
+        "forecasters": {
+          "F0_climatology": {
+            "crps": 383.9599,
+            "es": 3214.65649,
+            "nll": 93066.89637,
+            "cov50": 0.51562,
+            "cov90": 0.71875,
+            "width90": 8.97869,
+            "pit_hist_10": [
+              30,
+              17,
+              16,
+              25,
+              26,
+              30,
+              26,
+              22,
+              17,
+              47
+            ]
+          },
+          "F1_noised_persistence": {
+            "crps": 384.65797,
+            "es": 3215.11782,
+            "nll": 75824.73268,
+            "cov50": 0.45312,
+            "cov90": 0.70703,
+            "width90": 8.8306,
+            "pit_hist_10": [
+              34,
+              16,
+              20,
+              17,
+              26,
+              23,
+              29,
+              19,
+              16,
+              56
+            ]
+          },
+          "F2_noised_persistence_hetero": {
+            "crps": 384.60227,
+            "es": 3214.6522,
+            "nll": 62706.35373,
+            "cov50": 0.41406,
+            "cov90": 0.67578,
+            "width90": 8.44217,
+            "pit_hist_10": [
+              38,
+              13,
+              26,
+              14,
+              22,
+              18,
+              28,
+              21,
+              18,
+              58
+            ]
+          },
+          "F3_ar1": {
+            "crps": 384.22361,
+            "es": 3214.3377,
+            "nll": 107235.54061,
+            "cov50": 0.47266,
+            "cov90": 0.72266,
+            "width90": 7.94522,
+            "pit_hist_10": [
+              33,
+              13,
+              20,
+              27,
+              24,
+              24,
+              22,
+              25,
+              21,
+              47
+            ]
+          },
+          "F4_world_model_mc": {
+            "crps": 383.81654,
+            "es": 3213.08403,
+            "nll": 72962.18263,
+            "cov50": 0.30859,
+            "cov90": 0.52344,
+            "width90": 5.74165,
+            "pit_hist_10": [
+              56,
+              9,
+              17,
+              17,
+              13,
+              17,
+              18,
+              16,
+              13,
+              80
+            ]
+          },
+          "F5_world_model_recalibrated": {
+            "crps": 383.67676,
+            "es": 3212.067,
+            "nll": 43384.37956,
+            "cov50": 0.39062,
+            "cov90": 0.62109,
+            "width90": 7.6796,
+            "pit_hist_10": [
+              43,
+              16,
+              15,
+              21,
+              14,
+              28,
+              18,
+              20,
+              12,
+              69
+            ]
+          }
+        },
+        "best_baseline_by_crps": "F0_climatology",
+        "comparisons": {
+          "note": "too few windows (8 < 20) for a bootstrap CI"
+        }
+      }
+    },
+    "3": {
+      "all": {
+        "n_windows": 410,
+        "forecasters": {
+          "F0_climatology": {
+            "crps": 41.53127,
+            "es": 346.76112,
+            "nll": 5368.08369,
+            "cov50": 0.5247,
+            "cov90": 0.77904,
+            "width90": 8.97286,
+            "pit_hist_10": [
+              1706,
+              1045,
+              1067,
+              1306,
+              1504,
+              1513,
+              1425,
+              1014,
+              716,
+              1824
+            ]
+          },
+          "F1_noised_persistence": {
+            "crps": 35.68723,
+            "es": 294.23263,
+            "nll": 3522.57046,
+            "cov50": 0.66753,
+            "cov90": 0.88887,
+            "width90": 9.24859,
+            "pit_hist_10": [
+              883,
+              735,
+              1126,
+              1549,
+              2264,
+              2288,
+              1556,
+              1037,
+              697,
+              985
+            ]
+          },
+          "F2_noised_persistence_hetero": {
+            "crps": 35.68659,
+            "es": 294.18394,
+            "nll": 5043.18547,
+            "cov50": 0.64779,
+            "cov90": 0.88552,
+            "width90": 8.85412,
+            "pit_hist_10": [
+              921,
+              847,
+              1113,
+              1556,
+              2120,
+              2128,
+              1540,
+              1143,
+              704,
+              1048
+            ]
+          },
+          "F3_ar1": {
+            "crps": 37.88593,
+            "es": 314.7397,
+            "nll": 5585.13518,
+            "cov50": 0.52073,
+            "cov90": 0.78529,
+            "width90": 8.21847,
+            "pit_hist_10": [
+              1709,
+              1043,
+              1060,
+              1309,
+              1570,
+              1529,
+              1314,
+              960,
+              787,
+              1839
+            ]
+          },
+          "F4_world_model_mc": {
+            "crps": 41.46,
+            "es": 345.94902,
+            "nll": 14766.81891,
+            "cov50": 0.39024,
+            "cov90": 0.6875,
+            "width90": 6.0171,
+            "pit_hist_10": [
+              2526,
+              958,
+              1133,
+              988,
+              1077,
+              1187,
+              939,
+              951,
+              873,
+              2488
+            ]
+          },
+          "F5_world_model_recalibrated": {
+            "crps": 41.42489,
+            "es": 345.48776,
+            "nll": 9375.00974,
+            "cov50": 0.46951,
+            "cov90": 0.74695,
+            "width90": 7.48584,
+            "pit_hist_10": [
+              2065,
+              860,
+              1294,
+              1112,
+              1334,
+              1440,
+              1086,
+              1046,
+              843,
+              2040
+            ]
+          }
+        },
+        "best_baseline_by_crps": "F2_noised_persistence_hetero",
+        "comparisons": {
+          "F4_world_model_mc - F1_noised_persistence [crps]": {
+            "point": 5.77277,
+            "ci95": [
+              -2.82755,
+              17.90587
+            ],
+            "model_better": false
+          },
+          "F4_world_model_mc - F1_noised_persistence [es]": {
+            "point": 51.71639,
+            "ci95": [
+              -19.57762,
+              153.77
+            ],
+            "model_better": false
+          },
+          "F5_world_model_recalibrated - F1_noised_persistence [crps]": {
+            "point": 5.73766,
+            "ci95": [
+              -2.88191,
+              17.86448
+            ],
+            "model_better": false
+          },
+          "F5_world_model_recalibrated - F1_noised_persistence [es]": {
+            "point": 51.25513,
+            "ci95": [
+              -20.09441,
+              153.33624
+            ],
+            "model_better": false
+          },
+          "F4_world_model_mc - F2_noised_persistence_hetero [crps]": {
+            "point": 5.7734,
+            "ci95": [
+              -2.84809,
+              17.90299
+            ],
+            "model_better": false
+          },
+          "F4_world_model_mc - F2_noised_persistence_hetero [es]": {
+            "point": 51.76509,
+            "ci95": [
+              -19.45099,
+              153.81173
+            ],
+            "model_better": false
+          },
+          "F5_world_model_recalibrated - F2_noised_persistence_hetero [crps]": {
+            "point": 5.73829,
+            "ci95": [
+              -2.89636,
+              17.86099
+            ],
+            "model_better": false
+          },
+          "F5_world_model_recalibrated - F2_noised_persistence_hetero [es]": {
+            "point": 51.30382,
+            "ci95": [
+              -19.96778,
+              153.32981
+            ],
+            "model_better": false
+          }
+        }
+      },
+      "benign_t": {
+        "n_windows": 263,
+        "forecasters": {
+          "F0_climatology": {
+            "crps": 18.40098,
+            "es": 155.85739,
+            "nll": 3682.80224,
+            "cov50": 0.59434,
+            "cov90": 0.85801,
+            "width90": 8.98056,
+            "pit_hist_10": [
+              772,
+              719,
+              796,
+              970,
+              1089,
+              1128,
+              985,
+              709,
+              514,
+              734
+            ]
+          },
+          "F1_noised_persistence": {
+            "crps": 17.97005,
+            "es": 149.14341,
+            "nll": 2719.07265,
+            "cov50": 0.63201,
+            "cov90": 0.8971,
+            "width90": 9.28862,
+            "pit_hist_10": [
+              530,
+              567,
+              796,
+              955,
+              1393,
+              1341,
+              931,
+              700,
+              530,
+              673
+            ]
+          },
+          "F2_noised_persistence_hetero": {
+            "crps": 17.98942,
+            "es": 149.26298,
+            "nll": 2305.30675,
+            "cov50": 0.6534,
+            "cov90": 0.90126,
+            "width90": 10.03239,
+            "pit_hist_10": [
+              494,
+              577,
+              735,
+              980,
+              1455,
+              1413,
+              933,
+              722,
+              459,
+              648
+            ]
+          },
+          "F3_ar1": {
+            "crps": 18.13825,
+            "es": 151.86816,
+            "nll": 4164.17187,
+            "cov50": 0.58805,
+            "cov90": 0.86751,
+            "width90": 8.24222,
+            "pit_hist_10": [
+              788,
+              767,
+              769,
+              928,
+              1125,
+              1093,
+              974,
+              696,
+              519,
+              757
+            ]
+          },
+          "F4_world_model_mc": {
+            "crps": 18.31402,
+            "es": 154.28971,
+            "nll": 2843.46336,
+            "cov50": 0.48443,
+            "cov90": 0.80347,
+            "width90": 6.91365,
+            "pit_hist_10": [
+              1181,
+              664,
+              854,
+              763,
+              885,
+              961,
+              760,
+              704,
+              595,
+              1049
+            ]
+          },
+          "F5_world_model_recalibrated": {
+            "crps": 18.29917,
+            "es": 153.88979,
+            "nll": 1691.41572,
+            "cov50": 0.57533,
+            "cov90": 0.85741,
+            "width90": 8.58956,
+            "pit_hist_10": [
+              876,
+              573,
+              946,
+              849,
+              1090,
+              1167,
+              852,
+              745,
+              532,
+              786
+            ]
+          }
+        },
+        "best_baseline_by_crps": "F1_noised_persistence",
+        "comparisons": {
+          "F4_world_model_mc - F1_noised_persistence [crps]": {
+            "point": 0.34397,
+            "ci95": [
+              0.10351,
+              0.65924
+            ],
+            "model_better": false
+          },
+          "F4_world_model_mc - F1_noised_persistence [es]": {
+            "point": 5.14631,
+            "ci95": [
+              2.30533,
+              8.99577
+            ],
+            "model_better": false
+          },
+          "F5_world_model_recalibrated - F1_noised_persistence [crps]": {
+            "point": 0.32913,
+            "ci95": [
+              0.10183,
+              0.63053
+            ],
+            "model_better": false
+          },
+          "F5_world_model_recalibrated - F1_noised_persistence [es]": {
+            "point": 4.74638,
+            "ci95": [
+              2.13147,
+              8.25885
+            ],
+            "model_better": false
+          }
+        }
+      },
+      "change": {
+        "n_windows": 13,
+        "forecasters": {
+          "F0_climatology": {
+            "crps": 333.03899,
+            "es": 2787.82609,
+            "nll": 74453.17673,
+            "cov50": 0.51923,
+            "cov90": 0.74279,
+            "width90": 8.97744,
+            "pit_hist_10": [
+              47,
+              24,
+              31,
+              49,
+              44,
+              41,
+              44,
+              36,
+              28,
+              72
+            ]
+          },
+          "F1_noised_persistence": {
+            "crps": 333.72246,
+            "es": 2788.93586,
+            "nll": 54960.00318,
+            "cov50": 0.47356,
+            "cov90": 0.71394,
+            "width90": 9.22948,
+            "pit_hist_10": [
+              56,
+              21,
+              22,
+              39,
+              48,
+              40,
+              45,
+              26,
+              31,
+              88
+            ]
+          },
+          "F2_noised_persistence_hetero": {
+            "crps": 333.67585,
+            "es": 2788.62354,
+            "nll": 46589.84366,
+            "cov50": 0.4351,
+            "cov90": 0.6851,
+            "width90": 8.57664,
+            "pit_hist_10": [
+              60,
+              25,
+              22,
+              42,
+              37,
+              34,
+              41,
+              32,
+              29,
+              94
+            ]
+          },
+          "F3_ar1": {
+            "crps": 333.2016,
+            "es": 2787.63474,
+            "nll": 84193.63192,
+            "cov50": 0.4976,
+            "cov90": 0.74279,
+            "width90": 8.20766,
+            "pit_hist_10": [
+              49,
+              26,
+              29,
+              48,
+              42,
+              41,
+              39,
+              36,
+              31,
+              75
+            ]
+          },
+          "F4_world_model_mc": {
+            "crps": 332.92761,
+            "es": 2786.70957,
+            "nll": 57456.4326,
+            "cov50": 0.30048,
+            "cov90": 0.5649,
+            "width90": 5.50358,
+            "pit_hist_10": [
+              81,
+              32,
+              26,
+              35,
+              20,
+              26,
+              26,
+              26,
+              20,
+              124
+            ]
+          },
+          "F5_world_model_recalibrated": {
+            "crps": 332.80058,
+            "es": 2785.77116,
+            "nll": 34164.59317,
+            "cov50": 0.38462,
+            "cov90": 0.63462,
+            "width90": 7.13726,
+            "pit_hist_10": [
+              71,
+              23,
+              34,
+              33,
+              33,
+              36,
+              25,
+              26,
+              33,
+              102
+            ]
+          }
+        },
+        "best_baseline_by_crps": "F0_climatology",
+        "comparisons": {
+          "note": "too few windows (13 < 20) for a bootstrap CI"
+        }
+      }
+    },
+    "4": {
+      "all": {
+        "n_windows": 410,
+        "forecasters": {
+          "F0_climatology": {
+            "crps": 61.89332,
+            "es": 514.53922,
+            "nll": 10493.51594,
+            "cov50": 0.51921,
+            "cov90": 0.77073,
+            "width90": 8.97286,
+            "pit_hist_10": [
+              1802,
+              960,
+              1105,
+              1236,
+              1457,
+              1587,
+              1418,
+              946,
+              686,
+              1923
+            ]
+          },
+          "F1_noised_persistence": {
+            "crps": 23.18298,
+            "es": 192.43643,
+            "nll": 2491.99021,
+            "cov50": 0.6782,
+            "cov90": 0.87386,
+            "width90": 8.97344,
+            "pit_hist_10": [
+              933,
+              667,
+              1093,
+              1562,
+              2259,
+              2251,
+              1655,
+              928,
+              645,
+              1127
+            ]
+          },
+          "F2_noised_persistence_hetero": {
+            "crps": 23.17392,
+            "es": 192.36612,
+            "nll": 2716.73262,
+            "cov50": 0.65671,
+            "cov90": 0.86883,
+            "width90": 8.59489,
+            "pit_hist_10": [
+              971,
+              709,
+              1104,
+              1597,
+              2133,
+              2127,
+              1661,
+              971,
+              632,
+              1215
+            ]
+          },
+          "F3_ar1": {
+            "crps": 59.57116,
+            "es": 497.50577,
+            "nll": 11535.36229,
+            "cov50": 0.50938,
+            "cov90": 0.76707,
+            "width90": 8.3615,
+            "pit_hist_10": [
+              1812,
+              948,
+              1132,
+              1227,
+              1504,
+              1593,
+              1286,
+              884,
+              757,
+              1977
+            ]
+          },
+          "F4_world_model_mc": {
+            "crps": 61.82263,
+            "es": 513.86339,
+            "nll": 35198.61272,
+            "cov50": 0.38575,
+            "cov90": 0.6846,
+            "width90": 5.92522,
+            "pit_hist_10": [
+              2579,
+              1031,
+              1117,
+              924,
+              974,
+              1134,
+              1030,
+              960,
+              870,
+              2501
+            ]
+          },
+          "F5_world_model_recalibrated": {
+            "crps": 61.78336,
+            "es": 513.39109,
+            "nll": 21346.07682,
+            "cov50": 0.45572,
+            "cov90": 0.74527,
+            "width90": 7.30734,
+            "pit_hist_10": [
+              2094,
+              1002,
+              1190,
+              1146,
+              1180,
+              1364,
+              1216,
+              1000,
+              824,
+              2104
+            ]
+          }
+        },
+        "best_baseline_by_crps": "F2_noised_persistence_hetero",
+        "comparisons": {
+          "F4_world_model_mc - F1_noised_persistence [crps]": {
+            "point": 38.63964,
+            "ci95": [
+              18.76276,
+              67.09811
+            ],
+            "model_better": false
+          },
+          "F4_world_model_mc - F1_noised_persistence [es]": {
+            "point": 321.42696,
+            "ci95": [
+              155.95527,
+              558.24687
+            ],
+            "model_better": false
+          },
+          "F5_world_model_recalibrated - F1_noised_persistence [crps]": {
+            "point": 38.60038,
+            "ci95": [
+              18.73079,
+              67.0395
+            ],
+            "model_better": false
+          },
+          "F5_world_model_recalibrated - F1_noised_persistence [es]": {
+            "point": 320.95466,
+            "ci95": [
+              155.5959,
+              557.63935
+            ],
+            "model_better": false
+          },
+          "F4_world_model_mc - F2_noised_persistence_hetero [crps]": {
+            "point": 38.64871,
+            "ci95": [
+              18.78406,
+              67.08715
+            ],
+            "model_better": false
+          },
+          "F4_world_model_mc - F2_noised_persistence_hetero [es]": {
+            "point": 321.49727,
+            "ci95": [
+              156.11031,
+              558.15704
+            ],
+            "model_better": false
+          },
+          "F5_world_model_recalibrated - F2_noised_persistence_hetero [crps]": {
+            "point": 38.60944,
+            "ci95": [
+              18.75211,
+              67.02854
+            ],
+            "model_better": false
+          },
+          "F5_world_model_recalibrated - F2_noised_persistence_hetero [es]": {
+            "point": 321.02497,
+            "ci95": [
+              155.75094,
+              557.54951
+            ],
+            "model_better": false
+          }
+        }
+      },
+      "benign_t": {
+        "n_windows": 263,
+        "forecasters": {
+          "F0_climatology": {
+            "crps": 22.0117,
+            "es": 186.22132,
+            "nll": 4115.21167,
+            "cov50": 0.58413,
+            "cov90": 0.84375,
+            "width90": 8.98056,
+            "pit_hist_10": [
+              864,
+              632,
+              833,
+              905,
+              1038,
+              1188,
+              973,
+              656,
+              484,
+              843
+            ]
+          },
+          "F1_noised_persistence": {
+            "crps": 21.62537,
+            "es": 180.035,
+            "nll": 3153.18814,
+            "cov50": 0.64567,
+            "cov90": 0.87203,
+            "width90": 9.0053,
+            "pit_hist_10": [
+              596,
+              510,
+              783,
+              998,
+              1276,
+              1293,
+              1081,
+              577,
+              494,
+              808
+            ]
+          },
+          "F2_noised_persistence_hetero": {
+            "crps": 21.63543,
+            "es": 180.12893,
+            "nll": 2683.1295,
+            "cov50": 0.66077,
+            "cov90": 0.87346,
+            "width90": 9.70405,
+            "pit_hist_10": [
+              555,
+              475,
+              723,
+              1036,
+              1374,
+              1382,
+              1099,
+              569,
+              398,
+              805
+            ]
+          },
+          "F3_ar1": {
+            "crps": 21.83058,
+            "es": 183.17189,
+            "nll": 4640.40625,
+            "cov50": 0.57296,
+            "cov90": 0.8409,
+            "width90": 8.38226,
+            "pit_hist_10": [
+              885,
+              651,
+              845,
+              880,
+              1057,
+              1129,
+              941,
+              640,
+              513,
+              875
+            ]
+          },
+          "F4_world_model_mc": {
+            "crps": 21.93142,
+            "es": 184.87429,
+            "nll": 3657.33901,
+            "cov50": 0.46863,
+            "cov90": 0.79147,
+            "width90": 6.66866,
+            "pit_hist_10": [
+              1260,
+              716,
+              837,
+              694,
+              771,
+              897,
+              812,
+              704,
+              593,
+              1132
+            ]
+          },
+          "F5_world_model_recalibrated": {
+            "crps": 21.90842,
+            "es": 184.45096,
+            "nll": 2175.37347,
+            "cov50": 0.54575,
+            "cov90": 0.84779,
+            "width90": 8.20855,
+            "pit_hist_10": [
+              919,
+              701,
+              850,
+              877,
+              914,
+              1090,
+              936,
+              715,
+              535,
+              879
+            ]
+          }
+        },
+        "best_baseline_by_crps": "F1_noised_persistence",
+        "comparisons": {
+          "F4_world_model_mc - F1_noised_persistence [crps]": {
+            "point": 0.30606,
+            "ci95": [
+              0.12154,
+              0.54859
+            ],
+            "model_better": false
+          },
+          "F4_world_model_mc - F1_noised_persistence [es]": {
+            "point": 4.83929,
+            "ci95": [
+              2.4065,
+              8.1574
+            ],
+            "model_better": false
+          },
+          "F5_world_model_recalibrated - F1_noised_persistence [crps]": {
+            "point": 0.28305,
+            "ci95": [
+              0.11668,
+              0.50415
+            ],
+            "model_better": false
+          },
+          "F5_world_model_recalibrated - F1_noised_persistence [es]": {
+            "point": 4.41596,
+            "ci95": [
+              2.22555,
+              7.41315
+            ],
+            "model_better": false
+          }
+        }
+      },
+      "change": {
+        "n_windows": 18,
+        "forecasters": {
+          "F0_climatology": {
+            "crps": 290.49765,
+            "es": 2431.10435,
+            "nll": 60079.76371,
+            "cov50": 0.55035,
+            "cov90": 0.75,
+            "width90": 8.97688,
+            "pit_hist_10": [
+              63,
+              28,
+              46,
+              68,
+              69,
+              68,
+              58,
+              44,
+              35,
+              97
+            ]
+          },
+          "F1_noised_persistence": {
+            "crps": 291.07735,
+            "es": 2432.25044,
+            "nll": 46029.10469,
+            "cov50": 0.4809,
+            "cov90": 0.72569,
+            "width90": 8.95286,
+            "pit_hist_10": [
+              75,
+              31,
+              40,
+              52,
+              55,
+              71,
+              59,
+              34,
+              41,
+              118
+            ]
+          },
+          "F2_noised_persistence_hetero": {
+            "crps": 291.02326,
+            "es": 2431.84575,
+            "nll": 39163.23102,
+            "cov50": 0.43056,
+            "cov90": 0.69097,
+            "width90": 8.20381,
+            "pit_hist_10": [
+              86,
+              32,
+              45,
+              44,
+              46,
+              61,
+              47,
+              52,
+              34,
+              129
+            ]
+          },
+          "F3_ar1": {
+            "crps": 290.59475,
+            "es": 2430.98672,
+            "nll": 67754.32545,
+            "cov50": 0.52431,
+            "cov90": 0.75174,
+            "width90": 8.35193,
+            "pit_hist_10": [
+              65,
+              30,
+              48,
+              65,
+              66,
+              65,
+              56,
+              42,
+              39,
+              100
+            ]
+          },
+          "F4_world_model_mc": {
+            "crps": 290.39039,
+            "es": 2429.90463,
+            "nll": 53376.39928,
+            "cov50": 0.3316,
+            "cov90": 0.60764,
+            "width90": 5.4433,
+            "pit_hist_10": [
+              113,
+              34,
+              50,
+              39,
+              37,
+              39,
+              36,
+              40,
+              36,
+              152
+            ]
+          },
+          "F5_world_model_recalibrated": {
+            "crps": 290.27866,
+            "es": 2429.07677,
+            "nll": 31738.59144,
+            "cov50": 0.42014,
+            "cov90": 0.69271,
+            "width90": 7.05909,
+            "pit_hist_10": [
+              91,
+              32,
+              55,
+              47,
+              46,
+              47,
+              50,
+              41,
+              41,
+              126
+            ]
+          }
+        },
+        "best_baseline_by_crps": "F0_climatology",
+        "comparisons": {
+          "note": "too few windows (18 < 20) for a bootstrap CI"
+        }
+      }
+    },
+    "5": {
+      "all": {
+        "n_windows": 409,
+        "forecasters": {
+          "F0_climatology": {
+            "crps": 45.7846,
+            "es": 382.34105,
+            "nll": 6215.39945,
+            "cov50": 0.52185,
+            "cov90": 0.77407,
+            "width90": 8.97271,
+            "pit_hist_10": [
+              1773,
+              910,
+              1172,
+              1262,
+              1426,
+              1565,
+              1442,
+              908,
+              694,
+              1936
+            ]
+          },
+          "F1_noised_persistence": {
+            "crps": 40.3831,
+            "es": 333.70812,
+            "nll": 4042.82225,
+            "cov50": 0.671,
+            "cov90": 0.87668,
+            "width90": 9.24941,
+            "pit_hist_10": [
+              973,
+              671,
+              958,
+              1556,
+              2361,
+              2193,
+              1592,
+              1041,
+              718,
+              1025
+            ]
+          },
+          "F2_noised_persistence_hetero": {
+            "crps": 40.37483,
+            "es": 333.63548,
+            "nll": 5265.55497,
+            "cov50": 0.65105,
+            "cov90": 0.87317,
+            "width90": 8.87216,
+            "pit_hist_10": [
+              1000,
+              731,
+              979,
+              1597,
+              2212,
+              2040,
+              1555,
+              1198,
+              676,
+              1100
+            ]
+          },
+          "F3_ar1": {
+            "crps": 44.38208,
+            "es": 373.62831,
+            "nll": 6934.56588,
+            "cov50": 0.51177,
+            "cov90": 0.76704,
+            "width90": 8.45041,
+            "pit_hist_10": [
+              1782,
+              903,
+              1235,
+              1241,
+              1412,
+              1574,
+              1318,
+              892,
+              781,
+              1950
+            ]
+          },
+          "F4_world_model_mc": {
+            "crps": 45.72617,
+            "es": 381.75668,
+            "nll": 14317.52753,
+            "cov50": 0.38386,
+            "cov90": 0.67871,
+            "width90": 5.83592,
+            "pit_hist_10": [
+              2609,
+              963,
+              1118,
+              949,
+              1021,
+              1145,
+              953,
+              968,
+              827,
+              2535
+            ]
+          },
+          "F5_world_model_recalibrated": {
+            "crps": 45.68714,
+            "es": 381.29928,
+            "nll": 9396.37464,
+            "cov50": 0.4469,
+            "cov90": 0.73923,
+            "width90": 7.12425,
+            "pit_hist_10": [
+              2152,
+              966,
+              1180,
+              1117,
+              1214,
+              1406,
+              1060,
+              1033,
+              816,
+              2144
+            ]
+          }
+        },
+        "best_baseline_by_crps": "F2_noised_persistence_hetero",
+        "comparisons": {
+          "F4_world_model_mc - F1_noised_persistence [crps]": {
+            "point": 5.34306,
+            "ci95": [
+              -2.69478,
+              16.70673
+            ],
+            "model_better": false
+          },
+          "F4_world_model_mc - F1_noised_persistence [es]": {
+            "point": 48.04856,
+            "ci95": [
+              -18.03487,
+              142.64559
+            ],
+            "model_better": false
+          },
+          "F5_world_model_recalibrated - F1_noised_persistence [crps]": {
+            "point": 5.30404,
+            "ci95": [
+              -2.71869,
+              16.66277
+            ],
+            "model_better": false
+          },
+          "F5_world_model_recalibrated - F1_noised_persistence [es]": {
+            "point": 47.59116,
+            "ci95": [
+              -18.45308,
+              142.13082
+            ],
+            "model_better": false
+          },
+          "F4_world_model_mc - F2_noised_persistence_hetero [crps]": {
+            "point": 5.35134,
+            "ci95": [
+              -2.68039,
+              16.70572
+            ],
+            "model_better": false
+          },
+          "F4_world_model_mc - F2_noised_persistence_hetero [es]": {
+            "point": 48.12121,
+            "ci95": [
+              -18.0123,
+              142.6495
+            ],
+            "model_better": false
+          },
+          "F5_world_model_recalibrated - F2_noised_persistence_hetero [crps]": {
+            "point": 5.31231,
+            "ci95": [
+              -2.70425,
+              16.66172
+            ],
+            "model_better": false
+          },
+          "F5_world_model_recalibrated - F2_noised_persistence_hetero [es]": {
+            "point": 47.66381,
+            "ci95": [
+              -18.43051,
+              142.13473
+            ],
+            "model_better": false
+          }
+        }
+      },
+      "benign_t": {
+        "n_windows": 263,
+        "forecasters": {
+          "F0_climatology": {
+            "crps": 26.85141,
+            "es": 226.60738,
+            "nll": 5000.91949,
+            "cov50": 0.58199,
+            "cov90": 0.84423,
+            "width90": 8.98056,
+            "pit_hist_10": [
+              873,
+              590,
+              892,
+              923,
+              994,
+              1161,
+              999,
+              619,
+              483,
+              882
+            ]
+          },
+          "F1_noised_persistence": {
+            "crps": 26.4883,
+            "es": 220.34858,
+            "nll": 3660.37063,
+            "cov50": 0.63486,
+            "cov90": 0.87464,
+            "width90": 9.28359,
+            "pit_hist_10": [
+              626,
+              511,
+              677,
+              965,
+              1406,
+              1228,
+              1019,
+              700,
+              553,
+              731
+            ]
+          },
+          "F2_noised_persistence_hetero": {
+            "crps": 26.50208,
+            "es": 220.45628,
+            "nll": 3165.12937,
+            "cov50": 0.64734,
+            "cov90": 0.87785,
+            "width90": 9.98697,
+            "pit_hist_10": [
+              580,
+              509,
+              637,
+              1000,
+              1459,
+              1272,
+              998,
+              789,
+              434,
+              738
+            ]
+          },
+          "F3_ar1": {
+            "crps": 26.70508,
+            "es": 224.13817,
+            "nll": 5631.84775,
+            "cov50": 0.57117,
+            "cov90": 0.83662,
+            "width90": 8.4692,
+            "pit_hist_10": [
+              880,
+              605,
+              948,
+              891,
+              962,
+              1115,
+              965,
+              650,
+              514,
+              886
+            ]
+          },
+          "F4_world_model_mc": {
+            "crps": 26.79785,
+            "es": 225.48676,
+            "nll": 4727.91055,
+            "cov50": 0.46103,
+            "cov90": 0.77163,
+            "width90": 6.4646,
+            "pit_hist_10": [
+              1328,
+              667,
+              832,
+              712,
+              785,
+              900,
+              757,
+              699,
+              545,
+              1191
+            ]
+          },
+          "F5_world_model_recalibrated": {
+            "crps": 26.77279,
+            "es": 225.0671,
+            "nll": 2811.9576,
+            "cov50": 0.53363,
+            "cov90": 0.82676,
+            "width90": 7.89822,
+            "pit_hist_10": [
+              1018,
+              654,
+              847,
+              848,
+              937,
+              1105,
+              820,
+              724,
+              503,
+              960
+            ]
+          }
+        },
+        "best_baseline_by_crps": "F1_noised_persistence",
+        "comparisons": {
+          "F4_world_model_mc - F1_noised_persistence [crps]": {
+            "point": 0.30956,
+            "ci95": [
+              0.10576,
+              0.57193
+            ],
+            "model_better": false
+          },
+          "F4_world_model_mc - F1_noised_persistence [es]": {
+            "point": 5.13818,
+            "ci95": [
+              2.52911,
+              8.69729
+            ],
+            "model_better": false
+          },
+          "F5_world_model_recalibrated - F1_noised_persistence [crps]": {
+            "point": 0.28449,
+            "ci95": [
+              0.09303,
+              0.52995
+            ],
+            "model_better": false
+          },
+          "F5_world_model_recalibrated - F1_noised_persistence [es]": {
+            "point": 4.71852,
+            "ci95": [
+              2.33727,
+              7.96243
+            ],
+            "model_better": false
+          }
+        }
+      },
+      "change": {
+        "n_windows": 23,
+        "forecasters": {
+          "F0_climatology": {
+            "crps": 283.20019,
+            "es": 2370.15692,
+            "nll": 57147.45015,
+            "cov50": 0.55027,
+            "cov90": 0.75408,
+            "width90": 8.97657,
+            "pit_hist_10": [
+              78,
+              41,
+              52,
+              89,
+              85,
+              92,
+              77,
+              56,
+              43,
+              123
+            ]
+          },
+          "F1_noised_persistence": {
+            "crps": 283.89258,
+            "es": 2372.08357,
+            "nll": 41822.88172,
+            "cov50": 0.45652,
+            "cov90": 0.71332,
+            "width90": 9.22812,
+            "pit_hist_10": [
+              104,
+              37,
+              54,
+              54,
+              77,
+              76,
+              70,
+              58,
+              56,
+              150
+            ]
+          },
+          "F2_noised_persistence_hetero": {
+            "crps": 283.85095,
+            "es": 2371.91049,
+            "nll": 36161.38247,
+            "cov50": 0.40761,
+            "cov90": 0.68478,
+            "width90": 8.39845,
+            "pit_hist_10": [
+              115,
+              44,
+              49,
+              51,
+              67,
+              66,
+              53,
+              73,
+              51,
+              167
+            ]
+          },
+          "F3_ar1": {
+            "crps": 283.27854,
+            "es": 2370.23344,
+            "nll": 64362.4942,
+            "cov50": 0.52582,
+            "cov90": 0.75543,
+            "width90": 8.44203,
+            "pit_hist_10": [
+              81,
+              43,
+              53,
+              85,
+              87,
+              84,
+              69,
+              58,
+              52,
+              124
+            ]
+          },
+          "F4_world_model_mc": {
+            "crps": 283.08891,
+            "es": 2369.05062,
+            "nll": 54011.27361,
+            "cov50": 0.34375,
+            "cov90": 0.61549,
+            "width90": 5.33363,
+            "pit_hist_10": [
+              135,
+              52,
+              64,
+              45,
+              59,
+              52,
+              46,
+              46,
+              42,
+              195
+            ]
+          },
+          "F5_world_model_recalibrated": {
+            "crps": 282.98257,
+            "es": 2368.25505,
+            "nll": 32116.08073,
+            "cov50": 0.41848,
+            "cov90": 0.6875,
+            "width90": 6.81048,
+            "pit_hist_10": [
+              108,
+              52,
+              60,
+              63,
+              70,
+              64,
+              54,
+              55,
+              49,
+              161
+            ]
+          }
+        },
+        "best_baseline_by_crps": "F0_climatology",
+        "comparisons": {
+          "F4_world_model_mc - F1_noised_persistence [crps]": {
+            "point": -0.80367,
+            "ci95": [
+              -1.4718,
+              -0.27934
+            ],
+            "model_better": true
+          },
+          "F4_world_model_mc - F1_noised_persistence [es]": {
+            "point": -3.03296,
+            "ci95": [
+              -4.9607,
+              -1.49835
+            ],
+            "model_better": true
+          },
+          "F5_world_model_recalibrated - F1_noised_persistence [crps]": {
+            "point": -0.91001,
+            "ci95": [
+              -1.76083,
+              -0.29757
+            ],
+            "model_better": true
+          },
+          "F5_world_model_recalibrated - F1_noised_persistence [es]": {
+            "point": -3.82852,
+            "ci95": [
+              -5.33483,
+              -2.3326
+            ],
+            "model_better": true
+          },
+          "F4_world_model_mc - F0_climatology [crps]": {
+            "point": -0.11127,
+            "ci95": [
+              -0.15882,
+              -0.07312
+            ],
+            "model_better": true
+          },
+          "F4_world_model_mc - F0_climatology [es]": {
+            "point": -1.1063,
+            "ci95": [
+              -1.39862,
+              -0.74307
+            ],
+            "model_better": true
+          },
+          "F5_world_model_recalibrated - F0_climatology [crps]": {
+            "point": -0.21761,
+            "ci95": [
+              -0.37743,
+              -0.09944
+            ],
+            "model_better": true
+          },
+          "F5_world_model_recalibrated - F0_climatology [es]": {
+            "point": -1.90187,
+            "ci95": [
+              -2.91878,
+              -1.25705
+            ],
+            "model_better": true
+          }
+        }
+      }
+    }
+  },
+  "h_star_prob": 0,
+  "h_star_definition": "largest K (consecutive from 1) at which F4 or F5 beats the best of F0-F3 on mean CRPS (pca-space, all windows) with a 95% episode-bootstrap CI excluding 0 AND has 90% coverage in [0.85, 0.95]"
+}
