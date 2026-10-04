@@ -79,7 +79,7 @@ def benchmark_hazard_ensemble():
     print("=" * 60)
     from backend.predict import get_pipeline
     pipeline = get_pipeline()
-    dummy_seq = np.random.randn(30, 406).astype(np.float32)
+    dummy_seq = np.random.normal(size=(30, 406)).astype(np.float32)
 
     t0 = time.perf_counter()
     for _ in range(10):

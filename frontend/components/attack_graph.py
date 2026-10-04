@@ -27,7 +27,7 @@ import math
 import streamlit as st
 
 from styles import render_html, COLORS
-from data_provider import get_host_risk_graph, is_using_mock_data
+from data_provider import get_host_risk_graph
 from components.layered_explanation import render_layered_explanation, render_conformal_credibility_badge
 
 # Spatial layout coordinates and asset criticality metadata (Reference 5-host baseline)

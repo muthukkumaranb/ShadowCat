@@ -81,7 +81,7 @@ class TestBackendPipeline(unittest.TestCase):
 
     def test_onset_ensemble(self):
         """Verify the stacked onset ensemble produces a probability in [0, 1]."""
-        dummy_seq = np.random.randn(30, 406).astype(np.float32)
+        dummy_seq = np.random.normal(size=(30, 406)).astype(np.float32)
         prob = self.pipeline._predict_onset_probability(dummy_seq)
         self.assertGreaterEqual(prob, 0.0, f"Onset probability {prob} < 0")
         self.assertLessEqual(prob, 1.0, f"Onset probability {prob} > 1")

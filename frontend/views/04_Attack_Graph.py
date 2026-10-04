@@ -346,7 +346,7 @@ def render_page():
                 attr_badge_class = "badge-caution"
                 attr_explanation = "Exposed: Connected directly to current compromised frontier via active outgoing flows."
             else:
-                attr_badge = "NOMINAL BASELINE"
+                attr_badge = "BENIGN BASELINE"
                 attr_badge_class = "badge-nominal"
                 attr_explanation = "No lateral movement or unauthorized communications observed up to current horizon."
 
@@ -360,7 +360,7 @@ def render_page():
                 status_text = "ELEVATED EXPOSURE"
                 badge_type = "badge-caution"
             else:
-                status_text = "NOMINAL MONITORING"
+                status_text = "BASELINE MONITORING"
                 badge_type = "badge-nominal"
 
             # Resolve dynamic MITRE technique from real STIX knowledge base

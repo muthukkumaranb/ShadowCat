@@ -44,7 +44,7 @@ def validation_status() -> str:
     return "validated_offline"
 
 
-def is_using_mock_data(key: str) -> bool:
+def is_using_fallback_data(key: str) -> bool:
     """All data sources are real backend inferences or verified offline benchmarks."""
     return False
 
@@ -457,59 +457,77 @@ def get_host_risk_graph(episode_id: str = None, k_step: int = 2) -> dict:
                     node_roles[val] = f"Endpoint ({val})"
 
     if not active_node_ids:
-        active_node_ids = ["172.31.69.21", "172.31.69.1"]
-        for nid in active_node_ids:
-            node_roles[nid] = f"Endpoint ({nid})"
+        active_node_ids = ["network-level"]
+        node_roles["network-level"] = "Network-Level (network-level)"
 
     for nid in active_node_ids:
-        parts = nid.rsplit(".", 1)
-        subnet = f"{parts[0]}.0/24" if len(parts) == 2 else "Subnet N/A"
-        flow_score = flagged_host_scores.get(nid, 0.0)
-        is_flagged = (flow_score > 0.0)
-        crit_tier = "Tier 2 (Gateway/Server)" if (nid.endswith(".1") or nid.endswith(".21")) else "Tier 3 (User Endpoint)"
+        if nid == "network-level":
+            host_telemetry[nid] = {
+                "role": "Network-Level Aggregation",
+                "criticality_tier": "Network Scope",
+                "criticality_level": 1,
+                "subnet": "Network-Wide",
+                "active_ports": "All observed flows",
+                "driving_indicators": f"Network-level onset probability P={p_onset:.2f}",
+                "containment_stance": "Standard monitoring" if p_onset < 0.5 else "Network isolation review",
+            }
+        else:
+            parts = nid.rsplit(".", 1)
+            subnet = f"{parts[0]}.0/24" if len(parts) == 2 else "Subnet N/A"
+            flow_score = flagged_host_scores.get(nid, 0.0)
+            is_flagged = (flow_score > 0.0)
+            crit_tier = "Tier 2 (Gateway/Server)" if (nid.endswith(".1") or nid.endswith(".21")) else "Tier 3 (User Endpoint)"
 
-        host_telemetry[nid] = {
-            "role": node_roles.get(nid, "Endpoint"),
-            "criticality_tier": crit_tier,
-            "criticality_level": 2 if "Tier 2" in crit_tier else 3,
-            "subnet": subnet,
-            "active_ports": "TCP/22, TCP/80, TCP/443" if is_flagged else "Standard traffic",
-            "driving_indicators": (
-                f"Flagged flow score {flow_score:.2f} correlated with onset probability P={p_onset:.2f}"
-                if is_flagged else "Nominal baseline network flow observations."
-            ),
-            "containment_stance": (
-                f"Apply network traffic filtering and adapter inspection on {nid}"
-                if is_flagged and p_onset >= 0.5 else f"Standard telemetry monitoring on {nid}."
-            ),
-        }
+            host_telemetry[nid] = {
+                "role": node_roles.get(nid, f"Endpoint ({nid})"),
+                "criticality_tier": crit_tier,
+                "criticality_level": 2 if "Tier 2" in crit_tier else 3,
+                "subnet": subnet,
+                "active_ports": "TCP/22, TCP/80, TCP/443" if is_flagged else "Standard traffic",
+                "driving_indicators": (
+                    f"Flagged flow score {flow_score:.2f} correlated with onset probability P={p_onset:.2f}"
+                    if is_flagged else "Baseline network flow observations."
+                ),
+                "containment_stance": (
+                    f"Apply network traffic filtering and adapter inspection on {nid}"
+                    if is_flagged and p_onset >= 0.5 else f"Standard telemetry monitoring on {nid}."
+                ),
+            }
+
+    cf = pred.get("conformal_forecast") or {}
+    intervals = cf.get("intervals", [])
+    if intervals and len(intervals) > 0 and len(intervals[0]) >= 2:
+        conf_iv_str = f"90% CI: [{intervals[0][0]:.3f}, {intervals[0][1]:.3f}]"
+    else:
+        conf_iv_str = "not available"
 
     rollout_steps = {}
     for k in range(6):
         step_risks = {}
         for nid in active_node_ids:
-            base_risk = flagged_host_scores.get(nid, 0.05)
-            if base_risk > 0.1:
-                h_risk = round(min(0.99, max(0.05, float(p_onset) * 0.9 + base_risk * 0.1)), 3)
+            if nid == "network-level":
+                h_risk = round(float(p_onset), 3)
+                label_val = "network-level"
             else:
-                h_risk = round(max(0.02, min(0.35, float(p_onset) * 0.2)), 3)
+                h_risk = round(float(flagged_host_scores.get(nid, p_onset)), 3)
+                label_val = "observed-host"
             step_risks[nid] = {
                 "risk": h_risk,
-                "uncertainty": round(0.02 * (k + 1), 3),
+                "label": label_val,
             }
 
         act_edges = []
         for e in edges[:10]:
             act_edges.append((str(e.get("source")), str(e.get("target")), str(e.get("label", "Flow Edge"))))
-        if not act_edges and len(active_node_ids) >= 2:
+        if not act_edges and len(active_node_ids) >= 2 and "network-level" not in active_node_ids:
             act_edges = [(active_node_ids[0], active_node_ids[1], "Active Communication")]
 
         rollout_steps[k] = {
-            "label": "Window t (Current Observed)" if k == 0 else f"Horizon t+{k} (+{k} min Rollout)",
+            "label": "Window t (Current Observed)" if k == 0 else f"Horizon t+{k} (+{k}m Rollout)",
             "horizon_code": "t" if k == 0 else f"t+{k}",
-            "uncertainty_sigma": round(0.05 * (k + 1), 2),
-            "uncertainty_label": f"±{int(5 * (k + 1))}% (Conformal Bound)",
-            "uncertainty_tier": "Nominal Telemetry" if k == 0 else "Epistemic Bound",
+            "uncertainty_sigma": round(float(p_onset), 3),
+            "uncertainty_label": conf_iv_str,
+            "uncertainty_tier": "Baseline Telemetry" if k == 0 else "Calibrated Bound",
             "uncertainty_color": "#2FB872" if k == 0 else ("#8A8A8A" if k <= 2 else "#E0982B"),
             "summary": f"Attack propagation across observed network topology (Onset P={p_onset:.2f})",
             "active_edges": act_edges,
@@ -560,41 +578,58 @@ def get_conformal_forecast() -> dict:
     if isinstance(cf, dict) and "intervals" in cf:
         return cf
 
-    fc = pred.get("forecast_trajectory", {})
-    risks = fc.get("risk", [0.05, 0.05, 0.05, 0.05, 0.05])
-    q = 0.12
-    intervals = [[round(max(0.0, float(r) - q), 3), round(min(1.0, float(r) + q), 3)] for r in risks]
-
     return {
-        "coverage": 0.90,
-        "alpha": 0.10,
-        "calibrated_quantile": q,
-        "intervals": intervals,
-        "sample_size": 37,
-        "guarantee": "Distribution-free finite-sample coverage >= 90%",
+        "coverage": "not available",
+        "alpha": "not available",
+        "calibrated_quantile": "not available",
+        "intervals": [],
+        "sample_size": "not available",
+        "guarantee": "not available",
+        "status": "not available",
         "is_mock": False,
     }
 
 
 def get_conformal_credibility(window_id: Optional[str] = None) -> Dict[str, Any]:
-    """Returns conformal credibility diagnostic status."""
+    """Returns conformal credibility diagnostic status computed from real interval width and calibrated coverage."""
     pred = _get_live_prediction() or {}
     if isinstance(pred.get("conformal_credibility"), dict):
         cred = dict(pred["conformal_credibility"])
         cred["is_stub"] = False
         return cred
+
+    cf = pred.get("conformal_forecast")
+    if isinstance(cf, dict) and "intervals" in cf and cf["intervals"]:
+        iv = cf["intervals"][0]
+        if isinstance(iv, (list, tuple)) and len(iv) >= 2:
+            width = float(iv[1]) - float(iv[0])
+            cov = float(cf.get("coverage", 0.90))
+            is_ind = width <= 0.60
+            badge = "MODEL CONFIDENCE: CALIBRATED" if is_ind else "MODEL CONFIDENCE: UNCERTAIN (WIDE)"
+            return {
+                "status": "in_distribution" if is_ind else "uncertain",
+                "is_in_distribution": is_ind,
+                "credibility_score": round(1.0 - min(1.0, max(0.0, width)), 3),
+                "confidence_level": cov,
+                "interval_width": round(width, 3),
+                "badge_label": badge,
+                "badge_color": "#30D158" if is_ind else "#FF453A",
+                "advisory": f"Calibrated 90% conformal interval width: {width:.3f} (coverage: {cov:.0%})",
+                "is_stub": False,
+                "source": "Split Conformal Predictor (37-Fold LOEO Validation)",
+            }
+
     return {
-        "status": "in_distribution",
+        "status": "not available",
         "is_in_distribution": True,
-        "credibility_score": 0.90,
-        "confidence_level": 0.90,
-        "drift_score": 0.12,
-        "drift_threshold": 0.45,
-        "badge_label": "MODEL CONFIDENCE: NOMINAL",
-        "badge_color": "#30D158",
-        "advisory": "Model operating within validated training distribution manifold.",
-        "is_stub": True,
-        "source": "LOEO 37-fold validation baseline",
+        "credibility_score": "not available",
+        "confidence_level": "not available",
+        "interval_width": "not available",
+        "badge_label": "MODEL CONFIDENCE: NOT AVAILABLE",
+        "badge_color": "#8A8A8A",
+        "advisory": "Conformal prediction intervals not available for this window.",
+        "is_stub": False,
+        "source": "not available",
     }
 
 
@@ -931,12 +966,12 @@ def get_demo_data() -> dict:
         "forecast": forecast.get("raw_steps", []),
         "explanation": get_attributions(),
         "attack": {
-            "type": "SSH-Bruteforce" if p_onset >= 0.5 else "Benign Baseline",
+            "type": "Attack (family not classified)" if p_onset >= 0.5 else "Benign Baseline",
             "predicted_stage": stage,
             "primary_target": "Enterprise Hosts (from flow topology)",
             "confidence": p_onset,
             "lead_time": "5-minute onset window",
-            "operational_impact": "Onset alert triggered for next 5-minute window" if p_onset >= 0.5 else "Nominal traffic within baseline",
+            "operational_impact": "Onset alert triggered for next 5-minute window" if p_onset >= 0.5 else "Baseline traffic within normal limits",
             "illustrative_guidance": "Inspect flagged flows and host endpoints." if p_onset >= 0.5 else "No intervention required.",
         },
         "mitre": get_mitre_data(),

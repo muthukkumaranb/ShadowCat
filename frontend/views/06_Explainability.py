@@ -33,7 +33,7 @@ def render_page():
         risk_severity_txt = "MODERATE"
     else:
         risk_badge_cls = "badge-nominal"
-        risk_severity_txt = "NOMINAL LOW RISK"
+        risk_severity_txt = "BASELINE LOW RISK"
 
     # 1. Top Section: Header, Telemetry Badges & Educational Explainer
     render_html(f"""
@@ -294,13 +294,17 @@ def render_page():
 
     # 5. Temporal Integrated Gradients: Step Attribution Decomposition (t-29 .. t)
     temporal = get_temporal_attributions()
-    t_weights = temporal.get("timestep_attributions", [])
-    if not t_weights:
-        # Graceful nominal fallback
+    t_weights_raw = temporal.get("timestep_attributions", [])
+    if isinstance(t_weights_raw, list) and len(t_weights_raw) > 0 and isinstance(t_weights_raw[0], dict):
+        t_weights = [float(item.get("importance", 0.0)) for item in t_weights_raw]
+    elif isinstance(t_weights_raw, list) and len(t_weights_raw) > 0:
+        t_weights = [float(w) for w in t_weights_raw]
+    else:
+        # Graceful baseline fallback
         import numpy as np
         t_weights = [round(float(np.exp(-0.08 * (30 - 1 - i))), 3) for i in range(30)]
 
-    max_w = max(t_weights) if t_weights else 1.0
+    max_w = max(t_weights) if t_weights and max(t_weights) > 0 else 1.0
     norm_weights = [w / max_w for w in t_weights]
 
     step_bars_html = ""

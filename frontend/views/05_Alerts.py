@@ -17,226 +17,120 @@ def render_page():
     fc = get_forecast_trajectory()
     credibility = get_conformal_credibility()
     ml_risks = fc.get("risk", [])
-    risk_val = ml_risks[0] if ml_risks else 0.05
-    ml_stages = fc.get("stage", [])
-    curr_stage = ml_stages[0] if ml_stages else "Credential Access"
-
-    # Baseline default alerts fallback
-    default_alerts = [
-        {
-            "id": "ALT-9941",
-            "time": "02:48:00 UTC",
-            "mins_ago": 8,
-            "sev": "critical",
-            "technique": "T1071.001 • C2: Web Protocols",
-            "host": "ip-10-0-14-88 (svc-auth-master)",
-            "title": "Egress burst spike (+410%) to uncatalogued foreign ASN 4837 with high-frequency encrypted beaconing cadence.",
-            "description": "Outbound TLS flow directed toward 45.138.21.9:443 exceeded safe enterprise baseline by +410%. Packet inter-arrival variance matches known Cobalt Strike Malleable C2 jitter profile.",
-            "source": "10.0.14.88:49210",
-            "destination": "45.138.21.9:443 (CN)",
-            "rate": "14.8 GB/s (+410%)",
-            "cadence": "3.2s ± 12ms",
-            "remediation": [
-                "Deploy SDN egress null-route on perimeter edge-gw-02 for foreign destination 45.138.21.9:443.",
-                "Capture volatile RAM dump on host ip-10-0-14-88 before terminating process container.",
-                "Invalidate active Kerberos TGT tickets across domain controllers for principal svc-auth-master.",
-                "Audit recent DNS queries from 10.0.14.88 for uncatalogued domains registered within the last 48 hours."
-            ]
-        },
-        {
-            "id": "ALT-9938",
-            "time": "02:44:00 UTC",
-            "mins_ago": 12,
-            "sev": "critical",
-            "technique": "T1059.004 • Lateral Movement",
-            "host": "svc-auth-master",
-            "title": "Unauthenticated RPC execution across host enclave subnet with abnormal peer fan-out.",
-            "description": "Rapid micro-RPC calls executed across ports 135 and 445 against internal peer nodes. High fan-out signature matches automated remote credential dumping utilities.",
-            "source": "10.0.14.88:51204",
-            "destination": "10.0.14.0/24 Subnet",
-            "rate": "1.2k req/sec",
-            "cadence": "Continuous Burst",
-            "remediation": [
-                "Apply micro-segmentation security group rules isolating subnet 10.0.14.0/24 RPC inter-pod communications.",
-                "Review Kerberos event logs (Event ID 4768/4769) for anomalous service ticket generation.",
-                "Trigger automated credential reset for local administrative daemon service accounts."
-            ]
-        },
-        {
-            "id": "ALT-9935",
-            "time": "02:41:00 UTC",
-            "mins_ago": 15,
-            "sev": "critical",
-            "technique": "T1562.001 • Defense Impairment",
-            "host": "audit-vault",
-            "title": "Local cryptographic audit logging daemon tamper attempt detected via memory hook on PID 4810.",
-            "description": "Unauthorized syscall ptrace hook intercepted by kernel eBPF probe on audit-vault daemon. Audit ledger signature verification triggered an immediate integrity alarm.",
-            "source": "10.0.14.5:4810",
-            "destination": "Kernel eBPF Ring Buffer",
-            "rate": "14 Calls / 2s",
-            "cadence": "Irregular Burst",
-            "remediation": [
-                "Validate zero-trust ledger block chain integrity using ed25519 signature proof verification.",
-                "Enforce kernel lockdown mode and terminate detached memory-attached trace handles on PID 4810.",
-                "Lock down audit-vault ingress permissions strictly to immutable hardware enclave channels."
-            ]
-        },
-        {
-            "id": "ALT-9932",
-            "time": "02:38:00 UTC",
-            "mins_ago": 18,
-            "sev": "high",
-            "technique": "T1046 • Network Discovery",
-            "host": "ws-analyst-12",
-            "title": "Rapid port sweeping scan detected from internal workstation cluster segment.",
-            "description": "Sequential TCP SYN sweeps across critical service ports (22, 80, 443, 8080, 3389) originating from internal workstation segment toward database sharding tier.",
-            "source": "10.0.14.21:58440",
-            "destination": "10.0.3.0/24 Subnet",
-            "rate": "850 pkts/sec",
-            "cadence": "SYN Flood Scan",
-            "remediation": [
-                "Quarantine ws-analyst-12 network interface onto remediation VLAN to prevent further discovery.",
-                "Verify analyst authentication session and check for browser-based session hijacking or RAT activity.",
-                "Tighten database tier ingress ACLs to permit connections solely from verified application pods."
-            ]
-        },
-        {
-            "id": "ALT-9929",
-            "time": "02:35:00 UTC",
-            "mins_ago": 24,
-            "sev": "high",
-            "technique": "T1021.002 • SMB / Kerberoasting Probe",
-            "host": "dc-shadow-02",
-            "title": "Repeated Kerberos ticket-granting service requests with non-existent SPNs.",
-            "description": "Multiple RC4-HMAC encrypted TGS requests submitted in rapid succession against privileged accounts. Indicates active offline hash extraction attempt.",
-            "source": "10.0.14.88:389",
-            "destination": "10.0.5.2:88 (KDC)",
-            "rate": "142 req/min",
-            "cadence": "Automated Harvest",
-            "remediation": [
-                "Disable RC4-HMAC cipher on Key Distribution Center (KDC); enforce AES-256 Kerberos encryption only.",
-                "Rotate 25+ character passwords on all identified service accounts requested in the TGS batch.",
-                "Enable HoneyToken SPN detection alerts to trap persistent lateral movement actors."
-            ]
-        },
-        {
-            "id": "ALT-9926",
-            "time": "02:32:00 UTC",
-            "mins_ago": 35,
-            "sev": "high",
-            "technique": "T1571 • Non-Standard Port Protocol",
-            "host": "analytics-agg-02",
-            "title": "Outbound TCP session established over port 8443 bypasses egress application proxy.",
-            "description": "Direct TCP tunnel initiated from analytics aggregator node to non-whitelisted foreign address without SNI negotiation. TLS fingerprint matches non-browser tooling.",
-            "source": "10.0.14.92:43900",
-            "destination": "194.26.29.112:8443",
-            "rate": "3.8 MB/s",
-            "cadence": "Persistent Stream",
-            "remediation": [
-                "Terminate active socket session on analytics-agg-02 and enforce transparent egress MITM proxying.",
-                "Inspect process tree spawning outbound connection (check for rogue cron jobs or container execs).",
-                "Update outbound firewall rules to drop all direct non-whitelisted TCP ports outside standard 80/443."
-            ]
-        },
-        {
-            "id": "ALT-9925",
-            "time": "02:29:00 UTC",
-            "mins_ago": 48,
-            "sev": "medium",
-            "technique": "T1078 • Valid Accounts",
-            "host": "iam-sync-daemon",
-            "title": "Simultaneous geo-distributed session tokens authenticated for high-privilege service principal.",
-            "description": "Concurrent valid OAuth 2.0 refresh tokens presented from both US-East (Virginia) and AS-East (Tokyo) within a 4-minute interval, breaching travel velocity threshold.",
-            "source": "10.0.14.15:443",
-            "destination": "Identity OAuth Provider",
-            "rate": "2 Active Tokens",
-            "cadence": "Simultaneous",
-            "remediation": [
-                "Revoke both active OAuth refresh token instances on Identity Provider and require MFA re-auth.",
-                "Verify service principal IP whitelisting rules to restrict token usage strictly to known VPC subnets.",
-                "Check IAM audit trail for any authorization role modifications created during the anomalous window."
-            ]
-        },
-        {
-            "id": "ALT-9920",
-            "time": "02:18:00 UTC",
-            "mins_ago": 85,
-            "sev": "medium",
-            "technique": "T1110 • Brute Force",
-            "host": "bastion-stg-01",
-            "title": "High threshold of failed SSH authentications originating from staging bastion IP.",
-            "description": "54 failed SSH password attempts against root and deployer accounts within 90 seconds. Source rate throttled by local PAM rules.",
-            "source": "10.0.1.55:22",
-            "destination": "10.0.2.80:22",
-            "rate": "36 attempts/min",
-            "cadence": "Dictionary Scan",
-            "remediation": [
-                "Block IP 10.0.1.55 on internal staging firewalls and inspect bastion-stg-01 for unauthorized login.",
-                "Enforce SSH public-key-only authentication and disable all password-based SSH mechanisms.",
-                "Review auth.log on bastion-stg-01 to identify entry vector and verify sudoers integrity."
-            ]
-        },
-        {
-            "id": "ALT-9914",
-            "time": "12:10:00 UTC",
-            "mins_ago": 180,
-            "sev": "medium",
-            "technique": "T1040 • Network Sniffing",
-            "host": "k8s-worker-04",
-            "title": "Promiscuous mode socket activation detected on internal bridge interface eth0.vlan14.",
-            "description": "Kernel socket flag change PROMISC detected by daemon auditor on Kubernetes worker node. No registered packet capture job was scheduled in cluster workload specs.",
-            "source": "10.0.2.80:eth0",
-            "destination": "Local Interface Bridge",
-            "rate": "Raw Capture",
-            "cadence": "Promiscuous Socket",
-            "remediation": [
-                "Identify container PID holding raw socket capabilities (CAP_NET_RAW / CAP_NET_ADMIN).",
-                "Apply Pod Security Admission policy in 'enforce' mode to forbid privileged container execution.",
-                "Terminate non-compliant pods and inspect container image digest against trusted registry signatures."
-            ]
-        }
-    ]
+    risk_val = ml_risks[0] if ml_risks else "—"
+    # Map curr_stage from the backend root payload (not the rollout list)
+    pred_raw = _get_live_prediction() if '_get_live_prediction' in globals() else {}
+    if not pred_raw:
+        # Fallback to local import if needed
+        from data_provider import _get_live_prediction
+        pred_raw = _get_live_prediction()
+        
+    curr_stage = pred_raw.get("current_stage", "—")
+    
+    # Baseline default alerts fallback (REMOVED: Must use real data sources only per F5)
+    default_alerts = []
 
     # Synthesize live alerts if live ML flagged flows are present
     if flows:
+        from datetime import datetime, timezone
+        from mitre_kb import get_mitre_kb
+        import hashlib
+        
         live_alerts = []
-        for i, flw in enumerate(flows[:10]):
-            src = flw.get("src", flw.get("Src IP", "10.0.14.88"))
-            dst = flw.get("dst", flw.get("Dst IP", "45.138.21.9"))
-            proto = flw.get("proto", flw.get("Protocol", "TCP"))
-            dport = flw.get("dport", flw.get("Dst Port", 443))
-            sport = flw.get("sport", flw.get("Src Port", 49210 + i))
+        
+        # Get latest window timestamp for mins_ago calculation
+        latest_ts = None
+        for f in flows:
+            ts_str = f.get("timestamp_utc", f.get("Timestamp", f.get("timestamp", "")))
+            if ts_str:
+                try:
+                    ts = datetime.fromisoformat(str(ts_str).replace(" UTC", "").replace("Z", "+00:00"))
+                    if ts.tzinfo is None:
+                        ts = ts.replace(tzinfo=timezone.utc)
+                    if latest_ts is None or ts > latest_ts:
+                        latest_ts = ts
+                except:
+                    pass
+        
+        kb = get_mitre_kb()
+        stage_info = kb.resolve_stage(curr_stage)
+        tactic_id = stage_info.get("technique_id") or stage_info.get("tactic_id") or "—"
+                
+        for i, flw in enumerate(flows[:50]):
+            src = flw.get("src", flw.get("Src IP", "—"))
+            dst = flw.get("dst", flw.get("Dst IP", "—"))
+            proto = flw.get("proto", flw.get("Protocol", "—"))
+            dport = flw.get("dport", flw.get("Dst Port", "—"))
+            sport = flw.get("sport", flw.get("Src Port", "—"))
             
-            if risk_val >= 0.75:
-                sev = "critical" if i < 3 else ("high" if i < 7 else "medium")
-            elif risk_val >= 0.50:
-                sev = "high" if i < 4 else ("medium" if i < 8 else "medium")
+            score = flw.get("lr_score", flw.get("anomaly_score", risk_val))
+            if score == "—":
+                sev = "—"
+            elif score >= 0.75:
+                sev = "critical"
+            elif score >= 0.50:
+                sev = "high"
             else:
-                sev = "medium" if i < 3 else "medium"
+                sev = "medium"
+                
+            ts_str = flw.get("timestamp_utc", flw.get("Timestamp", flw.get("timestamp", "—")))
+            mins_ago = 0
+            if ts_str != "—" and latest_ts:
+                try:
+                    ts = datetime.fromisoformat(str(ts_str).replace(" UTC", "").replace("Z", "+00:00"))
+                    if ts.tzinfo is None:
+                        ts = ts.replace(tzinfo=timezone.utc)
+                    mins_ago = max(0, int((latest_ts - ts).total_seconds() / 60))
+                    ts_str = ts.strftime("%H:%M:%S UTC")
+                except:
+                    mins_ago = 0
+            else:
+                mins_ago = "—"
+            
+            rate = "—"
+            fwd = flw.get("TotLen Fwd Pkts")
+            bwd = flw.get("TotLen Bwd Pkts")
+            if fwd is not None and bwd is not None:
+                bytes_val = float(fwd) + float(bwd)
+            else:
+                bytes_val = "—"
+                
+            dur = flw.get("Flow Duration", 0)
+            if bytes_val != "—" and dur > 0 and bytes_val > 0:
+                mbps = (bytes_val / 1024 / 1024) / (dur / 1e6)
+                rate = f"{mbps:.1f} MB/s"
+                
+            flow_id = hashlib.md5(f"{src}{dst}{sport}{dport}{ts_str}".encode()).hexdigest()[:8].upper()
+
+            if curr_stage == "—" or curr_stage == "No attack detected":
+                technique_str = "—"
+            else:
+                technique_str = f"{tactic_id} • {curr_stage} ({proto})"
 
             live_alerts.append({
-                "id": f"ALT-{9950 - i*3}",
-                "time": f"02:{max(0, 48 - i*2):02d}:00 UTC",
-                "mins_ago": 2 + i * 4,
+                "id": f"ALT-{flow_id}",
+                "time": ts_str,
+                "mins_ago": mins_ago,
                 "sev": sev,
-                "technique": f"T1071.001 • {curr_stage} ({proto})",
-                "host": f"node-{src}",
-                "title": f"Suspicious flow detected: {src}:{sport} → {dst}:{dport} ({proto}) with risk {risk_val:.2f}.",
-                "description": f"Ingested telemetry record flagged by World Model inference. Model indicates {curr_stage} execution phase with cumulative risk score {risk_val:.2f}.",
+                "technique": technique_str,
+                "host": f"node-{src}" if src != "—" else "—",
+                "title": f"Suspicious flow detected: {src}:{sport} → {dst}:{dport} ({proto})." if score == "—" else f"Suspicious flow detected: {src}:{sport} → {dst}:{dport} ({proto}) with risk {score:.2f}.",
+                "description": f"Ingested telemetry record flagged by World Model inference. Model indicates {curr_stage} execution phase." if score == "—" else f"Ingested telemetry record flagged by World Model inference. Model indicates {curr_stage} execution phase with cumulative risk score {score:.2f}.",
+
                 "source": f"{src}:{sport}",
                 "destination": f"{dst}:{dport}",
-                "rate": f"{14.8 - i*1.1:.1f} MB/s",
+                "rate": rate,
                 "cadence": "Continuous Burst",
                 "remediation": [
-                    f"Deploy SDN egress null-route on perimeter gateway for foreign destination {dst}:{dport}.",
-                    f"Capture volatile RAM and packet capture on host {src} before terminating container.",
-                    f"Invalidate active authentication session tickets for principal associated with {src}.",
-                    f"Audit recent DNS queries originating from {src} for anomalous external connections."
+                    f"Deploy SDN egress null-route on perimeter gateway for foreign destination {dst}:{dport}." if dst != "—" else "Deploy SDN egress null-route on perimeter gateway.",
+                    f"Capture volatile RAM and packet capture on host {src} before terminating container." if src != "—" else "Capture volatile RAM and packet capture on host.",
+                    f"Invalidate active authentication session tickets for principal associated with {src}." if src != "—" else "Invalidate active authentication session tickets.",
+                    f"Audit recent DNS queries originating from {src} for anomalous external connections." if src != "—" else "Audit recent DNS queries for anomalous external connections."
                 ]
             })
         raw_alerts = live_alerts
     else:
-        raw_alerts = default_alerts
+        raw_alerts = []
 
     # Calculate real-time metrics
     n_crit = sum(1 for a in raw_alerts if a["sev"] == "critical")
@@ -321,11 +215,11 @@ def render_page():
             res = [a for a in res if a["sev"] == "medium"]
 
         if time_f == "Last 15m":
-            res = [a for a in res if a["mins_ago"] <= 15]
+            res = [a for a in res if isinstance(a["mins_ago"], int) and a["mins_ago"] <= 15]
         elif time_f == "Last 1h":
-            res = [a for a in res if a["mins_ago"] <= 60]
+            res = [a for a in res if isinstance(a["mins_ago"], int) and a["mins_ago"] <= 60]
         elif time_f == "Last 24h":
-            res = [a for a in res if a["mins_ago"] <= 1440]
+            res = [a for a in res if isinstance(a["mins_ago"], int) and a["mins_ago"] <= 1440]
 
         if search_q and search_q.strip():
             q = search_q.strip().lower()
@@ -361,12 +255,13 @@ def render_page():
             border_color = t['secondary'] if alert["sev"] == "critical" else (t['tertiary'] if alert["sev"] == "high" else t['border'])
             remediation_items_html = "".join([f"<li style='margin-bottom: 0.35rem; color: {t['text_high']};'>{item}</li>" for item in alert["remediation"]])
 
+            mins_ago_str = f" ({alert['mins_ago']}m ago)" if isinstance(alert['mins_ago'], int) else ""
             render_html(f"""
             <div class="soc-card" style="border-left: 4px solid {border_color}; margin-bottom: 1rem;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
                     <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
                         <span class="soc-badge {badge_cls}">{alert['sev'].upper()}</span>
-                        <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: {t['text_muted']};">{alert['time']} ({alert['mins_ago']}m ago)</span>
+                        <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: {t['text_muted']};">{alert['time']}{mins_ago_str}</span>
                         <span class="soc-badge badge-neutral" style="color:{border_color}">{alert['technique']}</span>
                         <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.8125rem; font-weight: 700; color: {t['primary']};">{alert['host']}</span>
                     </div>

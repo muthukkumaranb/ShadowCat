@@ -52,7 +52,7 @@ def render_page():
         risk_color = t['text_secondary']
         risk_delta = f"+{risk_val - 0.1:.2f}"
     else:
-        risk_label = "NOMINAL // LOW RISK ENVELOPE"
+        risk_label = "BASELINE // LOW RISK ENVELOPE"
         risk_badge_cls = "badge-nominal"
         risk_color = t['primary']
         risk_delta = f"{risk_val:.2f}"
@@ -180,7 +180,7 @@ def render_page():
         n_med = 0
         n_low = max(1, len(flows) // 5)
         stat_badge_cls = "badge-nominal"
-        stat_badge_txt = "NOMINAL"
+        stat_badge_txt = "BASELINE"
         delta_threat_txt = "Zero threat delta"
     n_total_alerts = n_crit + n_med + n_low
 
@@ -334,8 +334,8 @@ def render_page():
     alert_items = []
     if flows:
         for i, f in enumerate(flows[:10]):
-            src = f.get("src", f.get("Src IP", "10.0.14.88"))
-            dst = f.get("dst", f.get("Dst IP", "45.138.21.9"))
+            src = f.get("src", f.get("Src IP", "—"))
+            dst = f.get("dst", f.get("Dst IP", "—"))
             proto = f.get("proto", f.get("Protocol", "TCP"))
             dport = f.get("dport", f.get("Dst Port", 443))
             if i < n_crit:
@@ -360,18 +360,7 @@ def render_page():
             })
 
     if not alert_items:
-        alert_items = [
-            {"time": "02:48:00 UTC", "sev": "critical", "technique": "T1071.001 C2", "prose": "Egress burst spike (+410%) to uncatalogued foreign ASN 4837 with encrypted beaconing cadence", "target": "ip-10-0-14-88"},
-            {"time": "02:44:00 UTC", "sev": "critical", "technique": "T1059.004 LATERAL", "prose": "Unauthenticated RPC execution across host enclave subnet with abnormal peer fan-out", "target": "svc-auth-master"},
-            {"time": "02:41:00 UTC", "sev": "critical", "technique": "T1562.001 DEF IMPAIR", "prose": "Local audit logging daemon tamper attempt detected via memory hook on PID 4810", "target": "audit-vault"},
-            {"time": "02:38:00 UTC", "sev": "high", "technique": "T1046 NET DISCOVERY", "prose": "Rapid port sweeping scan detected from internal workstation cluster segment", "target": "ws-analyst-12"},
-            {"time": "02:35:00 UTC", "sev": "high", "technique": "T1021.002 SMB/RPC", "prose": "Repeated Kerberos ticket-granting service requests with non-existent SPNs (Kerberoasting probe)", "target": "dc-shadow-02"},
-            {"time": "02:32:00 UTC", "sev": "high", "technique": "T1571 NON-STD PORT", "prose": "Outbound TCP session established over port 8443 bypasses egress application proxy", "target": "analytics-agg-02"},
-            {"time": "02:29:00 UTC", "sev": "medium", "technique": "T1078 VALID ACCTS", "prose": "Simultaneous geo-distributed session tokens authenticated for high-privilege service principal", "target": "iam-sync-daemon"},
-            {"time": "02:25:00 UTC", "sev": "medium", "technique": "T1040 SNIFFING", "prose": "Promiscuous mode socket activation detected on internal bridge interface eth0.vlan14", "target": "k8s-worker-04"},
-            {"time": "02:20:00 UTC", "sev": "medium", "technique": "T1090 PROXY", "prose": "DNS tunneling heuristic cleared after automated isolation and quarantine sandbox verification", "target": "edge-gw-02"},
-            {"time": "02:18:00 UTC", "sev": "medium", "technique": "T1110 BRUTE FORCE", "prose": "High threshold of failed SSH authentications originating from staging bastion IP 10.0.1.55", "target": "bastion-stg-01"},
-        ]
+        alert_items = []
 
     cnt_crit = sum(1 for a in alert_items if a["sev"] == "critical")
     cnt_high = sum(1 for a in alert_items if a["sev"] == "high")
@@ -423,7 +412,7 @@ def render_page():
             <div>
                 <span class="soc-pulse-dot" style="display: inline-block;"></span> INGESTION BUFFER: 4,812 EVT/SEC • 0 DROPPED PACKETS
             </div>
-            <span style="color: {t['primary']};">PIPELINE NOMINAL // 0x9F41</span>
+            <span style="color: {t['primary']};">PIPELINE BASELINE // 0x9F41</span>
         </div>
     </div>
     """)

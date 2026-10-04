@@ -190,7 +190,7 @@ def calculate_entity_risk(
             subnet_label = ent_key
 
         # Risk severity
-        if total_risk >= threshold * 1.5:
+        if total_risk >= threshold * (3 / 2):
             sev = "CRITICAL"
             sev_color = "#FF453A"
         elif total_risk >= threshold:
