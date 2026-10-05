@@ -58,7 +58,7 @@ def run(pcap: Path, out: Path | None, min_history: int = 1) -> pd.DataFrame:
     from backend.predict import predict
 
     print(f"Ingesting {pcap} ...", flush=True)
-    flows = ingest_pcap(str(pcap))
+    flows = ingest_pcap(str(pcap), progress=True)
     windows = UCSExtractor().extract(flows, source_type="pcap")
     windows["window_start_utc"] = pd.to_datetime(windows["window_start_utc"], utc=True)
     windows = windows.sort_values("window_start_utc").reset_index(drop=True)
