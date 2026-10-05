@@ -1,32 +1,57 @@
 # SHADOWCAT
 
-> **Public intrusion datasets can tell you whether an attack is happening, but they contain almost no warning
-> before one starts.** In CSE-CIC-IDS2018, only 71 of 2,787 one-minute windows come before an attack begins, and
-> only 12 of 40 attack runs last six minutes or more. Of the public multi-stage APT datasets we reviewed, those we
-> could inspect either record only the attacker's machine or run attacks on a fixed timer. SHADOWCAT is a
-> network world model built and evaluated around that reality. It detects attacks on unseen episodes almost
-> perfectly, attributes the ATT&CK tactic, flags attack families it has never seen through world-model deviation,
-> and keeps a tamper-evident audit trail, fully offline. Every number below is reproducible from a committed script.
+**A network world model for early attack warning, with a tamper-evident audit trail.**
+Smart India Hackathon 2026 · Problem Statement `SIH26153` · NTRO
+
+![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)
+![PyTorch](https://img.shields.io/badge/PyTorch-2.x-EE4C2C?logo=pytorch&logoColor=white)
+![scikit-learn](https://img.shields.io/badge/scikit--learn-1.9-F7931E?logo=scikitlearn&logoColor=white)
+![Streamlit](https://img.shields.io/badge/Streamlit-dashboard-FF4B4B?logo=streamlit&logoColor=white)
+![Tests](https://img.shields.io/badge/tests-62%20passing-2EA44F)
+
+**Contents:** [Problem statement](#sih-problem-statement-reference) ·
+[Project briefing](#project-briefing) · [Reproduce](#reproduce-everything-in-one-command) ·
+[Results](#validated-results-37-fold-leave-one-episode-out-ucs_windows_models_v1parquet) ·
+[Architecture](#pipeline-architecture) · [Highlights](#highlights) ·
+[Dataset issue](#the-dataset-issue-our-research-finding) ·
+[Experiments](#experiments-we-ran-to-address-the-dataset-issue) · [GraphSAGE](#graphsage-graph-fusion-ml2-held-back) ·
+[Installation](#installation--usage-guide) · [Deliverables](#deliverables)
 
 ---
 
-## Highlights
+## SIH Problem Statement Reference
 
-| What | Result | Evidence |
-|---|---|---|
-| **Attack detection on held-out attack episodes** | ROC-AUC **1.000**; F1 **0.990** at **0.0%** test false-alarm rate, with the threshold chosen **without any test labels** | [`ROBUSTNESS_CHECKS.md`](docs/ROBUSTNESS_CHECKS.md) |
-| **Attack onset (attack within the next 5 minutes)** | ROC-AUC **0.962**; F1 **0.907** at **0.4%** test false-alarm rate, threshold chosen without test labels | [`ROBUSTNESS_CHECKS.md`](docs/ROBUSTNESS_CHECKS.md) |
-| **Unseen attack families (world-model deviation)** | ROC-AUC **0.707** on attack families held out entirely; **0.820** on held-out episodes. Higher than the supervised detectors in our unseen-family stress test (0.67) | [`DEVIATION.md`](evaluation/deviation/DEVIATION.md) |
-| **Packet-level telemetry from raw PCAP** | Our own packet parser (`data-engineering/src/pcap_extractor.py`) extracts 12 packet-level features (TTL, fragmentation, payload percentiles, retransmissions, port-scan score) from the raw CIC-IDS2018 captures for **2 capture days, 998 windows** (14-02 SSH-Bruteforce, 02-03 Botnet). Other days are marked absent with `mask_has_packet_level_features`, never zero-filled. **The dashboard accepts PCAP / PCAPNG uploads directly**: capture → CIC-IDS2018-schema flows + packet features → forecast | [`PACKET_EXTRACTION_VERIFICATION.md`](data-engineering/data/ucs/PACKET_EXTRACTION_VERIFICATION.md), [`pcap_ingest.py`](data-engineering/src/pcap_ingest.py) |
-| **MITRE ATT&CK tactic of the current attack** | Tactic macro-F1 **0.640** on held-out episodes (Credential Access 0.71, Command and Control 0.67, Impact 0.54); mapped to STIX 2.1 | [`FAMILY.md`](evaluation/family/FAMILY.md) |
-| **Tamper-evident audit trail** | Ed25519-signed SHA-256 hash chain over models, reports and every forecast; optional Hyperledger Fabric notarisation with automatic fallback | [`backend/audit_chain.py`](backend/audit_chain.py) |
-| **Evaluation rigour** | 37-fold leave-one-episode-out with a 36-window purge; per-fold scaling, PCA and LR; thresholds without test labels; leave-one-day-out stress test; episode-level bootstrap CIs; 62 automated tests; **one-command reproduction** (`python reproduce.py`) | [`CLAIMS.md`](docs/CLAIMS.md) |
-| **Dataset research** | 11 experiments across modelling, data and alternative datasets to work around the public-dataset gap, each reported with its outcome | [Experiments](#experiments-we-ran-to-address-the-dataset-issue) |
-| **GraphSAGE graph fusion (ML2)** | Built, trained and ablated over 3 seeds. **Held back** from the primary path because validation loss favours the temporal-only model (1.666 vs 1.932) | [GraphSAGE](#graphsage-graph-fusion-ml2-held-back) |
+- **ID:** `SIH26153`
+- **Organization:** National Technical Research Organisation (NTRO)
+- **Theme:** Blockchain & Cybersecurity
+- **Core mission:** move perimeter defence from reactive signature matching towards learned, leakage-controlled
+  estimation of attack onset from network traffic, with tamper-evident cryptographic provenance.
 
-All claims, values, source files and commits are listed in **[`docs/CLAIMS.md`](docs/CLAIMS.md)**.
+---
 
-### Reproduce everything in one command
+## Project Briefing
+
+ShadowCat watches enterprise network traffic one minute at a time and estimates whether an attack is under way
+or about to start, which ATT&CK tactic it belongs to, and whether the traffic looks like anything it has seen
+before. Every model, report and forecast is signed into a tamper-evident audit chain, and the whole system runs
+offline.
+
+- **Input:** CICFlowMeter flow records, or raw **PCAP / PCAPNG** captures uploaded on the dashboard.
+- **Unified Cyber State (UCS):** a 406-feature state per 1-minute window: 388 flow features, 12 packet-level
+  features parsed from raw captures, and 6 presence masks so missing telemetry is never zero-filled.
+- **World model:** an LSTM learns how the network state evolves (30-minute lookback, K-step rollout). Its
+  next-state deviation flags attack families it was never trained on.
+- **Prediction heads:** a stacked ensemble gives P(attack now) and P(attack within 5 minutes) with a split-conformal
+  interval; a classifier names the current ATT&CK tactic, exported as STIX 2.1.
+- **Audit:** an Ed25519-signed SHA-256 hash chain, with optional Hyperledger Fabric notarisation.
+- **Dashboard:** a Streamlit SOC console showing the forecast, ranked flows, host graph, explanations and audit status.
+- **Evaluation:** 37-fold leave-one-episode-out on CSE-CIC-IDS2018 with a 36-window purge, thresholds chosen
+  without test labels, and a leave-one-day-out stress test. Our research also measures how far public datasets
+  support multi-step forecasting ([dataset issue](#the-dataset-issue-our-research-finding)).
+
+---
+
+## Reproduce everything in one command
 
 ```bash
 pip install -r requirements.txt
@@ -50,13 +75,66 @@ It prints a PASS/FAIL table and writes `runtime/REPRODUCE_REPORT.md`.
 
 ---
 
-## Problem Statement Reference
+## Validated results (37-fold leave-one-episode-out, `ucs_windows_models_v1.parquet`)
 
-- **ID:** `SIH26153`
-- **Organization:** National Technical Research Organisation (NTRO)
-- **Theme:** Blockchain & Cybersecurity
-- **Core mission:** move perimeter defence from reactive signature matching towards learned, leakage-controlled
-  estimation of attack onset from network traffic, with tamper-evident cryptographic provenance.
+| Task | Model | ROC-AUC | F1 (threshold without test labels) | Test false-alarm rate |
+|---|---|---|---|---|
+| Detection | Stacked ensemble | **1.000** | **0.990** | 0.0% |
+| Detection | Logistic regression, same final features | 1.000 | 0.980 | 0.0% |
+| Onset (≤ 5 min) | Stacked ensemble | **0.962** | **0.907** | 0.4% |
+| Onset (≤ 5 min) | Logistic regression, same final features | 0.952 | 0.896 | 0.4% |
+
+- **The UCS representation does most of the work.** On the final feature set even a linear model detects attacks on
+  unseen episodes almost perfectly. The stacked model matches it on detection and leads on onset.
+- **Unseen attack families** (leave-one-day-out stress test, models retrained): the supervised models reach a pooled
+  ROC-AUC of 0.666 (stacked) and 0.631 (LR). The world model's unsupervised deviation score reaches 0.707 on held-out
+  families. This is the case for combining supervised detection with world-model deviation.
+- **Early warning on true precursor windows** (no attack yet, attack within 5 minutes): ROC-AUC 0.625 on 15
+  held-out precursor windows, limited by how few precursors the public data contains ([dataset issue](#the-dataset-issue-our-research-finding)).
+
+---
+
+## Pipeline Architecture
+
+```
+   1. DATA: Unified Cyber State (UCS)
+      CICFlowMeter flows + 12 packet-level features parsed from raw PCAP ──► 1-minute windows ──► 406-D state S_t
+
+   2. WORLD MODEL
+      30-window lookback ──► LSTM Gaussian world model p(S_{t+1} | S_{t-29..t}) ──► K-step rollout + deviation score
+
+   2b. GRAPH BRANCH (HELD BACK)
+      host graph per minute ──► edge-aware GraphSAGE ──► fusion with z(t)   [not in the primary path: z'(t) = z(t)]
+
+   3. HEADS
+      Stacked ensemble (LR stage + residual LSTM, 37 fold models): P(attack now), P(attack within 5 min)
+      Current-window ATT&CK tactic classifier (37 fold models, STIX 2.1 mapping)
+      Split-conformal interval (calibrated on validation residuals only)
+
+   4. INTEGRATION & AUDIT (backend/predict.py)
+      Single predict() contract ◄──► Ed25519-signed SHA-256 hash chain (+ optional Hyperledger Fabric)
+
+   5. DASHBOARD (frontend/app.py)
+      Streamlit: onset probability with conformal interval, ATT&CK stage, flagged flows, attribution, audit status
+```
+
+---
+
+## Highlights
+
+| What | Result | Evidence |
+|---|---|---|
+| **Attack detection on held-out attack episodes** | ROC-AUC **1.000**; F1 **0.990** at **0.0%** test false-alarm rate, with the threshold chosen **without any test labels** | [`ROBUSTNESS_CHECKS.md`](docs/ROBUSTNESS_CHECKS.md) |
+| **Attack onset (attack within the next 5 minutes)** | ROC-AUC **0.962**; F1 **0.907** at **0.4%** test false-alarm rate, threshold chosen without test labels | [`ROBUSTNESS_CHECKS.md`](docs/ROBUSTNESS_CHECKS.md) |
+| **Unseen attack families (world-model deviation)** | ROC-AUC **0.707** on attack families held out entirely; **0.820** on held-out episodes. Higher than the supervised detectors in our unseen-family stress test (0.67) | [`DEVIATION.md`](evaluation/deviation/DEVIATION.md) |
+| **Packet-level telemetry from raw PCAP** | Our own packet parser (`data-engineering/src/pcap_extractor.py`) extracts 12 packet-level features (TTL, fragmentation, payload percentiles, retransmissions, port-scan score) from the raw CIC-IDS2018 captures for **2 capture days, 998 windows** (14-02 SSH-Bruteforce, 02-03 Botnet). Other days are marked absent with `mask_has_packet_level_features`, never zero-filled. **The dashboard accepts PCAP / PCAPNG uploads directly**: capture → CIC-IDS2018-schema flows + packet features → forecast | [`PACKET_EXTRACTION_VERIFICATION.md`](data-engineering/data/ucs/PACKET_EXTRACTION_VERIFICATION.md), [`pcap_ingest.py`](data-engineering/src/pcap_ingest.py) |
+| **MITRE ATT&CK tactic of the current attack** | Tactic macro-F1 **0.640** on held-out episodes (Credential Access 0.71, Command and Control 0.67, Impact 0.54); mapped to STIX 2.1 | [`FAMILY.md`](evaluation/family/FAMILY.md) |
+| **Tamper-evident audit trail** | Ed25519-signed SHA-256 hash chain over models, reports and every forecast; optional Hyperledger Fabric notarisation with automatic fallback | [`backend/audit_chain.py`](backend/audit_chain.py) |
+| **Evaluation rigour** | 37-fold leave-one-episode-out with a 36-window purge; per-fold scaling, PCA and LR; thresholds without test labels; leave-one-day-out stress test; episode-level bootstrap CIs; 62 automated tests; **one-command reproduction** (`python reproduce.py`) | [`CLAIMS.md`](docs/CLAIMS.md) |
+| **Dataset research** | 11 experiments across modelling, data and alternative datasets to work around the public-dataset gap, each reported with its outcome | [Experiments](#experiments-we-ran-to-address-the-dataset-issue) |
+| **GraphSAGE graph fusion (ML2)** | Built, trained and ablated over 3 seeds. **Held back** from the primary path because validation loss favours the temporal-only model (1.666 vs 1.932) | [GraphSAGE](#graphsage-graph-fusion-ml2-held-back) |
+
+All claims, values, source files and commits are listed in **[`docs/CLAIMS.md`](docs/CLAIMS.md)**.
 
 ---
 
@@ -73,25 +151,6 @@ A world model can only learn to forecast what the data shows coming. We measured
 
 A public dataset with whole-network captures of many multi-stage campaigns would let ShadowCat's forecasting
 pipeline, which is built and tested end to end, be trained directly.
-
----
-
-## Validated results (37-fold leave-one-episode-out, `ucs_windows_models_v1.parquet`)
-
-| Task | Model | ROC-AUC | F1 (threshold without test labels) | Test false-alarm rate |
-|---|---|---|---|---|
-| Detection | Stacked ensemble | **1.000** | **0.990** | 0.0% |
-| Detection | Logistic regression, same final features | 1.000 | 0.980 | 0.0% |
-| Onset (≤ 5 min) | Stacked ensemble | **0.962** | **0.907** | 0.4% |
-| Onset (≤ 5 min) | Logistic regression, same final features | 0.952 | 0.896 | 0.4% |
-
-- **The UCS representation does most of the work.** On the final feature set even a linear model detects attacks on
-  unseen episodes almost perfectly. The stacked model matches it on detection and leads on onset.
-- **Unseen attack families** (leave-one-day-out stress test, models retrained): the supervised models reach a pooled
-  ROC-AUC of 0.666 (stacked) and 0.631 (LR). The world model's unsupervised deviation score reaches 0.707 on held-out
-  families. This is the case for combining supervised detection with world-model deviation.
-- **Early warning on true precursor windows** (no attack yet, attack within 5 minutes): ROC-AUC 0.625 on 15
-  held-out precursor windows, which is limited by the data above.
 
 ---
 
@@ -128,32 +187,6 @@ rather than assumed: the scripted CIC-IDS2018 attacks start abruptly with almost
 2,787 windows), and a Gaussian next-state objective is mean-seeking. Establishing this horizon with confidence
 intervals tells an operator exactly when a forecast can be trusted, and the forecasting pipeline is ready to be
 trained on whole-network multi-stage data as soon as such data exists.
-
----
-
-## Pipeline Architecture
-
-```
-   1. DATA: Unified Cyber State (UCS)
-      CICFlowMeter flows + 12 packet-level features parsed from raw PCAP ──► 1-minute windows ──► 406-D state S_t
-
-   2. WORLD MODEL
-      30-window lookback ──► LSTM Gaussian world model p(S_{t+1} | S_{t-29..t}) ──► K-step rollout + deviation score
-
-   2b. GRAPH BRANCH (HELD BACK)
-      host graph per minute ──► edge-aware GraphSAGE ──► fusion with z(t)   [not in the primary path: z'(t) = z(t)]
-
-   3. HEADS
-      Stacked ensemble (LR stage + residual LSTM, 37 fold models): P(attack now), P(attack within 5 min)
-      Current-window ATT&CK tactic classifier (37 fold models, STIX 2.1 mapping)
-      Split-conformal interval (calibrated on validation residuals only)
-
-   4. INTEGRATION & AUDIT (backend/predict.py)
-      Single predict() contract ◄──► Ed25519-signed SHA-256 hash chain (+ optional Hyperledger Fabric)
-
-   5. DASHBOARD (frontend/app.py)
-      Streamlit: onset probability with conformal interval, ATT&CK stage, flagged flows, attribution, audit status
-```
 
 ---
 
