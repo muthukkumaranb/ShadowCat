@@ -7,7 +7,7 @@ Smart India Hackathon 2026 · Problem Statement `SIH26153` · NTRO
 ![PyTorch](https://img.shields.io/badge/PyTorch-2.x-EE4C2C?logo=pytorch&logoColor=white)
 ![scikit-learn](https://img.shields.io/badge/scikit--learn-1.9-F7931E?logo=scikitlearn&logoColor=white)
 ![Streamlit](https://img.shields.io/badge/Streamlit-dashboard-FF4B4B?logo=streamlit&logoColor=white)
-![Tests](https://img.shields.io/badge/tests-73%20passing-2EA44F)
+![Tests](https://img.shields.io/badge/tests-75%20passing-2EA44F)
 
 **Contents:** [Problem statement](#sih-problem-statement-reference) ·
 [Project briefing](#project-briefing) · [Reproduce](#reproduce-everything-in-one-command) ·
@@ -158,7 +158,7 @@ It prints a PASS/FAIL table and writes `runtime/REPRODUCE_REPORT.md`.
 | **Packet-level telemetry from raw PCAP** | Our own packet parser (`data-engineering/src/pcap_extractor.py`) extracts 12 packet-level features (TTL, fragmentation, payload percentiles, retransmissions, port-scan score) from the raw CIC-IDS2018 captures for **2 capture days, 998 windows** (14-02 SSH-Bruteforce, 02-03 Botnet). Other days are marked absent with `mask_has_packet_level_features`, never zero-filled. **The dashboard accepts PCAP / PCAPNG uploads directly**: capture → CIC-IDS2018-schema flows + packet features → forecast | [`PACKET_EXTRACTION_VERIFICATION.md`](data-engineering/data/ucs/PACKET_EXTRACTION_VERIFICATION.md), [`pcap_ingest.py`](data-engineering/src/pcap_ingest.py) |
 | **MITRE ATT&CK tactic of the current attack** | Tactic macro-F1 **0.640** on held-out episodes (Credential Access 0.71, Command and Control 0.67, Impact 0.54); mapped to STIX 2.1 | [`FAMILY.md`](evaluation/family/FAMILY.md) |
 | **Tamper-evident audit trail** | Ed25519-signed SHA-256 hash chain over models, reports and every forecast, committed to by a signed **Merkle root** (RFC 6962 hashing, O(log n) inclusion proofs, detects a chain rebuilt with recomputed links); optional Hyperledger Fabric notarisation with automatic fallback | [`backend/audit_chain.py`](backend/audit_chain.py) |
-| **Evaluation rigour** | 37-fold leave-one-episode-out with a 36-window purge; per-fold scaling, PCA and LR; thresholds without test labels; leave-one-day-out stress test; episode-level bootstrap CIs; 73 automated tests; **one-command reproduction** (`python reproduce.py`) | [`CLAIMS.md`](docs/CLAIMS.md) |
+| **Evaluation rigour** | 37-fold leave-one-episode-out with a 36-window purge; per-fold scaling, PCA and LR; thresholds without test labels; leave-one-day-out stress test; episode-level bootstrap CIs; 75 automated tests; **one-command reproduction** (`python reproduce.py`) | [`CLAIMS.md`](docs/CLAIMS.md) |
 | **Dataset research** | 11 experiments across modelling, data and alternative datasets to work around the public-dataset gap, each reported with its outcome | [Experiments](#experiments-we-ran-to-address-the-dataset-issue) |
 | **GraphSAGE graph fusion (ML2)** | Built, trained and ablated over 3 seeds. **Held back** from the primary path because validation loss favours the temporal-only model (1.666 vs 1.932) | [GraphSAGE](#graphsage-graph-fusion-ml2-held-back) |
 
@@ -315,7 +315,8 @@ python data-engineering/scripts/make_pcap_demo_slice.py --preset benign  # 45 mi
 Upload `data-engineering/data/raw_pcap/demo_ssh_slice.pcap` on the Ingestion page. To check the PCAP path on the
 same slice minute by minute against the published dataset (its labels, and the onset probability the models give on
 the dataset's own windows), run `python data-engineering/scripts/check_pcap_capture.py`; it writes
-`runtime/pcap_check.csv`. The same conversion is
+`runtime/pcap_check.csv`. `python data-engineering/scripts/compare_pcap_features.py` then shows, feature by feature,
+where the windows built from the capture differ from the dataset's (`runtime/pcap_feature_diff.csv`). The same conversion is
 available from the command line: `python data-engineering/src/pcap_ingest.py capture.pcap --out flows.csv`.
 
 ### Optional: Hyperledger Fabric notarisation

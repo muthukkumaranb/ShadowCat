@@ -15,6 +15,10 @@ Usage (after downloading the 14-02-2018 capture and cutting the demo slice):
     python data-engineering/scripts/check_pcap_capture.py
     python data-engineering/scripts/check_pcap_capture.py --pcap path/to/slice.pcap --out runtime/pcap_check.csv
 
+To see which features make the two paths differ, run compare_pcap_features.py on the same slice. The pipeline's
+own log lines are hidden unless --verbose is given, and the check's forecasts go to runtime/pcap_check/, not to
+the main audit chain.
+
 Capture clock vs dataset clock: the CIC-IDS2018 CSV timestamps are offset from the capture clock by +16 h
 (CSV time before 10:00) or +4 h (from 10:00), as documented in src/pcap_extractor.py.
 """
@@ -34,6 +38,33 @@ for p in (REPO, REPO / "data-engineering", REPO / "backend"):
         sys.path.insert(0, str(p))
 
 DATASET = REPO / "data-engineering" / "data" / "ucs" / "ucs_windows_models_v1.parquet"
+VERBOSE = False
+
+
+class quiet:
+    """Silence the pipeline's own console output (notarisation / Fabric fallback lines, warnings) unless --verbose.
+    The check's forecasts go to a separate audit chain (runtime/pcap_check/), never to the main one."""
+
+    def __enter__(self):
+        import contextlib, io, logging, warnings
+        if VERBOSE:
+            self._cm = None
+            return self
+        self._cm = contextlib.ExitStack()
+        self._cm.enter_context(contextlib.redirect_stdout(io.StringIO()))
+        self._cm.enter_context(contextlib.redirect_stderr(io.StringIO()))
+        self._cm.enter_context(warnings.catch_warnings())
+        warnings.simplefilter("ignore")
+        self._level = logging.root.manager.disable
+        logging.disable(logging.CRITICAL)
+        return self
+
+    def __exit__(self, *exc):
+        import logging
+        if self._cm is not None:
+            logging.disable(self._level)
+            self._cm.close()
+        return False
 DEFAULT_PCAP = REPO / "data-engineering" / "data" / "raw_pcap" / "demo_ssh_slice.pcap"
 
 
@@ -51,15 +82,22 @@ def onset_probability(pred: dict) -> float:
     return float((pred.get("forecast_trajectory", {}).get("risk") or [np.nan])[0])
 
 
+def _quiet_predict(predict, frame: pd.DataFrame) -> float:
+    with quiet():
+        return onset_probability(predict(frame.copy(), source_type="windows"))
+
+
 def run(pcap: Path, out: Path | None, min_history: int = 1) -> pd.DataFrame:
-    os.environ.setdefault("SHADOWCAT_RUNTIME_DIR", str(REPO / "runtime" / "pcap_check"))
+    # A separate runtime dir: the check's forecasts are not written into the main audit chain.
+    os.environ["SHADOWCAT_RUNTIME_DIR"] = os.environ.get("SHADOWCAT_CHECK_RUNTIME_DIR", str(REPO / "runtime" / "pcap_check"))
     from src.pcap_ingest import ingest_pcap
     from src.ucs_extractor import UCSExtractor
     from backend.predict import predict
 
     print(f"Ingesting {pcap} ...", flush=True)
     flows = ingest_pcap(str(pcap), progress=True)
-    windows = UCSExtractor().extract(flows, source_type="pcap")
+    with quiet():
+        windows = UCSExtractor().extract(flows, source_type="pcap")
     windows["window_start_utc"] = pd.to_datetime(windows["window_start_utc"], utc=True)
     windows = windows.sort_values("window_start_utc").reset_index(drop=True)
     n_flows = pd.to_datetime(flows["Timestamp"], format="%d/%m/%Y %H:%M:%S", utc=True).dt.floor("min").value_counts()
@@ -74,7 +112,8 @@ def run(pcap: Path, out: Path | None, min_history: int = 1) -> pd.DataFrame:
     rows = []
     for i in range(min_history - 1, len(windows)):
         t = windows.window_start_utc.iloc[i]
-        p_pcap = onset_probability(predict(windows.iloc[: i + 1].copy(), source_type="windows"))
+        with quiet():
+            p_pcap = onset_probability(predict(windows.iloc[: i + 1].copy(), source_type="windows"))
         d_t = capture_to_dataset_minute(t, ds_minutes)
         row = {"capture_minute_utc": t, "flows": int(n_flows.get(t, 0)), "p_onset_from_pcap": round(p_pcap, 4),
                "dataset_minute": d_t, "label_attack_now": np.nan, "label_attack_within_5min": np.nan,
@@ -87,7 +126,7 @@ def run(pcap: Path, out: Path | None, min_history: int = 1) -> pd.DataFrame:
                 hist = ds[day & (ds.index <= j)]
                 row.update(label_attack_now=int(ds.at[j, "label_binary"]),
                            label_attack_within_5min=int(ds.at[j, "future_attack_label"]),
-                           p_onset_from_dataset=round(onset_probability(predict(hist.copy(), source_type="windows")), 4))
+                           p_onset_from_dataset=round(_quiet_predict(predict, hist), 4))
         rows.append(row)
         print(f"  {t:%H:%M}  flows={row['flows']:>6}  P(onset) PCAP={row['p_onset_from_pcap']:.3f}"
               f"  dataset={row['p_onset_from_dataset'] if not pd.isna(row['p_onset_from_dataset']) else '   -'}"
@@ -129,7 +168,10 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--pcap", default=str(DEFAULT_PCAP))
     ap.add_argument("--out", default=str(REPO / "runtime" / "pcap_check.csv"))
+    ap.add_argument("--verbose", action="store_true", help="show the pipeline's own log lines and warnings")
     a = ap.parse_args()
+    global VERBOSE
+    VERBOSE = a.verbose
     pcap = Path(a.pcap)
     if not pcap.exists():
         raise SystemExit(f"{pcap} not found. Download the capture and cut a slice first:\n"
