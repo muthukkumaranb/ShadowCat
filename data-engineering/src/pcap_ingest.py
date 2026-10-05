@@ -52,15 +52,6 @@ _SECONDS_TO_MICROS = [
 ]
 _ALIASES = {"cwr_flag_count": "CWE Flag Count", "src_ip": "Src IP", "dst_ip": "Dst IP", "src_port": "Src Port"}
 
-# CIC-IDS2018 CSV conventions (Java CICFlowMeter-V3) that the Python port does not follow. The models were trained on
-# the CSVs, so uploads are brought to the same convention. Verified from the training data's own statistics
-# (data-engineering/data/ucs/scaler_params.yaml): the per-minute maximum of every flag count is exactly 1, and the
-# bulk features and backward PSH/URG flags are 0 in every window, while the port reports packet counts and bulk rates.
-_CIC_PRESENCE_FLAGS = ["fin_flag_cnt", "syn_flag_cnt", "rst_flag_cnt", "psh_flag_cnt", "ack_flag_cnt",
-                       "urg_flag_cnt", "ece_flag_cnt", "cwr_flag_count", "fwd_psh_flags", "fwd_urg_flags"]
-_CIC_ALWAYS_ZERO = ["bwd_psh_flags", "bwd_urg_flags", "fwd_byts_b_avg", "fwd_pkts_b_avg", "fwd_blk_rate_avg",
-                    "bwd_byts_b_avg", "bwd_pkts_b_avg", "bwd_blk_rate_avg"]
-
 
 class PcapIngestError(ValueError):
     pass
@@ -287,12 +278,6 @@ def pcap_to_flows(pcap_path: str, progress: bool = False) -> pd.DataFrame:
     for c in _SECONDS_TO_MICROS:
         if c in raw.columns:
             raw[c] = pd.to_numeric(raw[c], errors="coerce") * 1e6
-    for c in _CIC_PRESENCE_FLAGS:
-        if c in raw.columns:
-            raw[c] = (pd.to_numeric(raw[c], errors="coerce").fillna(0) > 0).astype(int)
-    for c in _CIC_ALWAYS_ZERO:
-        if c in raw.columns:
-            raw[c] = 0
 
     import yaml
     mapping = yaml.safe_load((HERE.parent / "configs" / "canonical_mapping.yaml").read_text())["mapping"]

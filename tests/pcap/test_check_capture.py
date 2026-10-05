@@ -44,21 +44,6 @@ def test_run_lines_up_pcap_and_dataset_minutes(tmp_path, monkeypatch):
     assert list(res.label_attack_now) == [0, 0, 1]  # 01:59, 02:00 benign; 02:01 SSH-Bruteforce in the dataset
 
 
-def test_flows_follow_cic_ids2018_flag_and_bulk_conventions(tmp_path):
-    from scapy.all import wrpcap
-    from src.pcap_ingest import pcap_to_flows
-    pcap = tmp_path / "f.pcap"
-    wrpcap(str(pcap), fx._fixture_packets(minutes=1))
-    flows = pcap_to_flows(str(pcap))
-    for c in ["FIN Flag Cnt", "SYN Flag Cnt", "RST Flag Cnt", "PSH Flag Cnt", "ACK Flag Cnt", "URG Flag Cnt",
-              "ECE Flag Cnt", "CWE Flag Count", "Fwd PSH Flags", "Fwd URG Flags"]:
-        assert set(flows[c].unique()) <= {0, 1}, c
-    assert (flows["PSH Flag Cnt"] == 1).any()  # the fixture's flows carry PSH
-    for c in ["Bwd PSH Flags", "Bwd URG Flags", "Fwd Byts/b Avg", "Fwd Pkts/b Avg", "Fwd Blk Rate Avg",
-              "Bwd Byts/b Avg", "Bwd Pkts/b Avg", "Bwd Blk Rate Avg"]:
-        assert (flows[c] == 0).all(), c
-
-
 def test_feature_comparison_runs_and_ranks_features(tmp_path, monkeypatch):
     monkeypatch.setenv("SHADOWCAT_CHECK_RUNTIME_DIR", str(tmp_path))
     from scapy.all import wrpcap
