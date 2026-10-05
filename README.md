@@ -261,7 +261,7 @@ cd ShadowCat
 ```
 
 ### 2. Create an environment (Python 3.12+ recommended)
-`requirements.txt` pins `scikit-learn==1.9.0`, which requires Python ≥ 3.11. PCAP upload uses the `cicflowmeter`
+`requirements.txt` pins `scikit-learn==1.9.1` (the version the committed models were saved with), which requires Python ≥ 3.11. PCAP upload uses the `cicflowmeter`
 package, which requires Python ≥ 3.12 (on 3.11 everything else works and PCAP upload shows a clear message).
 ```bash
 python -m venv venv

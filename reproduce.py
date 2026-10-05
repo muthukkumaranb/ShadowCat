@@ -45,7 +45,9 @@ def step(name):
 
 
 def sh(cmd, env=None, timeout=3600):
-    p = subprocess.run(cmd, cwd=REPO, env={**os.environ, **(env or {})}, capture_output=True, text=True, timeout=timeout)
+    # UTF-8 both ways, so child output (e.g. em dashes) is not garbled on a Windows console code page
+    p = subprocess.run(cmd, cwd=REPO, env={**os.environ, "PYTHONIOENCODING": "utf-8", **(env or {})},
+                       capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=timeout)
     tail = "\n".join((p.stdout + p.stderr).strip().splitlines()[-4:])
     print(tail, flush=True)
     return p.returncode, p.stdout + p.stderr
@@ -94,16 +96,32 @@ def committed_json(rel):
 # ----------------------------------------------------------------------------- quick steps
 @step("1. Environment")
 def check_env():
+    print(f"Interpreter: {sys.executable}")
     if sys.version_info < (3, 11):
         return False, f"Python {sys.version.split()[0]}; 3.11+ required (scikit-learn 1.9)"
-    missing = []
-    for mod in ("torch", "sklearn", "pandas", "numpy", "pyarrow", "yaml", "cryptography", "streamlit", "plotly", "scipy"):
+    mods = ("torch", "sklearn", "pandas", "numpy", "pyarrow", "yaml", "cryptography", "streamlit", "plotly", "scipy", "pytest")
+    failed = {}
+    for mod in mods:
+        # Each package is first imported on its own in a fresh interpreter, so a broken install is told apart from
+        # a clash between two packages (on Windows, typically two different C++ runtime DLLs).
+        r = subprocess.run([PY, "-c", f"import {mod}"], capture_output=True, text=True)
+        if r.returncode != 0:
+            failed[mod] = (r.stderr.strip().splitlines() or ["(no message)"])[-1]
+    if failed:
+        for mod, err in failed.items():
+            print(f"  {mod}: {err}")
+        hint = ""
+        if any("DLL" in e for e in failed.values()):
+            hint = " A 'DLL load failed' error on Windows is usually fixed by installing the latest Microsoft Visual C++ Redistributable (x64)."
+        return False, f"cannot import: {', '.join(failed)} (details above; run: pip install -r requirements.txt).{hint}"
+    # All packages import on their own; now import them together, in the order the pipeline uses them.
+    for mod in mods:
         try:
             __import__(mod)
-        except ImportError:
-            missing.append(mod)
-    if missing:
-        return False, f"missing packages: {', '.join(missing)} (run: pip install -r requirements.txt)"
+        except Exception as e:  # noqa: BLE001  (DLL clashes surface as ImportError or OSError)
+            print(f"  {mod} fails after importing {', '.join(mods[:mods.index(mod)])}: {type(e).__name__}: {e}")
+            return False, (f"{mod} imports on its own but not after the other packages (a DLL clash). On Windows, install "
+                           f"the latest Microsoft Visual C++ Redistributable (x64), then reopen the terminal.")
     return True, f"Python {sys.version.split()[0]}, all required packages present"
 
 
