@@ -10,9 +10,9 @@ import numpy as np
 import time
 import io
 from styles import TOKENS, render_html
-from data_provider import get_analysis_metadata, get_novelty_score, get_audit_chain_status, run_core_ml_inference, run_pcap_inference, get_canonical_benchmark_df
+from data_provider import get_analysis_metadata, get_novelty_score, get_audit_chain_status, run_core_ml_inference, run_pcap_inference, get_canonical_benchmark_df, load_demo_slice
 
-# Demo slice loading is provided by data_provider.get_canonical_benchmark_df (real CSE-CIC-IDS2018 data)
+# Demo slice loading is provided by data_provider.load_demo_slice (real CSE-CIC-IDS2018 data)
 
 def render_page():
     t = TOKENS.get(st.session_state.get("theme", "dark"), TOKENS["dark"])

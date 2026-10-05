@@ -367,12 +367,17 @@ def render_page():
             raw_steps = fc.get("raw_steps", [])
             if raw_steps and curr_k < len(raw_steps):
                 mitre_step = raw_steps[curr_k]
-                tech_id_display = mitre_step.get("technique_id", "T1071.001")
-                tech_name_display = mitre_step.get("technique_full_name", mitre_step.get("technique_name", "Web Protocols"))
-                tech_url_display = mitre_step.get("technique_url", f"https://attack.mitre.org/techniques/{tech_id_display.replace('.', '/')}")
-                tech_desc_display = mitre_step.get("technique_description", "")
+                # The stage head returns None IDs when it is not confident; never substitute a technique.
+                tech_id_display = mitre_step.get("technique_id")
+                if tech_id_display == "N/A":
+                    tech_id_display = None
+                tech_name_display = mitre_step.get("technique_full_name") or mitre_step.get("technique_name")
+                tech_url_display = mitre_step.get("technique_url") or (
+                    f"https://attack.mitre.org/techniques/{tech_id_display.replace('.', '/')}" if tech_id_display else None
+                )
+                tech_desc_display = mitre_step.get("technique_description") or ""
                 is_heur = mitre_step.get("is_heuristic_progression", False)
-                step_conf = mitre_step.get("probability", 0.94)
+                step_conf = mitre_step.get("probability", step_risk)
             else:
                 try:
                     from backend.mitre_kb import get_mitre_kb
@@ -392,6 +397,29 @@ def render_page():
                     tech_desc_display = "Adversaries may communicate using application layer protocols associated with web traffic."
                     is_heur = False
                     step_conf = 0.94
+
+            if tech_id_display:
+                tech_desc_short = (tech_desc_display or "")[:140]
+                tech_block_html = f"""
+                    <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; font-weight: 700; color: {t['primary']};">
+                        {tech_id_display} — {tech_name_display or ''}
+                    </div>
+                    <div style="font-family: 'Inter', sans-serif; font-size: 0.70rem; color: {t['text_muted']}; margin-top: 0.25rem; line-height: 1.3;">
+                        {tech_desc_short}{'...' if tech_desc_short else ''}
+                    </div>
+                    <div style="margin-top: 0.4rem; padding-top: 0.25rem; border-top: 1px dashed {t['border']};">
+                        <a href="{tech_url_display}" target="_blank" style="color: {t['primary']}; font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; text-decoration: underline;">
+                            Official MITRE ATT&CK Ref: {tech_id_display} ↗
+                        </a>
+                    </div>"""
+            else:
+                tech_block_html = f"""
+                    <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; font-weight: 700; color: {t['text_secondary']};">
+                        No ATT&CK stage determined
+                    </div>
+                    <div style="font-family: 'Inter', sans-serif; font-size: 0.70rem; color: {t['text_muted']}; margin-top: 0.25rem; line-height: 1.3;">
+                        The stage classifier was not confident enough to map this step to an ATT&CK technique.
+                    </div>"""
 
             render_html(f"""
             <div class="soc-card" style="padding: 1rem;">
@@ -457,17 +485,7 @@ def render_page():
                             {"HEURISTIC PROJECTION" if is_heur else f"P(conf) = {step_conf:.2f}"}
                         </span>
                     </div>
-                    <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; font-weight: 700; color: {t['primary']};">
-                        {tech_id_display} — {tech_name_display}
-                    </div>
-                    <div style="font-family: 'Inter', sans-serif; font-size: 0.70rem; color: {t['text_muted']}; margin-top: 0.25rem; line-height: 1.3;">
-                        {tech_desc_display[:140]}...
-                    </div>
-                    <div style="margin-top: 0.4rem; padding-top: 0.25rem; border-top: 1px dashed {t['border']};">
-                        <a href="{tech_url_display}" target="_blank" style="color: {t['primary']}; font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; text-decoration: underline;">
-                            Official MITRE ATT&CK Ref: {tech_id_display} ↗
-                        </a>
-                    </div>
+                    {tech_block_html}
                 </div>
             </div>
             """)
