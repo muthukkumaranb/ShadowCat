@@ -167,6 +167,17 @@ def render_page():
         stat_badge_cls, stat_badge_txt = "badge-nominal", "BELOW THRESHOLD"
     delta_threat_txt = f"{len(flows)} top-ranked flows in window"
     n_total_alerts = n_crit
+    if not flows:
+        # Window-level input (e.g. the dataset demo slices) has no individual flows: the alert is the window itself.
+        n_total_alerts = 1 if in_alert else 0
+        delta_threat_txt = "window-level input (no individual flows)"
+    if flows:
+        alert_badge_txt = f"{n_crit} in alert window"
+        low_badge_html = ('<span class="soc-badge badge-neutral" style="padding: 0.1rem 0.4rem; font-size: 0.625rem;">'
+                          f"{n_low} below threshold</span>")
+    else:
+        alert_badge_txt = "window in alert" if in_alert else "window below threshold"
+        low_badge_html = ""
 
     with m_col1:
         render_html(f"""
@@ -178,8 +189,8 @@ def render_page():
             <div style="margin: 0.35rem 0;">
                 <div class="soc-stat-val">{n_total_alerts}</div>
                 <div style="display: flex; gap: 0.35rem; margin-top: 0.35rem;">
-                    <span class="soc-badge {'badge-critical' if n_crit > 0 else 'badge-nominal'}" style="padding: 0.1rem 0.4rem; font-size: 0.625rem;">{n_crit} in alert window</span>
-                    <span class="soc-badge badge-neutral" style="padding: 0.1rem 0.4rem; font-size: 0.625rem;">{n_low} below threshold</span>
+                    <span class="soc-badge {'badge-critical' if n_total_alerts > 0 else 'badge-nominal'}" style="padding: 0.1rem 0.4rem; font-size: 0.625rem;">{alert_badge_txt}</span>
+                    {low_badge_html}
                 </div>
             </div>
             <div class="soc-stat-delta {'delta-threat' if risk_val >= 0.5 else 'delta-nominal'}">

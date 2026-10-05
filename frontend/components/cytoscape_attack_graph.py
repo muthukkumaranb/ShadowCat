@@ -5,8 +5,23 @@ Features dynamic K-step rollout diffusion, visual host isolation, live progressi
 """
 
 import json
+from functools import lru_cache
+from pathlib import Path
 from typing import Dict, Any, Optional, List
 import streamlit as st
+
+# Cytoscape.js 3.28.1 (MIT, see frontend/static/vendor/cytoscape-LICENSE.txt) ships with the repo and is inlined
+# into the component, so the attack graph renders with no internet connection.
+_CYTOSCAPE_JS = Path(__file__).resolve().parents[1] / "static" / "vendor" / "cytoscape-3.28.1.min.js"
+_CYTOSCAPE_CDN = "https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"
+
+
+@lru_cache(maxsize=1)
+def _cytoscape_script_tag() -> str:
+    try:
+        return "<script>" + _CYTOSCAPE_JS.read_text(encoding="utf-8") + "</script>"
+    except OSError:  # vendored file missing: fall back to the CDN
+        return f'<script src="{_CYTOSCAPE_CDN}"></script>'
 def render_cytoscape_graph(
     k_step: int = 0,
     selected_node_id: Optional[str] = None,
@@ -231,12 +246,13 @@ def render_cytoscape_graph(
     nominal_border = "#cbd5e1" if is_light else "#3b4a3d"
     edge_default = "#94a3b8" if is_light else "#3b4a3d"
 
+    cytoscape_tag = _cytoscape_script_tag()
     html_content = f"""
     <!DOCTYPE html>
     <html>
     <head>
         <meta charset="utf-8">
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"></script>
+        {cytoscape_tag}
         <style>
             * {{ box-sizing: border-box; margin: 0; padding: 0; }}
             body {{
