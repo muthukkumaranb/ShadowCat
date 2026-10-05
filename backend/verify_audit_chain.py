@@ -12,7 +12,7 @@ BACKEND_DIR = Path(__file__).resolve().parent
 if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))
 
-from audit_chain import verify_chain, _load_chain
+from audit_chain import verify_chain, _load_chain, chain_merkle_root
 from fabric_bridge import _is_docker_available
 
 if __name__ == "__main__":
@@ -25,6 +25,7 @@ if __name__ == "__main__":
     is_valid, issues = verify_chain()
     if is_valid:
         print("✅ AUDIT CHAIN VALID — all entries intact, no tampering detected.")
+        print(f"Merkle root ({len(chain)} entries): {chain_merkle_root()['merkle_root']}")
         if not _is_docker_available():
             print("[i] Docker: not found — Fabric notarization will use SHA-256 fallback (this is fine)\n")
         else:

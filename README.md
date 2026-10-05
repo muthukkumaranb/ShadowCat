@@ -7,7 +7,7 @@ Smart India Hackathon 2026 · Problem Statement `SIH26153` · NTRO
 ![PyTorch](https://img.shields.io/badge/PyTorch-2.x-EE4C2C?logo=pytorch&logoColor=white)
 ![scikit-learn](https://img.shields.io/badge/scikit--learn-1.9-F7931E?logo=scikitlearn&logoColor=white)
 ![Streamlit](https://img.shields.io/badge/Streamlit-dashboard-FF4B4B?logo=streamlit&logoColor=white)
-![Tests](https://img.shields.io/badge/tests-62%20passing-2EA44F)
+![Tests](https://img.shields.io/badge/tests-70%20passing-2EA44F)
 
 **Contents:** [Problem statement](#sih-problem-statement-reference) ·
 [Project briefing](#project-briefing) · [Reproduce](#reproduce-everything-in-one-command) ·
@@ -43,7 +43,8 @@ offline.
   next-state deviation flags attack families it was never trained on.
 - **Prediction heads:** a stacked ensemble gives P(attack now) and P(attack within 5 minutes) with a split-conformal
   interval; a classifier names the current ATT&CK tactic, exported as STIX 2.1.
-- **Audit:** an Ed25519-signed SHA-256 hash chain, with optional Hyperledger Fabric notarisation.
+- **Audit:** an Ed25519-signed SHA-256 hash chain with a signed Merkle root over all entries (a short
+  inclusion proof for any forecast), and optional Hyperledger Fabric notarisation.
 - **Dashboard:** a Streamlit SOC console showing the forecast, ranked flows, host graph, explanations and audit status.
 - **Evaluation:** 37-fold leave-one-episode-out on CSE-CIC-IDS2018 with a 36-window purge, thresholds chosen
   without test labels, and a leave-one-day-out stress test. Our research also measures how far public datasets
@@ -96,26 +97,53 @@ It prints a PASS/FAIL table and writes `runtime/REPRODUCE_REPORT.md`.
 
 ## Pipeline Architecture
 
+![ShadowCat architecture](docs/assets/Shadowcat_Architecture.png)
+
 ```
-   1. DATA: Unified Cyber State (UCS)
-      CICFlowMeter flows + 12 packet-level features parsed from raw PCAP ──► 1-minute windows ──► 406-D state S_t
-
-   2. WORLD MODEL
-      30-window lookback ──► LSTM Gaussian world model p(S_{t+1} | S_{t-29..t}) ──► K-step rollout + deviation score
-
-   2b. GRAPH BRANCH (HELD BACK)
-      host graph per minute ──► edge-aware GraphSAGE ──► fusion with z(t)   [not in the primary path: z'(t) = z(t)]
-
-   3. HEADS
-      Stacked ensemble (LR stage + residual LSTM, 37 fold models): P(attack now), P(attack within 5 min)
-      Current-window ATT&CK tactic classifier (37 fold models, STIX 2.1 mapping)
-      Split-conformal interval (calibrated on validation residuals only)
-
-   4. INTEGRATION & AUDIT (backend/predict.py)
-      Single predict() contract ◄──► Ed25519-signed SHA-256 hash chain (+ optional Hyperledger Fabric)
-
-   5. DASHBOARD (frontend/app.py)
-      Streamlit: onset probability with conformal interval, ATT&CK stage, flagged flows, attribution, audit status
+┌─ GATE 0 · DATASET FEASIBILITY CHECK (before any model work) ─────────────────────────────────┐
+│  CSE-CIC-IDS2018 (adopted) · CTU-13 · CIC-IDS2017 · 10-day expansion · AIT-LDS v2.0          │
+│  UWF-ZeekData24 · DAPT2020 / Unraveled                                                       │
+│  └─► reconcile PCAP ↔ CSV · count episodes and pre-onset history · schedule-leakage test     │
+└───────────────────────────────────────────────┬──────────────────────────────────────────────┘
+                                                ▼
+┌─ INPUT DATA ─────────────────────────────────────────────────────────────────────────────────┐
+│  Attack timeline annotations · PCAP / PCAPNG upload (dashboard)                              │
+│  CICFlowMeter CSV (other schemas mapped or rejected)                                         │
+└───────────────────────────────────────────────┬──────────────────────────────────────────────┘
+                                                ▼
+   DATA ENGINEERING   canonical fields · UTC · 1-minute windows · missing values masked ──► targets
+                                                ▼
+┌─ UNIFIED CYBER STATE S(t) · 406 features ────────────────────────────────────────────────────┐
+│  Flow level (388) · Packet level (12, parsed from raw PCAP) · Presence masks (6)             │
+│  Communication-graph builder   [held back]                                                   │
+└───────────────────────────────────────────────┬──────────────────────────────────────────────┘
+                                                ▼
+   LEAKAGE CONTROL    37-fold leave-one-episode-out · 36-window purge · per-fold scaler, PCA-32, LR
+                                                ▼
+┌─ STATE ENCODER → LATENT STATE z(t) ──────────────────────────────────────────────────────────┐
+│  Stacked & calibrated residual LSTM over S(t-29..t)                                          │
+│  GraphSAGE fusion   [held back: validation loss 1.932 fused vs 1.666 temporal-only]          │
+│  └─► z'(t) = z(t)                                                                            │
+└───────────────────────────────────────────────┬──────────────────────────────────────────────┘
+                                                ▼
+┌─ CYBER WORLD MODEL · learned state-transition dynamics ──────────────────────────────────────┐
+│  Probabilistic dynamics head p(S(t+1) | history) ──► K-step rollout (K = 1..5)               │
+│  World-model deviation ──► novelty score for unseen attack families                          │
+│  Stacked ensemble ──► P(attack now), P(attack within 5 min) + split-conformal interval       │
+│  Stage head ──► current ATT&CK tactic, resolved against MITRE ATT&CK STIX 2.1                │
+└──────────────┬───────────────────────────────┬───────────────────────────────┬───────────────┘
+               ▼                               ▼                               ▼
+┌─ BLOCKCHAIN ────────────────┐ ┌─ EXPLAINABILITY ────────────┐ ┌─ EVALUATION ────────────────┐
+│ Alert record ──► Fabric     │ │ Integrated Gradients        │ │ LOEO · leave-one-day-out    │
+│ notary (optional)           │ │ Feature attribution         │ │ Thresholds w/o test labels  │
+│ └─► signed SHA-256 chain    │ │ ATT&CK stage evidence       │ │ 11 forecasting experiments  │
+│ Merkle root + proofs        │ │ Graph evidence [future work]│ │ python reproduce.py         │
+│ Chain verifier              │ │                             │ │                             │
+└──────────────┬──────────────┘ └──────────────┬──────────────┘ └─────────────────────────────┘
+               └───────────────┬───────────────┘
+                               ▼
+   DEMONSTRATION UI   Streamlit, fully offline · PCAP / CSV upload · onset probability with interval
+                      ranked flows · host graph · ATT&CK stage · attributions · live audit-chain badge
 ```
 
 ---
@@ -129,8 +157,8 @@ It prints a PASS/FAIL table and writes `runtime/REPRODUCE_REPORT.md`.
 | **Unseen attack families (world-model deviation)** | ROC-AUC **0.707** on attack families held out entirely; **0.820** on held-out episodes. Higher than the supervised detectors in our unseen-family stress test (0.67) | [`DEVIATION.md`](evaluation/deviation/DEVIATION.md) |
 | **Packet-level telemetry from raw PCAP** | Our own packet parser (`data-engineering/src/pcap_extractor.py`) extracts 12 packet-level features (TTL, fragmentation, payload percentiles, retransmissions, port-scan score) from the raw CIC-IDS2018 captures for **2 capture days, 998 windows** (14-02 SSH-Bruteforce, 02-03 Botnet). Other days are marked absent with `mask_has_packet_level_features`, never zero-filled. **The dashboard accepts PCAP / PCAPNG uploads directly**: capture → CIC-IDS2018-schema flows + packet features → forecast | [`PACKET_EXTRACTION_VERIFICATION.md`](data-engineering/data/ucs/PACKET_EXTRACTION_VERIFICATION.md), [`pcap_ingest.py`](data-engineering/src/pcap_ingest.py) |
 | **MITRE ATT&CK tactic of the current attack** | Tactic macro-F1 **0.640** on held-out episodes (Credential Access 0.71, Command and Control 0.67, Impact 0.54); mapped to STIX 2.1 | [`FAMILY.md`](evaluation/family/FAMILY.md) |
-| **Tamper-evident audit trail** | Ed25519-signed SHA-256 hash chain over models, reports and every forecast; optional Hyperledger Fabric notarisation with automatic fallback | [`backend/audit_chain.py`](backend/audit_chain.py) |
-| **Evaluation rigour** | 37-fold leave-one-episode-out with a 36-window purge; per-fold scaling, PCA and LR; thresholds without test labels; leave-one-day-out stress test; episode-level bootstrap CIs; 62 automated tests; **one-command reproduction** (`python reproduce.py`) | [`CLAIMS.md`](docs/CLAIMS.md) |
+| **Tamper-evident audit trail** | Ed25519-signed SHA-256 hash chain over models, reports and every forecast, committed to by a signed **Merkle root** (RFC 6962 hashing, O(log n) inclusion proofs, detects a chain rebuilt with recomputed links); optional Hyperledger Fabric notarisation with automatic fallback | [`backend/audit_chain.py`](backend/audit_chain.py) |
+| **Evaluation rigour** | 37-fold leave-one-episode-out with a 36-window purge; per-fold scaling, PCA and LR; thresholds without test labels; leave-one-day-out stress test; episode-level bootstrap CIs; 70 automated tests; **one-command reproduction** (`python reproduce.py`) | [`CLAIMS.md`](docs/CLAIMS.md) |
 | **Dataset research** | 11 experiments across modelling, data and alternative datasets to work around the public-dataset gap, each reported with its outcome | [Experiments](#experiments-we-ran-to-address-the-dataset-issue) |
 | **GraphSAGE graph fusion (ML2)** | Built, trained and ablated over 3 seeds. **Held back** from the primary path because validation loss favours the temporal-only model (1.666 vs 1.932) | [GraphSAGE](#graphsage-graph-fusion-ml2-held-back) |
 
@@ -263,7 +291,7 @@ The individual steps, if you want to run them separately:
 python backend/smoke_test.py                                   # inference pipeline
 python backend/build_audit_chain.py                            # build the signed audit chain (runtime/)
 python backend/verify_audit_chain.py                           # verify it
-python -m pytest backend/tests frontend/tests evaluation/benchmark tests/prob_forecast tests/pcap -q
+python -m pytest backend/tests frontend/tests evaluation/benchmark tests/prob_forecast tests/pcap tests/test_merkle.py -q
 python evaluation/benchmark/reproduce_stacked_benchmark.py --data data-engineering/data/ucs/ucs_windows_models_v1.parquet
 ```
 
@@ -332,5 +360,5 @@ Fabric layer:
 ## Deliverables
 
 - **Demo video:** https://youtu.be/c_4-A5syubs
-- **Architecture diagram:** [docs/assets/Shadowcat_Architecture.png](docs/assets/Shadowcat_Architecture.png) ([PDF](docs/assets/ShadowCat_Architecture.pdf))
+- **Architecture diagram:** [docs/assets/Shadowcat_Architecture.png](docs/assets/Shadowcat_Architecture.png) ([PDF](docs/assets/ShadowCat_Architecture.pdf), Graphviz source [`shadowcat_architecture.dot`](docs/assets/shadowcat_architecture.dot))
 - **Claims sheet:** [docs/CLAIMS.md](docs/CLAIMS.md) • **Robustness checks:** [docs/ROBUSTNESS_CHECKS.md](docs/ROBUSTNESS_CHECKS.md) • **Final findings:** [docs/FINAL_FINDINGS.md](docs/FINAL_FINDINGS.md)

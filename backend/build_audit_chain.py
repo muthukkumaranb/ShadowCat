@@ -14,7 +14,7 @@ BACKEND_DIR = Path(__file__).resolve().parent
 if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))
 
-from audit_chain import append_entry, CHAIN_PATH
+from audit_chain import append_entry, write_merkle_checkpoint, CHAIN_PATH
 
 ENTRIES = [
     ("../data-engineering/data/ucs/PACKET_EXTRACTION_VERIFICATION.md", "extraction_verification", "Real Scapy PCAP extraction verification (Option B real packet telemetry)"),
@@ -30,8 +30,9 @@ ENTRIES = [
 ]
 
 if __name__ == "__main__":
-    if os.path.exists(CHAIN_PATH):
-        os.remove(CHAIN_PATH)
+    for stale in (CHAIN_PATH, os.path.splitext(CHAIN_PATH)[0] + ".merkle.json"):
+        if os.path.exists(stale):
+            os.remove(stale)
 
     print("=" * 70)
     print("BUILDING TAMPER-EVIDENT FORENSIC AUDIT CHAIN")
@@ -48,4 +49,7 @@ if __name__ == "__main__":
         print(f"    Link    : {entry['prev_entry_hash'][:16]}... -> {entry['entry_hash'][:16]}...")
         print("-" * 70)
 
+    cp = write_merkle_checkpoint()
     print(f"\n[PASS] Successfully chained {len(ENTRIES)} verified artifacts.")
+    print(f"Merkle root over {cp['n_entries']} entries: {cp['merkle_root']}"
+          + (" (Ed25519-signed checkpoint)" if "signature" in cp else ""))

@@ -227,13 +227,16 @@ def render_page():
             <div class="soc-card-nested">
                 <div style="display:flex; justify-content:space-between; font-family:'JetBrains Mono', monospace; font-size: 0.6875rem; color:{t['text_muted']}; text-transform:uppercase;">
                     <span>Blockchain Audit Ledger (Block #{latest_block.get('index', 0)})</span>
-                    <span style="color: {t['primary']}; font-weight: 700;">Verified Merkle Hash-Chain</span>
+                    <span style="color: {t['primary']}; font-weight: 700;">Hash-Chain + Merkle Root</span>
                 </div>
                 <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_high']}; overflow-x: auto; white-space: nowrap; margin-top: 3px;">
-                    <span style="color:{t['text_muted']}">block_hash:</span> {latest_block.get('entry_hash', 'b305b08be101513e95d0e527c19d69765fa777e621715c22a5891d3ff84438bf')}
+                    <span style="color:{t['text_muted']}">block_hash:</span> {latest_block.get('entry_hash', '—')}
                 </div>
                 <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.625rem; color: {t['text_secondary']}; overflow-x: auto; white-space: nowrap; margin-top: 2px;">
                     <span style="color:{t['text_muted']}">prev_hash:</span> {latest_block.get('prev_entry_hash', '0000000000000000000000000000000000000000000000000000000000000000')[:24]}... &bull; <span style="color:{t['primary']}">Tamper-Proof Audit Chain Active</span>
+                </div>
+                <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.625rem; color: {t['text_secondary']}; overflow-x: auto; white-space: nowrap; margin-top: 2px;">
+                    <span style="color:{t['text_muted']}">merkle_root ({chain_len} entries):</span> {audit_chain.get('merkle_root', '—')}
                 </div>
             </div>
         </div>

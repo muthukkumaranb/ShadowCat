@@ -211,4 +211,108 @@ def verify_chain(chain_path: Optional[str] = None) -> tuple:
                 f"Entry {i} ({entry.get('artifact_path')}): file no longer exists"
             )
 
+    issues.extend(_verify_merkle_checkpoint(chain, chain_path))
     return (len(issues) == 0, issues)
+
+
+# ----------------------------------------------------------------------------- Merkle root
+# The chain links every entry to the previous one. On top of it, a Merkle tree over the entry hashes gives one
+# 32-byte root that commits to the whole chain, and an O(log n) inclusion proof for any single entry (for example
+# one forecast), checkable without the rest of the chain. Hashing follows RFC 6962 (Certificate Transparency):
+#   leaf = SHA-256(0x00 || entry_hash), node = SHA-256(0x01 || left || right),
+# and an unpaired last node is carried up unchanged, so a leaf can never be passed off as an internal node.
+
+def _leaf(entry_hash_hex: str) -> bytes:
+    return hashlib.sha256(b"\x00" + bytes.fromhex(entry_hash_hex)).digest()
+
+
+def _node(left: bytes, right: bytes) -> bytes:
+    return hashlib.sha256(b"\x01" + left + right).digest()
+
+
+def merkle_root(entry_hashes: list) -> str:
+    """Merkle root (hex) over a list of entry hashes (hex). Empty list -> SHA-256 of the empty string."""
+    if not entry_hashes:
+        return hashlib.sha256(b"").hexdigest()
+    level = [_leaf(h) for h in entry_hashes]
+    while len(level) > 1:
+        nxt = [_node(level[i], level[i + 1]) for i in range(0, len(level) - 1, 2)]
+        if len(level) % 2:
+            nxt.append(level[-1])
+        level = nxt
+    return level[0].hex()
+
+
+def merkle_proof(entry_hashes: list, index: int) -> list:
+    """Inclusion proof for entry `index`: list of {"sibling": hex, "side": "left"|"right"} from leaf to root."""
+    if not 0 <= index < len(entry_hashes):
+        raise IndexError(f"index {index} outside chain of {len(entry_hashes)} entries")
+    level = [_leaf(h) for h in entry_hashes]
+    proof, i = [], index
+    while len(level) > 1:
+        sib = i ^ 1
+        if sib < len(level):
+            proof.append({"sibling": level[sib].hex(), "side": "left" if sib < i else "right"})
+        nxt = [_node(level[j], level[j + 1]) for j in range(0, len(level) - 1, 2)]
+        if len(level) % 2:
+            nxt.append(level[-1])
+        level, i = nxt, i // 2
+    return proof
+
+
+def verify_merkle_proof(entry_hash: str, proof: list, root: str) -> bool:
+    """True if `entry_hash` is included under `root` according to `proof`."""
+    h = _leaf(entry_hash)
+    for step in proof:
+        sib = bytes.fromhex(step["sibling"])
+        h = _node(sib, h) if step["side"] == "left" else _node(h, sib)
+    return h.hex() == root
+
+
+def _checkpoint_path(chain_path: Optional[str] = None) -> str:
+    return os.path.splitext(_get_chain_path(chain_path))[0] + ".merkle.json"
+
+
+def chain_merkle_root(chain_path: Optional[str] = None) -> dict:
+    """Current Merkle root over every entry of the chain."""
+    chain = _load_chain(chain_path)
+    return {"merkle_root": merkle_root([e["entry_hash"] for e in chain]), "n_entries": len(chain)}
+
+
+def write_merkle_checkpoint(chain_path: Optional[str] = None) -> dict:
+    """Record the chain's current Merkle root in <chain>.merkle.json, Ed25519-signed when a signing key is set."""
+    cp = chain_merkle_root(chain_path)
+    cp["timestamp"] = datetime.now(timezone.utc).isoformat()
+    priv_key_path = os.environ.get("SHADOWCAT_SIGNING_KEY")
+    if priv_key_path and os.path.exists(priv_key_path):
+        with open(priv_key_path, "rb") as f:
+            priv_key = serialization.load_pem_private_key(f.read(), password=None)
+        cp["signature"] = priv_key.sign(cp["merkle_root"].encode("utf-8")).hex()
+    path = _checkpoint_path(chain_path)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(cp, f, indent=2)
+    return cp
+
+
+def _verify_merkle_checkpoint(chain: list, chain_path: Optional[str] = None) -> list:
+    """If a checkpoint exists, the root over its first n entries must still match (and its signature verify)."""
+    path = _checkpoint_path(chain_path)
+    if not os.path.exists(path):
+        return []
+    with open(path, "r", encoding="utf-8") as f:
+        cp = json.load(f)
+    n = int(cp.get("n_entries", 0))
+    if n > len(chain):
+        return [f"Merkle checkpoint covers {n} entries but the chain has only {len(chain)} (entries removed)"]
+    issues = []
+    if merkle_root([e["entry_hash"] for e in chain[:n]]) != cp.get("merkle_root"):
+        issues.append(f"Merkle root mismatch over the first {n} entries (chain rewritten since the checkpoint)")
+    if "signature" in cp:
+        pub_key_path = os.path.join(os.path.dirname(__file__), "admin_public_key.pem")
+        try:
+            with open(pub_key_path, "rb") as f:
+                pub_key = serialization.load_pem_public_key(f.read())
+            pub_key.verify(bytes.fromhex(cp["signature"]), cp["merkle_root"].encode("utf-8"))
+        except Exception:
+            issues.append("Merkle checkpoint: invalid signature")
+    return issues

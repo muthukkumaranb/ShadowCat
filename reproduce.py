@@ -117,7 +117,7 @@ def check_data():
 
 @step("3. Automated test suite")
 def check_tests():
-    code, out = sh([PY, "-m", "pytest", "backend/tests", "frontend/tests", "evaluation/benchmark", "tests/prob_forecast", "tests/pcap", "-q"])
+    code, out = sh([PY, "-m", "pytest", "backend/tests", "frontend/tests", "evaluation/benchmark", "tests/prob_forecast", "tests/pcap", "tests/test_merkle.py", "-q"])
     summary = next((l for l in reversed(out.splitlines()) if " passed" in l or " failed" in l), "no summary")
     return code == 0, summary.strip("= ")
 

@@ -1,0 +1,160 @@
+// ShadowCat (SIH26153) architecture: the team's original diagram, unchanged, plus the findings from the
+// dataset exploration and the final evaluation (teal boxes).
+// Render:  dot -Tpng -Gdpi=150 docs/assets/shadowcat_architecture.dot -o docs/assets/Shadowcat_Architecture.png
+//          dot -Tpdf           docs/assets/shadowcat_architecture.dot -o docs/assets/ShadowCat_Architecture.pdf
+
+digraph shadowcat {
+  graph [rankdir=TB, splines=ortho, newrank=true, nodesep=0.3, ranksep=0.45, pad=0.3,
+         fontname="DejaVu Sans", fontsize=16, labelloc=t,
+         label="Shadowcat  -  SIH26153 Cyber World Model Architecture\nDashed border = held back / not in current production path (see legend)\n "];
+  node  [shape=box, style=filled, fillcolor="#FFFFFF", color="#333333", fontname="DejaVu Sans", fontsize=9, margin="0.12,0.06"];
+  edge  [color="#555555", arrowsize=0.6, fontname="DejaVu Sans", fontsize=7];
+
+  legend [fillcolor="#F5F5F5", fontsize=8, label="LEGEND\nSolid box = verified, in the current production path\nDashed box = held back, gated, or explicit future work  -  not fabricated as current\nDashed red arrow = evaluation-only path, never shown to end users as a live prediction\nTeal border = finding added from the dataset exploration and final evaluation"];
+
+  // ---------------------------------------------------------------- Gate 0
+  subgraph cluster_gate0 {
+    label=<<B>Gate 0  -  Dataset Feasibility Check (before any model work)</B>>; fontsize=11;
+    style=filled; fillcolor="#FFF2E0"; color="#C8A060";
+    ctu [label="CTU-13 exploratory Gate 0 (non-blocking)\nRe-aimed to progression + cross-network transfer\nNetFlow-only: onset likely not viable\nReported only as a feasibility investigation"];
+    ctu_run [fillcolor="#FFFFFF", color="#1F8A8A", penwidth=1.4,
+             label="CTU-13 pipeline run  -  38,898 rows (CSV mirror; official server unreachable)\n60 NetFlow-style columns, no destination port / protocol\nRejected by UCS schema validation, as designed"];
+    dsx [fillcolor="#FFFFFF", color="#1F8A8A", penwidth=1.4,
+         label="Other datasets explored\nCIC-IDS2017: combined with 2018; forecasting horizon unchanged\nCIC-IDS2018 10-day expansion: 4,545 windows; rebuild differed on 226 of 406 features\nAIT-LDS v2.0: only 2 packet captures, both on the attacker machine\nUWF-ZeekData24: attacks launched on a near-fixed cron schedule\nDAPT2020 / Unraveled: one APT stage per day / no public download"];
+    dsf [fillcolor="#FFFFFF", color="#1F8A8A", penwidth=1.4,
+         label="CSE-CIC-IDS2018 finding\n2,787 one-minute windows; only 71 come before an attack starts\n12 of 40 attack runs last 6 minutes or more\nAdopted for detection, onset, tactic and novelty"];
+    recon [fillcolor="#FFFFFF", color="#C0392B",
+           label="Reconcile PCAP<->CSV timestamps & flow identities\nCount attack episodes + pre-onset history\nAudit single-window \"episodes\" against schedule\nRun a schedule-artifact leakage test\nVerdict per task: detection is not onset forecasting\nExit rule: freeze the primary claim  -  never manufacture evidence"];
+    {rank=same; ctu -> dsx -> dsf [style=invis]}
+    ctu -> recon; ctu -> ctu_run; ctu_run -> recon; dsx -> recon; dsf -> recon;
+  }
+
+  // ---------------------------------------------------------------- Input
+  subgraph cluster_input {
+    label=<<B>Input Data</B>>; fontsize=11; style=solid; color="#333333";
+    ann  [label="Attack timeline annotations (training only)\nCIC-IDS2018 schedules, relabeled\nInfiltration phases hand-annotated (n=1)"];
+    pcap [label="PCAP  -  bundled sample + cached extraction\nLive extraction path retained"];
+    csv  [label="CSV  -  corrected CICFlowMeter schema\nOther CSVs go through a canonical mapper, else rejected"];
+    pcapup [fillcolor="#FFFFFF", color="#1F8A8A", penwidth=1.4,
+            label="PCAP / PCAPNG upload on the dashboard\ncicflowmeter -> CIC-IDS2018-schema flows\n+ 12 packet features per 1-minute window"];
+    {rank=same; ann -> pcap -> pcapup -> csv [style=invis]}
+  }
+
+  de [label="Data Engineering\nClean, then map to canonical fields, then normalize to UTC\nHandle missing values (never fabricate)\nWindow at 1 minute, then align to the timeline\nFeature-inventory gate before the \"frozen\" tag\nGaps become additive UCS v3.1 columns"];
+  target [label="Target Construction (from timeline annotations)\nOnset y_onset(t): H=5 primary, H=1/2 secondary\nProgression B1 y_stage(t+k): infiltration, n=1\nProgression B2: within-episode evolution (~30 episodes)\nATT&CK manifest: source label, tactic, confidence\nNo supervised lateral-movement target (~1 event only)"];
+
+  recon -> de [color="#C0392B"];
+  recon -> ann [style=invis]; recon -> pcap [style=invis]; recon -> pcapup [style=invis]; recon -> csv [style=invis];
+  ann -> de; pcap -> de; csv -> de; pcapup -> de;
+  de -> target [xlabel="labels"];
+  {rank=same; legend -> ctu [style=invis]}
+
+  // ---------------------------------------------------------------- UCS
+  subgraph cluster_ucs {
+    label=<<B>Unified Cyber State S(t)</B>>; fontsize=11;
+    style=filled; fillcolor="#E8F5EE"; color="#2E8B57";
+    pkt [label="Packet level (verified present, 3 attack days)\nTTL variance, window size, fragment flags\nPayload distribution, retransmits, scan sequencing"];
+    flow [label="Flow level\nIP/port, TCP flags, protocol\nBytes/packets, duration, IAT, bidirectional ratio"];
+    graphb [style="filled,dashed", color="#8E44AD",
+            label="Per-window communication-graph builder  -  held back\nNode/edge features; IP used only as a position key\nLive graph build is wired for the demo attack-graph panel,\nnot for the prediction path"];
+    st [fillcolor="#FFFFFF", label="S(t): flow + packet features\nMetadata kept separate from model inputs\nFeature-presence masks and retained indices"];
+    {rank=same; pkt -> flow -> graphb [style=invis]}
+    pkt -> st; flow -> st; graphb -> st [style=dashed];
+  }
+  de -> pkt; de -> flow; de -> graphb;
+
+  split [fillcolor="#FFFFFF", color="#C9A227",
+         label="Chronological split 70/15/15, then purge, then embargo (W=35 windows)\nNormalizers fit on train only; inputs at time t use info at or before t\nGraph rule: only host edges before t\nChronological split feeds dynamics metrics; LOEO feeds detection/onset/B2"];
+  st -> split;
+
+  // ---------------------------------------------------------------- Encoder
+  subgraph cluster_enc {
+    label=<<B>State Encoder to Latent State z(t)</B>>; fontsize=11;
+    style=filled; fillcolor="#EAF1FA"; color="#2C5AA0";
+    lstm [fillcolor="#FFFFFF", color="#2C5AA0", label="Stacked & Calibrated Residual LSTM\nOver S(t-29..t), lookback L=30\nAttention pooling optional (internal use only)"];
+    sage [style="filled,dashed", color="#8E44AD", label="GraphSAGE, 2 layers, per window  -  held back\nProduces per-host h_v(t), pooled to g(t)"];
+    fusion [fillcolor="#FFFFFF", color="#8E44AD", label="Fusion point z'(t) = [z(t) ; g(t)]\nHeld: validation loss 1.666 (temporal-only) vs 1.932 (fused)\nz'(t) = z(t)  -  fused branch not adopted for predictions"];
+    {rank=same; lstm -> sage [style=invis]}
+    lstm -> fusion; sage -> fusion [style=dashed];
+  }
+  split -> lstm; split -> sage [style=dashed];
+
+  lat [style="filled,dashed", color="#8E44AD",
+       label="Lateral-Movement Case Study (n=1)  -  illustrative only\nHost risk ranking from h_v(t) plus edge attribution\nNo supervised head, no Precision@K, no forecasting claim made\nFor analyst guidance only, not a benchmarked result"];
+  sage -> lat [style=dashed];
+
+  // ---------------------------------------------------------------- World model
+  subgraph cluster_wm {
+    label=<<B>Cyber World Model  -  Learned State-Transition Dynamics (~2,700 sequences)</B>>; fontsize=11;
+    style=filled; fillcolor="#F3EAF7"; color="#8E44AD";
+    prob [fillcolor="#FFFFFF", color="#8E44AD", label="Probabilistic dynamics head: p(z'(t+1) | history)\nGaussian mean/variance; one-step NLL + K-step rollout loss\nWhere the model ships point estimates only, this is labeled a deterministic approximation"];
+    direct [fillcolor="#FFFFFF", color="#C0392B", label="Direct forecast head: P(event within H)\nFrom z(t) only  -  baseline/safety net\nShown only as a baseline comparison, never as the live prediction"];
+    roll [fillcolor="#FFFFFF", color="#8E44AD", label="K-step latent rollout z'(t+1..t+K)\nK=1..3 validated, K=5  exploratory (per predict.py's own protocol string)\nFused latent is rolled forward as a whole (no latent-to-edge decoder)\ng(t) is frozen at its last observed value while the GNN branch is held back"];
+    risk [fillcolor="#FFFFFF", color="#8E44AD", label="Risk-trajectory forecasting  -  Stacked & Calibrated\nResidual LSTM Ensemble (one instance per track)\nh_k onset (H=1, 2, 5) and h_k stage (B1, n=1)\nCumulative P(event by k) = 1 - product(1 - h_k)\nStandardized PCA(32) features; earlier variance-collapse bug fixed\n37-fold Leave-One-Episode-Out ensemble per horizon"];
+    stage [fillcolor="#FFFFFF", color="#C9A227", label="Stage head  -  reads the PREDICTED future state\nResolved against the real MITRE ATT&CK STIX 2.1 knowledge base\nValidated classes are model-labeled; unvalidated horizons are\nexplicitly flagged as a heuristic estimate, not a verified claim"];
+    {rank=same; prob -> direct [style=invis]}
+    prob -> roll; roll -> risk;
+    roll -> stage [style=dashed, color="#8E44AD"];
+    risk -> stage [style=dashed, color="#8E44AD", xlabel="adopt/hold feedback"];
+  }
+  fusion -> prob [xlabel="z'(t) only"];
+  fusion -> direct [color="#C0392B", xlabel="z(t) only"];
+
+  // ---------------------------------------------------------------- Blockchain
+  subgraph cluster_bc {
+    label=<<B>Blockchain</B>>; fontsize=11;
+    style=filled; fillcolor="#FCECEC"; color="#C0392B";
+    alert [label="Alert record: window ID, risk scores,\nstage, model checkpoint hash"];
+    fabric [fillcolor="#FFFFFF", color="#2E8B57", label="Primary: Hyperledger Fabric notary\nChaincode invoke, 30s subprocess timeout\nMerged to main  -  deployed, not experimental"];
+    fallback [label="Fallback: SHA-256 hash chain\nEach entry links to the prior hash"];
+    verifier [label="Chain verifier detects any\nretroactive tampering, either path"];
+    {rank=same; alert -> fabric [style=invis]}
+    alert -> fabric [xlabel="attempt first"];
+    fabric -> fallback [style=dashed, color="#D68910", xlabel="on timeout/failure (kill-network tested)"];
+    merkle [fillcolor="#FFFFFF", color="#1F8A8A", penwidth=1.4,
+            label="Merkle root over all chain entries (RFC 6962 hashing)\nEd25519-signed checkpoint; O(log n) inclusion proof per entry\nDetects a chain rebuilt with recomputed links"];
+    fallback -> merkle; merkle -> verifier; fabric -> verifier;
+  }
+  risk -> alert [xlabel="alert is notarized on generation"];
+
+  // ---------------------------------------------------------------- Explainability
+  subgraph cluster_xai {
+    label=<<B>Explainability  -  Four Evidence Types, Never Conflated</B>>; fontsize=11; style=solid; color="#333333";
+    traj [label="Trajectory evidence: the largest PREDICTED\nstage/state trajectory along the rollout\nAlways labeled \"predicted\", never \"residual\"\nEach carries the real MITRE technique name and URL"];
+    fexp [label="Forecast explanation: Integrated Gradients\nand feature ablation (SHAP-family), validated by deletion tests"];
+    graphev [style="filled,dashed", color="#8E44AD", label="Graph evidence  -  future work if the GNN branch is adopted\nEdge-level attribution stays a case study until then"];
+    {rank=same; traj -> fexp -> graphev [style=invis]}
+  }
+  stage -> traj; risk -> fexp; lat -> graphev [style=dashed];
+
+  ui [label="Demonstration UI  -  Streamlit, fully offline\nDual input: PCAP (full pipeline) or CSV (flow-only)\nShows probability trajectory, uncertainty bands, stage trajectory,\ndriving features, flagged flows, novelty score, LR-baseline comparison\nEvery number on screen is labeled with its branch and protocol\nAudit badge shows live which mechanism notarized the alert"];
+  traj -> ui; fexp -> ui; graphev -> ui [style=dashed];
+  direct -> ui [style=dashed, color="#C0392B"];
+  verifier -> ui [xlabel="integrity badge"];
+
+  // ---------------------------------------------------------------- Evaluation
+  subgraph cluster_eval {
+    label=<<B>Evaluation (offline, training-time)</B>>; fontsize=11; style=solid; color="#333333";
+    proto [fillcolor="#FFFFFF", label="Protocol per metric family\nChronological 70/15/15 feeds dynamics metrics (from split)\nLOEO (37 folds) feeds detection/onset/B2/schedule-gate (from rollout)\nDeviation-score ROC feeds both"];
+    metrics [fillcolor="#FFFFFF", label="Metrics required by the problem statement\nF1/precision/recall/FPR vs. the LR baseline (scored on hazard head output)\nOnset (an underpowered case): lead time, PR-AUC\nDynamics: rollout error vs. K, calibration (scored on stage head output)"];
+    unseen [label="Unseen-attack generalization\nLeave-one-attack-family-out\nClaims made: risk detection, novelty, stage (where supported)"];
+    abl [label="Ablation grid\nDirect-only vs. rollout+hazard vs. joint\nz vs. z+g on dynamics  -  GNN held back (verified by the numbers)"];
+    base [label="Baselines, identical splits\nSchedule-only, LR variants (required), persistence,\ndirect head, temporal-only vs. fused"];
+    repro [label="Reproducibility artifacts (a required deliverable)\nTraining scripts, configs, weights, data manifest, seeds\nGate 0 per-task verdict, feature inventory, GNN adopt/hold decision"];
+    reprocmd [fillcolor="#FFFFFF", color="#1F8A8A", penwidth=1.4,
+              label="One-command reproduction: python reproduce.py\n7 checks (~5 min), --full retrains (10 checks)\n70 automated tests, dataset SHA-256, claims sheet"];
+    {rank=same; unseen -> abl -> base [style=invis]}
+    proto -> metrics; metrics -> unseen; metrics -> abl; metrics -> base;
+    unseen -> repro; abl -> repro; base -> repro;
+    repro -> reprocmd;
+  }
+  ui -> proto [style=invis];
+
+  summary [fillcolor="#FFFFFF", color="#2C7BB6",
+           label="Result Summary  -  Headline Claim First, Sample Size Always Stated\n1. Learned dynamics beat persistence and lagged-LR (about 2,700 sequences)\n2. Residuals separate attack from benign, including held-out families (37 episodes)\n3. Within-episode progression beats persistence (B2, about 30 episodes)\n4. Stage trajectory from the predicted state is real-MITRE-linked (all labeled windows)\n5. B1 stage transition plus the lateral-movement case study (n=1, illustrative)\n6. Onset curve at H=1/2/5: the world model beats LR on SSH-Bruteforce;\nfull detection/onset F1 vs. LR reported honestly  -  this is the primary, final claim"];
+  final [fillcolor="#FFFFFF", color="#1F8A8A", penwidth=1.4,
+         label="Final evaluation findings (37-fold LOEO, thresholds without test labels)\nDetection: ROC-AUC 1.000, F1 0.990 at 0.0% test false-alarm rate\nOnset within 5 min: ROC-AUC 0.962, F1 0.907 at 0.4% test false-alarm rate\nWorld-model deviation: ROC-AUC 0.820 held-out episodes, 0.707 held-out families\nCurrent-window ATT&CK tactic: macro-F1 0.640\nForecasting horizon measured across 11 experiments: H* = 0 on public data"];
+  {rank=same; summary -> final [style=invis]}
+  repro -> summary;
+  reprocmd -> final;
+}

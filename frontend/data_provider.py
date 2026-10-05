@@ -887,9 +887,10 @@ def get_audit_chain_status() -> dict:
         try:
             with open(chain_file, "r", encoding="utf-8") as f:
                 chain = json.load(f)
-            from audit_chain import verify_chain
+            from audit_chain import verify_chain, merkle_root
             is_valid, issues = verify_chain(str(chain_file))
             return {
+                "merkle_root": merkle_root([e["entry_hash"] for e in chain]),
                 "length": len(chain),
                 "is_valid": is_valid,
                 "issues": issues,
