@@ -10,7 +10,7 @@ import numpy as np
 import time
 import io
 from styles import TOKENS, render_html
-from data_provider import get_analysis_metadata, get_novelty_score, get_audit_chain_status, run_core_ml_inference, get_canonical_benchmark_df
+from data_provider import get_analysis_metadata, get_novelty_score, get_audit_chain_status, run_core_ml_inference, run_pcap_inference, get_canonical_benchmark_df
 
 # Demo slice loading is provided by data_provider.get_canonical_benchmark_df (real CSE-CIC-IDS2018 data)
 
@@ -35,10 +35,7 @@ def render_page():
             <span style="color: {t['primary']}; font-weight: 700;">SUBSYSTEM 01</span> // <span>TELEMETRY INGESTION PIPELINE</span>
         </div>
         <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; display: flex; align-items: center; gap: 0.5rem;">
-            <span class="soc-pulse-dot"></span>
-            <span style="color: {t['primary']}; font-weight: 600; text-transform: uppercase;">PIPELINE SYNCHRONIZED</span>
-            <span style="color: {t['outline_variant']};">|</span>
-            <span style="color: {t['text_secondary']};">NODE: US-EAST-SEC-04</span>
+            <span style="color: {t['text_secondary']}; text-transform: uppercase;">SOURCE: {st.session_state.get('active_source', 'default CSE-CIC-IDS2018 demo window')}</span>
         </div>
     </div>
     <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
@@ -51,9 +48,8 @@ def render_page():
             </p>
         </div>
         <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-            <span class="soc-badge badge-nominal">INGESTION: ARROW STREAMING [ACTIVE]</span>
-            <span class="soc-badge badge-neutral">BUFFER: 0.84 GB / 8.0 GB</span>
-            <span class="soc-badge badge-neutral" style="color: {t['primary']};">BLOCKCHAIN: VERIFIED</span>
+            <span class="soc-badge badge-nominal">INPUT: PCAP / PCAPNG / CSV / PARQUET / JSON</span>
+            <span class="soc-badge badge-neutral" style="color: {t['primary']};">AUDIT CHAIN: {chain_len} ENTRIES</span>
             <span class="soc-badge badge-caution">OFFLINE TELEMETRY</span>
         </div>
     </div>
@@ -62,18 +58,15 @@ def render_page():
     # Ingestion Source Selector Bar
     c_tab1, c_tab2, c_tab3 = st.columns([0.45, 0.32, 0.23])
     with c_tab1:
-        source_mode = st.radio(
-            "Ingestion Source Mode",
-            ["File Upload (CSV / Parquet / PCAP / JSON)", "Live Flow Feed (gRPC / Streaming)", "PCAP Raw Stream"],
-            horizontal=True,
-            label_visibility="collapsed"
+        st.caption(
+            "Source: PCAP / PCAPNG capture, CICFlowMeter CSV, Parquet or JSON, or a demo slice. A capture is converted "
+            "here into CIC-IDS2018-schema flows plus 12 packet-level features per minute (`src/pcap_ingest.py`). "
+            "Use at least 31 minutes of traffic for a full 30-window history. Live streaming is not part of this build."
         )
     with c_tab2:
         render_html(f"""
         <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_muted']}; display: flex; gap: 0.75rem; justify-content: flex-end; padding-top: 6px;">
-            <span>Partition: <b style="color:{t['text_high']}">#04</b></span>
             <span>Blockchain: <b style="color:{t['primary']}">Block #{latest_block.get('index', 0)} ({chain_len} Blocks)</b></span>
-            <span>Sync: <b style="color:{t['text_high']}">Timestamp Sync ±1s</b></span>
         </div>
         """)
     with c_tab3:
@@ -103,8 +96,8 @@ def render_page():
 
     # Active File Upload / Drop Area
     uploaded_file = st.file_uploader(
-        "Drop network telemetry (CSV, Parquet, or JSON) or click to browse",
-        type=["csv", "parquet", "json"],
+        "Drop a network capture (PCAP / PCAPNG) or flow telemetry (CSV, Parquet, JSON)",
+        type=["pcap", "pcapng", "cap", "csv", "parquet", "json"],
         key="telemetry_uploader",
         help="Upload enterprise network telemetry for live feature extraction and hazard scoring."
     )
@@ -114,7 +107,34 @@ def render_page():
             fname = uploaded_file.name
             is_new_upload = (st.session_state.get("_last_uploaded_name") != fname)
             st.session_state.ingested_source_name = fname
-            if is_new_upload:
+            if is_new_upload and fname.lower().endswith((".pcap", ".pcapng", ".cap")):
+                import tempfile, os
+                suffix = os.path.splitext(fname)[1]
+                with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
+                    tmp.write(uploaded_file.getbuffer())
+                    tmp_path = tmp.name
+                with st.spinner(f"Extracting flows and packet features from {fname} ..."):
+                    pred, pcap_flows = run_pcap_inference(tmp_path, return_flows=True)
+                if pcap_flows is not None:
+                    st.session_state.ingested_df = pcap_flows
+                try:
+                    os.unlink(tmp_path)
+                except OSError:
+                    pass
+                st.session_state["_last_uploaded_name"] = fname
+                st.session_state["ml_prediction_result"] = pred
+                st.session_state["ml_prediction_timestamp"] = time.strftime("%H:%M:%S UTC")
+                st.session_state["active_source"] = f"Uploaded capture '{fname}'"
+                if pred.get("_critical_schema_failure"):
+                    st.error(f"PCAP ingestion failed: {pred.get('_inference_error')}")
+                else:
+                    summ = pred.get("_pcap_summary", {})
+                    st.success(
+                        f"Ingested {fname}: {summ.get('flows', 0):,} flows, packet features for "
+                        f"{summ.get('packet_feature_windows', 0)} one-minute windows "
+                        f"({summ.get('first_flow_utc')} to {summ.get('last_flow_utc')} UTC). Inference complete."
+                    )
+            elif is_new_upload:
                 if fname.endswith(".csv"):
                     df = pd.read_csv(uploaded_file)
                 elif fname.endswith(".parquet"):
@@ -138,7 +158,23 @@ def render_page():
         active_df = get_canonical_benchmark_df()
 
     total_flows = len(active_df)
-    total_packets = int(active_df["tot_fwd_pkts"].sum() + active_df["tot_bwd_pkts"].sum()) if "tot_fwd_pkts" in active_df.columns else 18400000
+    _fw = next((c for c in ("Tot Fwd Pkts", "tot_fwd_pkts") if c in active_df.columns), None)
+    _bw = next((c for c in ("Tot Bwd Pkts", "tot_bwd_pkts") if c in active_df.columns), None)
+    total_packets_txt = f"{int(pd.to_numeric(active_df[_fw], errors='coerce').sum() + pd.to_numeric(active_df[_bw], errors='coerce').sum()):,}" if _fw and _bw else "—"
+    _tcol = next((c for c in ("Timestamp", "timestamp", "window_start_utc") if c in active_df.columns), None)
+    if _tcol == "Timestamp":
+        _tt = pd.to_datetime(active_df[_tcol], format="%d/%m/%Y %H:%M:%S", errors="coerce")
+    elif _tcol:
+        _tt = pd.to_datetime(active_df[_tcol], errors="coerce", utc=True)
+    n_windows_txt = f"{_tt.dt.floor('min').nunique():,}" if _tcol else "—"
+    _src = next((c for c in ("Src IP", "src_ip") if c in active_df.columns), None)
+    _dst = next((c for c in ("Dst IP", "dst_ip") if c in active_df.columns), None)
+    if _src and _dst:
+        n_hosts = int(pd.unique(pd.concat([active_df[_src], active_df[_dst]]).dropna()).size)
+        n_edges = int(active_df[[_src, _dst]].dropna().drop_duplicates().shape[0])
+        topo_badge, topo_txt = f"{n_hosts} HOSTS", f"{n_hosts} hosts and {n_edges} directed host pairs in the loaded flows."
+    else:
+        topo_badge, topo_txt = "NO IP COLUMNS", "The loaded data has no source/destination IP columns (e.g. pre-aggregated windows)."
 
     # Modular Dual Split: Statistics Manifest & Schema Validation
     col_left, col_right = st.columns([5, 7])
@@ -164,21 +200,21 @@ def render_page():
                     <div style="font-family: 'JetBrains Mono', monospace; font-size: 1.35rem; font-weight: 700; color: {t['text_high']};">
                         {total_flows:,}
                     </div>
-                    <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['primary']};">[100% PARSED]</div>
+
                 </div>
                 <div class="soc-card-nested">
                     <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_muted']}; text-transform: uppercase;">Captured Packets</div>
                     <div style="font-family: 'JetBrains Mono', monospace; font-size: 1.35rem; font-weight: 700; color: {t['text_high']};">
-                        {total_packets:,}
+                        {total_packets_txt}
                     </div>
-                    <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_secondary']};">pcap headers index</div>
+                    <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_secondary']};">fwd + bwd packets in flows</div>
                 </div>
                 <div class="soc-card-nested">
-                    <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_muted']}; text-transform: uppercase;">Ingestion Rate</div>
+                    <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_muted']}; text-transform: uppercase;">1-Minute Windows</div>
                     <div style="font-family: 'JetBrains Mono', monospace; font-size: 1.35rem; font-weight: 700; color: {t['primary']};">
-                        {total_flows:,}
+                        {n_windows_txt}
                     </div>
-                    <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_secondary']};">rows / sec (Ray)</div>
+                    <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_secondary']};">distinct minutes in the data</div>
                 </div>
                 <div class="soc-card-nested">
                     <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_muted']}; text-transform: uppercase;">Sliding Interval</div>
@@ -240,10 +276,10 @@ def render_page():
                         <span style="font-family: 'JetBrains Mono', monospace; font-weight: 600; color: {t['text_high']}; font-size: 0.8125rem;">
                             Graph Topology Metadata
                         </span>
-                        <span class="soc-badge badge-nominal">19 VERTICES MATCHED</span>
+                        <span class="soc-badge badge-nominal">{topo_badge}</span>
                     </div>
                     <p style="font-family: 'Inter', sans-serif; font-size: 0.75rem; color: {t['text_secondary']}; margin-top: 0.25rem; margin-bottom: 0;">
-                        Host-to-host adjacency matrices aligned with CSE-CIC-IDS2018 node index registry (19 active vertices, 34 dynamic directed edges).
+                        {topo_txt}
                     </p>
                 </div>
             </div>

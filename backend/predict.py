@@ -763,18 +763,16 @@ class ShadowcatPipeline:
                 gtb = GraphTopologyBuilder()
                 flows_df = raw_input.copy()
                 if "timestamp_utc" not in flows_df.columns:
-                    if "Timestamp" in flows_df.columns:
-                        flows_df["timestamp_utc"] = pd.to_datetime(flows_df["Timestamp"], errors="coerce", utc=True)
-                    elif "timestamp" in flows_df.columns:
-                        flows_df["timestamp_utc"] = pd.to_datetime(flows_df["timestamp"], errors="coerce", utc=True)
+                    ts_col = "Timestamp" if "Timestamp" in flows_df.columns else ("timestamp" if "timestamp" in flows_df.columns else None)
+                    if ts_col is not None:
+                        ts = pd.to_datetime(flows_df[ts_col], format="%d/%m/%Y %H:%M:%S", errors="coerce", utc=True)
+                        if ts.isna().all():
+                            ts = pd.to_datetime(flows_df[ts_col], dayfirst=True, errors="coerce", utc=True)
+                        flows_df["timestamp_utc"] = ts
                     else:
-                        base_ref = pd.Timestamp("2026-09-18 14:00:00", tz="UTC")
-                        flows_df["timestamp_utc"] = [base_ref + pd.Timedelta(seconds=i*15) for i in range(len(flows_df))]
-                if flows_df["timestamp_utc"].isna().any():
-                    base_ref = pd.Timestamp("2026-09-18 14:00:00", tz="UTC")
-                    flows_df["timestamp_utc"] = flows_df["timestamp_utc"].fillna(
-                        pd.Series([base_ref + pd.Timedelta(seconds=i*15) for i in range(len(flows_df))])
-                    )
+                        flows_df["timestamp_utc"] = pd.NaT
+                # Flows without a real timestamp are left out of the topology (no synthetic times).
+                flows_df = flows_df[flows_df["timestamp_utc"].notna()]
                 
                 edge_df, node_lookup_df, _ = gtb.build_window_edge_lists(flows_df, interval_sec=60)
                 if len(node_lookup_df) > 0 and len(edge_df) > 0:

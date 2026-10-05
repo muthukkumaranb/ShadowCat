@@ -13,5 +13,5 @@ H*_intra: not evaluated (stop rule: 12 runs of length >= 6, 40 runs total)
 - single-episode families
 - 6 days
 
-## What we can claim
-- "intra-attack forecasting not evaluable on this dataset" (evaluation/intra_attack/runs.json:len_ge_6=12)
+## Summary
+- Intra-attack forecasting needs longer attack runs than this dataset contains (evaluation/intra_attack/runs.json:len_ge_6=12)

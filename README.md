@@ -1,16 +1,52 @@
 # SHADOWCAT
 
-> **A network-traffic world model with a validated attack detector and onset estimator: it learns 1-minute network state dynamics from CICFlowMeter flows, scores P(attack within the next 5 minutes) with a stacked LOEO ensemble, and keeps a tamper-evident audit trail, fully offline. Its multi-step rollout does not yet beat a persistence baseline (H* = 0).**
+> **Public intrusion datasets can tell you whether an attack is happening, but they contain almost no warning
+> before one starts.** In CSE-CIC-IDS2018, only 71 of 2,787 one-minute windows come before an attack begins, and
+> only 12 of 40 attack runs last six minutes or more. Of the public multi-stage APT datasets we reviewed, those we
+> could inspect either record only the attacker's machine or run attacks on a fixed timer. SHADOWCAT is a
+> network world model built and evaluated around that reality. It detects attacks on unseen episodes almost
+> perfectly, attributes the ATT&CK tactic, flags attack families it has never seen through world-model deviation,
+> and keeps a tamper-evident audit trail, fully offline. Every number below is reproducible from a committed script.
 
 ---
 
-## Deliverables
+## Highlights
 
-- **Demo video:** https://youtu.be/c_4-A5syubs
-- **Architecture diagram:** [docs/assets/Shadowcat_Architecture.png](docs/assets/Shadowcat_Architecture.png) ([PDF](docs/assets/ShadowCat_Architecture.pdf))
-- **Slides (content):** [docs/Shadowcat_PPT_Final_Slide_Content.md](docs/Shadowcat_PPT_Final_Slide_Content.md)
-- **Architecture document:** [docs/SIH26153_Architecture_Final.md](docs/SIH26153_Architecture_Final.md)
-- **Final findings:** [docs/FINAL_FINDINGS.md](docs/FINAL_FINDINGS.md)
+| What | Result | Evidence |
+|---|---|---|
+| **Attack detection on held-out attack episodes** | ROC-AUC **1.000**; F1 **0.990** at **0.0%** test false-alarm rate, with the threshold chosen **without any test labels** | [`ROBUSTNESS_CHECKS.md`](docs/ROBUSTNESS_CHECKS.md) |
+| **Attack onset (attack within the next 5 minutes)** | ROC-AUC **0.962**; F1 **0.907** at **0.4%** test false-alarm rate, threshold chosen without test labels | [`ROBUSTNESS_CHECKS.md`](docs/ROBUSTNESS_CHECKS.md) |
+| **Unseen attack families (world-model deviation)** | ROC-AUC **0.707** on attack families held out entirely; **0.820** on held-out episodes. Higher than the supervised detectors in our unseen-family stress test (0.67) | [`DEVIATION.md`](evaluation/deviation/DEVIATION.md) |
+| **Packet-level telemetry from raw PCAP** | Our own packet parser (`data-engineering/src/pcap_extractor.py`) extracts 12 packet-level features (TTL, fragmentation, payload percentiles, retransmissions, port-scan score) from the raw CIC-IDS2018 captures for **2 capture days, 998 windows** (14-02 SSH-Bruteforce, 02-03 Botnet). Other days are marked absent with `mask_has_packet_level_features`, never zero-filled. **The dashboard accepts PCAP / PCAPNG uploads directly**: capture → CIC-IDS2018-schema flows + packet features → forecast | [`PACKET_EXTRACTION_VERIFICATION.md`](data-engineering/data/ucs/PACKET_EXTRACTION_VERIFICATION.md), [`pcap_ingest.py`](data-engineering/src/pcap_ingest.py) |
+| **MITRE ATT&CK tactic of the current attack** | Tactic macro-F1 **0.640** on held-out episodes (Credential Access 0.71, Command and Control 0.67, Impact 0.54); mapped to STIX 2.1 | [`FAMILY.md`](evaluation/family/FAMILY.md) |
+| **Tamper-evident audit trail** | Ed25519-signed SHA-256 hash chain over models, reports and every forecast; optional Hyperledger Fabric notarisation with automatic fallback | [`backend/audit_chain.py`](backend/audit_chain.py) |
+| **Evaluation rigour** | 37-fold leave-one-episode-out with a 36-window purge; per-fold scaling, PCA and LR; thresholds without test labels; leave-one-day-out stress test; episode-level bootstrap CIs; 62 automated tests; **one-command reproduction** (`python reproduce.py`) | [`CLAIMS.md`](docs/CLAIMS.md) |
+| **Dataset research** | 11 experiments across modelling, data and alternative datasets to work around the public-dataset gap, each reported with its outcome | [Experiments](#experiments-we-ran-to-address-the-dataset-issue) |
+| **GraphSAGE graph fusion (ML2)** | Built, trained and ablated over 3 seeds. **Held back** from the primary path because validation loss favours the temporal-only model (1.666 vs 1.932) | [GraphSAGE](#graphsage-graph-fusion-ml2-held-back) |
+
+All claims, values, source files and commits are listed in **[`docs/CLAIMS.md`](docs/CLAIMS.md)**.
+
+### Reproduce everything in one command
+
+```bash
+pip install -r requirements.txt
+python reproduce.py          # about 5 min on a laptop CPU
+python reproduce.py --full   # also retrains models (about 40 min, CPU only)
+```
+
+`reproduce.py` recomputes each result and checks it against the committed artifact. It never modifies committed
+files.
+
+| Quick mode | Full mode adds |
+|---|---|
+| Environment and dataset checksum | ATT&CK tactic classifier retrained (37 folds) |
+| All automated tests | Leave-one-day-out stress test (models retrained) |
+| End-to-end `predict()` on real windows | Probabilistic K=1..5 forecast (world model retrained per fold) |
+| Audit chain built and signature-verified | |
+| Headline benchmark: all 37 fold models must reproduce | |
+| Thresholds chosen without test labels, and the final-dataset baseline | |
+
+It prints a PASS/FAIL table and writes `runtime/REPRODUCE_REPORT.md`.
 
 ---
 
@@ -19,247 +55,249 @@
 - **ID:** `SIH26153`
 - **Organization:** National Technical Research Organisation (NTRO)
 - **Theme:** Blockchain & Cybersecurity
-- **Core Mission:** Shift perimeter intrusion defense from reactive signature matching (0 lead time, post-compromise alerts) to learned, leakage-controlled estimation of attack onset from traffic, with tamper-evident cryptographic provenance. Onset F1 0.9127 is measured mostly on windows already inside an attack; on true precursors (no attack yet, attack within 5 minutes) the stacked model reaches ROC-AUC 0.625 vs LR 0.520 (*pending merge*, `feature/deviation-evidence`).
+- **Core mission:** move perimeter defence from reactive signature matching towards learned, leakage-controlled
+  estimation of attack onset from network traffic, with tamper-evident cryptographic provenance.
+
+---
+
+## The dataset issue (our research finding)
+
+A world model can only learn to forecast what the data shows coming. We measured what the public data offers:
+
+| Dataset | What we found | Consequence |
+|---|---|---|
+| **CSE-CIC-IDS2018** (used here) | 2,787 one-minute windows over 6 days; 984 onset-positive windows, of which only **71** precede an attack (the rest are already inside one); only **12 of 40** attack runs last ≥ 6 minutes; each capture day holds essentially one attack family; 614 windows are labelled attack with attack type "Benign" | Excellent for detection and attribution; too few precursors and long campaigns to learn multi-step forecasting ([`INTRA_ATTACK.md`](docs/INTRA_ATTACK.md), [`PRECURSOR.md`](evaluation/precursor/PRECURSOR.md)) |
+| **AIT-LDS v2.0** (multi-stage APT) | Our feasibility check found only two packet captures, both on the attacker machine; no capture of the enterprise network | Cannot train a network world model (branch `feature/ait-multistage`, `docs/AIT_FINDINGS.md`) |
+| **UWF-ZeekData24** | Zeek flows with ATT&CK labels, but attacks were launched by cron jobs on a near-fixed hourly schedule | Forecasts could learn the clock rather than the attacker |
+| **DAPT2020 / Unraveled** | One APT stage per day (DAPT2020; its public download host was unreachable at review); no public download found (Unraveled) | Not usable for K-step evaluation |
+
+A public dataset with whole-network captures of many multi-stage campaigns would let ShadowCat's forecasting
+pipeline, which is built and tested end to end, be trained directly.
+
+---
+
+## Validated results (37-fold leave-one-episode-out, `ucs_windows_models_v1.parquet`)
+
+| Task | Model | ROC-AUC | F1 (threshold without test labels) | Test false-alarm rate |
+|---|---|---|---|---|
+| Detection | Stacked ensemble | **1.000** | **0.990** | 0.0% |
+| Detection | Logistic regression, same final features | 1.000 | 0.980 | 0.0% |
+| Onset (≤ 5 min) | Stacked ensemble | **0.962** | **0.907** | 0.4% |
+| Onset (≤ 5 min) | Logistic regression, same final features | 0.952 | 0.896 | 0.4% |
+
+- **The UCS representation does most of the work.** On the final feature set even a linear model detects attacks on
+  unseen episodes almost perfectly. The stacked model matches it on detection and leads on onset.
+- **Unseen attack families** (leave-one-day-out stress test, models retrained): the supervised models reach a pooled
+  ROC-AUC of 0.666 (stacked) and 0.631 (LR). The world model's unsupervised deviation score reaches 0.707 on held-out
+  families. This is the case for combining supervised detection with world-model deviation.
+- **Early warning on true precursor windows** (no attack yet, attack within 5 minutes): ROC-AUC 0.625 on 15
+  held-out precursor windows, which is limited by the data above.
+
+---
+
+## Experiments we ran to address the dataset issue
+
+The problem statement asks for K-step forward simulation, and ShadowCat implements it: the world model rolls the
+network state forward K = 1..5 minutes. To find out how far ahead the public data allows a forecast to be
+trusted, we ran the following experiments, each with episode-level confidence intervals where applicable.
+
+**Modelling the data we have (CSE-CIC-IDS2018)**
+
+| # | Experiment | Outcome | Report |
+|---|---|---|---|
+| 1 | Capacity and hyperparameter sweep of the LSTM world model (hidden size, depth, learning rate, training length) | Predictability horizon unchanged (H\* = 0) | `ml1/artifacts/lstm/sweep_v1/` |
+| 2 | Mixture-density head (5 components) in place of the Gaussian head | H\* = 0 | [`FINAL_FINDINGS.md`](docs/FINAL_FINDINGS.md) |
+| 3 | Delta parameterisation and 32-sample Monte Carlo rollout (4 configurations) | H\* = 0 in every configuration | [`FINAL_FINDINGS.md`](docs/FINAL_FINDINGS.md) |
+| 4 | Point forecast of the 406-D state, raw and standardised, K = 1..5 | H\* = 0 | [`K5_FORECAST.md`](docs/K5_FORECAST.md) |
+| 5 | Full probabilistic forecast (CRPS, energy score, calibration; 64-sample Monte Carlo) | H\* = 0 | [`PROB_FORECAST.md`](docs/PROB_FORECAST.md) |
+| 6 | Direct multi-horizon onset heads, K = 1..5, scored on true precursor windows only | ROC-AUC 0.41–0.48 on precursors; the signal comes from attacks already in progress | [`K5_FORECAST.md`](docs/K5_FORECAST.md) |
+| 7 | Forecasting attack starts and ends (change windows) | All bootstrap CIs include chance | [`K5_FORECAST.md`](docs/K5_FORECAST.md) |
+| 8 | Forecasting attack duration once an attack has started | Not measurable: only 12 attack runs last ≥ 6 minutes | [`INTRA_ATTACK.md`](docs/INTRA_ATTACK.md) |
+
+**More data and other datasets**
+
+| # | Experiment | Outcome | Report |
+|---|---|---|---|
+| 9 | Expanding CIC-IDS2018 from 6 to 10 capture days (4,545 windows) | H\* = 0; the rebuild did not reproduce the canonical features (226 of 406 differed), so `main` keeps the verified 6-day file | [`FINAL_FINDINGS.md`](docs/FINAL_FINDINGS.md) |
+| 10 | CIC-IDS2017 exploration (combined data) | Inconclusive; kept on a closed branch | [`FINAL_FINDINGS.md`](docs/FINAL_FINDINGS.md) |
+| 11 | Multi-stage APT dataset review: AIT-LDS v2.0 (feasibility check run), UWF-ZeekData24, DAPT2020, Unraveled | None offers whole-network captures of many unscripted multi-stage campaigns (see the table above) | `docs/AIT_FINDINGS.md` (branch `feature/ait-multistage`) |
+
+**What the experiments establish.** Across model capacity, output distributions, rollout schemes, more capture
+days and other datasets, the predictability horizon on public data stays at H\* = 0. Two causes are measured
+rather than assumed: the scripted CIC-IDS2018 attacks start abruptly with almost no observable precursors (71 of
+2,787 windows), and a Gaussian next-state objective is mean-seeking. Establishing this horizon with confidence
+intervals tells an operator exactly when a forecast can be trusted, and the forecasting pipeline is ready to be
+trained on whole-network multi-stage data as soon as such data exists.
 
 ---
 
 ## Pipeline Architecture
 
 ```
-                                  SHADOWCAT PIPELINE
-                                  
-   ┌─────────────────────────────────────────────────────────────────────────────┐
-   │ 1. DATA TRACK: Unified Cyber State (UCS)                                    │
-   │ Raw NetFlows (CSV) ──► Ingestion & Sanitization ──► 1-Min Window Aggregator │
-   │                                                     (406-D UCS Feature S_t) │
-   └──────────────────────────────────────┬──────────────────────────────────────┘
-                                          │
-                                          ▼
-   ┌─────────────────────────────────────────────────────────────────────────────┐
-   │ 2. ML TRACK: Causal Temporal World Model                                    │
-   │ 30-Window Lookback ──► Log1p + RobustScaler ──► Causal LSTM (64-D Latent z_t) │
-   │                                                 p(S_{t+1} | S_t) Dynamics   │
-   └──────────────────────────────────────┬──────────────────────────────────────┘
-                                          │
-                                          ▼
-   ┌─────────────────────────────────────────────────────────────────────────────┐
-   │ 3. MULTI-HEAD FORECASTING & EXPLAINABILITY                                  │
-   │         ┌────────────────────────────┴────────────────────────────┐         │
-   │         ▼                                                         ▼         │
-   │   Stacked Residual LSTM Ensemble                            Stage Head v3   │
-   │   One onset probability:                                    MITRE ATT&CK    │
-   │   P(attack within t+1..t+5)                                 (Credential)    │
-   │         │                                                         │         │
-   │         └────────────────────────────┬────────────────────────────┘         │
-   │                                      ▼                                      │
-   │                    Integrated Gradients & NLL Novelty                       │
-   └──────────────────────────────────────┬──────────────────────────────────────┘
-                                          │
-                                          ▼
-   ┌─────────────────────────────────────────────────────────────────────────────┐
-   │ 4. INTEGRATION & AUDIT LAYER (backend/predict.py)                           │
-   │ Unified predict() Contract  ◄──►  Tamper-Evident SHA-256 Hash Chain Ledger  │
-   └──────────────────────────────────────┬──────────────────────────────────────┘
-                                          │
-                                          ▼
-   ┌─────────────────────────────────────────────────────────────────────────────┐
-   │ 5. OPERATIONAL DASHBOARD (frontend/app.py)                                  │
-   │ Streamlit UI: Onset Probability, Attribution & Benchmark Audits             │
-   └─────────────────────────────────────────────────────────────────────────────┘
+   1. DATA: Unified Cyber State (UCS)
+      CICFlowMeter flows + 12 packet-level features parsed from raw PCAP ──► 1-minute windows ──► 406-D state S_t
 
-   * Note on Graph Branch (ML2): GraphSAGE fusion (real per-window graph construction) is now
-     wired in as an explicitly labeled experimental/held-back output, separate from the
-     primary verified forecast. The underlying ablation evidence (validation loss 1.666 vs 1.932)
-     remains the reason it's not in the primary path.
-     See ml2-full/GNN_FINAL/ml2/results/gnn_adopt_hold_decision.md.
+   2. WORLD MODEL
+      30-window lookback ──► LSTM Gaussian world model p(S_{t+1} | S_{t-29..t}) ──► K-step rollout + deviation score
+
+   2b. GRAPH BRANCH (HELD BACK)
+      host graph per minute ──► edge-aware GraphSAGE ──► fusion with z(t)   [not in the primary path: z'(t) = z(t)]
+
+   3. HEADS
+      Stacked ensemble (LR stage + residual LSTM, 37 fold models): P(attack now), P(attack within 5 min)
+      Current-window ATT&CK tactic classifier (37 fold models, STIX 2.1 mapping)
+      Split-conformal interval (calibrated on validation residuals only)
+
+   4. INTEGRATION & AUDIT (backend/predict.py)
+      Single predict() contract ◄──► Ed25519-signed SHA-256 hash chain (+ optional Hyperledger Fabric)
+
+   5. DASHBOARD (frontend/app.py)
+      Streamlit: onset probability with conformal interval, ATT&CK stage, flagged flows, attribution, audit status
 ```
+
+---
+
+## GraphSAGE graph fusion (ML2): held back
+
+ShadowCat includes a graph branch: each minute's flows become a host graph, an edge-aware GraphSAGE encoder
+(`ml2-full/gnn/`) embeds it, and a fusion model combines the graph embedding with the temporal world-model
+embedding z(t). We trained and ablated it against the temporal-only model over 3 seeds with identical early
+stopping (patience 15):
+
+| Model | Validation loss (mean ± std, 3 seeds) | Test next-state error (mean ± std) |
+|---|---|---|
+| Temporal-only | **1.666 ± 0.017** | 2.333 ± 0.129 |
+| GraphSAGE fusion | 1.932 ± 0.053 | **0.725 ± 0.084** |
+
+**Status: HELD BACK.** Model selection follows validation loss, which favours the temporal-only model in all 3
+seeds. The fusion model's lower test error is promising, but adopting a model because of its test-set score would
+leak the test set into the decision. The primary path therefore uses the temporal embedding unchanged
+(z'(t) = z(t), `backend/predict.py`), and the graph branch stays in the repository for future work. The hold
+decision was re-affirmed after the v2 and v3 world-model retrains
+([decision record](ml2-full/GNN_FINAL/ml2/results/gnn_adopt_hold_decision.md)).
 
 ---
 
 ## Repository Structure & Track Ownership
 
-| Directory | Track / Ownership | Description |
+| Directory | Track | Description |
 | :--- | :--- | :--- |
-| [`/data-engineering`](data-engineering/README.md) | **Data Engineering Track** | Gate 0 protocols, UCS extraction pipeline, 406-D feature normalization, chronological splits, and purge+embargo zones. |
-| [`/ml1`](ml1/README.md) | **ML1 Track** | Causal LSTM world model ($z_t$), probabilistic next-state Gaussian transitions, Stacked Residual LSTM Ensemble, and Stage Head v3. |
-| [`/ml2-full`](ml2-full/README.md) | **ML2 Track** | Graph representation learning and multimodal fusion ablation (`GNN_FINAL/ml2` is canonical; `gnn/` is exploratory/superseded). |
-| [`/backend`](backend/README.md) | **Backend Track** | Authoritative `predict()` inference boundary, smoke test suite, and blockchain-inspired SHA-256 hash-chain audit ledger. |
-| [`/frontend`](frontend/README.md) | **Frontend Track** | Interactive dark-mode Streamlit dashboard, dual-signal telemetry viewer, and scientific benchmark comparison panels. |
+| [`/data-engineering`](data-engineering/README.md) | Data Engineering | UCS extraction pipeline, 406-D features, PCAP packet features, leakage purging |
+| [`/ml1`](ml1/README.md) | ML1 | LSTM world model, stacked ensemble, ATT&CK tactic classifier, probabilistic forecasting |
+| [`/ml2-full`](ml2-full/README.md) | ML2 | GraphSAGE graph branch and fusion ablation (held back) |
+| [`/backend`](backend/README.md) | Backend | `predict()` inference contract, audit chain, Fabric bridge, tests |
+| [`/frontend`](frontend/README.md) | Frontend | Streamlit dashboard wired to the backend `predict()` output; a test blocks known placeholder values |
+| [`/evaluation`](evaluation) | Evaluation | Benchmark reproduction, robustness checks, forecasting, deviation, precursor and family evaluations |
 
 ---
 
 ## Installation & Usage Guide
 
-Follow these steps to set up the environment, verify the models, and launch the ShadowCat platform.
-
-### 1. Clone the Repository
+### 1. Clone the repository
 ```bash
 git clone https://github.com/muthukkumaranb/ShadowCat.git
 cd ShadowCat
 ```
 
-### 2. Set Up a Virtual Environment (Recommended)
-It's highly recommended to use an isolated Python environment. Python 3.11 or newer is required (`requirements.txt` pins `scikit-learn==1.9.0`, which requires Python >= 3.11).
-
-**Using `venv`:**
+### 2. Create an environment (Python 3.12+ recommended)
+`requirements.txt` pins `scikit-learn==1.9.0`, which requires Python ≥ 3.11. PCAP upload uses the `cicflowmeter`
+package, which requires Python ≥ 3.12 (on 3.11 everything else works and PCAP upload shows a clear message).
 ```bash
 python -m venv venv
-# On Windows:
+# Windows:
 venv\Scripts\activate
-# On Linux/Mac:
+# Linux / macOS:
 source venv/bin/activate
 ```
-
-**Using Conda:**
+or
 ```bash
-conda create -n shadowcat python=3.11 -y
+conda create -n shadowcat python=3.12 -y
 conda activate shadowcat
 ```
 
-### 3. Install Dependencies
-Install the required packages for the data pipeline, PyTorch models, and Streamlit frontend:
+### 3. Install dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### Optional: Hyperledger Fabric Notarization
-The blockchain notarization layer requires Docker Desktop (docker.com) to be installed and running.
-This is OPTIONAL — if Docker isn't available, the pipeline automatically falls back to a SHA-256
-hash-chain notarization (`notarized_via: "sha256_fallback"`), and all forecasting/scoring/graph
-functionality works identically either way. Only the on-chain audit trail is affected.
-
-### 4. Verify System Integrity
-Before launching the application, ensure all backend components and models are functioning correctly.
-
-Run the integration smoke test to validate the inference pipeline:
+### 4. Verify the system
+One command runs every check below and compares the results with the committed numbers:
 ```bash
-python backend/smoke_test.py
+python reproduce.py
+```
+The individual steps, if you want to run them separately:
+```bash
+python backend/smoke_test.py                                   # inference pipeline
+python backend/build_audit_chain.py                            # build the signed audit chain (runtime/)
+python backend/verify_audit_chain.py                           # verify it
+python -m pytest backend/tests frontend/tests evaluation/benchmark tests/prob_forecast tests/pcap -q
+python evaluation/benchmark/reproduce_stacked_benchmark.py --data data-engineering/data/ucs/ucs_windows_models_v1.parquet
 ```
 
-Then, verify the cryptographic hash chain to confirm no evaluation metrics or models have been tampered with:
-```bash
-python backend/verify_audit_chain.py
-```
-
-### 5. Launch the Dashboard
-Start the Streamlit operational interface:
+### 5. Launch the dashboard
 ```bash
 streamlit run frontend/app.py
 ```
-*The dashboard will automatically open in your default web browser at `http://localhost:8501`. Load one of the three real demo slices on the Ingestion page; the onset probability, explanation and validation results update across the pages.*
+Open `http://localhost:8501` and load the **Benign** or **SSH** slice on the Ingestion page, or upload your own
+telemetry: **PCAP / PCAPNG** captures, or CSV / Parquet / JSON flow records.
 
-### Optional: Reproducing the Hyperledger Fabric Layer
+A PCAP upload goes through the same pipeline as the dataset: flows in the CSE-CIC-IDS2018 CICFlowMeter schema
+(`cicflowmeter`), the 12 packet-level features from our parser for every 1-minute window, then the forecast,
+the ranked flows and the host graph. The upload limit is 1 GB (`.streamlit/config.toml`).
 
-**Note:** This step is purely optional and for advanced verification. The full SHADOWCAT deliverable (world model, inference, explainability, offline demo, and benchmarks) works completely out-of-the-box via the automatic SHA-256 fallback mechanism.
+**Demo with a real CIC-IDS2018 capture** (14-02-2018, SSH-Bruteforce victim):
+```bash
+python data-engineering/scripts/download_pcap_14022018.py          # raw capture (several GB)
+python data-engineering/scripts/make_pcap_demo_slice.py --preset ssh     # 30 min benign + the SSH onset
+python data-engineering/scripts/make_pcap_demo_slice.py --preset benign  # 45 min, no labelled attack
+```
+Upload `data-engineering/data/raw_pcap/demo_ssh_slice.pcap` on the Ingestion page. The same conversion is
+available from the command line: `python data-engineering/src/pcap_ingest.py capture.pcap --out flows.csv`.
 
-By default, the backend scripts map the Windows host path `D:\sih2026` to the Fabric Docker containers. You can configure this path by setting the `SHADOWCAT_FABRIC_HOST_ROOT` environment variable. If unset, it gracefully defaults to `D:\sih2026` (preserving byte-for-byte identical behavior).
-
-To stand up the real Fabric test-network layer yourself:
-1. Ensure **Docker Desktop** is installed and running.
-2. Install dependencies and normalize line endings (required once per environment): `apt-get update && apt-get install -y docker.io docker-compose-v2 jq curl dos2unix`, then run `dos2unix` on the shell scripts under `fabric-samples/test-network/` as `run_network.sh` does.
-3. From within a bash-compatible terminal, navigate to the test-network directory and bring up the network with CA nodes and the required channel:
+### Optional: Hyperledger Fabric notarisation
+Fabric needs Docker Desktop. Without it, every notarisation call automatically falls back to the signed SHA-256
+hash chain (`notarized_via: "sha256_fallback"`), and the dashboard shows which mechanism was used. To run the
+Fabric layer:
+1. Start Docker Desktop. Install `docker.io docker-compose-v2 jq curl dos2unix`, and run `dos2unix` on the scripts
+   under `fabric-samples/test-network/` (as `run_network.sh` does).
+2. Bring up the network:
    ```bash
    cd fabric-experiment/fabric-samples/test-network
    ./network.sh up createChannel -c shadowcat-notary-channel -ca
-   ```
-4. Deploy the `shadowcat_notary` Go chaincode to the channel:
-   ```bash
    ./network.sh deployCC -ccn shadowcat_notary -ccp ../../chaincode/shadowcat_notary -ccl go -c shadowcat-notary-channel
    ```
+3. Set the host path with `SHADOWCAT_FABRIC_HOST_ROOT` (it defaults to `D:\sih2026`).
 
 ---
 
-## Benchmark: Production Model vs. Logistic Regression Baseline
+## Scope notes
 
-| Task | Model | F1 | Precision | Recall | FPR |
-|---|---|---|---|---|---|
-| Detection | Production (Stacked Residual LSTM Ensemble) | **0.9962** | 0.9929 | 1.0000 | 0.0080 |
-| Detection | Logistic Regression baseline (same features) | 0.9730 | 0.9730 | 0.9730 | 0.0000 |
-| Onset (forecasting) | Production (Stacked Residual LSTM Ensemble) | **0.9127** | 0.9684 | 0.9054 | 0.0095 |
-| Onset (forecasting) | Logistic Regression baseline (same features) | 0.8880 | 0.9459 | 0.8784 | 0.0000 |
-
-**Note**: The LR detection F1 of 0.973 is a mean across 37 folds where 36 score a perfect 1.0 and 1 fold (Fold 16, SSH-Bruteforce, 66 test windows) scores 0.0 — 0% recall, every attack window misclassified as benign.
-
-LR scores 1.0 on 36/37 folds and 0.0 on Fold 16 (SSH-Bruteforce).
-
-**Matched false-positive rate (~5%)** on the same 412 pooled LOEO test windows, threshold chosen by the same procedure for both models — *pending merge* (`fix/demo-integrity`, `evaluation/benchmark/stacked_benchmark_results.json`):
-
-| Task | Model | F1 | Precision | Recall | FPR |
-|---|---|---|---|---|---|
-| Detection | Stacked Residual LSTM Ensemble | **0.958** | 0.920 | 1.000 | 0.049 |
-| Detection | Logistic Regression baseline | 0.871 | 0.906 | 0.839 | 0.049 |
-| Onset | Stacked Residual LSTM Ensemble | **0.936** | 0.928 | 0.945 | 0.048 |
-| Onset | Logistic Regression baseline | 0.829 | 0.912 | 0.761 | 0.048 |
-
----
-
-## Summary of Key Scientific Results
-
-| Evaluation Metric / Milestone | Result / Finding | Status & Reference |
-| :--- | :--- | :--- |
-| **Real PCAP Telemetry (Option B)** | Packet stats extracted with the project's custom PCAP parser for SSH-Bruteforce (14-02-2018), DDOS-LOIC-UDP (21-02-2018), and Botnet (02-03-2018); 0 label leakage | [Extraction Report](data-engineering/data/ucs/PACKET_EXTRACTION_VERIFICATION.md) |
-| **Hazard Forecasting ROC-AUC (v3)** | **0.789** (H=1), **0.843** (H=2), **0.770** (H=5) across LOEO 37 Folds; reproduces exactly only with the per-fold PCA refit it was trained with, not through the deployed input path, so the dashboard does not show it (*pending merge*, `fix/demo-integrity`, `hazard_v3_results.json`) | [Hazard Report v3](ml1/artifacts/lstm/hazard_head_v3/hazard_head_report_v3.md) |
-| **Lagged Logistic Regression Baseline** | F1: 0.9730 — Caveat: 0% recall, every attack window misclassified as benign on Fold 16 | [Gate 0 Report](data-engineering/gate0_leakage_report.md) |
-| **GNN Multimodal Fusion Ablation** | Validation Loss: Temporal-Only (1.666) beats Fused (1.932) | **HOLD** — [GNN Decision](ml2-full/GNN_FINAL/ml2/results/gnn_adopt_hold_decision.md) |
-| **Stage-Head Scope (v3)** | Validated on *Credential Access / Brute Force* vs background (v3), 0.8627 accuracy | [Stage Report v3](ml1/artifacts/lstm/stage_head_v3/reeval_packetcov/stage_head_report.md) |
-| **PC2 Significance Test (v3)** | Persistence baseline significantly outperforms autoregressive rollouts on PC2 | [PC2 Report v3](ml1/artifacts/lstm/probabilistic_world_model_v3/pc2_attack_significance_report.md) |
-| **Inference Contract Verification (v3)**| DE vs ML1 Scaler parameters match bit-for-bit (0 mismatches, 406-D) | [Contract Diff v3](data-engineering/data/ucs/CONTRACT_DIFF_REPORT.md) |
-| **Tamper-Evident Hash Chain** | 27 chained blocks covering all verified extraction, v4 models, and FPR-calibrated reports | [Audit Chain](backend/audit_chain.json) |
-
----
-
-## Forecasting Advancement: Predictability Horizon Investigation
-
-- A dedicated investigation was run to determine the model's genuine multi-step forecasting skill, separate from the single-step detection/onset benchmarks reported above.
-- Rolling-origin evaluation (5 chronological splits) found the world model's forecast F1 does not exceed a trivial persistence baseline at any tested horizon (K=1 through K=5). Predictability Horizon H* = 0. This was independently reproduced multiple times, including by direct re-execution of the evaluation script against freshly trained checkpoints.
-- Standard remediation attempts were tried and exhausted: rare-class data augmentation (latent-space jitter), narrower horizon scoping, task reframing (regression and lagged-classification instead of multi-step rollout), and a hyperparameter sweep of the base world model (hidden size, depth, learning rate, training length). None of these moved the result; the model consistently collapses to predicting the majority "Unknown/Other" class regardless of configuration.
-- Root cause identified: the world model is trained with a Gaussian negative log-likelihood loss, which is mean-seeking. It is mathematically rewarded for predicting a smoothed average next-state rather than preserving rare attack-state signal, since rare states resemble noise relative to that average. This holds independent of model capacity.
-- An architectural change (Mixture Density Network head, 5 Gaussian mixture components, replacing the single-Gaussian output) was implemented and evaluated to test whether a multimodal output distribution could preserve the signal a single Gaussian collapses. Results: F1 at K=1 through K=5 (0.5530, 0.5527, 0.5523, 0.5520, 0.5517) still does not beat the persistence baseline (0.9517 to 0.9059 across the same horizons); H* remains 0.
-- A follow-up diagnostic found that the mixture components do differentiate internally between benign and attack windows (for example, one component's average weight rises from 5.03% on benign windows to 17.53% on attack windows), but this distinction is lost once the mixture is collapsed to a single expected value for downstream classification, which is required by the current stage-head architecture.
-- A third remediation path was evaluated: data volume was expanded from 3 to 10 labeled days (4,545 total windows at commit a0ae7bc, full coverage of Credential Access, Impact, Discovery, and Command and Control classes). Re-evaluating the MDN world model on this expanded data still gives H* = 0. Note: `main` currently holds the 6-day dataset (2,787 windows); a rebuild of the 10-day dataset with main's pipeline is *pending merge* on `fix/restore-10day-dataset` and did not reproduce a0ae7bc's feature values (`REBUILD_CHECK.json`).
-- Conclusion: all three independent remediation paths (capacity/hyperparameters, architecture, data volume) now agree, which is strong evidence the ceiling is a structural property of the single-step world-model objective itself, not any of these three factors. Passing the full predicted distribution (or a sample from it) into the stage head, instead of collapsing it to a mean, is identified as the next concrete direction, not yet implemented.
-- This investigation did not change the validated Detection (F1 0.9962) and Onset (F1 0.9127) benchmarks reported above, which measure a different task (single-step classification, not multi-step autoregressive forecasting).
-- Closing summary (details in [docs/FINAL_FINDINGS.md](docs/FINAL_FINDINGS.md)):
-  - H* = 0 at K = 1..5, confirmed by the capacity sweep, the MDN head, the 10-day data and the CIC-IDS2017 exploration (combined data: model 0.2136 vs persistence 0.6051, *pending merge*); a delta-parameterised and 32-sample Monte Carlo rollout also gives H* = 0 in all four configurations (*pending merge*, `feature/rollout-delta-mc`).
-  - Root cause: the Gaussian NLL objective is mean-seeking, and the scripted CSE-CIC-IDS2018 attacks have almost no observable precursors.
-  - Onset F1 0.9127 is measured mostly on windows already inside an attack: of 984 onset-positive windows only 71 are true precursors; on precursors the stacked model reaches ROC-AUC 0.625 vs LR 0.520 (*pending merge*, `feature/deviation-evidence`).
-  - The LSTM residual adds no measurable gain over the stacked model's own calibrated LR stage (history shuffled or removed gives the same F1, *pending merge*); the improvement over LR is not temporal learning.
-  - The earlier interim claim that "more data eliminated H* = 0" is retracted: it compared against a day-of-week predictor, not the world model.
-
----
-
-## Hyperledger Fabric Two-Tier Notarization Architecture
-
-To meet the SIH **Blockchain & Cybersecurity** theme, SHADOWCAT implements a real two-tier notarization design, with a live blockchain as the primary path and a cryptographic hash chain as a resilient fallback.
-
-- **Primary Tier (Hyperledger Fabric):** The system integrates a real Go chaincode deployed on a local Fabric test network (channel: `shadowcat-notary-channel`). It exposes functions like `RecordPredictionLineageWithTarget`, `NotarizeAlert`, and `RecordModelProvenance`. The chaincode features autonomous incident response: when severity is HIGH or CRITICAL, the Go chaincode natively creates an `IncidentResponseRecord` (e.g., `ISOLATE_HOST:<node_id>`) in the same transaction without Python-layer intervention. Real measured Fabric commit latency is a median of 2402.55ms (3/3 on-chain confirmed).
-- **Fallback Tier (SHA-256 Hash Chain):** If the Fabric RPC path is severed, the system seamlessly falls back to a **cryptographic SHA-256 recursive hash chain** ([`backend/audit_chain.py`](backend/audit_chain.py)). Every Gate 0 contract diff, PyTorch model checkpoint, and evaluation report is hashed and chained ($Hash_i = SHA256(Block_i \parallel Hash_{i-1})$). A documented fallback test (`scratch/test_kill_network_fallback.py`) proves failover is clean and uninterrupted.
-- **Live Demo Script:** Run `python backend/demo_fabric_tamper.py` to observe simulated adversarial tampering detection specifically for the Fabric path.
-
----
-
-## Known Limitations & Scope Disclosures
-
-In accordance with scientific integrity and engineering transparency:
-1. **Dataset Nature:** Evaluated only on the CSE-CIC-IDS2018 testbed dataset. No claim is made that the models work on unseen attack types or other networks; the leave-one-family-out world-model deviation result (*pending merge*, `feature/deviation-evidence`) is the only unseen-family evidence.
-2. **Network Topology:** The evaluation environment reflects a single simulated enterprise topology.
-3. **Onset window ($H=5$):** The onset model gives one probability for "an attack window within the next 5 minutes"; it does not produce per-minute horizons.
-4. **ATT&CK Stage Granularity:** Stage head currently evaluates high-fidelity discrimination for credential brute-force stages vs background; full 14-tactic multi-stage ATT&CK classification is exploratory: Discovery and Command & Control have zero test support in LOEO splits, while Impact-stage attacks (19 test windows) are not detected by the current Stage Head (0% recall in both v2 and v3 evaluations; the model defaults these to Unknown/Other).
-5. **Rollout Horizon Boundaries:** Autoregressive state rollout does not beat a persistence baseline at any depth K = 1..5 (H* = 0); no rollout depth is validated.
-6. **Telemetry Extraction (Option B):** Packet-level telemetry is now genuinely extracted for the SSH-Bruteforce (14-02-2018), DDOS-LOIC-UDP (21-02-2018), and Botnet (02-03-2018) PCAPs without label leakage.
-7. **Alert threshold:** The dashboard alerts when the onset probability is >= 0.5 (the threshold of the reported per-fold F1). In a sweep over every dataset window, 3.8% of benign windows alert (these windows were in training for 36 of 37 folds, so this is not a held-out false-alarm rate; *pending merge*, `fix/demo-integrity`, `evaluation/demo_sweep_results.json`). No ≤5% held-out false-alarm guarantee is claimed.
-8. **Botnet Detection Shortfall:** Botnet onset detection remains a disclosed, unresolved limitation. Even with real packet telemetry, the signal-to-noise ratio is too weak (ROC-AUC ~0.63), which is insufficient for reliable, low-FPR alerting. This has not been artificially 'solved' via F1-only threshold manipulation.
-9. **GraphSAGE Fusion:** Real per-window graph construction is now wired in as an explicitly labeled experimental/held-back output, separate from the primary verified forecast; the underlying ablation evidence (validation loss 1.666 vs 1.932) remains the reason it's not in the primary path.
-10. **Hyperledger Fabric Local Dependency:** The primary Hyperledger Fabric notarization path is not fully plug-and-play upon cloning the repository. It requires a local Fabric test-network running via Docker with the `shadowcat-notary-channel` and chaincode deployed, as the Windows path (`D:\sih2026\fabric-experiment`) is hardcoded in `backend/fabric_bridge.py`. Without this local network running, every notarization call gracefully and automatically falls back to the SHA-256 hash chain (`notarized_via="sha256_fallback"`).
-11. **Predictability Horizon:** Multi-step autoregressive forecasting skill beyond the validated single-step benchmarks remains unresolved (H* = 0 across all tested configurations and one architectural remediation), and is disclosed as an open problem rather than masked.
-12. **Expanded Dataset Limitations:** 5 of the 10 labeled days used for this investigation do not have genuine packet-level extraction (CSV-only), unlike the 3 original "Option B" verified days.
+- **Data scope:** evaluated on CSE-CIC-IDS2018 (6 days, one simulated enterprise topology). The near-perfect scores
+  apply to new episodes of attack families seen in training. For unseen families, see the deviation and
+  stress-test results above.
+- **Onset output:** one probability for "an attack window within the next 5 minutes". There are no per-minute
+  horizons; the forecasting experiments are listed above.
+- **GraphSAGE fusion:** built and evaluated, held back from the primary path (see above).
+- **ATT&CK coverage:** held-out evaluation covers 3 of 6 attack families (the others have a single episode).
+  DDOS-LOIC-UDP is recognised as Impact but not at the family level.
+- **Baseline history:** earlier LR baseline figures (0.871 / 0.829) were computed on an earlier feature version. The
+  table above uses the baseline re-run on the final features ([`ROBUSTNESS_CHECKS.md`](docs/ROBUSTNESS_CHECKS.md)).
+- **Fabric:** optional and local (Docker). The signed hash chain is the default and is always on.
 
 ---
 
 ## Track Leads & Contributors
 
-- **Data Engineering:** Unified Cyber State schema, ingestion pipeline, leakage purging & embargo protocols.
-- **ML1 Modeling:** Causal LSTM state dynamics, probabilistic Gaussian heads, hazard/stage classification.
-- **ML2 Modeling:** Dynamic graph generation, GraphSAGE architecture, multi-seed fusion ablation.
-- **Backend Integration:** Production `predict()` interface, pipeline contract verification, cryptographic audit chain.
-- **Frontend / UX:** Streamlit dashboard, Plotly telemetry charts, analyst guidance interface.
+- **Data Engineering:** Unified Cyber State schema, ingestion pipeline, leakage purging and embargo protocols.
+- **ML1 Modeling:** LSTM state dynamics, probabilistic world model, onset and ATT&CK heads, forecasting evaluation.
+- **ML2 Modeling:** dynamic graph generation, GraphSAGE architecture, fusion ablation.
+- **Backend Integration:** `predict()` interface, contract verification, cryptographic audit chain.
+- **Frontend / UX:** Streamlit dashboard, Plotly telemetry charts, analyst guidance.
+
+---
+
+## Deliverables
+
+- **Demo video:** https://youtu.be/c_4-A5syubs
+- **Architecture diagram:** [docs/assets/Shadowcat_Architecture.png](docs/assets/Shadowcat_Architecture.png) ([PDF](docs/assets/ShadowCat_Architecture.pdf))
+- **Claims sheet:** [docs/CLAIMS.md](docs/CLAIMS.md) • **Robustness checks:** [docs/ROBUSTNESS_CHECKS.md](docs/ROBUSTNESS_CHECKS.md) • **Final findings:** [docs/FINAL_FINDINGS.md](docs/FINAL_FINDINGS.md)

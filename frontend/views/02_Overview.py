@@ -15,6 +15,7 @@ from data_provider import (
     get_flagged_flows,
     get_live_notarization_status,
     get_conformal_credibility,
+    get_conformal_forecast,
 )
 
 def render_page():
@@ -32,7 +33,13 @@ def render_page():
     tx_id = notary_status.get("tx_id", "N/A")
     fallback_idx = notary_status.get("fallback_index", 0)
 
-    risk_val = fc.get("risk", [0.84])[0]
+    risk_val = (fc.get("risk") or [0.0])[0]
+    _cf = get_conformal_forecast() or {}
+    _iv = (_cf.get("intervals") or [[None, None]])[0]
+    ci_txt = f"[{_iv[0]:.2f}, {_iv[1]:.2f}]" if _iv and _iv[0] is not None else "not available"
+    ci_lo = _iv[0] if _iv and _iv[0] is not None else None
+    ci_hi = _iv[1] if _iv and _iv[1] is not None else None
+    alert_thr = float(fc.get("alert_threshold", 0.5) or 0.5)
     lead_time = fc.get("lead_time", ["1m 00s"])[0]
 
     # Dynamic risk classification based on actual ML prediction
@@ -78,10 +85,6 @@ def render_page():
                         <span class="soc-pulse-dot" style="background:{risk_color};"></span>
                         {risk_label}
                     </span>
-                    <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: {t['text_muted']};">LATENCY: 42ms</span>
-                    <span style="color: {t['outline_variant']};">|</span>
-                    <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: {t['text_muted']};">CLUSTER: ALPHA-01</span>
-                    <span style="color: {t['outline_variant']};">|</span>
                     <span style="display: inline-flex; align-items: center; gap: 0.35rem; background: {_bg_color}; border: 1px solid {_border_color}; border-radius: 4px; padding: 2px 6px; font-family: {_font_family}; font-size: 0.68rem; font-weight: 700; color: {_text_color};">{_icon} {_cred.get("badge_label", "IN-DISTRIBUTION")}</span>
                 </div>
                 <div style="display: flex; align-items: baseline; gap: 1rem;">
@@ -89,20 +92,20 @@ def render_page():
                         {risk_val:.2f} <span style="font-size: 1.125rem; font-weight: 400; color: {t['text_muted']};">/ 1.00</span>
                     </div>
                     <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.875rem; font-weight: 600; color: {risk_color};">
-                        {risk_delta} <span style="color: {t['text_muted']}; font-size: 0.75rem; font-weight: 400;">(30-window lookback)</span>
+                        <span style="color: {t['text_muted']}; font-size: 0.75rem; font-weight: 400;">P(attack within next 5 min) • 30-window lookback</span>
                     </div>
                 </div>
                 <p style="font-family: 'Inter', sans-serif; font-size: 0.875rem; color: {t['text_high']}; margin-top: 0.5rem; margin-bottom: 0.75rem; line-height: 1.5;">
-                    {'Risk elevated due to abnormal behavioral drift, egress surges, and active multi-horizon lateral progression.' if risk_val >= 0.5 else ('Moderate risk envelope observed. Minor telemetry divergence detected within manageable bounds.' if risk_val >= 0.25 else 'Nominal operating envelope. Observed telemetry flows remain well within baseline historical distributions.')}
+                    {'Onset probability is above the alert threshold for the loaded window.' if risk_val >= alert_thr else 'Onset probability is below the alert threshold for the loaded window.'}
                 </p>
                 <div style="display: flex; gap: 1rem; flex-wrap: wrap; font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_muted']};">
                     <span>WINDOW: <b style="color:{t['text_secondary']}">60s Sliding</b></span>
                     <span>•</span>
                     <span>CHECKPOINT: <b style="color:{t['text_secondary']}">lstm-stacked-v1</b></span>
                     <span>•</span>
-                    <span>NODES: <b style="color:{t['primary']}">1,420 Active</b></span>
+                    <span>ALERT THRESHOLD: <b style="color:{t['text_secondary']}">{alert_thr:.2f}</b></span>
                     <span>•</span>
-                    <span>CONFIDENCE: <b style="color:{t['text_secondary']}">95.4% Monte Carlo</b></span>
+                    <span>90% CONFORMAL INTERVAL: <b style="color:{t['text_secondary']}">{ci_txt}</b></span>
                 </div>
             </div>
             <!-- Right: Uncertainty Sparkline Widget -->
@@ -153,36 +156,17 @@ def render_page():
     # 4 REALISTIC STREAMLIT METRIC CARDS
     m_col1, m_col2, m_col3, m_col4 = st.columns(4)
 
-    # Compute active alert distribution dynamically from ML risk and flagged flows
-    if risk_val >= 0.75:
-        n_crit = max(3, len(flows) // 3)
-        n_med = max(5, len(flows) // 2)
-        n_low = max(2, len(flows) // 4)
-        stat_badge_cls = "badge-critical"
-        stat_badge_txt = "CRITICAL"
-        delta_threat_txt = f"+{int(risk_val*10)} vs baseline"
-    elif risk_val >= 0.50:
-        n_crit = 1
-        n_med = max(4, len(flows) // 2)
-        n_low = max(3, len(flows) // 3)
-        stat_badge_cls = "badge-caution"
-        stat_badge_txt = "ELEVATED"
-        delta_threat_txt = "+2 vs baseline"
-    elif risk_val >= 0.25:
-        n_crit = 0
-        n_med = max(2, len(flows) // 4)
-        n_low = max(3, len(flows) // 2)
-        stat_badge_cls = "badge-neutral"
-        stat_badge_txt = "MODERATE"
-        delta_threat_txt = "Nominal drift"
+    # The alert is the window's onset decision (probability vs the fixed alert threshold). The listed flows
+    # are the window's flows ranked by their LR contribution; they are alerts only when the window is.
+    in_alert = risk_val >= alert_thr
+    n_crit = len(flows) if in_alert else 0
+    n_low = 0 if in_alert else len(flows)
+    if in_alert:
+        stat_badge_cls, stat_badge_txt = "badge-critical", "ONSET ALERT"
     else:
-        n_crit = 0
-        n_med = 0
-        n_low = max(1, len(flows) // 5)
-        stat_badge_cls = "badge-nominal"
-        stat_badge_txt = "BASELINE"
-        delta_threat_txt = "Zero threat delta"
-    n_total_alerts = n_crit + n_med + n_low
+        stat_badge_cls, stat_badge_txt = "badge-nominal", "BELOW THRESHOLD"
+    delta_threat_txt = f"{len(flows)} top-ranked flows in window"
+    n_total_alerts = n_crit
 
     with m_col1:
         render_html(f"""
@@ -194,9 +178,8 @@ def render_page():
             <div style="margin: 0.35rem 0;">
                 <div class="soc-stat-val">{n_total_alerts}</div>
                 <div style="display: flex; gap: 0.35rem; margin-top: 0.35rem;">
-                    <span class="soc-badge {'badge-critical' if n_crit > 0 else 'badge-nominal'}" style="padding: 0.1rem 0.4rem; font-size: 0.625rem;">{n_crit} Critical</span>
-                    <span class="soc-badge {'badge-caution' if n_med > 0 else 'badge-neutral'}" style="padding: 0.1rem 0.4rem; font-size: 0.625rem;">{n_med} Med</span>
-                    <span class="soc-badge badge-neutral" style="padding: 0.1rem 0.4rem; font-size: 0.625rem;">{n_low} Low</span>
+                    <span class="soc-badge {'badge-critical' if n_crit > 0 else 'badge-nominal'}" style="padding: 0.1rem 0.4rem; font-size: 0.625rem;">{n_crit} in alert window</span>
+                    <span class="soc-badge badge-neutral" style="padding: 0.1rem 0.4rem; font-size: 0.625rem;">{n_low} below threshold</span>
                 </div>
             </div>
             <div class="soc-stat-delta {'delta-threat' if risk_val >= 0.5 else 'delta-nominal'}">
@@ -207,28 +190,13 @@ def render_page():
         """)
 
     with m_col2:
-        raw_steps = fc.get("raw_steps", [])
-        if raw_steps and len(raw_steps) > 0:
-            active_step = raw_steps[0]
-            stage_id = active_step.get("technique_id", "T1190")
-            stage_tactic = active_step.get("tactic_name", "Initial Access")
-            stage_tech = active_step.get("technique_full_name", active_step.get("technique_name", "Exploit Public-Facing Application"))
-            stage_url = active_step.get("technique_url", f"https://attack.mitre.org/techniques/{stage_id.replace('.', '/')}")
-            stage_status = "Forecast Horizon t+1"
-            if active_step.get("is_heuristic_progression"):
-                stage_status = "Heuristic Rollout Projection"
-        elif len(mitre) > 1:
-            stage_id = mitre[1].get("technique_id", mitre[1].get("id", "T1190"))
-            stage_tactic = mitre[1].get("tactic_name", mitre[1].get("stage", "Initial Access"))
-            stage_tech = mitre[1].get("technique_full_name", mitre[1].get("technique_name", "Exploit Public-Facing Application"))
-            stage_url = mitre[1].get("technique_url", f"https://attack.mitre.org/techniques/{stage_id.replace('.', '/')}")
-            stage_status = mitre[1].get("status", "Active (Current)")
-        else:
-            stage_id = "T1190"
-            stage_tactic = "Initial Access"
-            stage_tech = "Exploit Public-Facing Application"
-            stage_url = "https://attack.mitre.org/techniques/T1190"
-            stage_status = "Active (Current)"
+        _cur = fc.get("current_stage") or "—"
+        stage_id = fc.get("current_stage_tactic_id") or ("N/A" if _cur in ("No attack detected", "not available", "—") else "—")
+        stage_tactic = _cur
+        stage_tech = fc.get("current_stage_family") or "No stage determined"
+        stage_url = fc.get("current_stage_url") or "https://attack.mitre.org/tactics/enterprise/"
+        _conf = fc.get("current_stage_confidence")
+        stage_status = f"Current window • conf {_conf:.2f}" if isinstance(_conf, (int, float)) else "Current window"
 
         render_html(f"""
         <div class="soc-stat-card">
@@ -255,7 +223,7 @@ def render_page():
         """)
 
     with m_col3:
-        novelty_val = novelty.get("novelty_score", 0.892)
+        novelty_val = float(novelty.get("novelty_score") or 0.0)
         render_html(f"""
         <div class="soc-stat-card">
             <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -267,11 +235,11 @@ def render_page():
                     {novelty_val:.3f} <span style="font-size: 0.75rem; font-weight: 400; color: {t['text_muted']};">/ 1.000</span>
                 </div>
                 <div style="font-family: 'Inter', sans-serif; font-size: 0.75rem; color: {t['text_secondary']}; margin-top: 0.25rem;">
-                    98th percentile anomaly vs 30d baseline
+                    World-model deviation: observed vs predicted state
                 </div>
             </div>
             <div class="soc-stat-delta delta-threat">
-                <span>Z-SCORE: +3.41</span>
+                <span>{novelty.get('flows_analyzed') or '—'} rows analysed</span>
                 <span style="color: {t['text_muted']}; margin-left: auto;">World Model Deviation</span>
             </div>
         </div>
@@ -279,18 +247,19 @@ def render_page():
 
     with m_col4:
         is_valid = audit.get("is_valid", True)
-        if fallback_engaged:
-            badge_title = "FALLBACK ENGAGED"
-            badge_cls = "badge-caution"
-            badge_subtext = f"SHA-256 Chain Entry #{fallback_idx} • Fallback Notarization Active"
-            badge_color = "#ff9f0a"
-            badge_footer = "SHA-256 Fallback Active"
+        mech = notary_status.get("active_mechanism", "none")
+        if mech == "fabric":
+            badge_title, badge_cls, badge_color = "FABRIC", "badge-nominal", t['primary']
+            badge_subtext = f"Alert hash {tx_id} • notarized on Hyperledger Fabric"
+            badge_footer = "Fabric ledger"
+        elif mech == "sha256_fallback":
+            badge_title, badge_cls, badge_color = "SHA-256 FALLBACK", "badge-caution", "#ff9f0a"
+            badge_subtext = f"Alert hash {tx_id} • SHA-256 chain entry #{fallback_idx} (Fabric not running)"
+            badge_footer = "SHA-256 hash chain"
         else:
-            badge_title = "VERIFIED"
-            badge_cls = "badge-nominal"
-            badge_subtext = f"Fabric Tx #{tx_id} • Notarized via Hyperledger Fabric"
-            badge_color = t['primary']
-            badge_footer = "Fabric Ledger Validated"
+            badge_title, badge_cls, badge_color = "CHAIN CHECKED", "badge-nominal", t['primary']
+            badge_subtext = f"Audit chain: {audit.get('length', 0)} entries verified • this window not notarized (no alert)"
+            badge_footer = "Ed25519-signed hash chain"
 
         render_html(f"""
         <div class="soc-stat-card">
@@ -307,7 +276,7 @@ def render_page():
                 </div>
             </div>
             <div class="soc-stat-delta delta-nominal">
-                <span>ENCLAVE SECURE</span>
+                <span>{'INTACT' if is_valid else 'CHECK FAILED'}</span>
                 <span style="color: {t['text_muted']}; margin-left: auto;">{badge_footer}</span>
             </div>
         </div>
@@ -321,66 +290,55 @@ def render_page():
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
             <div>
                 <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['primary']}; font-weight: 700; text-transform: uppercase;">
-                    LIVE TELEMETRY FEED • AUTO-REFRESH: 5s
+                    TOP FLOWS • LOADED WINDOW
                 </div>
                 <div class="soc-section-title" style="margin-top: 0.25rem;">
-                    Recent Threat Detections & Forecast Anomalies
+                    Flows Driving the Onset Forecast (ranked by LR contribution)
                 </div>
             </div>
         </div>
     """)
 
-    # Dynamic Alert Item Inventory from Live Flagged Flows & Model Risk
+    # Alert items: the window's flows ranked by LR contribution. Severity is the window's onset decision;
+    # the tactic label comes only from the backend's current-window stage classifier.
     alert_items = []
-    if flows:
-        for i, f in enumerate(flows[:10]):
-            src = f.get("src", f.get("Src IP", "—"))
-            dst = f.get("dst", f.get("Dst IP", "—"))
-            proto = f.get("proto", f.get("Protocol", "TCP"))
-            dport = f.get("dport", f.get("Dst Port", 443))
-            if i < n_crit:
-                sev = "critical"
-                technique = f"T1071.001 C2 ({proto})"
-                prose = f"High-frequency telemetry burst on {src} → {dst}:{dport} ({proto}) exceeding baseline bounds"
-            elif i < n_crit + n_med:
-                sev = "high" if i < n_crit + 2 else "medium"
-                technique = f"T1046 DISCOVERY ({proto})"
-                prose = f"Anomalous connection from {src} to {dst}:{dport} ({proto})"
-            else:
-                sev = "medium"
-                technique = f"T1090 PROXY ({proto})"
-                prose = f"Telemetry flow on {src} → {dst}:{dport} evaluated"
-
-            alert_items.append({
-                "time": f"02:{max(0, 48 - i*2):02d}:00 UTC",
-                "sev": sev,
-                "technique": technique,
-                "prose": prose,
-                "target": str(dst)
-            })
+    _stage_lbl = fc.get("current_stage") or "—"
+    _stage_tid = fc.get("current_stage_tactic_id")
+    for f in flows[:10]:
+        src = f.get("source") or "—"
+        dst = f.get("destination") or "—"
+        proto = f.get("protocol") or "—"
+        dport = f.get("dport") or "—"
+        sc = f.get("lr_score")
+        sev = "critical" if in_alert else "low"
+        sc_txt = f"LR contribution {sc:+.2f}" if isinstance(sc, (int, float)) else "LR contribution —"
+        ts = f.get("timestamp") or "—"
+        alert_items.append({
+            "time": str(ts),
+            "sev": sev,
+            "technique": f"{_stage_tid} {_stage_lbl}" if _stage_tid else "—",
+            "prose": f"{src} → {dst}:{dport} (proto {proto}), {sc_txt}",
+            "target": str(dst),
+        })
 
     if not alert_items:
         alert_items = []
 
     cnt_crit = sum(1 for a in alert_items if a["sev"] == "critical")
-    cnt_high = sum(1 for a in alert_items if a["sev"] == "high")
-    cnt_med = sum(1 for a in alert_items if a["sev"] == "medium")
+    cnt_low = sum(1 for a in alert_items if a["sev"] == "low")
 
     # Filter Segmented Tabs
     filter_choice = st.radio(
         "Alert Filter",
-        [f"ALL ({len(alert_items)})", f"CRITICAL ({cnt_crit})", f"HIGH ({cnt_high})", f"MEDIUM ({cnt_med})"],
+        [f"ALL ({len(alert_items)})", f"IN ALERT WINDOW ({cnt_crit})", f"BELOW THRESHOLD ({cnt_low})"],
         horizontal=True,
         label_visibility="collapsed"
     )
 
-    # Active filtering by selected risk level
-    if "CRITICAL" in filter_choice:
+    if "IN ALERT" in filter_choice:
         filtered_alerts = [item for item in alert_items if item["sev"] == "critical"]
-    elif "HIGH" in filter_choice:
-        filtered_alerts = [item for item in alert_items if item["sev"] == "high"]
-    elif "MEDIUM" in filter_choice:
-        filtered_alerts = [item for item in alert_items if item["sev"] == "medium"]
+    elif "BELOW" in filter_choice:
+        filtered_alerts = [item for item in alert_items if item["sev"] == "low"]
     else:
         filtered_alerts = alert_items
 
@@ -392,7 +350,7 @@ def render_page():
         """)
     else:
         for item in filtered_alerts:
-            badge_cls = "badge-critical" if item["sev"] == "critical" else ("badge-caution" if item["sev"] == "high" else "badge-neutral")
+            badge_cls = "badge-critical" if item["sev"] == "critical" else "badge-neutral"
             render_html(f"""
             <div class="soc-card-nested" style="margin-bottom: 0.45rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
                 <div style="display: flex; align-items: center; gap: 0.75rem; min-width: 0; flex: 1;">
@@ -410,9 +368,9 @@ def render_page():
     render_html(f"""
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem; font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_muted']};">
             <div>
-                <span class="soc-pulse-dot" style="display: inline-block;"></span> INGESTION BUFFER: 4,812 EVT/SEC • 0 DROPPED PACKETS
+                Source: {st.session_state.get("active_source", "default CSE-CIC-IDS2018 demo window")}
             </div>
-            <span style="color: {t['primary']};">PIPELINE BASELINE // 0x9F41</span>
+            <span style="color: {t['primary']};">{len(flows)} flows ranked by LR contribution</span>
         </div>
     </div>
     """)

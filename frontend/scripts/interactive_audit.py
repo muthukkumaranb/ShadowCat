@@ -83,12 +83,8 @@ def audit_interactions():
     at_in.run()
     assert not at_in.exception, f"Telemetry ingestion exception: {at_in.exception}"
 
-    # 3a. Ingestion source mode radio
-    assert len(at_in.radio) > 0, "Ingestion source mode radio missing!"
-    source_radio = at_in.radio[0]
-    source_radio.set_value("Live Flow Feed (gRPC / Streaming)").run()
-    assert not at_in.exception
-    print("[PASS] Ingestion Source Mode radio changes options cleanly.")
+    # 3a. Ingestion source: file upload / demo slices only (PCAP is converted offline; no streaming mode)
+    print("[INFO] Ingestion source selector removed: file upload and demo slices are the supported sources.")
 
     # 3b. Telemetry file uploader
     assert len(at_in.file_uploader) > 0, "File uploader missing!"

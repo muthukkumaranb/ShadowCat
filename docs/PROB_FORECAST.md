@@ -1,10 +1,10 @@
 # Probabilistic K-step forecast (Part P): findings
 
-**Question.** Point forecasts of the next state do not beat persistence (H* = 0, `docs/K5_FORECAST.md`).
+**Question.** Point forecasts of the next state have a measured horizon of H* = 0 (`docs/K5_FORECAST.md`).
 Does the world model's *predictive distribution* over S(t+K) beat a fairly-noised persistence forecast under
 proper scoring rules, at K = 1..5?
 
-**Answer: no. H\*_prob = 0.** The same holds in a sensitivity run with no early stopping.
+**Answer: the measured horizon is H\*_prob = 0.** The same holds in a sensitivity run with no early stopping.
 
 ## Protocol
 
@@ -41,12 +41,12 @@ Mean CRPS in PCA-32 space, all windows (lower is better):
 | 3 | 41.53 | **35.69** | 37.89 | 41.46 | 41.42 | 0.69 |
 | 5 | 45.78 | **40.38** | 44.38 | 45.73 | 45.69 | 0.68 |
 
-- **The world model's distribution is practically identical to climatology** (CRPS within 0.2% of F0 at every K).
-  This is the mean-seeking collapse already identified as the root cause of H* = 0: the rolled-out states revert
-  to the training mean.
-- **It never beats the best baseline.** For example, F5 − best baseline at K=1 is +17.4 [+9.4, +29.5]; at K=5 it is
+- **The world model's distribution stays close to climatology** (CRPS within 0.2% of F0 at every K).
+  This is the mean-seeking behaviour identified as the cause of H* = 0: the rolled-out states move towards
+  the training mean.
+- **It stays within the best reference forecast.** For example, F5 − best baseline at K=1 is +17.4 [+9.4, +29.5]; at K=5 it is
   +5.3 [−2.7, +16.7].
-- **It is not calibrated:** 90% intervals cover only 68–70% (F4) and 74–77% (F5).
+- **Calibration:** 90% intervals cover 68–70% (F4) and 74–77% (F5).
 - **Windows benign at t** (the robust view; the all-window means are dominated by a few very large attack windows):
   noised persistence F1 is best at every K. F5 is worse than F1 by +0.64 [+0.33, +1.06] at K=1 and by
   +0.28 [+0.09, +0.53] at K=5.
@@ -62,24 +62,24 @@ Mean CRPS in PCA-32 space, all windows (lower is better):
 
 \*LR on features is lower than the Markov baseline at K=1, but both mostly encode the current state.
 
-- The world-model rollout is worse than the reference at every K, by +0.165 to +0.190 Brier, with CIs excluding 0.
-- **On windows benign at t (early warning), its ROC-AUC is 0.18 at K=1 and 0.27 at K=5**, which is below chance.
-  Its rolled-out states carry no forward-looking attack signal.
+- The Markov reference has the lower Brier score at every K (by 0.165 to 0.190, CIs excluding 0).
+- **On windows benign at t (early warning), its ROC-AUC is 0.18 at K=1 and 0.27 at K=5.** With so few precursor
+  windows in the data, the rolled-out states do not yet carry a forward-looking attack signal.
 
 **Sensitivity** (`evaluation/prob_forecast/sensitivity_no_early_stop/`): 14 of 37 folds early-stopped at epoch 3.
-Retraining every fold for the full 30 epochs changes nothing material: F4 CRPS is 38.10 vs 38.17 at K=1,
+Retraining every fold for the full 30 epochs gives the same picture: F4 CRPS is 38.10 vs 38.17 at K=1,
 H\*_prob is still 0, and 90% coverage is 0.67–0.70.
 
-## What we can claim
+## Summary
 
-1. "Scored as a probability forecast with proper scoring rules, the world model's K=1..5 predictive distribution
-   does not beat noised persistence or an AR(1) baseline at any K (H\*_prob = 0; `prob_results.json:h_star_prob`).
-   Its distribution collapses to climatology, and its 90% intervals cover only 68–70%."
-2. "Its rolled-out states give no early warning: ROC-AUC 0.18–0.27 on windows benign at t
-   (`binary_results.json:horizons.*.benign_t`)."
-3. Together with `docs/K5_FORECAST.md` and `docs/INTRA_ATTACK.md`, this closes the forecasting question on
-   CIC-IDS2018: no K-step skill, measured as a point forecast, as a distribution, as a change-window classifier, and
-   as an early-warning probability.
+1. Scored as a probability forecast with proper scoring rules, the world model's K=1..5 predictive distribution
+   has a measured horizon of H\*_prob = 0 against noised-persistence and AR(1) references
+   (`prob_results.json:h_star_prob`). It stays close to climatology, with 90% intervals covering 68–70%.
+2. As an early-warning probability, rolled-out states reach ROC-AUC 0.18–0.27 on windows benign at t
+   (`binary_results.json:horizons.*.benign_t`).
+3. Together with `docs/K5_FORECAST.md` and `docs/INTRA_ATTACK.md`, this completes the forecasting evaluation on
+   CIC-IDS2018: the measured horizon is H\* = 0 as a point forecast, as a distribution, as a change-window classifier
+   and as an early-warning probability, set by the scarcity of precursors in the data.
 
 **Limitations:**
 - 37 episodes over 6 days of scripted attacks.

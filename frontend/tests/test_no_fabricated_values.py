@@ -39,6 +39,21 @@ BANNED_STRINGS = [
     "2 + i * 4",
     "49210",
     "T1071.001 •",
+    "42ms",
+    "1,420 Active",
+    "95.4% Monte Carlo",
+    "4,812",
+    "0x9F41",
+    "0x884F",
+    "Z-SCORE: +3.41",
+    "98th percentile",
+    "BUFFER: 0.84 GB",
+    "Timestamp Sync",
+    "PCAP Raw Stream",
+    "Live Flow Feed (gRPC",
+    "MONTE CARLO HEURISTICS",
+    "Fallback valid libpcap",
+    "48 - i*2",
 ]
 
 

@@ -205,9 +205,12 @@ class UCSExtractor:
             return windows
 
         df = raw_input.copy()
+        # Per-window packet features computed from the same capture (src/pcap_ingest.py), if supplied.
+        pkt_by_window = raw_input.attrs.get("packet_features_by_window") if source_type == "pcap" else None
 
         # Step 1: Validation and Mapping to canonical schema
-        if source_type == "csv":
+        # ('pcap' input built by src/pcap_ingest.py carries CICFlowMeter-schema flow records.)
+        if source_type == "csv" or (source_type == "pcap" and "Timestamp" in df.columns):
             # [DEFENSIVE INPUT-VALIDATION LAYER]
             from src.csv_validator import CICFlowMeterValidator, ValidationStatus
             validator = CICFlowMeterValidator()
@@ -248,6 +251,15 @@ class UCSExtractor:
 
         if len(window_df) == 0:
             raise ValueError("Windowing resulted in 0 windows. Check timestamp ranges in input.")
+
+        if pkt_by_window:
+            pk = pd.DataFrame(pkt_by_window)
+            pk["window_start_utc"] = pd.to_datetime(pk["window_start_utc"], utc=True)
+            ws = pd.to_datetime(window_df["window_start_utc"], utc=True)
+            pk = pk.set_index("window_start_utc")
+            for c in self.PCAP_PACKET_COLUMNS:
+                if c in pk.columns:
+                    window_df[c] = ws.map(pk[c]).to_numpy(dtype=np.float64)
 
         # Step 4: Add & validate window identifier columns
         if "window_start_utc" not in window_df.columns:

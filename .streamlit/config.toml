@@ -1,0 +1,6 @@
+[server]
+# PCAP uploads (demo slices of the CIC-IDS2018 captures) can exceed the 200 MB default
+maxUploadSize = 1024
+
+[browser]
+gatherUsageStats = false

@@ -163,6 +163,37 @@ def set_active_prediction(prediction_dict: Dict[str, Any]) -> None:
     _CACHED_LIVE_PREDICTION = prediction_dict
 
 
+def run_pcap_inference(pcap_path: str, return_flows: bool = False):
+    """
+    Uploaded PCAP/PCAPNG -> CIC-IDS2018-schema flows + per-window packet features (src/pcap_ingest.py)
+    -> backend predict(source_type="pcap"). Returns the prediction, or an explicit error payload.
+    """
+    global _CACHED_LIVE_PREDICTION
+    from backend.predict import predict
+    from src.pcap_ingest import ingest_pcap, PcapIngestError
+
+    try:
+        flows = ingest_pcap(pcap_path)
+    except (PcapIngestError, FileNotFoundError) as e:
+        err = {"_inference_error": str(e), "_critical_schema_failure": True}
+        return (err, None) if return_flows else err
+    try:
+        pred = predict(flows, source_type="pcap")
+    except Exception as e:
+        import traceback
+        err = {"_inference_error": str(e), "_inference_traceback": traceback.format_exc(), "_critical_schema_failure": True}
+        return (err, flows) if return_flows else err
+    pk = flows.attrs.get("packet_features_by_window") or {}
+    pred["_pcap_summary"] = {
+        "flows": int(len(flows)),
+        "packet_feature_windows": int(len(pk.get("window_start_utc", []))),
+        "first_flow_utc": str(flows["Timestamp"].iloc[0]) if len(flows) else None,
+        "last_flow_utc": str(flows["Timestamp"].iloc[-1]) if len(flows) else None,
+    }
+    _CACHED_LIVE_PREDICTION = pred
+    return (pred, flows) if return_flows else pred
+
+
 def run_core_ml_inference(input_df: pd.DataFrame, source_type: str = "csv") -> Dict[str, Any]:
     """
     Executes core backend ML pipeline on input DataFrame.
@@ -217,8 +248,6 @@ def run_core_ml_inference(input_df: pd.DataFrame, source_type: str = "csv") -> D
     elif "Dur" in df.columns and "Flow Duration" not in df.columns:
         df["Flow Duration"] = (df["Dur"] * 1000000).astype(int)
         df = df.drop(columns=["Dur"])
-    elif "Flow Duration" not in df.columns:
-        df["Flow Duration"] = 500000
 
     # Normalize packet count and byte count columns
     if "tot_fwd_pkts" in df.columns and "Tot Fwd Pkts" not in df.columns:
@@ -229,17 +258,11 @@ def run_core_ml_inference(input_df: pd.DataFrame, source_type: str = "csv") -> D
 
     if "TotBytes" in df.columns and "TotLen Fwd Pkts" not in df.columns:
         df["TotLen Fwd Pkts"] = df["TotBytes"]
-    elif "flow_byts_s" in df.columns and "TotLen Fwd Pkts" not in df.columns:
-        df["TotLen Fwd Pkts"] = df["flow_byts_s"]
-    elif "TotLen Fwd Pkts" not in df.columns:
-        df["TotLen Fwd Pkts"] = 1000.0
 
     if "tot_bwd_pkts" in df.columns and "Tot Bwd Pkts" not in df.columns:
         df["Tot Bwd Pkts"] = df["tot_bwd_pkts"]
         df = df.drop(columns=["tot_bwd_pkts"])
 
-    if "TotLen Bwd Pkts" not in df.columns:
-        df["TotLen Bwd Pkts"] = 1000.0
 
     if "src_ip" in df.columns and "Src IP" not in df.columns:
         df["Src IP"] = df["src_ip"]
@@ -270,10 +293,10 @@ def run_core_ml_inference(input_df: pd.DataFrame, source_type: str = "csv") -> D
         df = df.drop(columns=["Dport"])
 
     if "protocol" in df.columns and "Protocol" not in df.columns:
-        df["Protocol"] = df["protocol"].apply(lambda p: 6 if str(p).upper() == "TCP" else (17 if str(p).upper() == "UDP" else 6))
+        df["Protocol"] = df["protocol"].apply(lambda p: 6 if str(p).upper() == "TCP" else (17 if str(p).upper() == "UDP" else pd.to_numeric(p, errors="coerce")))
         df = df.drop(columns=["protocol"])
     elif "Proto" in df.columns and "Protocol" not in df.columns:
-        df["Protocol"] = df["Proto"].apply(lambda p: 6 if str(p).upper() == "TCP" else (17 if str(p).upper() == "UDP" else 6))
+        df["Protocol"] = df["Proto"].apply(lambda p: 6 if str(p).upper() == "TCP" else (17 if str(p).upper() == "UDP" else pd.to_numeric(p, errors="coerce")))
         df = df.drop(columns=["Proto"])
 
     if df.columns.duplicated().any():
@@ -429,16 +452,19 @@ def get_host_risk_graph(episode_id: str = None, k_step: int = 2) -> dict:
 
     node_roles = {}
     host_telemetry = {}
-    flagged_host_scores = {}
+    # Hosts that appear in the window's top-ranked flows (ranked by LR contribution). There is no
+    # per-host probability; every host carries the window's onset probability.
+    flagged_hosts = {}
 
     for fl in flagged_flows:
-        src = str(fl.get("src_ip", fl.get("Src IP", ""))).strip()
-        dst = str(fl.get("dst_ip", fl.get("Dst IP", ""))).strip()
-        score = float(fl.get("flow_score", fl.get("hazard_score", 0.8)))
-        if src:
-            flagged_host_scores[src] = max(flagged_host_scores.get(src, 0.0), score)
-        if dst:
-            flagged_host_scores[dst] = max(flagged_host_scores.get(dst, 0.0), score)
+        src = str(fl.get("source") or "").strip()
+        dst = str(fl.get("destination") or "").strip()
+        dport = fl.get("dport")
+        for h in (src, dst):
+            if h and h != "None":
+                flagged_hosts.setdefault(h, set())
+                if dport not in (None, "None", ""):
+                    flagged_hosts[h].add(str(dport))
 
     active_node_ids = []
     for n in nodes:
@@ -450,9 +476,9 @@ def get_host_risk_graph(episode_id: str = None, k_step: int = 2) -> dict:
 
     if not active_node_ids and flagged_flows:
         for fl in flagged_flows[:10]:
-            for ip_key in ("src_ip", "Src IP", "dst_ip", "Dst IP"):
-                val = str(fl.get(ip_key, "")).strip()
-                if val and val not in active_node_ids:
+            for ip_key in ("source", "destination"):
+                val = str(fl.get(ip_key) or "").strip()
+                if val and val != "None" and val not in active_node_ids:
                     active_node_ids.append(val)
                     node_roles[val] = f"Endpoint ({val})"
 
@@ -474,8 +500,7 @@ def get_host_risk_graph(episode_id: str = None, k_step: int = 2) -> dict:
         else:
             parts = nid.rsplit(".", 1)
             subnet = f"{parts[0]}.0/24" if len(parts) == 2 else "Subnet N/A"
-            flow_score = flagged_host_scores.get(nid, 0.0)
-            is_flagged = (flow_score > 0.0)
+            is_flagged = nid in flagged_hosts
             crit_tier = "Tier 2 (Gateway/Server)" if (nid.endswith(".1") or nid.endswith(".21")) else "Tier 3 (User Endpoint)"
 
             host_telemetry[nid] = {
@@ -483,10 +508,10 @@ def get_host_risk_graph(episode_id: str = None, k_step: int = 2) -> dict:
                 "criticality_tier": crit_tier,
                 "criticality_level": 2 if "Tier 2" in crit_tier else 3,
                 "subnet": subnet,
-                "active_ports": "TCP/22, TCP/80, TCP/443" if is_flagged else "Standard traffic",
+                "active_ports": (", ".join(sorted(flagged_hosts[nid])) or "—") if is_flagged else "—",
                 "driving_indicators": (
-                    f"Flagged flow score {flow_score:.2f} correlated with onset probability P={p_onset:.2f}"
-                    if is_flagged else "Baseline network flow observations."
+                    f"Appears in the window's top flows ranked by LR contribution; window onset probability P={p_onset:.2f}"
+                    if is_flagged else f"Window onset probability P={p_onset:.2f}"
                 ),
                 "containment_stance": (
                     f"Apply network traffic filtering and adapter inspection on {nid}"
@@ -509,7 +534,7 @@ def get_host_risk_graph(episode_id: str = None, k_step: int = 2) -> dict:
                 h_risk = round(float(p_onset), 3)
                 label_val = "network-level"
             else:
-                h_risk = round(float(flagged_host_scores.get(nid, p_onset)), 3)
+                h_risk = round(float(p_onset), 3)
                 label_val = "observed-host"
             step_risks[nid] = {
                 "risk": h_risk,

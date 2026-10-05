@@ -6,7 +6,7 @@ Manifest: `ml1/artifacts/loeo/corrected_37fold_manifest.json` (37 folds, 37 held
 ## Summary of Findings
 
 - **H\*_state**: **0**
-- At H\*_state = 0, the Gaussian world model does NOT beat persistence on both RMSE and MAE with a paired episode-level bootstrap 95% CI strictly excluding 0.
+- H\*_state = 0 is the measured horizon: on RMSE and MAE, the paired episode-level bootstrap 95% CIs against the persistence reference do not exclude 0 in the model's favour on both metrics.
 
 ## All Windows (Raw Space)
 

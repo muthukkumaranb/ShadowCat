@@ -1,4 +1,8 @@
 """
+NOT USED BY THE DASHBOARD. Design sketch of entity-level risk-based alerting: the per-host window history
+below is simulated (there is no multi-window per-host history in a single upload), so it is not rendered
+on any page. Kept for future work on rolling, per-entity alert aggregation.
+
 SHADOWCAT SOC Cockpit - Entity-Level Risk-Based Alerting (RBA) Component
 Implements the Splunk Risk-Based Alerting (RBA) paradigm:
 Accumulates per-window hazard and stage scores per entity (Host or Subnet)

@@ -9,6 +9,87 @@ import streamlit as st
 from styles import TOKENS, render_html
 from data_provider import get_validation_data, get_audit_chain_status, get_comparison_table, get_live_notarization_status
 
+
+from pathlib import Path as _Path
+import hashlib as _hashlib
+import json as _json
+
+_REPO = _Path(__file__).resolve().parents[2]
+
+
+@st.cache_data(show_spinner=False)
+def _real_model_registry():
+    """Registry entries computed from the committed checkpoints and result files (no hard-coded figures)."""
+    import torch
+
+    def _info(rel):
+        f = _REPO / rel
+        if not f.exists():
+            return {"params": "not found", "sha": "not found"}
+        sha = _hashlib.sha256(f.read_bytes()).hexdigest()[:16]
+        try:
+            c = torch.load(f, map_location="cpu", weights_only=False)
+            sd = c.get("model_state_dict", c) if isinstance(c, dict) else c
+            sd = sd.get("state_dict", sd) if isinstance(sd, dict) else sd
+            n = sum(v.numel() for v in sd.values() if hasattr(v, "numel"))
+            params = f"{n:,}"
+        except Exception:
+            params = "unreadable"
+        return {"params": params, "sha": sha}
+
+    def _jget(rel, *keys):
+        try:
+            d = _json.loads((_REPO / rel).read_text())
+            for k in keys:
+                d = d[k]
+            return d
+        except Exception:
+            return None
+
+    n_folds = len(list((_REPO / "ml1/artifacts/lstm/lstm_stacked/onset").glob("model_fold_*.pt")))
+    onset_auc = _jget("evaluation/benchmark/stacked_benchmark_results.json", "onset", "matched_fpr_5pct", "stacked_ensemble", "roc_auc")
+    dev_loeo = _jget("evaluation/deviation/deviation_results.json", "loeo_pooled", "roc_auc")
+    dev_fam = _jget("evaluation/deviation/deviation_results.json", "family_out_pooled", "roc_auc")
+    wm_rel = next((r for r in ("ml1/artifacts/lstm/gaussian_next_state_best_v3_packetcov.pt",
+                               "ml1/artifacts/lstm/gaussian_next_state_best_v3.pt") if (_REPO / r).exists()),
+                  "ml1/artifacts/lstm/gaussian_next_state_best_v3_packetcov.pt")
+    return [
+        {"badge": "IN USE", "badge_cls": "badge-nominal", "name": "lstm-stacked-onset-v1",
+         "desc": f"Stacked LR + residual LSTM, {n_folds} LOEO fold models",
+         **_info("ml1/artifacts/lstm/lstm_stacked/onset/model_fold_0.pt"),
+         "rows": [("PARAMS / FOLD", None), ("ONSET ROC-AUC (LOEO)", f"{onset_auc:.3f}" if onset_auc else "—")]},
+        {"badge": "HELD (EXPERIMENTAL)", "badge_cls": "badge-caution", "name": "graphsage-fusion",
+         "desc": "GraphSAGE multimodal fusion (ablation: fused val loss 1.932 vs temporal-only 1.666)",
+         **_info("ml2-full/GNN_FINAL/ml2/results/ablation/fused/best_model.pt"),
+         "rows": [("PARAMS", None), ("STATUS", "held from primary path")]},
+        {"badge": "IN USE", "badge_cls": "badge-nominal", "name": "world-model-deviation",
+         "desc": "LSTM Gaussian world model, next-state deviation score",
+         **_info(wm_rel),
+         "rows": [("PARAMS", None), ("DEVIATION ROC-AUC (LOEO)", f"{dev_loeo:.3f}" if dev_loeo else "—"),
+                  ("UNSEEN FAMILY ROC-AUC", f"{dev_fam:.3f}" if dev_fam else "—")]},
+    ]
+
+
+def _registry_cards_html(t):
+    cards = []
+    for m in _real_model_registry():
+        rows = "".join(
+            f'<div style="display:flex; justify-content:space-between;"><span>{k}:</span> <b style="color:{t["text_high"]}">{v if v is not None else m["params"]}</b></div>'
+            for k, v in m["rows"])
+        cards.append(f"""
+            <div class="soc-card-nested" style="border-top: 2px solid {t['primary'] if m['badge_cls'] == 'badge-nominal' else t['tertiary']};">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                    <span class="soc-badge {m['badge_cls']}" style="font-size: 0.6rem;">{m['badge']}</span>
+                </div>
+                <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; font-weight: 700; color: {t['text_high']};">{m['name']}</div>
+                <div style="font-family: 'Inter', sans-serif; font-size: 0.75rem; color: {t['text_muted']}; margin-bottom: 0.5rem;">{m['desc']}</div>
+                <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_secondary']}; display: flex; flex-direction: column; gap: 0.2rem;">{rows}</div>
+                <div style="margin-top: 0.5rem; padding-top: 0.35rem; border-top: 1px solid {t['border']}; font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; color: {t['text_muted']};">
+                    SHA-256: {m['sha']}…
+                </div>
+            </div>""")
+    return "".join(cards)
+
 def render_page():
     t = TOKENS.get(st.session_state.get("theme", "dark"), TOKENS["dark"])
     val_data = get_validation_data()
@@ -43,7 +124,7 @@ def render_page():
             <div style="display: flex; gap: 0.5rem; align-items: center;">
                 <div class="soc-badge {'badge-nominal' if is_valid else 'badge-critical'}" style="padding: 0.35rem 0.75rem;">
                     <span class="soc-pulse-dot" style="background:{t['primary'] if is_valid else t['secondary']};"></span>
-                    {'VERIFIED — INTEGRITY 100% (FABRIC PRIMARY + SHA-256 FALLBACK)' if is_valid else 'INTEGRITY TAMPER DETECTED'}
+                    {'VERIFIED — AUDIT CHAIN INTACT' if is_valid else 'INTEGRITY TAMPER DETECTED'}
                 </div>
             </div>
         </div>
@@ -52,7 +133,7 @@ def render_page():
 
     # Primary Hyperledger Fabric Status Card
     notary_status_badge = "badge-nominal" if fabric_active else ("badge-caution" if fallback_engaged else "badge-neutral")
-    notary_status_text = "FABRIC PRIMARY: ACTIVE // IMMUTABLE LEDGER" if fabric_active else ("FALLBACK ENGAGED: SHA-256 HASH-CHAIN ACTIVE" if fallback_engaged else "FABRIC NETWORK READY")
+    notary_status_text = "FABRIC PRIMARY: ACTIVE // IMMUTABLE LEDGER" if fabric_active else ("FALLBACK ENGAGED: SHA-256 HASH-CHAIN ACTIVE" if fallback_engaged else "FABRIC NOT RUNNING — SIGNED SHA-256 CHAIN IN USE")
 
     render_html(f"""
     <div class="soc-card" style="margin-bottom: 1rem; border-left: 3px solid {'#30d158' if fabric_active else '#ff9f0a'};">
@@ -106,7 +187,7 @@ def render_page():
                 shadowcat-notary
             </div>
             <div class="soc-stat-delta" style="color: {t['text_muted']};">
-                <span>Raft Orderer Cluster (7050)</span>
+                <span>Used only when the local Fabric network is running</span>
             </div>
         </div>
         """)
@@ -117,7 +198,7 @@ def render_page():
             <span class="soc-stat-label">Tamper Evident Proofs</span>
             <div class="soc-stat-val" style="color: {t['primary']};">0</div>
             <div class="soc-stat-delta delta-nominal">
-                <span>Hash-Chain Zero-Drift Asserted</span>
+                <span>Checked by verify_chain()</span>
             </div>
         </div>
         """)
@@ -161,7 +242,7 @@ def render_page():
                 <div style="display: flex; align-items: center; gap: 0.5rem;">
                     <span class="soc-badge {badge_cls}">{block_label}</span>
                     <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: {t['text_high']}; font-weight: 600;">{e.get('timestamp', '2026-09-17T06:19:11Z')[:19].replace('T', ' ')} UTC</span>
-                    <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_muted']};">| +41ms</span>
+                    
                 </div>
                 <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {'#ff9f0a' if is_fallback else t['primary']};">
                     {notarize_mechanism_label}
@@ -274,78 +355,12 @@ def render_page():
                     Active Model Checkpoints & Tensor Enclaves
                 </div>
             </div>
-            <span class="soc-badge badge-nominal">3 HOT-LOADED CHECKPOINTS</span>
+            <span class="soc-badge badge-nominal">3 COMMITTED CHECKPOINTS</span>
         </div>
 
         <!-- 3 Model Checkpoint Cards Grid -->
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
-            <!-- Model 1: Primary Forecaster -->
-            <div class="soc-card-nested" style="border-top: 2px solid {t['primary']};">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
-                    <span class="soc-badge badge-nominal" style="font-size: 0.6rem;">ACTIVE PROD</span>
-                    <span class="soc-badge badge-neutral" style="font-size: 0.6rem;">TRL 6</span>
-                </div>
-                <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; font-weight: 700; color: {t['text_high']};">
-                    lstm-stacked-onset-v1
-                </div>
-                <div style="font-family: 'Inter', sans-serif; font-size: 0.75rem; color: {t['text_muted']}; margin-bottom: 0.5rem;">
-                    Stacked Residual LSTM (37 Folds)
-                </div>
-                <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_secondary']}; display: flex; flex-direction: column; gap: 0.2rem;">
-                    <div style="display:flex; justify-content:space-between;"><span>PARAMS:</span> <b style="color:{t['text_high']}">48.2M FP16</b></div>
-                    <div style="display:flex; justify-content:space-between;"><span>LATENCY:</span> <b style="color:{t['primary']}">1.84ms (4,812 evt/s)</b></div>
-                    <div style="display:flex; justify-content:space-between;"><span>LOSS (MAE):</span> <b style="color:{t['text_high']}">0.0142</b></div>
-                    <div style="display:flex; justify-content:space-between;"><span>PCA STATUS:</span> <b style="color:{t['primary']}">CALIBRATED (Normal)</b></div>
-                </div>
-                <div style="margin-top: 0.5rem; padding-top: 0.35rem; border-top: 1px solid {t['border']}; font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; color: {t['text_muted']};">
-                    SHA-256: d81f9a20bc8471fa093...
-                </div>
-            </div>
-
-            <!-- Model 2: Graph Fusion Alpha -->
-            <div class="soc-card-nested" style="border-top: 2px solid {t['tertiary']};">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
-                    <span class="soc-badge badge-caution" style="font-size: 0.6rem;">SHADOW / EXP</span>
-                    <span class="soc-badge badge-neutral" style="font-size: 0.6rem;">TRL 4</span>
-                </div>
-                <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; font-weight: 700; color: {t['text_high']};">
-                    sc-graph-traversal-v1
-                </div>
-                <div style="font-family: 'Inter', sans-serif; font-size: 0.75rem; color: {t['text_muted']}; margin-bottom: 0.5rem;">
-                    Flow Adjacency Graph Propagation
-                </div>
-                <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_secondary']}; display: flex; flex-direction: column; gap: 0.2rem;">
-                    <div style="display:flex; justify-content:space-between;"><span>PARAMS:</span> <b style="color:{t['text_high']}">112.4M BF16</b></div>
-                    <div style="display:flex; justify-content:space-between;"><span>LATENCY:</span> <b style="color:{t['tertiary']}">14.2ms</b></div>
-                    <div style="display:flex; justify-content:space-between;"><span>TOPO CAPACITY:</span> <b style="color:{t['text_high']}">5,000 Nodes</b></div>
-                    <div style="display:flex; justify-content:space-between;"><span>STATUS:</span> <b style="color:{t['tertiary']}">HELD FROM PROD</b></div>
-                </div>
-                <div style="margin-top: 0.5rem; padding-top: 0.35rem; border-top: 1px solid {t['border']}; font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; color: {t['text_muted']};">
-                    SHA-256: 489f01abce2109841f...
-                </div>
-            </div>
-
-            <!-- Model 3: Flow Novelty Detector -->
-            <div class="soc-card-nested" style="border-top: 2px solid {t['border']};">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
-                    <span class="soc-badge badge-nominal" style="font-size: 0.6rem;">ACTIVE PROD</span>
-                    <span class="soc-badge badge-neutral" style="font-size: 0.6rem;">TRL 6</span>
-                </div>
-                <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; font-weight: 700; color: {t['text_high']};">
-                    sc-world-model-deviation-v1
-                </div>
-                <div style="font-family: 'Inter', sans-serif; font-size: 0.75rem; color: {t['text_muted']}; margin-bottom: 0.5rem;">
-                    Gaussian World Model Latent Deviation
-                </div>
-                <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_secondary']}; display: flex; flex-direction: column; gap: 0.2rem;">
-                    <div style="display:flex; justify-content:space-between;"><span>ALGORITHM:</span> <b style="color:{t['text_high']}">LSTM Auto-Regressive Gaussian</b></div>
-                    <div style="display:flex; justify-content:space-between;"><span>CONTAMINATION:</span> <b style="color:{t['text_high']}">0.01</b></div>
-                    <div style="display:flex; justify-content:space-between;"><span>PCA AVAILABLE:</span> <b style="color:{t['primary']}">TRUE (3 components)</b></div>
-                    <div style="display:flex; justify-content:space-between;"><span>PRECISION:</span> <b style="color:{t['text_high']}">0.984</b></div>
-                </div>
-                <div style="margin-top: 0.5rem; padding-top: 0.35rem; border-top: 1px solid {t['border']}; font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; color: {t['text_muted']};">
-                    SHA-256: 7f81a9c10481bca019...
-                </div>
+            {_registry_cards_html(t)}
             </div>
         </div>
     </div>

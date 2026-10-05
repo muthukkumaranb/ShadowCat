@@ -492,22 +492,20 @@ def render_page():
                     st.warning(f"Containment flag recorded: {sel_node} marked for isolation in dashboard.")
                     st.rerun()
 
-            # Real PCAP Download Button
+            # PCAP download only when the real capture is present locally (raw CIC-IDS2018 PCAPs are not bundled).
             raw_pcap_path = Path(__file__).resolve().parent.parent.parent / "data-engineering" / "data" / "raw_pcap" / "02032018" / "UCAP172.31.69.21.pcap"
             if raw_pcap_path.exists():
                 with open(raw_pcap_path, "rb") as pf:
                     pcap_bytes = pf.read()
+                st.download_button(
+                    label=f"Download PCAP Trace ({len(pcap_bytes)/1024:.1f} KB)",
+                    data=pcap_bytes,
+                    file_name=f"forensic_trace_{sel_node}.pcap",
+                    mime="application/vnd.tcpdump.pcap",
+                    width='stretch'
+                )
             else:
-                # Fallback valid libpcap binary structure
-                pcap_bytes = b'\xd4\xc3\xb2\xa1\x02\x00\x04\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\xff\x00\x00\x01\x00\x00\x00' + b'\x00' * 2048
-
-            st.download_button(
-                label=f"Download PCAP Trace ({len(pcap_bytes)/1024:.1f} KB)",
-                data=pcap_bytes,
-                file_name=f"forensic_trace_{sel_node}.pcap",
-                mime="application/vnd.tcpdump.pcap",
-                width='stretch'
-            )
+                st.caption("Raw PCAP not bundled with the repository (CSE-CIC-IDS2018 captures are distributed separately).")
         else:
             # Visible failure handling when no endpoint data exists (fail visibly, not silently)
             render_html(f"""

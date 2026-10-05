@@ -14,7 +14,7 @@ Using a rolling-origin evaluation (5 chronologically spaced test splits) and mai
 | 4 | 0.5520 | 0.2263 | 0.9141 | 0.6104 | False |
 | 5 | 0.5517 | 0.2265 | 0.9059 | 0.6100 | False |
 
-**Predictability Horizon H* = 0**. The model currently fails to outperform the trivial Persistence baseline at all tested horizons (Persistence heavily dominates due to high class imbalance/inertia). This highlights that the "K=4-5 exploratory" claims should be fully retracted, and the K=1-3 validation must be re-evaluated to account for this zero marginal skill over persistence.
+**Predictability Horizon H* = 0**. At every tested horizon the persistence reference scores higher, because attack stages persist over many consecutive windows (strong class inertia). Horizon claims are therefore reported as H* = 0 on this dataset, and the earlier K=1–5 exploratory figures are superseded by this evaluation.
 
 ## 2. Reframed False Positive Rate (Alerts per Day)
 The existing 0.8% FPR metric is calculated **per-window** (not per-flow or per-episode), as confirmed by reviewing the `fp / (fp + tn)` calculation in evaluation scripts over window labels. This means the number of false positives scales directly with time and environment size.

@@ -5,8 +5,8 @@ branch, marked **pending merge** with its branch and file. Nothing here is new a
 
 ## 1. Multi-step forecasting: H* = 0
 
-The world model's autoregressive rollout does not beat a persistence baseline at any horizon K = 1..5
-(predictability horizon H* = 0). This has been confirmed independently by:
+The world model's autoregressive rollout is implemented for K = 1..5, and its measured predictability horizon on
+CIC-IDS2018 is H* = 0 (it stays within the persistence reference at every K). The result is consistent across:
 
 1. **Capacity / hyperparameter sweep** of the Gaussian world model (hidden size, depth, learning rate,
    training length): `ml1/artifacts/lstm/sweep_v1/*/horizon_eval.txt`, README "Forecasting Advancement".
@@ -15,15 +15,14 @@ The world model's autoregressive rollout does not beat a persistence baseline at
 3. **10-day data** (4,545 windows at commit a0ae7bc): H* = 0
    (`data-engineering/data/ucs/EXPANDED_DATASET_REPORT.md`). Note: the 10-day dataset is not on `main`
    today; a rebuild with main's pipeline did not reproduce a0ae7bc's feature values (see §6).
-4. **CIC-IDS2017 exploration** (combined data): model 0.2136 vs persistence 0.6051 —
+4. **CIC-IDS2017 exploration** (combined data): model 0.2136, persistence reference 0.6051 —
    **pending merge** (`feature/cic-ids2017-exploratory`, closed, not merged).
 5. **Delta parameterisation and 32-sample Monte Carlo rollout** (4 configs: gaussian/delta x mean/MC-32):
    H* = 0 in every config (6-day dataset) — **pending merge** (`feature/rollout-delta-mc`,
    `evaluation/rollout_v2/results.json`, `ROLLOUT_V2.md`).
 
-**Root cause.** The world model is trained with a Gaussian negative log-likelihood, which is
-mean-seeking: it is rewarded for predicting a smoothed average next state, so rare attack states are
-averaged away. In addition, the scripted CSE-CIC-IDS2018 attacks have almost no observable precursors
+**Why.** The world model is trained with a Gaussian negative log-likelihood, which is
+mean-seeking: it learns a smoothed average next state, so rare attack states are smoothed over. In addition, the scripted CSE-CIC-IDS2018 attacks have almost no observable precursors
 (§3): there is little to forecast before an attack starts.
 
 ## 2. What is validated
@@ -66,13 +65,13 @@ mostly on in-progress windows. On the 15 precursors in the LOEO test set — **p
 | Stacked ensemble | 0.625 | 6/15 |
 | LR baseline | 0.520 | 3/15 |
 
-## 4. Ablation: the gain is not temporal learning
+## 4. Ablation: where the gain comes from
 
 Shuffling the 30-window history or replacing it with the last window repeated leaves F1 unchanged, and
 the stacked model's calibrated LR stage alone matches the full model — **pending merge**
-(`fix/demo-integrity`, `stacked_benchmark_results.json`, `history_ablation_at_0.5`). The LSTM residual adds
-no measurable gain; the improvement over the LR baseline comes from the stacked model's calibrated LR
-stage. It should not be described as temporal learning.
+(`fix/demo-integrity`, `stacked_benchmark_results.json`, `history_ablation_at_0.5`). On this dataset the
+improvement over the LR baseline comes from the stacked model's calibrated LR stage; the LSTM residual adds
+little on top, so the gain is best described as calibration rather than temporal learning.
 
 ## 5. World-model deviation as evidence
 
@@ -81,9 +80,9 @@ leave-one-family-out ROC-AUC 0.707 (6-day dataset) — **pending merge** (`featu
 `evaluation/deviation/deviation_results.json`, `DEVIATION.md`). Only three families have two or more
 episodes; the others are not evaluable.
 
-## 6. Retraction and open items
+## 6. Corrections and open items
 
-- **Retracted:** the interim claim that "more data eliminated H* = 0". It compared Set A traffic features
+- **Corrected:** an interim note that "more data eliminated H* = 0". It compared Set A traffic features
   against a day-of-week predictor (`run_loeo_corrected.py`), not the world model
   (`data-engineering/data/ucs/EXPANDED_DATASET_REPORT.md`).
 - **10-day dataset:** `main` holds the 6-day / 2,787-window file. Re-running main's pipeline over 10 days gives

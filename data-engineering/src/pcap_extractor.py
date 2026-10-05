@@ -54,10 +54,15 @@ def calculate_port_scan_monotonicity(ports: List[int]) -> float:
 def extract_features_from_pcap_stream(
     pcap_path: str,
     window_boundaries: List[Tuple[pd.Timestamp, pd.Timestamp, str]],
+    apply_cic2018_clock_offset: bool = True,
 ) -> pd.DataFrame:
     """
     Fast binary in-memory/streaming extraction of packet-level features per window.
     Dissects Ethernet -> IPv4 -> TCP/UDP packets directly from libpcap binary stream.
+
+    apply_cic2018_clock_offset: True (default) maps CIC-IDS2018 CSV window times onto the original
+    capture clock (+16h / +4h, see below). Use False when the windows were derived from the same
+    capture (e.g. an uploaded PCAP), so flows and packets already share one clock.
     """
     if not os.path.exists(pcap_path):
         raise FileNotFoundError(f"PCAP file not found: {pcap_path}")
@@ -70,7 +75,9 @@ def extract_features_from_pcap_stream(
         # Timezone offset mapping:
         # Afternoon AST (01:00 - 09:59 CSV) -> 17:00 - 01:59 UTC (+16h) [SSH Attack at 02:00-03:35 CSV -> 18:00-19:35 UTC]
         # Morning AST (10:00 - 12:59 CSV) -> 14:00 - 16:59 UTC (+4h) [FTP Attack at 10:30-12:15 CSV -> 14:30-16:15 UTC]
-        if w_start.hour < 10:
+        if not apply_cic2018_clock_offset:
+            offset = pd.Timedelta(0)
+        elif w_start.hour < 10:
             offset = pd.Timedelta(hours=16)
         else:
             offset = pd.Timedelta(hours=4)

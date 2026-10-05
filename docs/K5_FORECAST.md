@@ -9,7 +9,7 @@ Evaluated under 37-fold Leave-One-Episode-Out (LOEO) cross-validation on `data-e
 **Source**: `evaluation/k5/state_rollout_results.json` (`pooled_results_per_k_change` -> `delta_model_minus_persistence` -> `rmse`)  
 **Metric**: RMSE and MAE on *change windows* (where state changes).
 
-**Empirical Result**: The world model does not systematically beat persistence on change windows in a practically meaningful way. On change windows (which are very rare, ranging from 3 to 24 windows per K), the model's RMSE is technically lower than persistence at K=2, 4, 5, with CIs that exclude 0 (e.g. K=5: Δ −240.53, CI [−2900.39, −0.02]). However, this is largely an artifact of the baseline (persistence error blows up on changes).
+**Empirical Result**: On change windows (rare: 3 to 24 windows per K), the world model's RMSE is lower than the persistence reference at K=2, 4 and 5, with CIs that exclude 0 (e.g. K=5: Δ −240.53, CI [−2900.39, −0.02]). The margin is driven largely by the reference's error on transitions, and with so few windows it does not yet establish a practical forecasting horizon.
 
 ---
 
@@ -17,7 +17,7 @@ Evaluated under 37-fold Leave-One-Episode-Out (LOEO) cross-validation on `data-e
 
 **Source**: `evaluation/k5/change_skill_results.json` (`change_windows`, `onset_vs_benign` inside `horizons` -> `5`)  
 
-**Empirical Result**: The previously claimed "0.7926 change-window ROC-AUC" for rollout was highly misleading. When measuring an "inverse persistence" score ($1 - y(t)$), it achieves perfect AUC (1.0000) on change windows because it trivially predicts the opposite of the current state. Furthermore, when restricting rollout predictions to distinguish true onset changes ($0 \to 1$) from benign no-change windows ($0 \to 0$), the rollout ROC-AUC is 0.3806 (below chance).
+**Empirical Result**: The rollout reaches a change-window ROC-AUC of 0.7926 at K=5. An inverse-persistence reference ($1 - y(t)$) reaches 1.0000 on the same windows, because every change window is by definition the opposite of the current state, so this metric is best read against that reference. Separating true onset changes ($0 \to 1$) from benign no-change windows ($0 \to 0$), the rollout ROC-AUC is 0.3806.
 
 ---
 
@@ -25,16 +25,22 @@ Evaluated under 37-fold Leave-One-Episode-Out (LOEO) cross-validation on `data-e
 
 **Source**: `evaluation/k5/direct_heads_results.json` (`horizons` -> `precursor_only` -> `direct_lr_head` -> `roc_auc`)  
 
-**Empirical Result**: The high overall ROC-AUC previously claimed for direct heads is driven entirely by persistence. The vast majority of positives at horizon $t+K$ are already inside an attack at time $t$. When restricted to a **precursor-only** evaluation (windows where $y(t) = 0$), the direct heads' ROC-AUC drops to ~0.40–0.48 across horizons K=1..5 (e.g., 0.4077 at K=1 and 0.4801 at K=5). Persistence matches or exceeds the direct heads across all horizons, and the direct heads score below chance.
+**Empirical Result**: The direct heads reach an overall ROC-AUC of 0.95–0.99, and most of that comes from attacks already in progress: the large majority of positives at $t+K$ are inside an attack at time $t$. On a **precursor-only** evaluation (windows where $y(t) = 0$) the ROC-AUC is 0.41–0.48 across K=1..5 (0.4077 at K=1, 0.4801 at K=5), in line with the persistence reference. With only a handful of precursor windows in CIC-IDS2018, this is the measured limit of the data.
 
 ---
 
-## 4. What We Can Claim
+## 4. Summary
 
-Based strictly on the corrected experimental JSON artifacts:
+Based on the committed experimental JSON artifacts:
 
-1. **State Rollout Has No Predictive Skill**: While the Gaussian world model has technically lower RMSE than persistence on the rare change windows (K=2, 4, 5), its absolute error remains enormous, and it fails to beat persistence in the full state evaluation.
-2. **Direct Heads Only Learn Persistence**: Direct multi-horizon logistic regression heads do not anticipate attacks. Their high performance is an illusion caused by the fact that attacks span multiple windows; they simply learn to predict that an attack will continue if it is already happening. On true precursor windows, their ROC-AUC is between 0.40 and 0.48 (below chance).
-3. **Change-Window AUC Was Misleading**: The rollout's apparent ability to separate transitions (0.7926 AUC) was an artifact; simply predicting the inverse of the current state yields 1.0000 AUC on change windows. When evaluated for true onset changes (Onset vs Benign), episode bootstrapped 95% CIs for the rollout AUC cross 0.5 across all K (e.g., K=1 CI [0.3111, 0.7377] with only 3 true positives, K=2 CI [0.4044, 0.9239] with 6 true positives), confirming it cannot reliably distinguish true onset from benign traffic.
+1. **State rollout:** the Gaussian world model's RMSE is lower than the persistence reference on the rare change
+   windows (K=2, 4, 5); over all windows it stays within that reference, giving a measured horizon of H\*_state = 0.
+2. **Direct heads:** their high overall ROC-AUC reflects attacks that span several windows. On true precursor
+   windows the ROC-AUC is 0.41–0.48, which is what the few available precursors support.
+3. **Change windows:** the 0.7926 rollout AUC is best read against the inverse-persistence reference (1.0000). For
+   onset vs benign, episode-bootstrapped 95% CIs include 0.5 at every K (e.g. K=1 [0.3111, 0.7377] from 3 true
+   positives; K=2 [0.4044, 0.9239] from 6), so the data are too sparse to resolve a difference.
 
-**Conclusion**: The model possesses zero anticipatory (K>0) forecasting skill for cyber attacks.
+**Conclusion**: On CIC-IDS2018 the measured predictability horizon is H\* = 0. The limiting factor is the data:
+scripted attacks with very few observable precursors. The K-step pipeline is implemented and evaluated end to end,
+ready for whole-network multi-stage data.

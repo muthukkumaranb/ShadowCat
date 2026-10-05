@@ -7,7 +7,6 @@ Wired to live data_provider.py and dynamic filtering pipeline.
 import streamlit as st
 from styles import TOKENS, render_html
 from data_provider import get_flagged_flows, get_analysis_metadata, get_forecast_trajectory, get_conformal_credibility
-from components.risk_accumulator import render_risk_accumulator_panel
 from components.layered_explanation import render_conformal_credibility_badge
 
 def render_page():
@@ -26,6 +25,8 @@ def render_page():
         pred_raw = _get_live_prediction()
         
     curr_stage = pred_raw.get("current_stage", "—")
+    alert_thr = float(fc.get("alert_threshold", 0.5) or 0.5)
+    in_alert = isinstance(risk_val, (int, float)) and risk_val >= alert_thr
     
     # Baseline default alerts fallback (REMOVED: Must use real data sources only per F5)
     default_alerts = []
@@ -41,12 +42,10 @@ def render_page():
         # Get latest window timestamp for mins_ago calculation
         latest_ts = None
         for f in flows:
-            ts_str = f.get("timestamp_utc", f.get("Timestamp", f.get("timestamp", "")))
+            ts_str = f.get("timestamp") or ""
             if ts_str:
                 try:
-                    ts = datetime.fromisoformat(str(ts_str).replace(" UTC", "").replace("Z", "+00:00"))
-                    if ts.tzinfo is None:
-                        ts = ts.replace(tzinfo=timezone.utc)
+                    ts = datetime.strptime(str(ts_str), "%d/%m/%Y %H:%M:%S").replace(tzinfo=timezone.utc)
                     if latest_ts is None or ts > latest_ts:
                         latest_ts = ts
                 except:
@@ -57,29 +56,21 @@ def render_page():
         tactic_id = stage_info.get("technique_id") or stage_info.get("tactic_id") or "—"
                 
         for i, flw in enumerate(flows[:50]):
-            src = flw.get("src", flw.get("Src IP", "—"))
-            dst = flw.get("dst", flw.get("Dst IP", "—"))
-            proto = flw.get("proto", flw.get("Protocol", "—"))
-            dport = flw.get("dport", flw.get("Dst Port", "—"))
-            sport = flw.get("sport", flw.get("Src Port", "—"))
-            
-            score = flw.get("lr_score", flw.get("anomaly_score", risk_val))
-            if score == "—":
-                sev = "—"
-            elif score >= 0.75:
-                sev = "critical"
-            elif score >= 0.50:
-                sev = "high"
-            else:
-                sev = "medium"
-                
-            ts_str = flw.get("timestamp_utc", flw.get("Timestamp", flw.get("timestamp", "—")))
+            src = flw.get("source") or "—"
+            dst = flw.get("destination") or "—"
+            proto = flw.get("protocol") or "—"
+            dport = flw.get("dport") or "—"
+            sport = flw.get("sport") or "—"
+
+            # Severity is the window's onset decision; the flow's LR contribution only ranks flows.
+            score = flw.get("lr_score")
+            sev = "critical" if in_alert else "low"
+
+            ts_str = flw.get("timestamp") or "—"
             mins_ago = 0
             if ts_str != "—" and latest_ts:
                 try:
-                    ts = datetime.fromisoformat(str(ts_str).replace(" UTC", "").replace("Z", "+00:00"))
-                    if ts.tzinfo is None:
-                        ts = ts.replace(tzinfo=timezone.utc)
+                    ts = datetime.strptime(str(ts_str), "%d/%m/%Y %H:%M:%S").replace(tzinfo=timezone.utc)
                     mins_ago = max(0, int((latest_ts - ts).total_seconds() / 60))
                     ts_str = ts.strftime("%H:%M:%S UTC")
                 except:
@@ -114,13 +105,18 @@ def render_page():
                 "sev": sev,
                 "technique": technique_str,
                 "host": f"node-{src}" if src != "—" else "—",
-                "title": f"Suspicious flow detected: {src}:{sport} → {dst}:{dport} ({proto})." if score == "—" else f"Suspicious flow detected: {src}:{sport} → {dst}:{dport} ({proto}) with risk {score:.2f}.",
-                "description": f"Ingested telemetry record flagged by World Model inference. Model indicates {curr_stage} execution phase." if score == "—" else f"Ingested telemetry record flagged by World Model inference. Model indicates {curr_stage} execution phase with cumulative risk score {score:.2f}.",
+                "title": f"{'Onset alert window' if in_alert else 'Below threshold'}: {src}:{sport} → {dst}:{dport} (proto {proto})",
+                "description": (
+                    f"Rank {i + 1} of the window's flows by contribution to the onset LR"
+                    + (f" ({score:+.2f} logit; top features: {flw.get('top_features')})" if isinstance(score, (int, float)) else "")
+                    + f". Window onset probability {risk_val:.2f} vs alert threshold {alert_thr:.2f}; current-window stage: {curr_stage}."
+                    if isinstance(risk_val, (int, float)) else "Window onset probability not available."
+                ),
 
                 "source": f"{src}:{sport}",
                 "destination": f"{dst}:{dport}",
                 "rate": rate,
-                "cadence": "Continuous Burst",
+                "cadence": f"LR {score:+.2f}" if isinstance(score, (int, float)) else "—",
                 "remediation": [
                     f"Deploy SDN egress null-route on perimeter gateway for foreign destination {dst}:{dport}." if dst != "—" else "Deploy SDN egress null-route on perimeter gateway.",
                     f"Capture volatile RAM and packet capture on host {src} before terminating container." if src != "—" else "Capture volatile RAM and packet capture on host.",
@@ -134,8 +130,7 @@ def render_page():
 
     # Calculate real-time metrics
     n_crit = sum(1 for a in raw_alerts if a["sev"] == "critical")
-    n_high = sum(1 for a in raw_alerts if a["sev"] == "high")
-    n_med = sum(1 for a in raw_alerts if a["sev"] == "medium")
+    n_low = sum(1 for a in raw_alerts if a["sev"] == "low")
     total_active = len(raw_alerts)
 
     # 1. Header & Metric Summary Bar
@@ -150,33 +145,27 @@ def render_page():
                     </span>
                 </div>
                 <div style="display: flex; gap: 0.5rem; font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: {t['text_muted']}; margin-top: 0.25rem;">
-                    <span>STREAM ACTIVE</span> • <span style="color:{t['primary']}">RUNNING MONTE CARLO HEURISTICS</span> • <span>SYS_REF: 0x884F_A</span>
+                    <span>LOADED WINDOW</span> • <span style="color:{t['primary']}">FLOWS RANKED BY LR CONTRIBUTION</span>
                 </div>
             </div>
             <!-- Dynamic quick counters -->
             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
-                <span class="soc-badge badge-neutral">Raw Detections: <b style="color:{t['text_high']}">{total_active}</b></span>
-                <span class="soc-badge badge-critical">Critical: {n_crit}</span>
-                <span class="soc-badge badge-caution">High: {n_high}</span>
-                <span class="soc-badge badge-neutral">Medium: {n_med}</span>
-                <span class="soc-badge badge-nominal">Pipeline: 4,812 evt/s</span>
+                <span class="soc-badge badge-neutral">Ranked flows: <b style="color:{t['text_high']}">{total_active}</b></span>
+                <span class="soc-badge {'badge-critical' if n_crit else 'badge-nominal'}">In alert window: {n_crit}</span>
+                <span class="soc-badge badge-neutral">Below threshold: {n_low}</span>
             </div>
         </div>
     </div>
     """)
 
-    # Paradigm Selector: Entity-Level RBA (Recommended) vs Raw Per-Window Detections
+    # One view: the loaded window's flows ranked by LR contribution, flagged by the window's onset decision.
     c_mode, c_cred = st.columns([0.68, 0.32])
     with c_mode:
-        alert_view_mode = st.radio(
-            "Alert Paradigm:",
-            [
-                "Entity-Level Risk-Based Alerting (Splunk RBA Standard · Recommended)",
-                "Raw Per-Window / Flow Detections (Unaggregated Baseline)",
-            ],
-            horizontal=True,
-            index=0,
-            key="alerts_view_mode_toggle",
+        st.markdown(
+            f"<div style='font-size: 0.8rem; color: {t['text_secondary']}; font-family: \"Inter\", sans-serif; padding-top: 4px;'>"
+            "Flows of the loaded window ranked by their contribution to the onset model. They are alerts only when the "
+            "window's onset probability reaches the alert threshold.</div>",
+            unsafe_allow_html=True,
         )
     with c_cred:
         st.markdown("<div style='text-align: right; padding-top: 4px;'>", unsafe_allow_html=True)
@@ -188,7 +177,7 @@ def render_page():
         with c_f1:
             sev_f = st.radio(
                 "Severity Filter",
-                [f"All ({len(alerts_list)})", f"Critical ({n_crit})", f"High ({n_high})", f"Medium ({n_med})"],
+                [f"All ({len(alerts_list)})", f"In alert window ({n_crit})", f"Below threshold ({n_low})"],
                 horizontal=True,
                 key=f"{key_prefix}_sev",
                 label_visibility="collapsed"
@@ -207,12 +196,10 @@ def render_page():
 
         # Apply filtering
         res = alerts_list
-        if "Critical" in sev_f:
+        if "alert window" in sev_f:
             res = [a for a in res if a["sev"] == "critical"]
-        elif "High" in sev_f:
-            res = [a for a in res if a["sev"] == "high"]
-        elif "Medium" in sev_f:
-            res = [a for a in res if a["sev"] == "medium"]
+        elif "Below" in sev_f:
+            res = [a for a in res if a["sev"] == "low"]
 
         if time_f == "Last 15m":
             res = [a for a in res if isinstance(a["mins_ago"], int) and a["mins_ago"] <= 15]
@@ -252,15 +239,16 @@ def render_page():
 
         for alert in res:
             badge_cls = "badge-critical" if alert["sev"] == "critical" else ("badge-caution" if alert["sev"] == "high" else "badge-neutral")
-            border_color = t['secondary'] if alert["sev"] == "critical" else (t['tertiary'] if alert["sev"] == "high" else t['border'])
+            border_color = t['secondary'] if alert["sev"] == "critical" else t['text_secondary']
             remediation_items_html = "".join([f"<li style='margin-bottom: 0.35rem; color: {t['text_high']};'>{item}</li>" for item in alert["remediation"]])
+            playbook_display = "block" if alert["sev"] == "critical" else "none"
 
             mins_ago_str = f" ({alert['mins_ago']}m ago)" if isinstance(alert['mins_ago'], int) else ""
             render_html(f"""
             <div class="soc-card" style="border-left: 4px solid {border_color}; margin-bottom: 1rem;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
                     <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-                        <span class="soc-badge {badge_cls}">{alert['sev'].upper()}</span>
+                        <span class="soc-badge {badge_cls}">{'ONSET ALERT' if alert['sev'] == 'critical' else 'BELOW THRESHOLD'}</span>
                         <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: {t['text_muted']};">{alert['time']}{mins_ago_str}</span>
                         <span class="soc-badge badge-neutral" style="color:{border_color}">{alert['technique']}</span>
                         <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.8125rem; font-weight: 700; color: {t['primary']};">{alert['host']}</span>
@@ -273,9 +261,9 @@ def render_page():
                     <div><span class="soc-stat-label">Source</span><div style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: {t['text_high']}; font-weight: 600; word-break: break-all;">{alert['source']}</div></div>
                     <div><span class="soc-stat-label">Destination</span><div style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: {border_color}; font-weight: 600; word-break: break-all;">{alert['destination']}</div></div>
                     <div><span class="soc-stat-label">Flow Rate</span><div style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: {border_color}; font-weight: 600;">{alert['rate']}</div></div>
-                    <div><span class="soc-stat-label">Cadence / Profile</span><div style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: {t['text_high']}; font-weight: 600;">{alert['cadence']}</div></div>
+                    <div><span class="soc-stat-label">LR contribution</span><div style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: {t['text_high']}; font-weight: 600;">{alert['cadence']}</div></div>
                 </div>
-                <div class="soc-card-nested" style="border-left: 3px solid {t['primary']}; background: {t['surface_lowest']}; padding: 0.75rem 1rem;">
+                <div class="soc-card-nested" style="display: {playbook_display}; border-left: 3px solid {t['primary']}; background: {t['surface_lowest']}; padding: 0.75rem 1rem;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
                         <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; font-weight: 700; color: {t['primary']}; text-transform: uppercase; letter-spacing: 0.05em;">WHAT CAN BE DONE // RECOMMENDED SOC PLAYBOOK</div>
                         <span class="soc-badge badge-nominal" style="font-size: 0.6rem; padding: 1px 5px;">ANALYST ACTION PLAN</span>
@@ -285,33 +273,7 @@ def render_page():
             </div>
             """)
 
-    if "Entity-Level" in alert_view_mode:
-        # TASK 1: Primary Entity-Level Risk-Based Alerting View
-        render_risk_accumulator_panel()
-
-        # Detailed per-window drill-down
-        with st.expander(f"Forensic Drill-Down: Raw Per-Window Detections ({total_active} Unaggregated Records)", expanded=False):
-            st.markdown(
-                f"<div style='font-size: 0.78rem; color: #8A8A8A; margin-bottom: 12px; font-family: \"Inter\", sans-serif;'>"
-                f"Inspect individual raw window telemetry. In the Splunk RBA model above, these individual events contribute to each entity's rolling risk score and are suppressed until an entity breaches the alert threshold."
-                f"</div>",
-                unsafe_allow_html=True
-            )
-            _render_raw_alerts_section(raw_alerts, key_prefix="exp")
-    else:
-        # Legacy Raw Per-Window View
-        render_html(f"""
-        <div class="soc-caution-banner" style="margin-bottom: 1rem;">
-            <div>
-                <span class="soc-caution-title">LEGACY PER-WINDOW ALERTING MODE (HIGH NOISE RISK)</span>
-                <p style="margin: 0.25rem 0 0 0; color: {t['text_secondary']}; font-family: 'Inter', sans-serif; font-size: 0.8125rem;">
-                    This mode triggers an alert on every individual window or flow anomaly ({total_active} total alerts). Industry SOC research (Splunk RBA) demonstrates this causes severe alert fatigue. Switch to <b>Entity-Level Risk-Based Alerting</b> above to filter out low-severity noise.
-                </p>
-            </div>
-            <span class="soc-badge badge-caution">UNAGGREGATED</span>
-        </div>
-        """)
-        _render_raw_alerts_section(raw_alerts, key_prefix="main")
+    _render_raw_alerts_section(raw_alerts, key_prefix="main")
 
 if __name__ == "__main__":
     render_page()

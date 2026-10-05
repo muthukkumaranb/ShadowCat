@@ -5,6 +5,8 @@ numpy>=1.24.0
 pandas>=2.0.0
 pyarrow>=14.0.0
 pyyaml>=6.0
+cryptography>=41.0  # Ed25519 signatures in backend/audit_chain.py
+cicflowmeter>=0.5.0; python_version >= "3.12"  # PCAP uploads: PCAP -> CICFlowMeter flows (pulls in scapy); needs Python 3.12+
 scikit-learn==1.9.0
 
 # Frontend & Visualization
